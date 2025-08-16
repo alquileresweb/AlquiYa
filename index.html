@@ -13,7 +13,7 @@
     nav { display:flex; justify-content:center; gap:20px; background:#f4f4f4; padding:10px; }
     nav a { text-decoration:none; font-weight:bold; color:#333; }
     nav a:hover { color:#3483fa; }
-    #map { height:60vh; width:100%; margin-bottom:20px; }
+    #map { height:60vh; width:100%; margin-bottom:20px; display:none; }
     #login, #panel-dueno { display:none; max-width:500px; margin:auto; }
     input, select, button { width:100%; padding:8px; margin:5px 0; border-radius:6px; }
     button { background:#3483fa; color:white; border:none; cursor:pointer; }
@@ -29,7 +29,7 @@
 
 <nav>
   <a href="#" onclick="mostrarMapa()">Mapa</a>
-  <a href="dueños.html">Soy Dueño</a>
+  <a href="#" onclick="mostrarLogin()">Soy Dueño</a>
 </nav>
 
 <!-- MAPA -->
@@ -44,21 +44,13 @@
   <p id="login-msg" style="color:red"></p>
 </div>
 
-<!-- PANEL DUEÑO -->
-<div id="panel-dueno">
-  <h2>Panel de Dueños</h2>
-  <p id="bienvenida"></p>
-  <button onclick="logout()">Cerrar Sesión</button>
-</div>
-
 <!-- Scripts -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
 <script>
-  // URLs de tus Google Sheets
   const sheetAlquileres = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ywR4kynlqCe7boNscWy3jq2o40iTpyx1qC1enzUVGuJyfi-GZMRrxqDMUeR3HC4w-EB2l90X5Zyp/pub?gid=0&single=true&output=csv";
-  const sheetDueños = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ywR4kynlqCe7boNscWy3jq2o40iTpyx1qC1enzUVGuJyfi-GZMRrxqDMUeR3HC4w-EB2l90X5Zyp/pub?gid=0&single=true&output=csv"; // reemplazar por tu sheet de dueños
+  const sheetDueños = "URL_PUBLICA_CSV_DE_DUEÑOS"; // reemplazar por tu sheet de dueños
 
   // Inicializar mapa
   let map = L.map('map').setView([-28.5503, -56.0406], 14);
@@ -69,8 +61,15 @@
     document.getElementById("map").style.display="block";
     document.getElementById("login").style.display="none";
     document.getElementById("panel-dueno").style.display="none";
-    setTimeout(()=>{map.invalidateSize();},200); // CORRECCIÓN
+    setTimeout(()=>{map.invalidateSize();},200); // Corregir visualización
     cargarAlquileres();
+  }
+
+  // Mostrar login
+  function mostrarLogin() {
+    document.getElementById("map").style.display="none";
+    document.getElementById("login").style.display="block";
+    document.getElementById("panel-dueno").style.display="none";
   }
 
   // LOGIN DUEÑO
@@ -89,7 +88,7 @@
       if(dueño){
         localStorage.setItem("dueno", dueño.nombre);
         localStorage.setItem("dueno_email", email);
-        window.location.href="dueños.html"; // redirigir al panel
+        window.location.href="dueños.html"; // Redirigir al panel de dueños
       } else msg.textContent="Email o contraseña incorrecta";
     } catch(e){
       console.error("Error al leer la hoja de dueños:",e);
@@ -121,9 +120,6 @@
       }
     });
   }
-
-  // Auto mostrar mapa al cargar
-  window.onload=()=>{mostrarMapa();}
 </script>
 </body>
 </html>
