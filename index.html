@@ -2,49 +2,61 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Alquileres en Santo Tomé</title>
+  <title>Alquileres Santo Tomé</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
-    #map {
-      height: 100vh;
-      width: 100%;
+    body { margin: 0; font-family: Arial, sans-serif; }
+    header {
+      background: #3483fa; color: white; padding: 15px; text-align: center;
     }
-    .popup-img {
-      width: 200px;
-      height: auto;
-      border-radius: 10px;
-      margin-bottom: 8px;
+    nav {
+      display: flex; justify-content: center; gap: 20px;
+      background: #f4f4f4; padding: 10px;
     }
-    .popup-content {
-      font-family: Arial, sans-serif;
+    nav a {
+      text-decoration: none; font-weight: bold; color: #333;
     }
-    .whatsapp-btn {
-      display: inline-block;
-      margin-top: 6px;
-      padding: 6px 10px;
-      background: #25D366;
-      color: white;
-      text-decoration: none;
-      border-radius: 6px;
-      font-weight: bold;
+    nav a:hover { color: #3483fa; }
+    #map { height: 80vh; width: 100%; }
+    footer {
+      text-align: center; padding: 10px; background: #eee; font-size: 14px;
     }
   </style>
 </head>
 <body>
 
-  <div id="map"></div>
+  <header>
+    <h1>Alquileres en Santo Tomé</h1>
+    <p>Encuentra tu próximo departamento de forma rápida y segura</p>
+  </header>
+
+  <nav>
+    <a href="#mapa">Mapa</a>
+    <a href="dueños.html">Soy Dueño</a>
+  </nav>
+
+  <main>
+    <!-- Mapa de alquileres -->
+    <section id="mapa">
+      <div id="map"></div>
+    </section>
+  </main>
+
+  <footer>
+    © 2025 Alquileres Santo Tomé - Proyecto piloto
+  </footer>
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
   <script>
-    // Inicializar mapa centrado en Santo Tomé
+    // Inicializar mapa
     var map = L.map('map').setView([-28.5503, -56.0406], 14);
 
-    // Capa de mapa (gratuita de OpenStreetMap)
+    // Capa de mapa (OpenStreetMap)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '© OpenStreetMap'
@@ -57,7 +69,7 @@
       "3 ambientes": "yellow"
     };
 
-    // Datos de ejemplo (esto luego vendrá de Google Sheets)
+    // Datos de ejemplo
     const alquileres = [
       {
         lat: -28.5505, lng: -56.0410,
@@ -95,18 +107,21 @@
       });
     }
 
-    // Agregar markers
+    // Agregar markers al mapa
     alquileres.forEach(a => {
       const icon = getIcon(ambienteColors[a.tipo]);
       const marker = L.marker([a.lat, a.lng], { icon: icon }).addTo(map);
 
       const popupContent = `
-        <div class="popup-content">
-          <img src="${a.foto}" class="popup-img"/>
+        <div>
+          <img src="${a.foto}" style="width:200px; border-radius:8px; margin-bottom:6px;"/>
           <b>${a.tipo.toUpperCase()}</b><br>
           📍 ${a.direccion}<br>
           💵 ${a.precio}<br>
-          <a class="whatsapp-btn" href="https://wa.me/54${a.contacto}" target="_blank">WhatsApp</a>
+          <a href="https://wa.me/54${a.contacto}" target="_blank"
+             style="display:inline-block; margin-top:6px; padding:6px 10px; background:#25D366; color:white; border-radius:6px; text-decoration:none;">
+             WhatsApp
+          </a>
         </div>
       `;
       marker.bindPopup(popupContent);
