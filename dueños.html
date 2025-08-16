@@ -2,22 +2,20 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Panel Dueños - Alquileres Santo Tomé</title>
+<title>Panel Dueños</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body{font-family:Arial,sans-serif;margin:20px;max-width:600px;margin:auto}
+body{font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:20px;}
+h2{color:#3483fa;}
 input,select,button{width:100%;padding:8px;margin:5px 0;border-radius:6px}
 button{background:#3483fa;color:white;border:none;cursor:pointer}
 button:hover{background:#2565c0}
-.alquiler-card{border:1px solid #ccc;padding:10px;border-radius:8px;margin-bottom:10px;background:#f9f9f9}
 </style>
 </head>
 <body>
-<h1>Panel de Dueños</h1>
+<h2>Panel de Dueños</h2>
 <p id="bienvenida"></p>
-<button onclick="logout()">Cerrar Sesión</button>
-
-<h3>Agregar nuevo alquiler</h3>
+<h3>Agregar Nuevo Alquiler</h3>
 <input type="text" id="direccion" placeholder="Dirección">
 <input type="text" id="latitud" placeholder="Latitud">
 <input type="text" id="longitud" placeholder="Longitud">
@@ -27,48 +25,58 @@ button:hover{background:#2565c0}
 <option value="3 ambientes">3 ambientes</option>
 </select>
 <input type="text" id="precio" placeholder="Precio">
-<input type="text" id="contacto" placeholder="WhatsApp/Telefono">
-<input type="text" id="fotos" placeholder="URL de foto">
+<input type="text" id="contacto" placeholder="WhatsApp">
+<input type="text" id="fotos" placeholder="URL de fotos (opcional)">
 <button onclick="agregarAlquiler()">Agregar Alquiler</button>
-<p id="agregar-msg" style="color:green"></p>
+<p id="msg" style="color:green"></p>
+<button onclick="logout()">Cerrar Sesión</button>
 
-<h3>Mis alquileres</h3>
-<div id="mis-alquileres"></div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 <script>
-const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ywR4kynlqCe7boNscWy3jq2o40iTpyx1qC1enzUVGuJyfi-GZMRrxqDMUeR3HC4w-EB2l90X5Zyp/pub?gid=376993222&single=true&output=csv";
-const webhookURL="https://script.google.com/macros/s/AKfycby8Im_WuA2Gfkbc-wHQjL-KOTpl_LnGsgvbR-l1zF3KVYyLv5Qr25d7njUplky8CUWY/exec";
+const WEBAPP_URL = "AQUI_PONES_TU_WEBAPP_URL";
 
-const nombre = localStorage.getItem("dueno");
-const email = localStorage.getItem("dueno_email");
-if(!nombre || !email){ alert("Debes loguearte"); window.location.href="index.html"; }
-document.getElementById("bienvenida").textContent="Bienvenido, "+nombre;
+window.onload = function(){
+  const nombre = localStorage.getItem("dueno");
+  if(!nombre){ window.location.href="index.html"; return; }
+  document.getElementById("bienvenida").textContent="Bienvenido "+nombre;
+}
 
 async function agregarAlquiler(){
-  const data={
-    tipo:"alquiler",
-    email: email,
-    direccion: document.getElementById("direccion").value,
-    latitud: document.getElementById("latitud").value,
-    longitud: document.getElementById("longitud").value,
+  const email = localStorage.getItem("dueno_email");
+  const nombre = localStorage.getItem("dueno");
+  const data = {
+    action:"agregar",
+    email,
+    nombre,
+    direccion: document.getElementById("direccion").value.trim(),
+    latitud: document.getElementById("latitud").value.trim(),
+    longitud: document.getElementById("longitud").value.trim(),
     ambientes: document.getElementById("ambientes").value,
-    precio: document.getElementById("precio").value,
-    contacto: document.getElementById("contacto").value,
-    fotos: document.getElementById("fotos").value,
-    estado: "activo"
+    precio: document.getElementById("precio").value.trim(),
+    contacto: document.getElementById("contacto").value.trim(),
+    fotos: document.getElementById("fotos").value.trim()
   };
   try{
-    const resp = await fetch(webhookURL,{
+    const resp = await fetch(WEBAPP_URL,{
       method:"POST",
       body: JSON.stringify(data),
       headers: {"Content-Type":"application/json"}
     });
-    if(resp.ok){
-      document.getElementById("agregar-msg").textContent="Alquiler agregado correctamente!";
-      cargarMisAlquileres();
+    const result = await resp.json();
+    if(result.success){
+      document.getElementById("msg").textContent="Alquiler agregado correctamente!";
+      document.getElementById("direccion").value="";
+      document.getElementById("latitud").value="";
+      document.getElementById("longitud").value="";
+      document.getElementById("precio").value="";
+      document.getElementById("contacto").value="";
+      document.getElementById("fotos").value="";
+    } else {
+      document.getElementById("msg").textContent="Error al agregar: "+(result.message||"");
     }
-  }catch(e){ console.error(e); }
+  } catch(e){
+    document.getElementById("msg").textContent="Error al conectar con servidor";
+    console.error(e);
+  }
 }
 
 function logout(){
@@ -76,27 +84,6 @@ function logout(){
   localStorage.removeItem("dueno_email");
   window.location.href="index.html";
 }
-
-async function cargarMisAlquileres(){
-  const container=document.getElementById("mis-alquileres");
-  container.innerHTML="";
-  const resp=await fetch(sheetURL);
-  const text=await resp.text();
-  const results=Papa.parse(text,{header:true});
-  const misAlq=results.data.filter(a => a.tipo==="alquiler" && a.email===email);
-  misAlq.forEach(a=>{
-    const div=document.createElement("div");
-    div.className="alquiler-card";
-    div.innerHTML=`<b>${a.direccion}</b><br>
-    Ambientes: ${a.ambientes}<br>
-    Precio: ${a.precio}<br>
-    Contacto: ${a.contacto}<br>
-    Estado: ${a.estado}`;
-    container.appendChild(div);
-  });
-}
-
-window.onload=cargarMisAlquileres;
 </script>
 </body>
 </html>
