@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel de Dueños - Alquileres</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #login, #panel { max-width: 400px; margin: auto; }
+    input, button { margin: 5px 0; padding: 10px; width: 100%; }
+    .card {
+      border: 1px solid #ccc; padding: 10px; margin: 10px 0;
+      border-radius: 8px; background: #f9f9f9;
+    }
+    .btn {
+      padding: 6px 10px; margin: 4px; border: none; cursor: pointer;
+      border-radius: 6px; font-weight: bold;
+    }
+    .btn-edit { background: #3483fa; color: #fff; }
+    .btn-toggle { background: #f0ad4e; color: #fff; }
+    .btn-delete { background: #d9534f; color: #fff; }
+  </style>
+</head>
+<body>
+
+  <h2>Panel de Dueños</h2>
+
+  <!-- Formulario de login -->
+  <div id="login">
+    <h3>Iniciar sesión</h3>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Contraseña">
+    <button onclick="login()">Ingresar</button>
+    <p id="login-msg"></p>
+  </div>
+
+  <!-- Panel de control -->
+  <div id="panel" style="display:none;">
+    <h3>Mis Alquileres</h3>
+    <div id="alquileres"></div>
+  </div>
+
+  <script>
+    // ⚠️ IMPORTANTE: acá se debe conectar con Google Sheets API
+    // Para este ejemplo, usamos datos simulados
+
+    const dueños = [
+      { id: 1, email: "dueno1@test.com", password: "1234", nombre: "Carlos" }
+    ];
+
+    let alquileres = [
+      { id: 1, id_dueño: 1, direccion: "Belgrano 123", ambientes: "Monoambiente", precio: "$90.000", estado: "activo" },
+      { id: 2, id_dueño: 1, direccion: "San Martín 456", ambientes: "2 ambientes", precio: "$120.000", estado: "inactivo" }
+    ];
+
+    let usuarioLogueado = null;
+
+    function login() {
+      const email = document.getElementById("email").value;
+      const pass = document.getElementById("password").value;
+
+      const user = dueños.find(d => d.email === email && d.password === pass);
+
+      if (user) {
+        usuarioLogueado = user;
+        document.getElementById("login").style.display = "none";
+        document.getElementById("panel").style.display = "block";
+        cargarAlquileres();
+      } else {
+        document.getElementById("login-msg").innerText = "Email o contraseña incorrectos";
+      }
+    }
+
+    function cargarAlquileres() {
+      const cont = document.getElementById("alquileres");
+      cont.innerHTML = "";
+
+      const misAlquileres = alquileres.filter(a => a.id_dueño === usuarioLogueado.id);
+
+      misAlquileres.forEach(a => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <b>${a.ambientes}</b><br>
+          📍 ${a.direccion}<br>
+          💵 ${a.precio}<br>
+          Estado: ${a.estado}<br>
+          <button class="btn btn-edit" onclick="editar(${a.id})">Editar</button>
+          <button class="btn btn-toggle" onclick="toggleEstado(${a.id})">
+            ${a.estado === "activo" ? "Inactivar" : "Activar"}
+          </button>
+          <button class="btn btn-delete" onclick="eliminar(${a.id})">Eliminar</button>
+        `;
+        cont.appendChild(div);
+      });
+    }
+
+    function editar(id) {
+      const nuevoPrecio = prompt("Nuevo precio:");
+      if (nuevoPrecio) {
+        const a = alquileres.find(x => x.id === id);
+        a.precio = nuevoPrecio;
+        cargarAlquileres();
+      }
+    }
+
+    function toggleEstado(id) {
+      const a = alquileres.find(x => x.id === id);
+      a.estado = (a.estado === "activo") ? "inactivo" : "activo";
+      cargarAlquileres();
+    }
+
+    function eliminar(id) {
+      const a = alquileres.find(x => x.id === id);
+      a.estado = "eliminado";
+      cargarAlquileres();
+    }
+  </script>
+</body>
+</html>
