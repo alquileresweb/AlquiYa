@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Alquileres en Santo Tomé</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <style>
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+    .popup-img {
+      width: 200px;
+      height: auto;
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+    .popup-content {
+      font-family: Arial, sans-serif;
+    }
+    .whatsapp-btn {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 6px 10px;
+      background: #25D366;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="map"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <script>
+    // Inicializar mapa centrado en Santo Tomé
+    var map = L.map('map').setView([-28.5503, -56.0406], 14);
+
+    // Capa de mapa (gratuita de OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    // Colores por tipo de ambiente
+    const ambienteColors = {
+      "monoambiente": "blue",
+      "2 ambientes": "red",
+      "3 ambientes": "yellow"
+    };
+
+    // Datos de ejemplo (esto luego vendrá de Google Sheets)
+    const alquileres = [
+      {
+        lat: -28.5505, lng: -56.0410,
+        tipo: "monoambiente",
+        direccion: "Belgrano 123",
+        precio: "$90.000",
+        contacto: "3794000000",
+        foto: "https://via.placeholder.com/200x120.png?text=Monoambiente"
+      },
+      {
+        lat: -28.5510, lng: -56.0385,
+        tipo: "2 ambientes",
+        direccion: "San Martín 456",
+        precio: "$120.000",
+        contacto: "3794111111",
+        foto: "https://via.placeholder.com/200x120.png?text=2+Ambientes"
+      },
+      {
+        lat: -28.5522, lng: -56.0422,
+        tipo: "3 ambientes",
+        direccion: "España 789",
+        precio: "$160.000",
+        contacto: "3794222222",
+        foto: "https://via.placeholder.com/200x120.png?text=3+Ambientes"
+      }
+    ];
+
+    // Crear íconos de colores
+    function getIcon(color) {
+      return new L.Icon({
+        iconUrl: `https://chart.googleapis.com/chart?chst=d_map_pin_icon&chld=home|${color}`,
+        iconSize: [30, 50],
+        iconAnchor: [15, 50],
+        popupAnchor: [0, -45]
+      });
+    }
+
+    // Agregar markers
+    alquileres.forEach(a => {
+      const icon = getIcon(ambienteColors[a.tipo]);
+      const marker = L.marker([a.lat, a.lng], { icon: icon }).addTo(map);
+
+      const popupContent = `
+        <div class="popup-content">
+          <img src="${a.foto}" class="popup-img"/>
+          <b>${a.tipo.toUpperCase()}</b><br>
+          📍 ${a.direccion}<br>
+          💵 ${a.precio}<br>
+          <a class="whatsapp-btn" href="https://wa.me/54${a.contacto}" target="_blank">WhatsApp</a>
+        </div>
+      `;
+      marker.bindPopup(popupContent);
+    });
+  </script>
+</body>
+</html>
