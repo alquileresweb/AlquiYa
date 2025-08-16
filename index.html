@@ -45,6 +45,51 @@
   <p id="login-msg" style="color:red"></p>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+<script>
+  const sheetDueños = "URL_PUBLICA_CSV_DE_DUEÑOS"; // reemplaza con tu CSV de Google Sheets
+
+  async function login() {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const msg = document.getElementById("login-msg");
+
+    try {
+      // Leer CSV desde Google Sheets
+      const resp = await fetch(sheetDueños);
+      const csvText = await resp.text();
+
+      // Parsear CSV con PapaParse
+      const results = Papa.parse(csvText, {header: true});
+      const data = results.data;
+
+      // Buscar dueño con email y password coincidente
+      const dueño = data.find(d => d.email.trim() === email && d.password.trim() === password);
+
+      if(dueño) {
+        // Login exitoso
+        localStorage.setItem("dueno", dueño.nombre);
+        localStorage.setItem("dueno_email", email);
+        mostrarPanel(dueño.nombre);
+      } else {
+        msg.textContent = "Email o contraseña incorrecta";
+      }
+
+    } catch(e) {
+      console.error("Error al leer la hoja de dueños:", e);
+      msg.textContent = "Error al verificar los datos. Intenta nuevamente.";
+    }
+  }
+
+  function mostrarPanel(nombre) {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("panel-dueno").style.display = "block";
+    document.getElementById("map").style.display = "none";
+    document.getElementById("bienvenida").textContent = "Bienvenido, " + nombre;
+  }
+</script>
+</div>
+
 <!-- PANEL DUEÑO -->
 <div id="panel-dueno">
   <h2>Panel de Dueños</h2>
