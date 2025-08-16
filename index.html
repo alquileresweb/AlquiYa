@@ -39,7 +39,7 @@
   </nav>
 
   <main>
-    <!-- Mapa de alquileres -->
+    <!-- Sección de mapa para estudiantes -->
     <section id="mapa">
       <div id="map"></div>
     </section>
@@ -51,81 +51,67 @@
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <!-- PapaParse para leer CSV -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
   <script>
-    // Inicializar mapa
+    // Inicializar mapa centrado en Santo Tomé
     var map = L.map('map').setView([-28.5503, -56.0406], 14);
 
-    // Capa de mapa (OpenStreetMap)
+    // Capa de mapa (OpenStreetMap gratuita)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // Colores por tipo de ambiente
-    const ambienteColors = {
-      "monoambiente": "blue",
-      "2 ambientes": "red",
-      "3 ambientes": "yellow"
-    };
+    // URL pública de tu Google Sheets publicando en CSV
+    const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ywR4kynlqCe7boNscWy3jq2o40iTpyx1qC1enzUVGuJyfi-GZMRrxqDMUeR3HC4w-EB2l90X5Zyp/pub?gid=0&single=true&output=csv";
 
-    // Datos de ejemplo
-    const alquileres = [
-      {
-        lat: -28.5505, lng: -56.0410,
-        tipo: "monoambiente",
-        direccion: "Belgrano 123",
-        precio: "$90.000",
-        contacto: "3794000000",
-        foto: "https://via.placeholder.com/200x120.png?text=Monoambiente"
-      },
-      {
-        lat: -28.5510, lng: -56.0385,
-        tipo: "2 ambientes",
-        direccion: "San Martín 456",
-        precio: "$120.000",
-        contacto: "3794111111",
-        foto: "https://via.placeholder.com/200x120.png?text=2+Ambientes"
-      },
-      {
-        lat: -28.5522, lng: -56.0422,
-        tipo: "3 ambientes",
-        direccion: "España 789",
-        precio: "$160.000",
-        contacto: "3794222222",
-        foto: "https://via.placeholder.com/200x120.png?text=3+Ambientes"
-      }
-    ];
-
-    // Crear íconos de colores
-    function getIcon(color) {
-      return new L.Icon({
-        iconUrl: `https://chart.googleapis.com/chart?chst=d_map_pin_icon&chld=home|${color}`,
-        iconSize: [30, 50],
-        iconAnchor: [15, 50],
-        popupAnchor: [0, -45]
-      });
+    // Función para elegir color según tipo de ambientes
+    function colorPorAmbientes(ambientes) {
+      ambientes = ambientes.toLowerCase();
+      if (ambientes.includes("mono")) return "blue";
+      if (ambientes.includes("2 ambientes") || ambientes.includes("2 amb")) return "red";
+      if (ambientes.includes("3 ambientes") || ambientes.includes("3 amb")) return "yellow";
+      return "gray";
     }
 
-    // Agregar markers al mapa
-    alquileres.forEach(a => {
-      const icon = getIcon(ambienteColors[a.tipo]);
-      const marker = L.marker([a.lat, a.lng], { icon: icon }).addTo(map);
+    // Parsear y procesar datos
+    Papa.parse(sheetUrl, {
+      download: true,
+      header: true,
+      complete: function(results) {
+        results.data.forEach(alquiler => {
+          if (alquiler.estado && alquiler.estado.toLowerCase() === "activo") {
+            const lat = parseFloat(alquiler.latitud);
+            const lng = parseFloat(alquiler.longitud);
+            if (isNaN(lat) || isNaN(lng)) return;
 
-      const popupContent = `
-        <div>
-          <img src="${a.foto}" style="width:200px; border-radius:8px; margin-bottom:6px;"/>
-          <b>${a.tipo.toUpperCase()}</b><br>
-          📍 ${a.direccion}<br>
-          💵 ${a.precio}<br>
-          <a href="https://wa.me/54${a.contacto}" target="_blank"
-             style="display:inline-block; margin-top:6px; padding:6px 10px; background:#25D366; color:white; border-radius:6px; text-decoration:none;">
-             WhatsApp
-          </a>
-        </div>
-      `;
-      marker.bindPopup(popupContent);
+            const color = colorPorAmbientes(alquiler.ambientes || "");
+            const marker = L.circleMarker([lat, lng], {
+              radius: 8,
+              color: color,
+              fillOpacity: 0.9
+            }).addTo(map);
+
+            const popup = `
+              <div style="font-family: Arial, sans-serif;">
+                <b>${alquiler.direccion || "–"}</b><br>
+                Ambientes: ${alquiler.ambientes || "–"}<br>
+                Precio: ${alquiler.precio || "–"}<br>
+                Contacto: <a href="https://wa.me/${alquiler.contacto || ""}" target="_blank">${alquiler.contacto || "–"}</a><br>
+                ${alquiler.fotos ? `<img src="${alquiler.fotos}" width="150" style="border-radius:6px; margin-top:6px;">` : ""}
+              </div>
+            `;
+            marker.bindPopup(popup);
+          }
+        });
+      },
+      error: function(err) {
+        console.error("Error al cargar CSV:", err);
+      }
     });
   </script>
+
 </body>
 </html>
