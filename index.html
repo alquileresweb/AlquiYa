@@ -8,110 +8,182 @@
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
-    body { margin: 0; font-family: Arial, sans-serif; }
-    header {
-      background: #3483fa; color: white; padding: 15px; text-align: center;
-    }
-    nav {
-      display: flex; justify-content: center; gap: 20px;
-      background: #f4f4f4; padding: 10px;
-    }
-    nav a {
-      text-decoration: none; font-weight: bold; color: #333;
-    }
-    nav a:hover { color: #3483fa; }
-    #map { height: 80vh; width: 100%; }
-    footer {
-      text-align: center; padding: 10px; background: #eee; font-size: 14px;
-    }
+    body { margin:0; font-family: Arial, sans-serif; }
+    header { background:#3483fa; color:white; padding:15px; text-align:center; }
+    nav { display:flex; justify-content:center; gap:20px; background:#f4f4f4; padding:10px; }
+    nav a { text-decoration:none; font-weight:bold; color:#333; }
+    nav a:hover { color:#3483fa; }
+    #map { height:60vh; width:100%; margin-bottom:20px; }
+    #login, #panel-dueno { display:none; max-width:500px; margin:auto; }
+    input, select, button { width:100%; padding:8px; margin:5px 0; border-radius:6px; }
+    button { background:#3483fa; color:white; border:none; cursor:pointer; }
+    button:hover { background:#2565c0; }
+    .alquiler-card { border:1px solid #ccc; padding:10px; border-radius:8px; margin-bottom:10px; background:#f9f9f9; }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>Alquileres en Santo Tomé</h1>
-    <p>Encuentra tu próximo departamento de forma rápida y segura</p>
-  </header>
+<header>
+  <h1>Alquileres en Santo Tomé</h1>
+  <p>Encuentra tu próximo departamento de forma rápida y segura</p>
+</header>
 
-  <nav>
-    <a href="#mapa">Mapa</a>
-    <a href="dueños.html">Soy Dueño</a>
-  </nav>
+<nav>
+  <a href="#" onclick="mostrarMapa()">Mapa</a>
+  <a href="#" onclick="mostrarLogin()">Soy Dueño</a>
+</nav>
 
-  <main>
-    <!-- Sección de mapa para estudiantes -->
-    <section id="mapa">
-      <div id="map"></div>
-    </section>
-  </main>
+<!-- MAPA -->
+<div id="map"></div>
 
-  <footer>
-    © 2025 Alquileres Santo Tomé - Proyecto piloto
-  </footer>
+<!-- LOGIN DUEÑO -->
+<div id="login">
+  <h2>Login Dueños</h2>
+  <input type="text" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Contraseña">
+  <button onclick="login()">Ingresar</button>
+  <p id="login-msg" style="color:red"></p>
+</div>
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <!-- PapaParse para leer CSV -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+<!-- PANEL DUEÑO -->
+<div id="panel-dueno">
+  <h2>Panel de Dueños</h2>
+  <p id="bienvenida"></p>
+  <button onclick="logout()">Cerrar Sesión</button>
+  <h3>Agregar nuevo alquiler</h3>
+  <input type="text" id="direccion" placeholder="Dirección">
+  <input type="text" id="latitud" placeholder="Latitud">
+  <input type="text" id="longitud" placeholder="Longitud">
+  <select id="ambientes">
+    <option value="Monoambiente">Monoambiente</option>
+    <option value="2 ambientes">2 ambientes</option>
+    <option value="3 ambientes">3 ambientes</option>
+  </select>
+  <input type="text" id="precio" placeholder="Precio">
+  <input type="text" id="contacto" placeholder="WhatsApp/Telefono">
+  <input type="text" id="fotos" placeholder="URL de foto">
+  <button onclick="agregarAlquiler()">Agregar Alquiler</button>
+  <p id="agregar-msg" style="color:green"></p>
+</div>
 
-  <script>
-    // Inicializar mapa centrado en Santo Tomé
-    var map = L.map('map').setView([-28.5503, -56.0406], 14);
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<!-- PapaParse para CSV -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
-    // Capa de mapa (OpenStreetMap gratuita)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap'
-    }).addTo(map);
+<script>
+  const sheetAlquileres = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ywR4kynlqCe7boNscWy3jq2o40iTpyx1qC1enzUVGuJyfi-GZMRrxqDMUeR3HC4w-EB2l90X5Zyp/pub?gid=0&single=true&output=csv";
+  const sheetDueños = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ywR4kynlqCe7boNscWy3jq2o40iTpyx1qC1enzUVGuJyfi-GZMRrxqDMUeR3HC4w-EB2l90X5Zyp/pub?gid=0&single=true&output=csv"; // tu hoja dueños
+  const webhookURL = "TU_WEBHOOK_URL"; // reemplazar por tu Apps Script
 
-    // URL pública de tu Google Sheets publicando en CSV
-    const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ywR4kynlqCe7boNscWy3jq2o40iTpyx1qC1enzUVGuJyfi-GZMRrxqDMUeR3HC4w-EB2l90X5Zyp/pub?gid=0&single=true&output=csv";
+  let map = L.map('map').setView([-28.5503, -56.0406], 14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'© OpenStreetMap'}).addTo(map);
 
-    // Función para elegir color según tipo de ambientes
-    function colorPorAmbientes(ambientes) {
-      ambientes = ambientes.toLowerCase();
-      if (ambientes.includes("mono")) return "blue";
-      if (ambientes.includes("2 ambientes") || ambientes.includes("2 amb")) return "red";
-      if (ambientes.includes("3 ambientes") || ambientes.includes("3 amb")) return "yellow";
-      return "gray";
-    }
+  // Mostrar sección
+  function mostrarMapa() {
+    document.getElementById("map").style.display = "block";
+    document.getElementById("login").style.display = "none";
+    document.getElementById("panel-dueno").style.display = "none";
+    cargarAlquileres();
+  }
+  function mostrarLogin() {
+    document.getElementById("map").style.display = "none";
+    document.getElementById("login").style.display = "block";
+    document.getElementById("panel-dueno").style.display = "none";
+  }
 
-    // Parsear y procesar datos
-    Papa.parse(sheetUrl, {
-      download: true,
-      header: true,
+  // LOGIN
+  async function login() {
+    const email = document.getElementById("email").value.trim();
+    const pass = document.getElementById("password").value.trim();
+    const msg = document.getElementById("login-msg");
+
+    const resp = await fetch(sheetDueños);
+    const text = await resp.text();
+    const rows = text.split("\n").map(r => r.split(","));
+    const header = rows.shift();
+    const emailIndex = header.indexOf("email");
+    const passIndex = header.indexOf("password");
+    const nombreIndex = header.indexOf("nombre");
+
+    const match = rows.find(r => r[emailIndex] === email && r[passIndex] === pass);
+    if (match) {
+      localStorage.setItem("dueno", match[nombreIndex]);
+      localStorage.setItem("dueno_email", email);
+      mostrarPanel(match[nombreIndex]);
+    } else msg.textContent = "Email o contraseña incorrecta";
+  }
+
+  function mostrarPanel(nombre) {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("panel-dueno").style.display = "block";
+    document.getElementById("map").style.display = "none";
+    document.getElementById("bienvenida").textContent = "Bienvenido, " + nombre;
+  }
+
+  function logout() {
+    localStorage.removeItem("dueno");
+    localStorage.removeItem("dueno_email");
+    mostrarLogin();
+  }
+
+  window.onload = () => {
+    const nombre = localStorage.getItem("dueno");
+    if (nombre) mostrarPanel(nombre);
+    else mostrarMapa();
+  };
+
+  // Cargar alquileres
+  function cargarAlquileres() {
+    Papa.parse(sheetAlquileres, {
+      download:true, header:true,
       complete: function(results) {
-        results.data.forEach(alquiler => {
-          if (alquiler.estado && alquiler.estado.toLowerCase() === "activo") {
-            const lat = parseFloat(alquiler.latitud);
-            const lng = parseFloat(alquiler.longitud);
-            if (isNaN(lat) || isNaN(lng)) return;
-
-            const color = colorPorAmbientes(alquiler.ambientes || "");
-            const marker = L.circleMarker([lat, lng], {
-              radius: 8,
-              color: color,
-              fillOpacity: 0.9
-            }).addTo(map);
-
-            const popup = `
-              <div style="font-family: Arial, sans-serif;">
-                <b>${alquiler.direccion || "–"}</b><br>
-                Ambientes: ${alquiler.ambientes || "–"}<br>
-                Precio: ${alquiler.precio || "–"}<br>
-                Contacto: <a href="https://wa.me/${alquiler.contacto || ""}" target="_blank">${alquiler.contacto || "–"}</a><br>
-                ${alquiler.fotos ? `<img src="${alquiler.fotos}" width="150" style="border-radius:6px; margin-top:6px;">` : ""}
-              </div>
-            `;
-            marker.bindPopup(popup);
+        results.data.forEach(a => {
+          if(a.estado && a.estado.toLowerCase()==="activo") {
+            const lat = parseFloat(a.latitud);
+            const lng = parseFloat(a.longitud);
+            if(isNaN(lat)||isNaN(lng)) return;
+            const color = a.ambientes.includes("Mono")?"blue":a.ambientes.includes("2")?"red":"yellow";
+            const marker = L.circleMarker([lat,lng],{radius:8,color:color,fillOpacity:0.9}).addTo(map);
+            marker.bindPopup(`
+              <b>${a.direccion}</b><br>
+              Ambientes: ${a.ambientes}<br>
+              Precio: ${a.precio}<br>
+              Contacto: <a href="https://wa.me/${a.contacto}" target="_blank">${a.contacto}</a><br>
+              ${a.fotos?`<img src="${a.fotos}" width="150">`:""}
+            `);
           }
         });
-      },
-      error: function(err) {
-        console.error("Error al cargar CSV:", err);
       }
     });
-  </script>
+  }
 
+  // Agregar alquiler desde panel de dueño
+  async function agregarAlquiler() {
+    const data = {
+      email: localStorage.getItem("dueno_email"),
+      direccion: document.getElementById("direccion").value,
+      latitud: document.getElementById("latitud").value,
+      longitud: document.getElementById("longitud").value,
+      ambientes: document.getElementById("ambientes").value,
+      precio: document.getElementById("precio").value,
+      contacto: document.getElementById("contacto").value,
+      fotos: document.getElementById("fotos").value,
+      estado: "activo"
+    };
+
+    try {
+      const resp = await fetch(webhookURL, {
+        method:"POST",
+        body: JSON.stringify(data),
+        headers: {"Content-Type":"application/json"}
+      });
+      if(resp.ok) {
+        document.getElementById("agregar-msg").textContent = "Alquiler agregado correctamente!";
+        cargarAlquileres();
+      }
+    } catch(e) { console.error(e); }
+  }
+</script>
 </body>
 </html>
