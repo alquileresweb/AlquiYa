@@ -50,6 +50,7 @@ button:hover{background:#2565c0}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 <script>
 const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ywR4kynlqCe7boNscWy3jq2o40iTpyx1qC1enzUVGuJyfi-GZMRrxqDMUeR3HC4w-EB2l90X5Zyp/pub?gid=376993222&single=true&output=csv";
+const loginURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 
 let map = L.map('map').setView([-28.5503, -56.0406],14);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
@@ -74,27 +75,22 @@ async function login(){
   const msg = document.getElementById("login-msg");
 
   try{
-    const resp = await fetch(sheetURL);
-    const csvText = await resp.text();
-    const results = Papa.parse(csvText,{header:true});
-    const data = results.data;
-
-    // Filtrar solo dueños y eliminar filas vacías
-    const dueño = data
-      .filter(d => d.tipo && d.tipo.trim() === "dueño")
-      .find(d => d.email && d.email.trim() === email && d.password && d.password.trim() === password);
-
-    if(dueño){
-      localStorage.setItem("dueno",dueño.nombre.trim());
-      localStorage.setItem("dueno_email",email);
+    const resp = await fetch(loginURL,{
+      method: "POST",
+      body: JSON.stringify({email,password}),
+      headers: {"Content-Type":"application/json"}
+    });
+    const result = await resp.json();
+    if(result.success){
+      localStorage.setItem("dueno", result.nombre);
+      localStorage.setItem("dueno_email", email);
       window.location.href="dueños.html";
     } else {
       msg.textContent="Email o contraseña incorrecta";
     }
-
   } catch(e){
-    console.error("Error al leer dueños:",e);
-    msg.textContent="Error al verificar los datos. Intenta nuevamente.";
+    console.error(e);
+    msg.textContent="Error al verificar los datos";
   }
 }
 
