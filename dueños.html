@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Panel Dueños - Alquileres Santo Tomé</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { font-family:Arial,sans-serif; margin:20px; max-width:600px; margin:auto; }
-    input, select, button { width:100%; padding:8px; margin:5px 0; border-radius:6px; }
-    button { background:#3483fa; color:white; border:none; cursor:pointer; }
-    button:hover { background:#2565c0; }
-    .alquiler-card { border:1px solid #ccc; padding:10px; border-radius:8px; margin-bottom:10px; background:#f9f9f9; }
-  </style>
+<meta charset="UTF-8">
+<title>Panel Dueños - Alquileres Santo Tomé</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{font-family:Arial,sans-serif;margin:20px;max-width:600px;margin:auto}
+input,select,button{width:100%;padding:8px;margin:5px 0;border-radius:6px}
+button{background:#3483fa;color:white;border:none;cursor:pointer}
+button:hover{background:#2565c0}
+.alquiler-card{border:1px solid #ccc;padding:10px;border-radius:8px;margin-bottom:10px;background:#f9f9f9}
+</style>
 </head>
 <body>
 <h1>Panel de Dueños</h1>
@@ -22,9 +22,9 @@
 <input type="text" id="latitud" placeholder="Latitud">
 <input type="text" id="longitud" placeholder="Longitud">
 <select id="ambientes">
-  <option value="Monoambiente">Monoambiente</option>
-  <option value="2 ambientes">2 ambientes</option>
-  <option value="3 ambientes">3 ambientes</option>
+<option value="Monoambiente">Monoambiente</option>
+<option value="2 ambientes">2 ambientes</option>
+<option value="3 ambientes">3 ambientes</option>
 </select>
 <input type="text" id="precio" placeholder="Precio">
 <input type="text" id="contacto" placeholder="WhatsApp/Telefono">
@@ -37,66 +37,66 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 <script>
-  const sheetAlquileres = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ywR4kynlqCe7boNscWy3jq2o40iTpyx1qC1enzUVGuJyfi-GZMRrxqDMUeR3HC4w-EB2l90X5Zyp/pub?gid=376993222&single=true&output=csv";
-  const webhookURL = "TU_WEBHOOK_URL"; // Apps Script Webhook
+const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ywR4kynlqCe7boNscWy3jq2o40iTpyx1qC1enzUVGuJyfi-GZMRrxqDMUeR3HC4w-EB2l90X5Zyp/pub?gid=376993222&single=true&output=csv";
+const webhookURL="TU_WEBHOOK_APPS_SCRIPT";
 
-  // Validar sesión
-  const nombre = localStorage.getItem("dueno");
-  const email = localStorage.getItem("dueno_email");
-  if(!nombre || !email){ alert("Debes loguearte"); window.location.href="index.html"; }
-  document.getElementById("bienvenida").textContent = "Bienvenido, "+nombre;
+const nombre = localStorage.getItem("dueno");
+const email = localStorage.getItem("dueno_email");
+if(!nombre || !email){ alert("Debes loguearte"); window.location.href="index.html"; }
+document.getElementById("bienvenida").textContent="Bienvenido, "+nombre;
 
-  async function agregarAlquiler(){
-    const data={
-      email: email,
-      direccion: document.getElementById("direccion").value,
-      latitud: document.getElementById("latitud").value,
-      longitud: document.getElementById("longitud").value,
-      ambientes: document.getElementById("ambientes").value,
-      precio: document.getElementById("precio").value,
-      contacto: document.getElementById("contacto").value,
-      fotos: document.getElementById("fotos").value,
-      estado: "activo"
-    };
-    try{
-      const resp = await fetch(webhookURL,{
-        method:"POST",
-        body: JSON.stringify(data),
-        headers: {"Content-Type":"application/json"}
-      });
-      if(resp.ok){
-        document.getElementById("agregar-msg").textContent="Alquiler agregado correctamente!";
-        cargarMisAlquileres();
-      }
-    }catch(e){ console.error(e); }
-  }
-
-  function logout(){
-    localStorage.removeItem("dueno");
-    localStorage.removeItem("dueno_email");
-    window.location.href="index.html";
-  }
-
-  async function cargarMisAlquileres(){
-    const container = document.getElementById("mis-alquileres");
-    container.innerHTML="";
-    const resp = await fetch(sheetAlquileres);
-    const text = await resp.text();
-    const results = Papa.parse(text,{header:true});
-    const misAlq = results.data.filter(a => a.email===email);
-    misAlq.forEach(a=>{
-      const div = document.createElement("div");
-      div.className="alquiler-card";
-      div.innerHTML=`<b>${a.direccion}</b><br>
-                     Ambientes: ${a.ambientes}<br>
-                     Precio: ${a.precio}<br>
-                     Contacto: ${a.contacto}<br>
-                     Estado: ${a.estado}`;
-      container.appendChild(div);
+async function agregarAlquiler(){
+  const data={
+    tipo:"alquiler",
+    email: email,
+    direccion: document.getElementById("direccion").value,
+    latitud: document.getElementById("latitud").value,
+    longitud: document.getElementById("longitud").value,
+    ambientes: document.getElementById("ambientes").value,
+    precio: document.getElementById("precio").value,
+    contacto: document.getElementById("contacto").value,
+    fotos: document.getElementById("fotos").value,
+    estado: "activo"
+  };
+  try{
+    const resp = await fetch(webhookURL,{
+      method:"POST",
+      body: JSON.stringify(data),
+      headers: {"Content-Type":"application/json"}
     });
-  }
+    if(resp.ok){
+      document.getElementById("agregar-msg").textContent="Alquiler agregado correctamente!";
+      cargarMisAlquileres();
+    }
+  }catch(e){ console.error(e); }
+}
 
-  window.onload = cargarMisAlquileres;
+function logout(){
+  localStorage.removeItem("dueno");
+  localStorage.removeItem("dueno_email");
+  window.location.href="index.html";
+}
+
+async function cargarMisAlquileres(){
+  const container=document.getElementById("mis-alquileres");
+  container.innerHTML="";
+  const resp=await fetch(sheetURL);
+  const text=await resp.text();
+  const results=Papa.parse(text,{header:true});
+  const misAlq=results.data.filter(a => a.tipo==="alquiler" && a.email===email);
+  misAlq.forEach(a=>{
+    const div=document.createElement("div");
+    div.className="alquiler-card";
+    div.innerHTML=`<b>${a.direccion}</b><br>
+    Ambientes: ${a.ambientes}<br>
+    Precio: ${a.precio}<br>
+    Contacto: ${a.contacto}<br>
+    Estado: ${a.estado}`;
+    container.appendChild(div);
+  });
+}
+
+window.onload=cargarMisAlquileres;
 </script>
 </body>
 </html>
