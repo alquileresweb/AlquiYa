@@ -27,4 +27,26 @@ button:hover{background:#2565c0}
 <input type="text" id="precio" placeholder="Precio">
 <input type="text" id="contacto" placeholder="WhatsApp">
 <input type="text" id="fotos" placeholder="URL de fotos (opcional)">
-<button onclick
+<button onclick="agregarAlquiler()">Agregar Alquiler</button>
+<p id="msg" style="color:green"></p>
+<button onclick="logout()">Cerrar Sesión</button>
+
+<script>
+window.onload = function(){
+  const nombre = localStorage.getItem("dueno");
+  if(!nombre){ window.location.href="index.html"; return; }
+  document.getElementById("bienvenida").textContent="Bienvenido "+nombre;
+}
+
+function agregarAlquiler(){
+  alert("En esta versión sin Apps Script, los datos se agregarían directamente a Google Sheets usando Glide o AppSheet."); 
+}
+
+function logout(){
+  localStorage.removeItem("dueno");
+  localStorage.removeItem("dueno_email");
+  window.location.href="index.html";
+}
+</script>
+</body>
+</html>
