@@ -78,12 +78,20 @@ async function login(){
     const csvText = await resp.text();
     const results = Papa.parse(csvText,{header:true});
     const data = results.data;
-    const dueño = data.find(d => d.tipo==="dueño" && d.email.trim()===email && d.password.trim()===password);
+
+    // Filtrar solo dueños y eliminar filas vacías
+    const dueño = data
+      .filter(d => d.tipo && d.tipo.trim() === "dueño")
+      .find(d => d.email && d.email.trim() === email && d.password && d.password.trim() === password);
+
     if(dueño){
-      localStorage.setItem("dueno",dueño.nombre);
+      localStorage.setItem("dueno",dueño.nombre.trim());
       localStorage.setItem("dueno_email",email);
       window.location.href="dueños.html";
-    } else msg.textContent="Email o contraseña incorrecta";
+    } else {
+      msg.textContent="Email o contraseña incorrecta";
+    }
+
   } catch(e){
     console.error("Error al leer dueños:",e);
     msg.textContent="Error al verificar los datos. Intenta nuevamente.";
