@@ -48,42 +48,41 @@
   const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 
   window.onload = function(){
-    const email = localStorage.getItem("dueno"); // siempre usamos "dueno"
+    const email = localStorage.getItem("dueno");
     if(!email){ window.location.href="index.html"; return; }
     document.getElementById("bienvenida").textContent = "Bienvenido, " + email;
     cargarAlquileres();
   }
 
-  // 📋 Obtener lista de alquileres
+  // 📋 Obtener lista de alquileres (JSONP)
   function cargarAlquileres(){
     const email = localStorage.getItem("dueno");
-    fetch(API_URL+"?action=getAlquileres&dueno="+encodeURIComponent(email))
-      .then(r => r.json())
-      .then(data => {
-        const div = document.getElementById("listaAlquileres");
-        div.innerHTML = "";
-        if(!data.success || data.alquileres.length === 0){ 
-          div.innerHTML="No tienes alquileres aún."; 
-          return; 
-        }
-
-        data.alquileres.forEach(alq => {
-          let estado = alq.estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
-          let btnEstado = `<button onclick="cambiarEstado(${alq.row})">Cambiar Estado</button>`;
-          let btnEditar = `<button onclick="editarAlquiler(${alq.row})">Editar</button>`;
-          div.innerHTML += `<div class="alquiler">
-            <b>${alq.direccion}</b> - ${alq.ambientes} amb - $${alq.precio} - Mascotas: ${alq.mascotas || "N/D"}<br>
-            Estado: ${estado}<br>
-            ${btnEstado} ${btnEditar}
-          </div>`;
-        });
-      })
-      .catch(e => {
-        document.getElementById("listaAlquileres").innerHTML = "Error cargando alquileres.";
-      });
+    const script = document.createElement("script");
+    script.src = `${API_URL}?action=getAlquileres&dueno=${encodeURIComponent(email)}&callback=mostrarAlquileres`;
+    document.body.appendChild(script);
   }
 
-  // ➕ Agregar alquiler (GET compatible con Apps Script)
+  function mostrarAlquileres(data){
+    const div = document.getElementById("listaAlquileres");
+    div.innerHTML = "";
+    if(!data || data.length === 0){ 
+      div.innerHTML="No tienes alquileres aún."; 
+      return; 
+    }
+
+    data.forEach(alq => {
+      let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
+      let btnEstado = `<button onclick="cambiarEstado(${alq.row})">Cambiar Estado</button>`;
+      let btnEditar = `<button onclick="editarAlquiler(${alq.row})">Editar</button>`;
+      div.innerHTML += `<div class="alquiler">
+        <b>${alq.Direccion}</b> - ${alq['Nro Ambientes']} amb - ${alq.Precio} - Mascotas: ${alq.Mascotas || "N/D"}<br>
+        Estado: ${estado}<br>
+        ${btnEstado} ${btnEditar}
+      </div>`;
+    });
+  }
+
+  // ➕ Agregar alquiler (JSONP)
   function agregarAlquiler(){
     const direccion = document.getElementById("direccion").value;
     const ambientes = document.getElementById("ambientes").value;
@@ -97,29 +96,32 @@
       return; 
     }
 
-    fetch(`${API_URL}?action=addAlquiler&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(imagen)}`)
-      .then(r => r.json())
-      .then(res => {
-        if(res.success){
-          document.getElementById("msg").textContent = "Alquiler agregado ✅";
-          cargarAlquileres();
-        } else {
-          alert("Error: " + res.error);
-        }
-      })
-      .catch(err => alert("Error al guardar: "+err));
+    const script = document.createElement("script");
+    script.src = `${API_URL}?action=addAlquiler&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(imagen)}&callback=alquilerAgregado`;
+    document.body.appendChild(script);
   }
 
-  // 🔄 Cambiar estado
+  function alquilerAgregado(res){
+    if(res.success){
+      document.getElementById("msg").textContent = "Alquiler agregado ✅";
+      cargarAlquileres();
+    } else {
+      alert("Error: " + res.error);
+    }
+  }
+
+  // 🔄 Cambiar estado (JSONP)
   function cambiarEstado(row){
-    fetch(API_URL+"?action=toggleEstado&row="+row)
-      .then(r => r.json())
-      .then(res => {
-        if(res.success) cargarAlquileres();
-      });
+    const script = document.createElement("script");
+    script.src = `${API_URL}?action=toggleEstado&row=${row}&callback=estadoCambiado`;
+    document.body.appendChild(script);
   }
 
-  // ✏️ Editar alquiler (ejemplo simple)
+  function estadoCambiado(res){
+    if(res.success) cargarAlquileres();
+  }
+
+  // ✏️ Editar alquiler
   function editarAlquiler(row){
     alert("Aquí se abriría un formulario para editar el alquiler en la fila: " + row);
   }
