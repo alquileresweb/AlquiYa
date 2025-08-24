@@ -21,8 +21,9 @@
   <h3>📋 Mis Alquileres</h3>
   <div id="listaAlquileres">Cargando...</div>
 
-  <h3>➕ Agregar Alquiler</h3>
+  <h3 id="tituloForm">➕ Agregar Alquiler</h3>
   <div id="formulario">
+    <input type="hidden" id="editRow" value="">
     <label>Dirección</label>
     <input type="text" id="direccion">
 
@@ -48,7 +49,7 @@
     <label>Detalles</label>
     <textarea id="detalles" rows="3"></textarea>
 
-    <button onclick="agregarAlquiler()">Agregar</button>
+    <button id="btnGuardar" onclick="agregarAlquiler()">Agregar</button>
     <p id="msg" style="color:green"></p>
   </div>
 
@@ -96,7 +97,7 @@
     res.data.forEach(alq => {
       let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
       let btnEstado = `<button onclick="cambiarEstado(${alq.row})">Cambiar Estado</button>`;
-      let btnEditar = `<button onclick="editarAlquiler(${alq.row})">Editar</button>`;
+      let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
       let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
       div.innerHTML += `<div class="alquiler">
         <b>${alq.Direccion}</b> - ${alq['Nro Ambientes']} amb - ${alq.Precio} - Mascotas: ${alq.Mascotas || "N/D"}<br>
@@ -113,6 +114,7 @@
     const mascotas = document.getElementById("mascotas").value;
     const infoIngreso = document.getElementById("infoIngreso").value;
     const detalles = document.getElementById("detalles").value;
+    const row = document.getElementById("editRow").value;
     const email = localStorage.getItem("dueno");
 
     if(!direccion || !ambientes || !precio){ 
@@ -120,18 +122,65 @@
       return; 
     }
 
+    let action = row ? "editAlquiler" : "addAlquiler";
+    let callback = row ? "alquilerEditado" : "alquilerAgregado";
+
     const script = document.createElement("script");
-    script.src = `${API_URL}?action=addAlquiler&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(imagenBase64)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&callback=alquilerAgregado`;
+    script.src = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(imagenBase64)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&callback=${callback}`;
     document.body.appendChild(script);
   }
 
   function alquilerAgregado(res){
     if(res.success){
       document.getElementById("msg").textContent = "Alquiler agregado ✅";
+      resetForm();
       cargarAlquileres();
     } else {
       alert("Error: " + res.error);
     }
+  }
+
+  function alquilerEditado(res){
+    if(res.success){
+      document.getElementById("msg").textContent = "Alquiler editado ✅";
+      resetForm();
+      cargarAlquileres();
+    } else {
+      alert("Error: " + res.error);
+    }
+  }
+
+  function editarAlquiler(row, datos){
+    document.getElementById("tituloForm").textContent = "✏️ Editar Alquiler";
+    document.getElementById("btnGuardar").textContent = "Guardar Cambios";
+    document.getElementById("editRow").value = row;
+    document.getElementById("direccion").value = datos.Direccion || "";
+    document.getElementById("ambientes").value = datos["Nro Ambientes"] || "";
+    document.getElementById("precio").value = datos.Precio || "";
+    document.getElementById("mascotas").value = datos.Mascotas || "No";
+    document.getElementById("infoIngreso").value = datos.InfoIngreso || "";
+    document.getElementById("detalles").value = datos.Detalles || "";
+    if(datos.Fotos){
+      imagenBase64 = datos.Fotos;
+      document.getElementById("previewImg").src = imagenBase64;
+      document.getElementById("previewImg").style.display = "block";
+    }
+    window.scrollTo(0, document.getElementById("formulario").offsetTop);
+  }
+
+  function resetForm(){
+    document.getElementById("tituloForm").textContent = "➕ Agregar Alquiler";
+    document.getElementById("btnGuardar").textContent = "Agregar";
+    document.getElementById("editRow").value = "";
+    document.getElementById("direccion").value = "";
+    document.getElementById("ambientes").value = "";
+    document.getElementById("precio").value = "";
+    document.getElementById("mascotas").value = "Sí";
+    document.getElementById("infoIngreso").value = "";
+    document.getElementById("detalles").value = "";
+    document.getElementById("imagenFile").value = "";
+    document.getElementById("previewImg").style.display = "none";
+    imagenBase64 = "";
   }
 
   function cambiarEstado(row){
@@ -141,18 +190,6 @@
   }
 
   function estadoCambiado(res){
-    if(res.success) cargarAlquileres();
-  }
-
-  function editarAlquiler(row){
-    const nuevaDireccion = prompt("Nueva dirección:");
-    if(!nuevaDireccion) return;
-    const script = document.createElement("script");
-    script.src = `${API_URL}?action=editAlquiler&row=${row}&direccion=${encodeURIComponent(nuevaDireccion)}&callback=alquilerEditado`;
-    document.body.appendChild(script);
-  }
-
-  function alquilerEditado(res){
     if(res.success) cargarAlquileres();
   }
 
