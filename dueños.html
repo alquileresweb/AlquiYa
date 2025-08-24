@@ -1,52 +1,128 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Panel Dueños</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-body{font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:20px;}
-h2{color:#3483fa;}
-input,select,button{width:100%;padding:8px;margin:5px 0;border-radius:6px}
-button{background:#3483fa;color:white;border:none;cursor:pointer}
-button:hover{background:#2565c0}
-</style>
+  <meta charset="UTF-8">
+  <title>Panel de Dueños</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background:#f5f5f5; }
+    h2 { color:#333; }
+    .alquiler { border:1px solid #ccc; padding:10px; margin:10px 0; background:#fff; }
+    button { margin: 5px; padding: 5px 10px; }
+    #formulario { background:#fff; padding:15px; border:1px solid #ccc; margin-top:20px; }
+    label { display:block; margin:8px 0 4px; }
+    input, select { width:100%; padding:8px; margin-bottom:10px; }
+  </style>
 </head>
 <body>
-<h2>Panel de Dueños</h2>
-<p id="bienvenida"></p>
-<h3>Agregar Nuevo Alquiler</h3>
-<input type="text" id="direccion" placeholder="Dirección">
-<input type="text" id="latitud" placeholder="Latitud">
-<input type="text" id="longitud" placeholder="Longitud">
-<select id="ambientes">
-<option value="Monoambiente">Monoambiente</option>
-<option value="2 ambientes">2 ambientes</option>
-<option value="3 ambientes">3 ambientes</option>
-</select>
-<input type="text" id="precio" placeholder="Precio">
-<input type="text" id="contacto" placeholder="WhatsApp">
-<input type="text" id="fotos" placeholder="URL de fotos (opcional)">
-<button onclick="agregarAlquiler()">Agregar Alquiler</button>
-<p id="msg" style="color:green"></p>
-<button onclick="logout()">Cerrar Sesión</button>
+  <h2 id="bienvenida"></h2>
+  <button onclick="logout()">Cerrar Sesión</button>
 
-<script>
-window.onload = function(){
-  const nombre = localStorage.getItem("dueno");
-  if(!nombre){ window.location.href="index.html"; return; }
-  document.getElementById("bienvenida").textContent="Bienvenido "+nombre;
-}
+  <h3>📋 Mis Alquileres</h3>
+  <div id="listaAlquileres">Cargando...</div>
 
-function agregarAlquiler(){
-  alert("En esta versión sin Apps Script, los datos se agregarían directamente a Google Sheets usando Glide o AppSheet."); 
-}
+  <h3>➕ Agregar Alquiler</h3>
+  <div id="formulario">
+    <label>Dirección</label>
+    <input type="text" id="direccion">
 
-function logout(){
-  localStorage.removeItem("dueno");
-  localStorage.removeItem("dueno_email");
-  window.location.href="index.html";
-}
-</script>
+    <label>Ambientes</label>
+    <input type="number" id="ambientes">
+
+    <label>Precio</label>
+    <input type="number" id="precio">
+
+    <label>Mascotas Permitidas</label>
+    <select id="mascotas">
+      <option value="Sí">Sí</option>
+      <option value="No">No</option>
+    </select>
+
+    <label>Imagen (PNG/JPG)</label>
+    <input type="file" id="imagen" accept="image/png, image/jpeg">
+
+    <button onclick="agregarAlquiler()">Agregar</button>
+    <p id="msg" style="color:green"></p>
+  </div>
+
+  <script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
+
+  window.onload = function(){
+    const nombre = localStorage.getItem("dueno");
+    if(!nombre){ window.location.href="index.html"; return; }
+    document.getElementById("bienvenida").textContent = "Bienvenido, " + nombre;
+    cargarAlquileres();
+  }
+
+  // 📋 Obtener lista de alquileres
+  function cargarAlquileres(){
+    fetch(API_URL+"?action=getAlquileres&dueno="+localStorage.getItem("dueno_email"))
+      .then(r => r.json())
+      .then(data => {
+        const div = document.getElementById("listaAlquileres");
+        div.innerHTML = "";
+        if(data.length === 0){ div.innerHTML="No tienes alquileres aún."; return; }
+
+        data.forEach(alq => {
+          let estado = alq.activo === "TRUE" ? "Activo ✅" : "Inactivo ❌";
+          let btnEstado = `<button onclick="cambiarEstado('${alq.id}')">${estado}</button>`;
+          let btnEditar = `<button onclick="editarAlquiler('${alq.id}')">Editar</button>`;
+          div.innerHTML += `<div class="alquiler">
+            <b>${alq.direccion}</b> - ${alq.ambientes} amb - $${alq.precio} - Mascotas: ${alq.mascotas}<br>
+            ${btnEstado} ${btnEditar}
+          </div>`;
+        });
+      })
+      .catch(e => {
+        document.getElementById("listaAlquileres").innerHTML = "Error cargando alquileres.";
+      });
+  }
+
+  // ➕ Agregar alquiler
+  function agregarAlquiler(){
+    const direccion = document.getElementById("direccion").value;
+    const ambientes = document.getElementById("ambientes").value;
+    const precio = document.getElementById("precio").value;
+    const mascotas = document.getElementById("mascotas").value;
+    const file = document.getElementById("imagen").files[0];
+
+    if(!direccion || !ambientes || !precio){ alert("Completa todos los campos."); return; }
+
+    const formData = new FormData();
+    formData.append("action", "addAlquiler");
+    formData.append("dueno", localStorage.getItem("dueno_email"));
+    formData.append("direccion", direccion);
+    formData.append("ambientes", ambientes);
+    formData.append("precio", precio);
+    formData.append("mascotas", mascotas);
+    if(file) formData.append("imagen", file);
+
+    fetch(API_URL, { method:"POST", body:formData })
+      .then(r => r.text())
+      .then(res => {
+        document.getElementById("msg").textContent = "Alquiler agregado ✅";
+        cargarAlquileres();
+      })
+      .catch(err => alert("Error al guardar: "+err));
+  }
+
+  // 🔄 Cambiar estado
+  function cambiarEstado(id){
+    fetch(API_URL+"?action=toggleEstado&id="+id)
+      .then(r => r.text())
+      .then(res => cargarAlquileres());
+  }
+
+  // ✏️ Editar alquiler (puedes mejorarlo luego con modal o formulario)
+  function editarAlquiler(id){
+    alert("Aquí se abriría un formulario para editar el alquiler con ID: " + id);
+  }
+
+  function logout(){
+    localStorage.removeItem("dueno");
+    localStorage.removeItem("dueno_email");
+    window.location.href="index.html";
+  }
+  </script>
 </body>
 </html>
