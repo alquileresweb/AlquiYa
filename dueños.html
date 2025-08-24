@@ -54,7 +54,6 @@
     cargarAlquileres();
   }
 
-  // 📋 Obtener lista de alquileres (JSONP)
   function cargarAlquileres(){
     const email = localStorage.getItem("dueno");
     const script = document.createElement("script");
@@ -62,27 +61,25 @@
     document.body.appendChild(script);
   }
 
-  function mostrarAlquileres(data){
+  function mostrarAlquileres(res){
     const div = document.getElementById("listaAlquileres");
     div.innerHTML = "";
-    if(!data || data.length === 0){ 
+    if(!res.success || !res.data || res.data.length === 0){ 
       div.innerHTML="No tienes alquileres aún."; 
       return; 
     }
 
-    data.forEach(alq => {
+    res.data.forEach(alq => {
       let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
       let btnEstado = `<button onclick="cambiarEstado(${alq.row})">Cambiar Estado</button>`;
-      let btnEditar = `<button onclick="editarAlquiler(${alq.row})">Editar</button>`;
       div.innerHTML += `<div class="alquiler">
         <b>${alq.Direccion}</b> - ${alq['Nro Ambientes']} amb - ${alq.Precio} - Mascotas: ${alq.Mascotas || "N/D"}<br>
         Estado: ${estado}<br>
-        ${btnEstado} ${btnEditar}
+        ${btnEstado}
       </div>`;
     });
   }
 
-  // ➕ Agregar alquiler (JSONP)
   function agregarAlquiler(){
     const direccion = document.getElementById("direccion").value;
     const ambientes = document.getElementById("ambientes").value;
@@ -110,7 +107,6 @@
     }
   }
 
-  // 🔄 Cambiar estado (JSONP)
   function cambiarEstado(row){
     const script = document.createElement("script");
     script.src = `${API_URL}?action=toggleEstado&row=${row}&callback=estadoCambiado`;
@@ -119,11 +115,6 @@
 
   function estadoCambiado(res){
     if(res.success) cargarAlquileres();
-  }
-
-  // ✏️ Editar alquiler
-  function editarAlquiler(row){
-    alert("Aquí se abriría un formulario para editar el alquiler en la fila: " + row);
   }
 
   function logout(){
