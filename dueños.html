@@ -10,7 +10,8 @@
     button { margin: 5px; padding: 5px 10px; }
     #formulario { background:#fff; padding:15px; border:1px solid #ccc; margin-top:20px; }
     label { display:block; margin:8px 0 4px; }
-    input, select { width:100%; padding:8px; margin-bottom:10px; }
+    input, select, textarea { width:100%; padding:8px; margin-bottom:10px; }
+    img { max-width: 120px; margin-top: 5px; display:block; }
   </style>
 </head>
 <body>
@@ -37,16 +38,38 @@
       <option value="No">No</option>
     </select>
 
-    <label>URL Imagen (PNG/JPG)</label>
-    <input type="text" id="imagen" placeholder="https://...">
+    <label>Imagen del Alquiler (PNG/JPG)</label>
+    <input type="file" id="imagenFile" accept="image/png, image/jpeg">
+    <img id="previewImg" style="display:none;"/>
+
+    <label>Información de ingreso</label>
+    <textarea id="infoIngreso" rows="2"></textarea>
+
+    <label>Detalles</label>
+    <textarea id="detalles" rows="3"></textarea>
 
     <button onclick="agregarAlquiler()">Agregar</button>
     <p id="msg" style="color:green"></p>
   </div>
 
   <script>
-  // ✅ CORREGIDO: debe ser la URL completa del deployment de tu Apps Script
   const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
+
+  let imagenBase64 = "";
+
+  // ✅ Previsualizar imagen y convertir a Base64
+  document.getElementById("imagenFile").addEventListener("change", function(){
+    const file = this.files[0];
+    if(file){
+      const reader = new FileReader();
+      reader.onload = function(e){
+        imagenBase64 = e.target.result;
+        document.getElementById("previewImg").src = imagenBase64;
+        document.getElementById("previewImg").style.display = "block";
+      }
+      reader.readAsDataURL(file);
+    }
+  });
 
   window.onload = function(){
     const email = localStorage.getItem("dueno");
@@ -73,10 +96,12 @@
     res.data.forEach(alq => {
       let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
       let btnEstado = `<button onclick="cambiarEstado(${alq.row})">Cambiar Estado</button>`;
+      let btnEditar = `<button onclick="editarAlquiler(${alq.row})">Editar</button>`;
+      let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
       div.innerHTML += `<div class="alquiler">
         <b>${alq.Direccion}</b> - ${alq['Nro Ambientes']} amb - ${alq.Precio} - Mascotas: ${alq.Mascotas || "N/D"}<br>
         Estado: ${estado}<br>
-        ${btnEstado}
+        ${btnEstado} ${btnEditar} ${btnEliminar}
       </div>`;
     });
   }
@@ -86,7 +111,8 @@
     const ambientes = document.getElementById("ambientes").value;
     const precio = document.getElementById("precio").value;
     const mascotas = document.getElementById("mascotas").value;
-    const imagen = document.getElementById("imagen").value;
+    const infoIngreso = document.getElementById("infoIngreso").value;
+    const detalles = document.getElementById("detalles").value;
     const email = localStorage.getItem("dueno");
 
     if(!direccion || !ambientes || !precio){ 
@@ -95,7 +121,7 @@
     }
 
     const script = document.createElement("script");
-    script.src = `${API_URL}?action=addAlquiler&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(imagen)}&callback=alquilerAgregado`;
+    script.src = `${API_URL}?action=addAlquiler&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(imagenBase64)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&callback=alquilerAgregado`;
     document.body.appendChild(script);
   }
 
@@ -115,6 +141,29 @@
   }
 
   function estadoCambiado(res){
+    if(res.success) cargarAlquileres();
+  }
+
+  function editarAlquiler(row){
+    const nuevaDireccion = prompt("Nueva dirección:");
+    if(!nuevaDireccion) return;
+    const script = document.createElement("script");
+    script.src = `${API_URL}?action=editAlquiler&row=${row}&direccion=${encodeURIComponent(nuevaDireccion)}&callback=alquilerEditado`;
+    document.body.appendChild(script);
+  }
+
+  function alquilerEditado(res){
+    if(res.success) cargarAlquileres();
+  }
+
+  function eliminarAlquiler(row){
+    if(!confirm("¿Seguro que deseas eliminar este alquiler?")) return;
+    const script = document.createElement("script");
+    script.src = `${API_URL}?action=deleteAlquiler&row=${row}&callback=alquilerEliminado`;
+    document.body.appendChild(script);
+  }
+
+  function alquilerEliminado(res){
     if(res.success) cargarAlquileres();
   }
 
