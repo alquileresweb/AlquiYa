@@ -66,7 +66,7 @@ button:hover{background:#2565c0}
 <script>
 const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ywR4kynlqCe7boNscWy3jq2o40iTpyx1qC1enzUVGuJyfi-GZMRrxqDMUeR3HC4w-EB2l90X5Zyp/pub?gid=376993222&single=true&output=csv";
 
-// 👉 tu URL de WebApp (Apps Script publicado como Web App)
+// URL del Web App
 const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 
 let map = L.map('map').setView([-28.5503, -56.0406],14);
@@ -127,20 +127,18 @@ function registrarDueno(){
   }
 
   const formData = new FormData();
-  formData.append("action","registerDueno"); // <-- corregido a match Apps Script
+  formData.append("action","registerDueno");
   formData.append("email",email);
   formData.append("nombre",nombre);
   formData.append("password",password);
   formData.append("contacto",contacto);
 
-  // 🔑 Solución: usar no-cors para que funcione en GitHub Pages
   fetch(webAppURL,{
     method:"POST",
     mode:"no-cors",
     body:formData
   })
   .then(()=>{
-    // Como no-cors bloquea leer respuesta, damos feedback fijo
     document.getElementById("registro-msg").style.color="green";
     document.getElementById("registro-msg").textContent="Dueño registrado con éxito. Ahora puede iniciar sesión.";
   })
@@ -150,7 +148,14 @@ function registrarDueno(){
   });
 }
 
+// Cargar alquileres y marcadores especiales
 function cargarAlquileres(){
+  // Marcadores fijos
+  const fundacionBarcelo = L.marker([-28.5486, -56.0415]).addTo(map)
+    .bindPopup("<b>Facultad Fundación Barceló</b><br>Centeno 710, Santo Tomé");
+  const hospital = L.marker([-28.5518, -56.0383]).addTo(map)
+    .bindPopup("<b>Hospital</b><br>Toranzos 451, Santo Tomé");
+
   Papa.parse(sheetURL,{
     download:true, header:true,
     complete: function(results){
@@ -159,7 +164,13 @@ function cargarAlquileres(){
           const lat=parseFloat(a.latitud);
           const lng=parseFloat(a.longitud);
           if(isNaN(lat)||isNaN(lng)) return;
-          const color=a.ambientes.includes("Mono")?"blue":a.ambientes.includes("2")?"red":"yellow";
+
+          let color;
+          if(a.ambientes.includes("1")) color="yellow";
+          else if(a.ambientes.includes("2")) color="green";
+          else if(a.ambientes.includes("3")) color="blue";
+          else color="red";
+
           const marker=L.circleMarker([lat,lng],{radius:8,color:color,fillOpacity:0.9}).addTo(map);
           marker.bindPopup(`
             <b>${a.direccion}</b><br>
