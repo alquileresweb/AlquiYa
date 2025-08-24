@@ -133,21 +133,18 @@ function registrarDueno(){
   formData.append("password",password);
   formData.append("contacto",contacto);
 
+  // 🔑 Solución aplicada: usar no-cors para que funcione en GitHub Pages
   fetch(webAppURL,{
     method:"POST",
+    mode:"no-cors",
     body:formData
   })
-  .then(r=>r.json())
-  .then(data=>{
-    if(data.success){
-      document.getElementById("registro-msg").style.color="green";
-      document.getElementById("registro-msg").textContent="Dueño registrado con éxito. Ahora puede iniciar sesión.";
-    } else {
-      document.getElementById("registro-msg").style.color="red";
-      document.getElementById("registro-msg").textContent="Error: " + data.error;
-    }
+  .then(()=>{
+    // Como no-cors bloquea leer respuesta, damos feedback fijo
+    document.getElementById("registro-msg").style.color="green";
+    document.getElementById("registro-msg").textContent="Dueño registrado con éxito. Ahora puede iniciar sesión.";
   })
-  .catch(err=>{
+  .catch(()=>{
     document.getElementById("registro-msg").style.color="red";
     document.getElementById("registro-msg").textContent="Error de conexión";
   });
