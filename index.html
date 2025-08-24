@@ -127,13 +127,13 @@ function registrarDueno(){
   }
 
   const formData = new FormData();
-  formData.append("action","registrarDueno");
+  formData.append("action","registerDueno"); // <-- corregido a match Apps Script
   formData.append("email",email);
   formData.append("nombre",nombre);
   formData.append("password",password);
   formData.append("contacto",contacto);
 
-  // 🔑 Solución aplicada: usar no-cors para que funcione en GitHub Pages
+  // 🔑 Solución: usar no-cors para que funcione en GitHub Pages
   fetch(webAppURL,{
     method:"POST",
     mode:"no-cors",
