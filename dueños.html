@@ -37,8 +37,8 @@
       <option value="No">No</option>
     </select>
 
-    <label>Imagen (PNG/JPG)</label>
-    <input type="file" id="imagen" accept="image/png, image/jpeg">
+    <label>URL Imagen (PNG/JPG)</label>
+    <input type="text" id="imagen" placeholder="https://...">
 
     <button onclick="agregarAlquiler()">Agregar</button>
     <p id="msg" style="color:green"></p>
@@ -48,27 +48,32 @@
   const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 
   window.onload = function(){
-    const nombre = localStorage.getItem("dueno");
-    if(!nombre){ window.location.href="index.html"; return; }
-    document.getElementById("bienvenida").textContent = "Bienvenido, " + nombre;
+    const email = localStorage.getItem("dueno"); // siempre usamos "dueno"
+    if(!email){ window.location.href="index.html"; return; }
+    document.getElementById("bienvenida").textContent = "Bienvenido, " + email;
     cargarAlquileres();
   }
 
   // 📋 Obtener lista de alquileres
   function cargarAlquileres(){
-    fetch(API_URL+"?action=getAlquileres&dueno="+localStorage.getItem("dueno_email"))
+    const email = localStorage.getItem("dueno");
+    fetch(API_URL+"?action=getAlquileres&dueno="+encodeURIComponent(email))
       .then(r => r.json())
       .then(data => {
         const div = document.getElementById("listaAlquileres");
         div.innerHTML = "";
-        if(data.length === 0){ div.innerHTML="No tienes alquileres aún."; return; }
+        if(!data.success || data.alquileres.length === 0){ 
+          div.innerHTML="No tienes alquileres aún."; 
+          return; 
+        }
 
-        data.forEach(alq => {
-          let estado = alq.activo === "TRUE" ? "Activo ✅" : "Inactivo ❌";
-          let btnEstado = `<button onclick="cambiarEstado('${alq.id}')">${estado}</button>`;
-          let btnEditar = `<button onclick="editarAlquiler('${alq.id}')">Editar</button>`;
+        data.alquileres.forEach(alq => {
+          let estado = alq.estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
+          let btnEstado = `<button onclick="cambiarEstado(${alq.row})">Cambiar Estado</button>`;
+          let btnEditar = `<button onclick="editarAlquiler(${alq.row})">Editar</button>`;
           div.innerHTML += `<div class="alquiler">
-            <b>${alq.direccion}</b> - ${alq.ambientes} amb - $${alq.precio} - Mascotas: ${alq.mascotas}<br>
+            <b>${alq.direccion}</b> - ${alq.ambientes} amb - $${alq.precio} - Mascotas: ${alq.mascotas || "N/D"}<br>
+            Estado: ${estado}<br>
             ${btnEstado} ${btnEditar}
           </div>`;
         });
@@ -78,49 +83,49 @@
       });
   }
 
-  // ➕ Agregar alquiler
+  // ➕ Agregar alquiler (GET compatible con Apps Script)
   function agregarAlquiler(){
     const direccion = document.getElementById("direccion").value;
     const ambientes = document.getElementById("ambientes").value;
     const precio = document.getElementById("precio").value;
     const mascotas = document.getElementById("mascotas").value;
-    const file = document.getElementById("imagen").files[0];
+    const imagen = document.getElementById("imagen").value;
+    const email = localStorage.getItem("dueno");
 
-    if(!direccion || !ambientes || !precio){ alert("Completa todos los campos."); return; }
+    if(!direccion || !ambientes || !precio){ 
+      alert("Completa todos los campos obligatorios."); 
+      return; 
+    }
 
-    const formData = new FormData();
-    formData.append("action", "addAlquiler");
-    formData.append("dueno", localStorage.getItem("dueno_email"));
-    formData.append("direccion", direccion);
-    formData.append("ambientes", ambientes);
-    formData.append("precio", precio);
-    formData.append("mascotas", mascotas);
-    if(file) formData.append("imagen", file);
-
-    fetch(API_URL, { method:"POST", body:formData })
-      .then(r => r.text())
+    fetch(`${API_URL}?action=addAlquiler&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(imagen)}`)
+      .then(r => r.json())
       .then(res => {
-        document.getElementById("msg").textContent = "Alquiler agregado ✅";
-        cargarAlquileres();
+        if(res.success){
+          document.getElementById("msg").textContent = "Alquiler agregado ✅";
+          cargarAlquileres();
+        } else {
+          alert("Error: " + res.error);
+        }
       })
       .catch(err => alert("Error al guardar: "+err));
   }
 
   // 🔄 Cambiar estado
-  function cambiarEstado(id){
-    fetch(API_URL+"?action=toggleEstado&id="+id)
-      .then(r => r.text())
-      .then(res => cargarAlquileres());
+  function cambiarEstado(row){
+    fetch(API_URL+"?action=toggleEstado&row="+row)
+      .then(r => r.json())
+      .then(res => {
+        if(res.success) cargarAlquileres();
+      });
   }
 
-  // ✏️ Editar alquiler (puedes mejorarlo luego con modal o formulario)
-  function editarAlquiler(id){
-    alert("Aquí se abriría un formulario para editar el alquiler con ID: " + id);
+  // ✏️ Editar alquiler (ejemplo simple)
+  function editarAlquiler(row){
+    alert("Aquí se abriría un formulario para editar el alquiler en la fila: " + row);
   }
 
   function logout(){
     localStorage.removeItem("dueno");
-    localStorage.removeItem("dueno_email");
     window.location.href="index.html";
   }
   </script>
