@@ -12,7 +12,7 @@ nav{display:flex;justify-content:center;gap:20px;background:#f4f4f4;padding:10px
 nav a{text-decoration:none;font-weight:bold;color:#333}
 nav a:hover{color:#3483fa}
 #map{height:60vh;width:100%;margin-bottom:20px;display:none}
-#login,#panel-dueno{display:none;max-width:500px;margin:auto}
+#login,#panel-dueno,#registro{display:none;max-width:500px;margin:auto}
 input,select,button{width:100%;padding:8px;margin:5px 0;border-radius:6px}
 button{background:#3483fa;color:white;border:none;cursor:pointer}
 button:hover{background:#2565c0}
@@ -32,24 +32,42 @@ button:hover{background:#2565c0}
 
 <div id="map"></div>
 
+<!-- LOGIN -->
 <div id="login">
-<h2>Login Dueños</h2>
-<input type="text" id="email" placeholder="Email">
-<input type="password" id="password" placeholder="Contraseña">
-<button onclick="login()">Ingresar</button>
-<p id="login-msg" style="color:red"></p>
+  <h2>Login Dueños</h2>
+  <input type="text" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Contraseña">
+  <button onclick="login()">Ingresar</button>
+  <p id="login-msg" style="color:red"></p>
+  <p>¿No tienes cuenta? <button onclick="mostrarRegistro()">Registrarme</button></p>
 </div>
 
+<!-- REGISTRO -->
+<div id="registro">
+  <h2>Registro Dueños</h2>
+  <input type="text" id="reg_email" placeholder="Email">
+  <input type="text" id="reg_nombre" placeholder="Nombre">
+  <input type="password" id="reg_password" placeholder="Contraseña">
+  <input type="text" id="reg_contacto" placeholder="WhatsApp (ej: 3794000000)">
+  <button onclick="registrarDueno()">Registrar</button>
+  <button onclick="mostrarLogin()">Cancelar</button>
+  <p id="registro-msg" style="color:green"></p>
+</div>
+
+<!-- PANEL -->
 <div id="panel-dueno">
-<h2>Panel de Dueños</h2>
-<p id="bienvenida"></p>
-<button onclick="logout()">Cerrar Sesión</button>
+  <h2>Panel de Dueños</h2>
+  <p id="bienvenida"></p>
+  <button onclick="logout()">Cerrar Sesión</button>
 </div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 <script>
 const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ywR4kynlqCe7boNscWy3jq2o40iTpyx1qC1enzUVGuJyfi-GZMRrxqDMUeR3HC4w-EB2l90X5Zyp/pub?gid=376993222&single=true&output=csv";
+
+// 👉 tu URL de WebApp (Apps Script publicado como Web App)
+const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 
 let map = L.map('map').setView([-28.5503, -56.0406],14);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
@@ -58,6 +76,7 @@ function mostrarMapa(){
   document.getElementById("map").style.display="block";
   document.getElementById("login").style.display="none";
   document.getElementById("panel-dueno").style.display="none";
+  document.getElementById("registro").style.display="none";
   setTimeout(()=>{map.invalidateSize();},200);
   cargarAlquileres();
 }
@@ -66,15 +85,22 @@ function mostrarLogin(){
   document.getElementById("map").style.display="none";
   document.getElementById("login").style.display="block";
   document.getElementById("panel-dueno").style.display="none";
+  document.getElementById("registro").style.display="none";
+}
+
+function mostrarRegistro(){
+  document.getElementById("login").style.display="none";
+  document.getElementById("registro").style.display="block";
+  document.getElementById("map").style.display="none";
+  document.getElementById("panel-dueno").style.display="none";
 }
 
 function login(){
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
   if(email && password){
-    // redirige a dueños.html, login real se hará en Apps Script
     localStorage.setItem("dueno_email", email);
-    localStorage.setItem("dueno", email); // temporal, se puede mejorar
+    localStorage.setItem("dueno", email);
     window.location.href="dueños.html";
   } else {
     document.getElementById("login-msg").textContent="Ingrese email y contraseña";
@@ -85,6 +111,46 @@ function logout(){
   localStorage.removeItem("dueno");
   localStorage.removeItem("dueno_email");
   mostrarLogin();
+}
+
+// 📌 REGISTRAR DUEÑO
+function registrarDueno(){
+  const email = document.getElementById("reg_email").value.trim();
+  const nombre = document.getElementById("reg_nombre").value.trim();
+  const password = document.getElementById("reg_password").value.trim();
+  const contacto = document.getElementById("reg_contacto").value.trim();
+
+  if(!email || !nombre || !password || !contacto){
+    document.getElementById("registro-msg").style.color="red";
+    document.getElementById("registro-msg").textContent="Complete todos los campos";
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("action","registrarDueno");
+  formData.append("email",email);
+  formData.append("nombre",nombre);
+  formData.append("password",password);
+  formData.append("contacto",contacto);
+
+  fetch(webAppURL,{
+    method:"POST",
+    body:formData
+  })
+  .then(r=>r.json())
+  .then(data=>{
+    if(data.success){
+      document.getElementById("registro-msg").style.color="green";
+      document.getElementById("registro-msg").textContent="Dueño registrado con éxito. Ahora puede iniciar sesión.";
+    } else {
+      document.getElementById("registro-msg").style.color="red";
+      document.getElementById("registro-msg").textContent="Error: " + data.error;
+    }
+  })
+  .catch(err=>{
+    document.getElementById("registro-msg").style.color="red";
+    document.getElementById("registro-msg").textContent="Error de conexión";
+  });
 }
 
 function cargarAlquileres(){
