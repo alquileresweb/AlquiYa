@@ -12,10 +12,11 @@ nav{display:flex;justify-content:center;gap:20px;background:#f4f4f4;padding:10px
 nav a{text-decoration:none;font-weight:bold;color:#333}
 nav a:hover{color:#3483fa}
 #map{height:60vh;width:100%;margin-bottom:20px;display:none}
-#login,#panel-dueno{display:none;max-width:500px;margin:auto}
+#login,#panel-dueno{display:none;max-width:600px;margin:auto}
 input,select,button{width:100%;padding:8px;margin:5px 0;border-radius:6px}
 button{background:#3483fa;color:white;border:none;cursor:pointer}
 button:hover{background:#2565c0}
+.card{border:1px solid #ccc;border-radius:10px;padding:15px;margin-bottom:15px;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
 </style>
 </head>
 <body>
@@ -44,12 +45,17 @@ button:hover{background:#2565c0}
 <h2>Panel de Dueños</h2>
 <p id="bienvenida"></p>
 <button onclick="logout()">Cerrar Sesión</button>
+
+<!-- 🔥 Sección Mis Alquileres -->
+<h3>Mis Alquileres</h3>
+<div id="misAlquileres">Cargando...</div>
 </div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 <script>
 const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ywR4kynlqCe7boNscWy3jq2o40iTpyx1qC1enzUVGuJyfi-GZMRrxqDMUeR3HC4w-EB2l90X5Zyp/pub?gid=376993222&single=true&output=csv";
+const DEPLOY_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 
 let map = L.map('map').setView([-28.5503, -56.0406],14);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
@@ -72,8 +78,9 @@ function login(){
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
   if(email && password){
+    localStorage.setItem("dueno_email", email);
     localStorage.setItem("dueno", email);
-    window.location.href="dueños.html";
+    mostrarPanelDueno();
   } else {
     document.getElementById("login-msg").textContent="Ingrese email y contraseña";
   }
@@ -81,7 +88,21 @@ function login(){
 
 function logout(){
   localStorage.removeItem("dueno");
+  localStorage.removeItem("dueno_email");
   mostrarLogin();
+}
+
+function mostrarPanelDueno(){
+  const email = localStorage.getItem("dueno");
+  if(!email){
+    mostrarLogin();
+    return;
+  }
+  document.getElementById("map").style.display="none";
+  document.getElementById("login").style.display="none";
+  document.getElementById("panel-dueno").style.display="block";
+  document.getElementById("bienvenida").textContent="Bienvenido, " + email;
+  cargarMisAlquileres(email);
 }
 
 function cargarAlquileres(){
@@ -89,24 +110,70 @@ function cargarAlquileres(){
     download:true, header:true,
     complete: function(results){
       results.data.forEach(a=>{
-        if(a.Tipo==="alquiler" && a.Estado && a.Estado.toLowerCase()==="activo"){
-          const lat=parseFloat(a.Latitud);
-          const lng=parseFloat(a.Longitud);
+        if(a.tipo==="alquiler" && a.estado && a.estado.toLowerCase()==="activo"){
+          const lat=parseFloat(a.latitud);
+          const lng=parseFloat(a.longitud);
           if(isNaN(lat)||isNaN(lng)) return;
-          const color=a['Nro Ambientes'].includes("Mono")?"blue":a['Nro Ambientes'].includes("2")?"red":"yellow";
+          const color=a.ambientes.includes("Mono")?"blue":a.ambientes.includes("2")?"red":"yellow";
           const marker=L.circleMarker([lat,lng],{radius:8,color:color,fillOpacity:0.9}).addTo(map);
           marker.bindPopup(`
-            <b>${a.Direccion}</b><br>
-            Ambientes: ${a['Nro Ambientes']}<br>
-            Precio: ${a.Precio}<br>
-            Contacto: <a href="https://wa.me/${a.Contacto}" target="_blank">${a.Contacto}</a><br>
-            ${a.Fotos?`<img src="${a.Fotos}" width="150">`:""}
+            <b>${a.direccion}</b><br>
+            Ambientes: ${a.ambientes}<br>
+            Precio: ${a.precio}<br>
+            Contacto: <a href="https://wa.me/${a.contacto}" target="_blank">${a.contacto}</a><br>
+            ${a.fotos?`<img src="${a.fotos}" width="150">`:""}
           `);
         }
       });
     }
   });
 }
+
+// 🔥 Nueva función para cargar los alquileres del dueño logeado
+function cargarMisAlquileres(email){
+  const cont = document.getElementById("misAlquileres");
+  cont.innerHTML = "Cargando...";
+
+  fetch(`${DEPLOY_URL}?action=getAlquileres&dueno=${encodeURIComponent(email)}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        mostrarAlquileres(data.data);
+      } else {
+        cont.innerHTML = "Error: " + data.error;
+      }
+    })
+    .catch(err => {
+      cont.innerHTML = "Error de conexión: " + err;
+    });
+}
+
+function mostrarAlquileres(lista){
+  const cont = document.getElementById("misAlquileres");
+  cont.innerHTML = "";
+
+  if(lista.length === 0){
+    cont.innerHTML = "No tenés alquileres cargados.";
+    return;
+  }
+
+  lista.forEach(alq => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <h3>${alq.Direccion || "Sin dirección"}</h3>
+      <p><b>Ambientes:</b> ${alq["Nro Ambientes"] || "-"}</p>
+      <p><b>Precio:</b> ${alq.Precio || "-"}</p>
+      <p><b>Estado:</b> ${alq.Estado || "-"}</p>
+    `;
+    cont.appendChild(div);
+  });
+}
+
+// 🔥 Mostrar panel si ya está logeado
+document.addEventListener("DOMContentLoaded", ()=>{
+  if(localStorage.getItem("dueno")) mostrarPanelDueno();
+});
 </script>
 </body>
 </html>
