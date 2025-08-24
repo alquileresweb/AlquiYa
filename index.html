@@ -65,8 +65,6 @@ button:hover{background:#2565c0}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 <script>
 const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ywR4kynlqCe7boNscWy3jq2o40iTpyx1qC1enzUVGuJyfi-GZMRrxqDMUeR3HC4w-EB2l90X5Zyp/pub?gid=376993222&single=true&output=csv";
-
-// 👉 tu URL de WebApp (Apps Script publicado como Web App)
 const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 
 let map = L.map('map').setView([-28.5503, -56.0406],14);
@@ -160,17 +158,17 @@ function cargarAlquileres(){
     complete: function(results){
       results.data.forEach(a=>{
         if(a.tipo==="alquiler" && a.estado && a.estado.toLowerCase()==="activo"){
-          const lat=parseFloat(a.latitud);
-          const lng=parseFloat(a.longitud);
+          const lat = parseFloat(a.Latitud || a.latitud);
+          const lng = parseFloat(a.Longitud || a.longitud);
           if(isNaN(lat)||isNaN(lng)) return;
 
-          // Colores según ambientes
           let color="red"; // default
-          if(a.ambientes.includes("Mono") || a.ambientes.includes("1")) color="yellow";
-          else if(a.ambientes.includes("2")) color="green";
-          else if(a.ambientes.includes("3")) color="blue";
+          const amb = (a.ambientes || "").toLowerCase();
+          if(amb.includes("mono") || amb.includes("1")) color="yellow";
+          else if(amb.includes("2")) color="green";
+          else if(amb.includes("3")) color="blue";
 
-          const marker=L.circleMarker([lat,lng],{radius:8,color:color,fillOpacity:0.9}).addTo(map);
+          const marker = L.circleMarker([lat,lng],{radius:8,color:color,fillOpacity:0.9}).addTo(map);
           marker.bindPopup(`
             <b>${a.direccion}</b><br>
             Ambientes: ${a.ambientes}<br>
