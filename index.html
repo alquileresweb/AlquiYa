@@ -152,31 +152,33 @@ function cargarAlquileres(){
   L.marker([-28.5544015,-56.0389695]).addTo(map).bindPopup("<b>Facultad Fundación Barceló</b>");
   L.marker([-28.5543092,-56.0390371]).addTo(map).bindPopup("<b>Hospital</b>");
 
-  // Marcadores de departamentos desde el Sheet
+  // Marcadores de departamentos activos
   Papa.parse(sheetURL,{
     download:true, header:true,
+    skipEmptyLines: true,
     complete: function(results){
       results.data.forEach(a=>{
-        if(a.tipo==="alquiler" && a.estado && a.estado.toLowerCase()==="activo"){
-          const lat = parseFloat(a.Latitud || a.latitud);
-          const lng = parseFloat(a.Longitud || a.longitud);
-          if(isNaN(lat)||isNaN(lng)) return;
+        if(!a || !a.tipo || a.tipo.toLowerCase() !== "alquiler") return;
+        if(!a.estado || a.estado.toLowerCase() !== "activo") return;
 
-          let color="red"; // default
-          const amb = (a.ambientes || "").toLowerCase();
-          if(amb.includes("mono") || amb.includes("1")) color="yellow";
-          else if(amb.includes("2")) color="green";
-          else if(amb.includes("3")) color="blue";
+        const lat = parseFloat(a.latitud || a.Latitud || a.Lat || a.Latitude);
+        const lng = parseFloat(a.longitud || a.Longitud || a.Lng || a.Longitude);
+        if(isNaN(lat) || isNaN(lng)) return;
 
-          const marker = L.circleMarker([lat,lng],{radius:8,color:color,fillOpacity:0.9}).addTo(map);
-          marker.bindPopup(`
-            <b>${a.direccion}</b><br>
-            Ambientes: ${a.ambientes}<br>
-            Precio: ${a.precio}<br>
-            Contacto: <a href="https://wa.me/${a.contacto}" target="_blank">${a.contacto}</a><br>
-            ${a.fotos?`<img src="${a.fotos}" width="150">`:""}
-          `);
-        }
+        let color="red"; // default
+        const amb = (a.ambientes || "").toLowerCase();
+        if(amb.includes("mono") || amb.includes("1")) color="yellow";
+        else if(amb.includes("2")) color="green";
+        else if(amb.includes("3")) color="blue";
+
+        const marker = L.circleMarker([lat,lng],{radius:8,color:color,fillOpacity:0.9}).addTo(map);
+        marker.bindPopup(`
+          <b>${a.direccion || a.Direccion}</b><br>
+          Ambientes: ${a.ambientes || ""}<br>
+          Precio: ${a.precio || ""}<br>
+          Contacto: <a href="https://wa.me/${a.contacto || ''}" target="_blank">${a.contacto || ''}</a><br>
+          ${a.fotos?`<img src="${a.fotos}" width="150">`:""}
+        `);
       });
     }
   });
