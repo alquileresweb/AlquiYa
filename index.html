@@ -72,9 +72,7 @@ function login(){
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
   if(email && password){
-    // redirige a dueños.html, login real se hará en Apps Script
-    localStorage.setItem("dueno_email", email);
-    localStorage.setItem("dueno", email); // temporal, se puede mejorar
+    localStorage.setItem("dueno", email);
     window.location.href="dueños.html";
   } else {
     document.getElementById("login-msg").textContent="Ingrese email y contraseña";
@@ -83,7 +81,6 @@ function login(){
 
 function logout(){
   localStorage.removeItem("dueno");
-  localStorage.removeItem("dueno_email");
   mostrarLogin();
 }
 
@@ -92,18 +89,18 @@ function cargarAlquileres(){
     download:true, header:true,
     complete: function(results){
       results.data.forEach(a=>{
-        if(a.tipo==="alquiler" && a.estado && a.estado.toLowerCase()==="activo"){
-          const lat=parseFloat(a.latitud);
-          const lng=parseFloat(a.longitud);
+        if(a.Tipo==="alquiler" && a.Estado && a.Estado.toLowerCase()==="activo"){
+          const lat=parseFloat(a.Latitud);
+          const lng=parseFloat(a.Longitud);
           if(isNaN(lat)||isNaN(lng)) return;
-          const color=a.ambientes.includes("Mono")?"blue":a.ambientes.includes("2")?"red":"yellow";
+          const color=a['Nro Ambientes'].includes("Mono")?"blue":a['Nro Ambientes'].includes("2")?"red":"yellow";
           const marker=L.circleMarker([lat,lng],{radius:8,color:color,fillOpacity:0.9}).addTo(map);
           marker.bindPopup(`
-            <b>${a.direccion}</b><br>
-            Ambientes: ${a.ambientes}<br>
-            Precio: ${a.precio}<br>
-            Contacto: <a href="https://wa.me/${a.contacto}" target="_blank">${a.contacto}</a><br>
-            ${a.fotos?`<img src="${a.fotos}" width="150">`:""}
+            <b>${a.Direccion}</b><br>
+            Ambientes: ${a['Nro Ambientes']}<br>
+            Precio: ${a.Precio}<br>
+            Contacto: <a href="https://wa.me/${a.Contacto}" target="_blank">${a.Contacto}</a><br>
+            ${a.Fotos?`<img src="${a.Fotos}" width="150">`:""}
           `);
         }
       });
