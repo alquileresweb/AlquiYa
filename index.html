@@ -144,20 +144,17 @@ function registrarDueno(){
   const nombre = document.getElementById("reg_nombre").value.trim();
   const password = document.getElementById("reg_password").value.trim();
   const contacto = document.getElementById("reg_contacto").value.trim();
-
   if(!email || !nombre || !password || !contacto){
     document.getElementById("registro-msg").style.color="red";
     document.getElementById("registro-msg").textContent="Complete todos los campos";
     return;
   }
-
   const formData = new FormData();
   formData.append("action","registerDueno"); 
   formData.append("email",email);
   formData.append("nombre",nombre);
   formData.append("password",password);
   formData.append("contacto",contacto);
-
   fetch(webAppURL,{
     method:"POST",
     mode:"no-cors",
@@ -173,10 +170,11 @@ function registrarDueno(){
   });
 }
 
-function limpiarNumero(num){
+// Función para limpiar y formatear número de WhatsApp
+function formatearWhatsApp(num){
   if(!num) return '';
-  let soloNums = num.replace(/\D/g,''); // elimina todo excepto dígitos
-  if(soloNums.length && !num.startsWith('+')) soloNums = '54'+soloNums; // agrega prefijo argentino
+  let soloNums = num.replace(/\D/g,''); // solo dígitos
+  if(soloNums.length && !num.startsWith('+')) soloNums = '54'+soloNums; // prefijo Argentina
   return soloNums;
 }
 
@@ -201,12 +199,11 @@ function cargarAlquileres(){
         const infoIngreso = a["InformacionIngreso"] || "";
         const detalles = a["Detalles"] || "";
         const mascotas = a["Mascotas"] || "";
-        const contactoRaw = a["H"] || '';
-        const contacto = limpiarNumero(contactoRaw);
+        const contacto = formatearWhatsApp(a["H"] || '');
 
         const icon = L.divIcon({
           className: 'marker-icon',
-          html: '🏠' + `<span style="font-size:12px;margin-left:2px;">${nroAmb}</span>`,
+          html: `🏠<span style="font-size:12px;margin-left:2px;">${nroAmb}</span>`,
           iconSize: [30, 30],
           iconAnchor: [15, 15]
         });
