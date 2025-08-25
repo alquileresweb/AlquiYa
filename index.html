@@ -138,7 +138,7 @@ function registrarDueno(){
     document.getElementById("registro-msg").style.color="green";
     document.getElementById("registro-msg").textContent="Dueño registrado con éxito. Ahora puede iniciar sesión.";
   })
-  .catch(()=>{
+  .catch(()=>{ 
     document.getElementById("registro-msg").style.color="red";
     document.getElementById("registro-msg").textContent="Error de conexión";
   });
@@ -158,10 +158,13 @@ function cargarAlquileres(){
       res.data.forEach(a=>{
         const lat = parseFloat(a.Latitud);
         const lng = parseFloat(a.Longitud);
-        if(isNaN(lat) || isNaN(lng)) return;
+        if(isNaN(lat) || isNaN(lng)) {
+          console.warn("Registro sin coordenadas:", a);
+          return;
+        }
 
         let color="red";
-        const amb = (a["Nro Ambientes"] || "").toLowerCase();
+        const amb = String(a["Nro Ambientes"] || "").toLowerCase(); // ✅ CORRECCIÓN
         if(amb.includes("mono") || amb.includes("1")) color="yellow";
         else if(amb.includes("2")) color="green";
         else if(amb.includes("3")) color="blue";
