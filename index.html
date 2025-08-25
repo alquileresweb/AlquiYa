@@ -174,8 +174,8 @@ function registrarDueno(){
 }
 
 function cargarAlquileres(){
-  const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15], style:'background:blue;'});
-  const hospIcon = L.divIcon({className:'marker-icon', html:'🏥', iconSize:[30,30], iconAnchor:[15,15], style:'background:red;'});
+  const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15]});
+  const hospIcon = L.divIcon({className:'marker-icon', html:'🏥', iconSize:[30,30], iconAnchor:[15,15]});
 
   L.marker([-28.5509978,-56.0409727],{icon:uniIcon}).addTo(map).bindPopup("<b>Facultad Fundación Barceló</b>");
   L.marker([-28.5551127,-56.0389282],{icon:hospIcon}).addTo(map).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
@@ -205,44 +205,37 @@ function cargarAlquileres(){
 
         const marker = L.marker([lat,lng], {icon: icon}).addTo(map);
 
-        const popupContent = document.createElement('div');
-        popupContent.innerHTML = `
-          <b>Dirección:</b> ${a.Direccion||""}<br>
-          <b>Ambientes:</b> ${nroAmb}<br>
-          <b>Precio:</b> ${a.Precio||""}<br><br>
-        `;
+        // Crear popup con elementos separados
+        const popupDiv = document.createElement('div');
 
-        const btn = document.createElement('button');
-        btn.className = 'popup-button';
-        btn.textContent = 'Ver Alquiler';
-        btn.onclick = () => {
+        const dir = document.createElement('div');
+        dir.innerHTML = `<b>Dirección:</b> ${a.Direccion||""}<br><b>Ambientes:</b> ${nroAmb}<br><b>Precio:</b> ${a.Precio||""}`;
+        popupDiv.appendChild(dir);
+
+        const verBtn = document.createElement('button');
+        verBtn.className = 'popup-button';
+        verBtn.textContent = 'Ver Alquiler';
+        verBtn.onclick = () => {
           const detalle = document.getElementById('alquiler-detalle');
-          // Vaciar contenido previo
           detalle.innerHTML = '';
 
           const h2 = document.createElement('h2');
           h2.textContent = `Alquiler: ${a.Direccion||''}`;
           detalle.appendChild(h2);
 
-          const pAmb = document.createElement('p');
-          pAmb.innerHTML = `<b>Ambientes:</b> ${nroAmb}`;
-          detalle.appendChild(pAmb);
+          const infoFields = [
+            ['Ambientes', nroAmb],
+            ['Precio', a.Precio||''],
+            ['Información de ingreso', infoIngreso],
+            ['Detalles', detalles],
+            ['Mascotas', mascotas]
+          ];
 
-          const pPrecio = document.createElement('p');
-          pPrecio.innerHTML = `<b>Precio:</b> ${a.Precio||''}`;
-          detalle.appendChild(pPrecio);
-
-          const pIngreso = document.createElement('p');
-          pIngreso.innerHTML = `<b>Información de ingreso:</b> ${infoIngreso}`;
-          detalle.appendChild(pIngreso);
-
-          const pDet = document.createElement('p');
-          pDet.innerHTML = `<b>Detalles:</b> ${detalles}`;
-          detalle.appendChild(pDet);
-
-          const pMascotas = document.createElement('p');
-          pMascotas.innerHTML = `<b>Mascotas:</b> ${mascotas}`;
-          detalle.appendChild(pMascotas);
+          infoFields.forEach(([label, val]) => {
+            const p = document.createElement('p');
+            p.innerHTML = `<b>${label}:</b> ${val}`;
+            detalle.appendChild(p);
+          });
 
           if(a.Fotos){
             a.Fotos.split(',').forEach(f => {
@@ -267,9 +260,9 @@ function cargarAlquileres(){
           detalle.style.display = 'block';
           map.invalidateSize();
         };
-        popupContent.appendChild(btn);
+        popupDiv.appendChild(verBtn);
 
-        marker.bindPopup(popupContent);
+        marker.bindPopup(popupDiv);
       });
     })
     .catch(err => console.error("Error al conectar con WebApp:", err));
