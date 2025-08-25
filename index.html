@@ -195,7 +195,16 @@ function cargarAlquileres(){
           <b>Ambientes:</b> ${nroAmb}<br>
           <b>Precio:</b> ${a.Precio||""}<br>
           <b>Dueño:</b> ${a.Dueno||""}<br>
-          <button onclick="window.open('${whatsappLink}','_blank')">Contactar por WhatsApp</button>
+          <a href="${whatsappLink}" target="_blank" style="
+            display:inline-block;
+            padding:5px 10px;
+            margin-top:5px;
+            background:#25D366;
+            color:white;
+            text-decoration:none;
+            border-radius:5px;
+            font-weight:bold;
+          ">Contactar por WhatsApp</a>
           ${a.Fotos?`<br><img src="${a.Fotos}" width="150">`:""}
         `);
       });
