@@ -194,7 +194,7 @@ function cargarAlquileres(){
         const infoIngreso = a["InformacionIngreso"] || "";
         const detalles = a["Detalles"] || "";
         const mascotas = a["Mascotas"] || "";
-        const contacto = a.contacto || '';
+        const contacto = a["Contacto"] || "";  // 🔹 CAMBIO AQUÍ
 
         const icon = L.divIcon({
           className: 'marker-icon',
