@@ -102,7 +102,7 @@ function mostrarMapa(){
   document.getElementById("registro").style.display="none";
   document.getElementById("alquiler-detalle").style.display="none";
   map.invalidateSize();
-  cargarAlquileres(); // sin retraso
+  cargarAlquileres();
 }
 
 function mostrarLogin(){
@@ -173,6 +173,13 @@ function registrarDueno(){
   });
 }
 
+function limpiarNumero(num){
+  if(!num) return '';
+  let soloNums = num.replace(/\D/g,''); // elimina todo excepto dígitos
+  if(soloNums.length && !num.startsWith('+')) soloNums = '54'+soloNums; // agrega prefijo argentino
+  return soloNums;
+}
+
 function cargarAlquileres(){
   const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15], style:'background:blue;'});
   const hospIcon = L.divIcon({className:'marker-icon', html:'🏥', iconSize:[30,30], iconAnchor:[15,15], style:'background:red;'});
@@ -194,7 +201,8 @@ function cargarAlquileres(){
         const infoIngreso = a["InformacionIngreso"] || "";
         const detalles = a["Detalles"] || "";
         const mascotas = a["Mascotas"] || "";
-        const contacto = a["H"] || ''; // columna H con WhatsApp
+        const contactoRaw = a["H"] || '';
+        const contacto = limpiarNumero(contactoRaw);
 
         const icon = L.divIcon({
           className: 'marker-icon',
