@@ -173,6 +173,10 @@ function registrarDueno(){
   });
 }
 
+function limpiarNumero(num){
+  return num.replace(/\D/g,''); // elimina todo lo que no sea número
+}
+
 function cargarAlquileres(){
   const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15], style:'background:blue;'});
   const hospIcon = L.divIcon({className:'marker-icon', html:'🏥', iconSize:[30,30], iconAnchor:[15,15], style:'background:red;'});
@@ -194,7 +198,10 @@ function cargarAlquileres(){
         const infoIngreso = a["InformacionIngreso"] || "";
         const detalles = a["Detalles"] || "";
         const mascotas = a["Mascotas"] || "";
-        const contacto = a.contacto || '';
+
+        // Tomar contacto correctamente desde la columna H (ajustar nombre exacto)
+        let contacto = a["Contacto"] || a["contacto"] || a["WhatsApp"] || '';
+        contacto = limpiarNumero(contacto);
 
         const icon = L.divIcon({
           className: 'marker-icon',
@@ -230,16 +237,17 @@ function cargarAlquileres(){
             detalle.innerHTML += fotosHTML;
           }
 
-          // Crear botón WhatsApp correctamente
-          const waBtn = document.createElement('button');
-          waBtn.textContent = 'Contactar por WhatsApp';
-          waBtn.style.background = '#25D366';
-          waBtn.style.color = 'white';
-          waBtn.style.marginTop = '10px';
-          waBtn.onclick = () => {
-            window.open(`https://wa.me/${contacto}?text=${encodeURIComponent("Hola, quiero consultar por el alquiler de "+a.Direccion)}`,'_blank');
-          };
-          detalle.appendChild(waBtn);
+          if(contacto){
+            const waBtn = document.createElement('button');
+            waBtn.textContent = 'Contactar por WhatsApp';
+            waBtn.style.background = '#25D366';
+            waBtn.style.color = 'white';
+            waBtn.style.marginTop = '10px';
+            waBtn.onclick = () => {
+              window.open(`https://wa.me/${contacto}?text=${encodeURIComponent("Hola, quiero consultar por el alquiler de "+a.Direccion)}`,'_blank');
+            };
+            detalle.appendChild(waBtn);
+          }
 
           detalle.style.display = 'block';
           map.invalidateSize();
