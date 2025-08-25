@@ -57,7 +57,6 @@ button:hover{background:#2565c0}
 </nav>
 
 <div id="map"></div>
-
 <div id="alquiler-detalle"></div>
 
 <!-- LOGIN -->
@@ -230,7 +229,7 @@ function cargarAlquileres(){
             <p><b>Detalles:</b> ${detalles}</p>
             <p><b>Mascotas:</b> ${mascotas}</p>
             ${fotosHTML}
-            <br><button onclick="window.open('${whatsappLink}','_blank')" style="margin-top:10px;background:#25D366;">Contactar por WhatsApp</button>
+            <br><button onclick="window.location.href='${whatsappLink}'" style="margin-top:10px;background:#25D366;">Contactar por WhatsApp</button>
           `;
           detalle.style.display = 'block';
           map.invalidateSize();
