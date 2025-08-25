@@ -76,7 +76,9 @@ function mostrarMapa(){
   document.getElementById("panel-dueno").style.display="none";
   document.getElementById("registro").style.display="none";
   setTimeout(()=>{map.invalidateSize();},200);
-  cargarAlquileres();
+
+  // Usamos la función con retry
+  cargarAlquileresConRetry(5);
 }
 
 function mostrarLogin(){
@@ -146,41 +148,57 @@ function registrarDueno(){
   });
 }
 
-// 🔹 CARGAR ALQUILERES Y MARCADORES
-function cargarAlquileres(){
+// 🔹 CARGAR ALQUILERES CON RETRY
+function cargarAlquileresConRetry(reintentos = 5){
+  console.log("Cargando alquileres, intentos restantes:", reintentos);
+  Papa.parse(sheetURL,{
+    download:true, header:true,
+    skipEmptyLines: true,
+    complete: function(results){
+      const hasCoords = results.data.some(a => a["Latitud"] && a["Longitud"]);
+      console.log("Datos recibidos:", results.data.length, "con coordenadas:", hasCoords);
+
+      if(!hasCoords && reintentos>0){
+        console.log("Coordenadas aún no listas, reintentando en 2s...");
+        setTimeout(()=>cargarAlquileresConRetry(reintentos-1), 2000);
+        return;
+      }
+      cargarAlquileresData(results.data);
+    }
+  });
+}
+
+function cargarAlquileresData(data){
   // Marcadores fijos
   L.marker([-28.5544015,-56.0389695]).addTo(map).bindPopup("<b>Facultad Fundación Barceló</b>");
   L.marker([-28.5543092,-56.0390371]).addTo(map).bindPopup("<b>Hospital</b>");
 
   // Marcadores de departamentos activos
-  Papa.parse(sheetURL,{
-    download:true, header:true,
-    skipEmptyLines: true,
-    complete: function(results){
-      results.data.forEach(a=>{
-        if(!a["Tipo"] || a["Tipo"].toLowerCase() !== "alquiler") return;
-        if(!a["Estado"] || a["Estado"].toLowerCase() !== "activo") return;
+  data.forEach(a=>{
+    if(!a["Tipo"] || a["Tipo"].toLowerCase() !== "alquiler") return;
+    if(!a["Estado"] || a["Estado"].toLowerCase() !== "activo") return;
 
-        const lat = parseFloat(a["Latitud"]);
-        const lng = parseFloat(a["Longitud"]);
-        if(isNaN(lat) || isNaN(lng)) return;
-
-        let color="red"; // default
-        const amb = (a["Nro Ambientes"] || "").toLowerCase();
-        if(amb.includes("mono") || amb.includes("1")) color="yellow";
-        else if(amb.includes("2")) color="green";
-        else if(amb.includes("3")) color="blue";
-
-        const marker = L.circleMarker([lat,lng],{radius:8,color:color,fillOpacity:0.9}).addTo(map);
-        marker.bindPopup(`
-          <b>${a["Direccion"]||""}</b><br>
-          Ambientes: ${a["Nro Ambientes"]||""}<br>
-          Precio: ${a["Precio"]||""}<br>
-          Contacto: <a href="https://wa.me/${a["Contacto"]||''}" target="_blank">${a["Contacto"]||''}</a><br>
-          ${a["Fotos"]?`<img src="${a["Fotos"]}" width="150">`:""}
-        `);
-      });
+    const lat = parseFloat(a["Latitud"]);
+    const lng = parseFloat(a["Longitud"]);
+    if(isNaN(lat) || isNaN(lng)) {
+      console.warn("Registro sin coordenadas:", a);
+      return;
     }
+
+    let color="red";
+    const amb = (a["Nro Ambientes"] || "").toLowerCase();
+    if(amb.includes("mono") || amb.includes("1")) color="yellow";
+    else if(amb.includes("2")) color="green";
+    else if(amb.includes("3")) color="blue";
+
+    const marker = L.circleMarker([lat,lng],{radius:8,color:color,fillOpacity:0.9}).addTo(map);
+    marker.bindPopup(`
+      <b>${a["Direccion"]||""}</b><br>
+      Ambientes: ${a["Nro Ambientes"]||""}<br>
+      Precio: ${a["Precio"]||""}<br>
+      Contacto: <a href="https://wa.me/${a["Contacto"]||''}" target="_blank">${a["Contacto"]||''}</a><br>
+      ${a["Fotos"]?`<img src="${a["Fotos"]}" width="150">`:""}
+    `);
   });
 }
 </script>
