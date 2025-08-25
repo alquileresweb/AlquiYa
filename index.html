@@ -101,7 +101,7 @@ function mostrarMapa(){
   document.getElementById("panel-dueno").style.display="none";
   document.getElementById("registro").style.display="none";
   document.getElementById("alquiler-detalle").style.display="none";
-  map.invalidateSize();
+  map.invalidateSize(); // eliminar retraso
   cargarAlquileres();
 }
 
@@ -143,18 +143,26 @@ function registrarDueno(){
   const email = document.getElementById("reg_email").value.trim();
   const nombre = document.getElementById("reg_nombre").value.trim();
   const password = document.getElementById("reg_password").value.trim();
-  const contacto = document.getElementById("reg_contacto").value.trim();
+  let contacto = document.getElementById("reg_contacto").value.trim();
+
   if(!email || !nombre || !password || !contacto){
     document.getElementById("registro-msg").style.color="red";
     document.getElementById("registro-msg").textContent="Complete todos los campos";
     return;
   }
+
+  // Agregar prefijo internacional si no tiene
+  if(!contacto.startsWith("54")){
+    contacto = "549" + contacto.replace(/^0+/,''); 
+  }
+
   const formData = new FormData();
   formData.append("action","registerDueno"); 
   formData.append("email",email);
   formData.append("nombre",nombre);
   formData.append("password",password);
   formData.append("contacto",contacto);
+
   fetch(webAppURL,{
     method:"POST",
     mode:"no-cors",
@@ -168,13 +176,6 @@ function registrarDueno(){
     document.getElementById("registro-msg").style.color="red";
     document.getElementById("registro-msg").textContent="Error de conexión";
   });
-}
-
-function formatearWhatsApp(num){
-  if(!num) return '';
-  let soloNums = num.replace(/\D/g,''); // solo dígitos
-  if(soloNums.length && !soloNums.startsWith('54')) soloNums = '54'+soloNums; // prefijo Argentina
-  return soloNums;
 }
 
 function cargarAlquileres(){
@@ -198,11 +199,16 @@ function cargarAlquileres(){
         const infoIngreso = a["InformacionIngreso"] || "";
         const detalles = a["Detalles"] || "";
         const mascotas = a["Mascotas"] || "";
-        const contacto = formatearWhatsApp(a["H"] || '');
+        let contacto = a.contacto || '';
+
+        // Prefijo internacional para WhatsApp
+        if(contacto && !contacto.startsWith("54")){
+          contacto = "549" + contacto.replace(/^0+/,''); 
+        }
 
         const icon = L.divIcon({
           className: 'marker-icon',
-          html: `🏠<span style="font-size:12px;margin-left:2px;">${nroAmb}</span>`,
+          html: '🏠' + `<span style="font-size:12px;margin-left:2px;">${nroAmb}</span>`,
           iconSize: [30, 30],
           iconAnchor: [15, 15]
         });
@@ -234,19 +240,15 @@ function cargarAlquileres(){
             detalle.innerHTML += fotosHTML;
           }
 
-          // Mostrar botón solo si hay contacto válido
           if(contacto){
-            const waBtn = document.createElement('a');
-            waBtn.href = `https://wa.me/${contacto}?text=${encodeURIComponent("Hola, quiero consultar por el alquiler de "+a.Direccion)}`;
-            waBtn.target = "_blank";
-            waBtn.textContent = "Contactar por WhatsApp";
-            waBtn.style.display = "inline-block";
-            waBtn.style.background = "#25D366";
-            waBtn.style.color = "white";
-            waBtn.style.padding = "8px";
-            waBtn.style.marginTop = "10px";
-            waBtn.style.borderRadius = "6px";
-            waBtn.style.textDecoration = "none";
+            const waBtn = document.createElement('button');
+            waBtn.textContent = 'Contactar por WhatsApp';
+            waBtn.style.background = '#25D366';
+            waBtn.style.color = 'white';
+            waBtn.style.marginTop = '10px';
+            waBtn.onclick = () => {
+              window.location.href = `https://wa.me/${contacto}?text=${encodeURIComponent("Hola, quiero consultar por el alquiler de "+a.Direccion)}`;
+            };
             detalle.appendChild(waBtn);
           }
 
@@ -254,6 +256,7 @@ function cargarAlquileres(){
           map.invalidateSize();
         };
         popupContent.appendChild(btn);
+
         marker.bindPopup(popupContent);
       });
     })
