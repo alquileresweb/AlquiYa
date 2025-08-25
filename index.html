@@ -29,6 +29,17 @@ button:hover{background:#2565c0}
   border:2px solid white;
   box-shadow:0 0 2px #000;
 }
+.popup-whatsapp {
+  display:inline-block;
+  padding:5px 10px;
+  margin-top:5px;
+  background:#25D366;
+  color:white;
+  text-decoration:none;
+  border-radius:5px;
+  font-weight:bold;
+  cursor:pointer;
+}
 </style>
 </head>
 <body>
@@ -122,7 +133,6 @@ function logout(){
   mostrarLogin();
 }
 
-// 📌 REGISTRAR DUEÑO
 function registrarDueno(){
   const email = document.getElementById("reg_email").value.trim();
   const nombre = document.getElementById("reg_nombre").value.trim();
@@ -157,9 +167,7 @@ function registrarDueno(){
   });
 }
 
-// 🔹 CARGAR ALQUILERES DIRECTO DESDE WEBAPP
 function cargarAlquileres(){
-  // Marcadores fijos
   L.marker([-28.5544015,-56.0389695]).addTo(map).bindPopup("<b>Facultad Fundación Barceló</b>");
   L.marker([-28.5543092,-56.0390371]).addTo(map).bindPopup("<b>Hospital</b>");
 
@@ -175,7 +183,6 @@ function cargarAlquileres(){
 
         const nroAmb = a["Nro Ambientes"] || "";
 
-        // Crear ícono personalizado con casita y número
         const icon = L.divIcon({
           className: 'marker-icon',
           html: '🏠' + `<span style="font-size:12px;margin-left:2px;">${nroAmb}</span>`,
@@ -185,28 +192,27 @@ function cargarAlquileres(){
 
         const marker = L.marker([lat,lng], {icon: icon}).addTo(map);
 
-        // Usar columna H "contacto" de la hoja "Alquileres"
+        // Usar columna H "contacto"
         const contacto = a.contacto || '';
         const mensaje = `Hola, Quería consultarte por el alquiler (${a.Direccion||""}) de (${nroAmb})`;
         const whatsappLink = contacto ? `https://wa.me/${contacto}?text=${encodeURIComponent(mensaje)}` : '#';
 
-        marker.bindPopup(`
+        // Generar popup
+        const popupContent = document.createElement('div');
+        popupContent.innerHTML = `
           <b>Dirección:</b> ${a.Direccion||""}<br>
           <b>Ambientes:</b> ${nroAmb}<br>
           <b>Precio:</b> ${a.Precio||""}<br>
           <b>Dueño:</b> ${a.Dueno||""}<br>
-          <a href="${whatsappLink}" target="_blank" style="
-            display:inline-block;
-            padding:5px 10px;
-            margin-top:5px;
-            background:#25D366;
-            color:white;
-            text-decoration:none;
-            border-radius:5px;
-            font-weight:bold;
-          ">Contactar por WhatsApp</a>
-          ${a.Fotos?`<br><img src="${a.Fotos}" width="150">`:""}
-        `);
+          ${a.Fotos?`<br><img src="${a.Fotos}" width="150">`:""}<br>
+        `;
+        const btn = document.createElement('button');
+        btn.className = 'popup-whatsapp';
+        btn.textContent = 'Contactar por WhatsApp';
+        btn.onclick = ()=> window.open(whatsappLink,'_blank');
+        popupContent.appendChild(btn);
+
+        marker.bindPopup(popupContent);
       });
     })
     .catch(err => console.error("Error al conectar con WebApp:", err));
