@@ -129,7 +129,7 @@ function mostrarAlquileres(res){
   });
 }
 
-// --- Agregar o editar alquiler con POST JSON ---
+// --- Agregar o editar alquiler con Make webhook ---
 function agregarAlquiler(){
   const direccion = document.getElementById("direccion").value;
   const ambientes = document.getElementById("ambientes").value;
@@ -137,40 +137,40 @@ function agregarAlquiler(){
   const mascotas = document.getElementById("mascotas").value;
   const infoIngreso = document.getElementById("infoIngreso").value;
   const detalles = document.getElementById("detalles").value;
-  let row = document.getElementById("editRow").value;
+  let row = document.getElementById("editRow").value || new Date().getTime();
   const email = localStorage.getItem("dueno");
 
   if(!direccion || !ambientes || !precio){ alert("Completa todos los campos obligatorios."); return; }
 
-  let action = row ? "editAlquiler" : "addAlquiler";
-
-  const payload = {
-    action,
-    row,
-    dueno: email,
-    direccion,
-    ambientes,
-    precio,
-    mascotas,
-    fotos: imagenesBase64.join(","),
-    infoIngreso,
-    detalles
-  };
-
-  fetch(API_URL, {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify(payload)
+  // Enviar primero las imágenes a Make
+  fetch(MAKE_WEBHOOK, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      alquilerID: row,
+      dueno: email,
+      direccion,
+      ambientes,
+      precio,
+      mascotas,
+      infoIngreso,
+      detalles,
+      imagenes: imagenesBase64
+    })
   })
   .then(res => res.json())
   .then(data => {
-    if(data.success){
-      document.getElementById("msg").textContent = row ? "Alquiler editado ✅" : "Alquiler agregado ✅";
-      resetForm();
-      cargarAlquileres();
-    } else alert("Error: "+data.error);
+    // data.imagenesURLs = array de URLs subidas en Make
+    const fotosConcatenadas = data.imagenesURLs ? data.imagenesURLs.join(",") : "";
+
+    // Luego guardar datos en Google Sheets vía JSONP
+    const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
+    const callback = action==="editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
+    const script = document.createElement("script");
+    script.src = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&callback=${callback}`;
+    document.body.appendChild(script);
   })
-  .catch(err => console.error(err));
+  .catch(err => console.error("Error al subir imágenes:", err));
 }
 
 function editarAlquiler(row, datos){
