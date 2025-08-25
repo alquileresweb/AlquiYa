@@ -11,7 +11,7 @@
     #formulario { background:#fff; padding:15px; border:1px solid #ccc; margin-top:20px; }
     label { display:block; margin:8px 0 4px; }
     input, select, textarea { width:100%; padding:8px; margin-bottom:10px; }
-    img { max-width: 120px; margin-top: 5px; display:block; }
+    .preview-img { max-width: 120px; margin-top: 5px; display:block; }
   </style>
 </head>
 <body>
@@ -39,9 +39,9 @@
       <option value="No">No</option>
     </select>
 
-    <label>Imagen del Alquiler (PNG/JPG)</label>
-    <input type="file" id="imagenFile" accept="image/png, image/jpeg">
-    <img id="previewImg" style="display:none;"/>
+    <label>Imágenes del Alquiler (PNG/JPG, múltiples)</label>
+    <input type="file" id="imagenFile" accept="image/png, image/jpeg" multiple>
+    <div id="previewContainer"></div>
 
     <label>Información de ingreso</label>
     <textarea id="infoIngreso" rows="2"></textarea>
@@ -57,20 +57,26 @@
   const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
   const MAKE_WEBHOOK = "https://hook.us2.make.com/29oaaxn76yvca7sjnvrh5xtynckowak4";
 
-  let imagenBase64 = "";
+  let imagenesBase64 = [];
 
-  // ✅ Previsualizar imagen y convertir a Base64
+  // ✅ Previsualizar imágenes y convertir a Base64
   document.getElementById("imagenFile").addEventListener("change", function(){
-    const file = this.files[0];
-    if(file){
+    const files = Array.from(this.files);
+    imagenesBase64 = [];
+    const previewContainer = document.getElementById("previewContainer");
+    previewContainer.innerHTML = "";
+
+    files.forEach(file => {
       const reader = new FileReader();
       reader.onload = function(e){
-        imagenBase64 = e.target.result;
-        document.getElementById("previewImg").src = imagenBase64;
-        document.getElementById("previewImg").style.display = "block";
+        imagenesBase64.push(e.target.result);
+        const img = document.createElement("img");
+        img.src = e.target.result;
+        img.className = "preview-img";
+        previewContainer.appendChild(img);
       }
       reader.readAsDataURL(file);
-    }
+    });
   });
 
   window.onload = function(){
@@ -126,13 +132,16 @@
     let action = row ? "editAlquiler" : "addAlquiler";
     let callback = row ? "alquilerEditado" : "alquilerAgregado";
 
+    // 🔹 Convertir array de imágenes a cadena separada por comas
+    const fotosConcatenadas = imagenesBase64.join(",");
+
     // 🔹 Guardar en Sheet
     const script = document.createElement("script");
-    script.src = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(imagenBase64)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&callback=${callback}`;
+    script.src = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&callback=${callback}`;
     document.body.appendChild(script);
 
-    // 🔹 Enviar al webhook de Make para subir imagen a Drive
-    if(imagenBase64){
+    // 🔹 Enviar al webhook de Make para subir imágenes a Drive
+    if(imagenesBase64.length > 0){
       fetch(MAKE_WEBHOOK, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -145,7 +154,7 @@
           mascotas,
           infoIngreso,
           detalles,
-          imagen: imagenBase64
+          imagenes: imagenesBase64
         })
       }).catch(err => console.error("Error webhook Make:", err));
     }
@@ -181,10 +190,20 @@
     document.getElementById("mascotas").value = datos.Mascotas || "No";
     document.getElementById("infoIngreso").value = datos.InfoIngreso || "";
     document.getElementById("detalles").value = datos.Detalles || "";
+
+    imagenesBase64 = [];
+    const previewContainer = document.getElementById("previewContainer");
+    previewContainer.innerHTML = "";
+
     if(datos.Fotos){
-      imagenBase64 = datos.Fotos;
-      document.getElementById("previewImg").src = imagenBase64;
-      document.getElementById("previewImg").style.display = "block";
+      // soporta varias imágenes separadas por comas
+      datos.Fotos.split(",").forEach(f => {
+        imagenesBase64.push(f);
+        const img = document.createElement("img");
+        img.src = f;
+        img.className = "preview-img";
+        previewContainer.appendChild(img);
+      });
     }
     window.scrollTo(0, document.getElementById("formulario").offsetTop);
   }
@@ -200,8 +219,8 @@
     document.getElementById("infoIngreso").value = "";
     document.getElementById("detalles").value = "";
     document.getElementById("imagenFile").value = "";
-    document.getElementById("previewImg").style.display = "none";
-    imagenBase64 = "";
+    document.getElementById("previewContainer").innerHTML = "";
+    imagenesBase64 = [];
   }
 
   function cambiarEstado(row){
