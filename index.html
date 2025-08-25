@@ -170,11 +170,11 @@ function registrarDueno(){
   });
 }
 
-// Función para limpiar y formatear número de WhatsApp
+// Formatea número de WhatsApp
 function formatearWhatsApp(num){
   if(!num) return '';
   let soloNums = num.replace(/\D/g,''); // solo dígitos
-  if(soloNums.length && !num.startsWith('+')) soloNums = '54'+soloNums; // prefijo Argentina
+  if(soloNums.length && !soloNums.startsWith('54')) soloNums = '54'+soloNums; // prefijo Argentina
   return soloNums;
 }
 
@@ -235,6 +235,7 @@ function cargarAlquileres(){
             detalle.innerHTML += fotosHTML;
           }
 
+          // Botón WhatsApp agregado **solo si hay contacto**
           if(contacto){
             const waBtn = document.createElement('button');
             waBtn.textContent = 'Contactar por WhatsApp';
