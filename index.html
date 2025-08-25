@@ -157,32 +157,27 @@ function cargarAlquileres(){
     download:true, header:true,
     skipEmptyLines: true,
     complete: function(results){
-      results.data.forEach(row=>{
-        // 🔹 Normalizamos claves a minúsculas
-        let a={};
-        for (let key in row){
-          a[key.trim().toLowerCase()] = row[key];
-        }
+      results.data.forEach(a=>{
+        if(!a["Tipo"] || a["Tipo"].toLowerCase() !== "alquiler") return;
+        if(!a["Estado"] || a["Estado"].toLowerCase() !== "activo") return;
 
-        if(!a.tipo || a.tipo.toLowerCase()!=="alquiler") return;
-        if(!a.estado || a.estado.toLowerCase()!=="activo") return;
-
-        const lat = parseFloat(a.latitud);
-        const lng = parseFloat(a.longitud);
+        const lat = parseFloat(a["Latitud"]);
+        const lng = parseFloat(a["Longitud"]);
         if(isNaN(lat) || isNaN(lng)) return;
 
         let color="red"; // default
-        if(a["nro ambientes"]==="1") color="yellow";
-        else if(a["nro ambientes"]==="2") color="green";
-        else if(a["nro ambientes"]==="3") color="blue";
+        const amb = (a["Nro Ambientes"] || "").toLowerCase();
+        if(amb.includes("mono") || amb.includes("1")) color="yellow";
+        else if(amb.includes("2")) color="green";
+        else if(amb.includes("3")) color="blue";
 
         const marker = L.circleMarker([lat,lng],{radius:8,color:color,fillOpacity:0.9}).addTo(map);
         marker.bindPopup(`
-          <b>${a.direccion||""}</b><br>
-          Ambientes: ${a["nro ambientes"]||""}<br>
-          Precio: ${a.precio||""}<br>
-          Contacto: <a href="https://wa.me/${a.contacto||''}" target="_blank">${a.contacto||''}</a><br>
-          ${a.fotos?`<img src="${a.fotos}" width="150">`:""}
+          <b>${a["Direccion"]||""}</b><br>
+          Ambientes: ${a["Nro Ambientes"]||""}<br>
+          Precio: ${a["Precio"]||""}<br>
+          Contacto: <a href="https://wa.me/${a["Contacto"]||''}" target="_blank">${a["Contacto"]||''}</a><br>
+          ${a["Fotos"]?`<img src="${a["Fotos"]}" width="150">`:""}
         `);
       });
     }
