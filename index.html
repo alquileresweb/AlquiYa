@@ -146,7 +146,7 @@ function registrarDueno(){
   });
 }
 
-// 🔹 CARGAR ALQUILERES Y MARCADORES FIJOS
+// 🔹 CARGAR ALQUILERES Y MARCADORES
 function cargarAlquileres(){
   // Marcadores fijos
   L.marker([-28.5544015,-56.0389695]).addTo(map).bindPopup("<b>Facultad Fundación Barceló</b>");
@@ -157,26 +157,31 @@ function cargarAlquileres(){
     download:true, header:true,
     skipEmptyLines: true,
     complete: function(results){
-      results.data.forEach(a=>{
-        if(!a || !a.tipo || a.tipo.toLowerCase() !== "alquiler") return;
-        if(!a.estado || a.estado.toLowerCase() !== "activo") return;
+      results.data.forEach(row=>{
+        // 🔹 Normalizamos claves a minúsculas
+        let a={};
+        for (let key in row){
+          a[key.trim().toLowerCase()] = row[key];
+        }
 
-        const lat = parseFloat(a.latitud || a.Latitud || a.Lat || a.Latitude);
-        const lng = parseFloat(a.longitud || a.Longitud || a.Lng || a.Longitude);
+        if(!a.tipo || a.tipo.toLowerCase()!=="alquiler") return;
+        if(!a.estado || a.estado.toLowerCase()!=="activo") return;
+
+        const lat = parseFloat(a.latitud);
+        const lng = parseFloat(a.longitud);
         if(isNaN(lat) || isNaN(lng)) return;
 
         let color="red"; // default
-        const amb = (a.ambientes || "").toLowerCase();
-        if(amb.includes("mono") || amb.includes("1")) color="yellow";
-        else if(amb.includes("2")) color="green";
-        else if(amb.includes("3")) color="blue";
+        if(a["nro ambientes"]==="1") color="yellow";
+        else if(a["nro ambientes"]==="2") color="green";
+        else if(a["nro ambientes"]==="3") color="blue";
 
         const marker = L.circleMarker([lat,lng],{radius:8,color:color,fillOpacity:0.9}).addTo(map);
         marker.bindPopup(`
-          <b>${a.direccion || a.Direccion}</b><br>
-          Ambientes: ${a.ambientes || ""}<br>
-          Precio: ${a.precio || ""}<br>
-          Contacto: <a href="https://wa.me/${a.contacto || ''}" target="_blank">${a.contacto || ''}</a><br>
+          <b>${a.direccion||""}</b><br>
+          Ambientes: ${a["nro ambientes"]||""}<br>
+          Precio: ${a.precio||""}<br>
+          Contacto: <a href="https://wa.me/${a.contacto||''}" target="_blank">${a.contacto||''}</a><br>
           ${a.fotos?`<img src="${a.fotos}" width="150">`:""}
         `);
       });
