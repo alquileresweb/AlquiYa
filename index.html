@@ -12,6 +12,10 @@ nav{display:flex;justify-content:center;gap:20px;background:#f4f4f4;padding:10px
 nav a{text-decoration:none;font-weight:bold;color:#333}
 nav a:hover{color:#3483fa}
 #map{height:60vh;width:100%;margin-bottom:20px;}
+#filtros{max-width:700px;margin:10px auto;padding:10px;background:#f9f9f9;border:1px solid #ccc;border-radius:8px;display:flex;flex-wrap:wrap;gap:10px}
+#filtros input{flex:1;min-width:120px;padding:8px;border-radius:6px;border:1px solid #ccc}
+#filtros button{padding:8px 15px;border-radius:6px;background:#3483fa;color:white;border:none;cursor:pointer}
+#filtros button:hover{background:#2565c0}
 #login,#panel-dueno,#registro{display:none;max-width:500px;margin:auto}
 #alquiler-detalle{display:none;max-width:700px;margin:20px auto;padding:15px;border:1px solid #ccc;border-radius:8px;background:#f9f9f9;}
 #alquiler-detalle img{max-width:100%;margin:5px 0;border-radius:6px;}
@@ -56,6 +60,14 @@ button:hover{background:#2565c0}
 <a href="#" onclick="mostrarLogin()">Soy Dueño</a>
 </nav>
 
+<!-- 🔹 FILTROS -->
+<div id="filtros">
+  <input type="number" id="filtroAmb" placeholder="Nro de Ambientes">
+  <input type="number" id="filtroMin" placeholder="Precio Mínimo">
+  <input type="number" id="filtroMax" placeholder="Precio Máximo">
+  <button onclick="cargarAlquileres()">Filtrar</button>
+</div>
+
 <div id="map"></div>
 <div id="alquiler-detalle"></div>
 
@@ -91,12 +103,13 @@ button:hover{background:#2565c0}
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
 const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
-
 let map = L.map('map').setView([-28.5503, -56.0406],14);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
+let markersLayer = L.layerGroup().addTo(map);
 
 function mostrarMapa(){
   document.getElementById("map").style.display="block";
+  document.getElementById("filtros").style.display="flex";
   document.getElementById("login").style.display="none";
   document.getElementById("panel-dueno").style.display="none";
   document.getElementById("registro").style.display="none";
@@ -104,19 +117,19 @@ function mostrarMapa(){
   map.invalidateSize();
   cargarAlquileres();
 }
-
 function mostrarLogin(){
   document.getElementById("map").style.display="none";
+  document.getElementById("filtros").style.display="none";
   document.getElementById("login").style.display="block";
   document.getElementById("panel-dueno").style.display="none";
   document.getElementById("registro").style.display="none";
   document.getElementById("alquiler-detalle").style.display="none";
 }
-
 function mostrarRegistro(){
   document.getElementById("login").style.display="none";
   document.getElementById("registro").style.display="block";
   document.getElementById("map").style.display="none";
+  document.getElementById("filtros").style.display="none";
   document.getElementById("panel-dueno").style.display="none";
   document.getElementById("alquiler-detalle").style.display="none";
 }
@@ -132,37 +145,28 @@ function login(){
     document.getElementById("login-msg").textContent="Ingrese email y contraseña";
   }
 }
-
 function logout(){
   localStorage.removeItem("dueno");
   localStorage.removeItem("dueno_email");
   mostrarLogin();
 }
-
 function registrarDueno(){
   const email = document.getElementById("reg_email").value.trim();
   const nombre = document.getElementById("reg_nombre").value.trim();
   const password = document.getElementById("reg_password").value.trim();
   const contacto = document.getElementById("reg_contacto").value.trim();
-
   if(!email || !nombre || !password || !contacto){
     document.getElementById("registro-msg").style.color="red";
     document.getElementById("registro-msg").textContent="Complete todos los campos";
     return;
   }
-
   const formData = new FormData();
   formData.append("action","registerDueno"); 
   formData.append("email",email);
   formData.append("nombre",nombre);
   formData.append("password",password);
   formData.append("contacto",contacto);
-
-  fetch(webAppURL,{
-    method:"POST",
-    mode:"no-cors",
-    body:formData
-  })
+  fetch(webAppURL,{method:"POST",mode:"no-cors",body:formData})
   .then(()=>{
     document.getElementById("registro-msg").style.color="green";
     document.getElementById("registro-msg").textContent="Dueño registrado con éxito. Ahora puede iniciar sesión.";
@@ -174,11 +178,17 @@ function registrarDueno(){
 }
 
 function cargarAlquileres(){
+  markersLayer.clearLayers();
+
   const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15]});
   const hospIcon = L.divIcon({className:'marker-icon', html:'🏥', iconSize:[30,30], iconAnchor:[15,15]});
+  L.marker([-28.5509978,-56.0409727],{icon:uniIcon}).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
+  L.marker([-28.5551127,-56.0389282],{icon:hospIcon}).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
 
-  L.marker([-28.5509978,-56.0409727],{icon:uniIcon}).addTo(map).bindPopup("<b>Facultad Fundación Barceló</b>");
-  L.marker([-28.5551127,-56.0389282],{icon:hospIcon}).addTo(map).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
+  // 🔹 Leer filtros
+  const filtroAmb = document.getElementById("filtroAmb").value;
+  const filtroMin = parseFloat(document.getElementById("filtroMin").value) || 0;
+  const filtroMax = parseFloat(document.getElementById("filtroMax").value) || Infinity;
 
   fetch(webAppURL + "?action=getAlquileres")
     .then(res => res.json())
@@ -190,7 +200,13 @@ function cargarAlquileres(){
         const lng = parseFloat(a.Longitud);
         if(isNaN(lat) || isNaN(lng)) return;
 
-        const nroAmb = a["Nro Ambientes"] || "";
+        const nroAmb = parseInt(a["Nro Ambientes"]) || 0;
+        const precio = parseFloat(a.Precio) || 0;
+
+        // 🔹 Aplicar filtros
+        if(filtroAmb && nroAmb !== parseInt(filtroAmb)) return;
+        if(precio < filtroMin || precio > filtroMax) return;
+
         const infoIngreso = a["InformacionIngreso"] || "";
         const detalles = a["Detalles"] || "";
         const mascotas = a["Mascotas"] || "";
@@ -203,24 +219,17 @@ function cargarAlquileres(){
           iconAnchor: [15, 15]
         });
 
-        const marker = L.marker([lat,lng], {icon: icon}).addTo(map);
+        const marker = L.marker([lat,lng], {icon: icon}).addTo(markersLayer);
 
         const popupDiv = document.createElement('div');
-        const dir = document.createElement('div');
-        dir.innerHTML = `<b>Dirección:</b> ${a.Direccion||""}<br><b>Ambientes:</b> ${nroAmb}<br><b>Precio:</b> ${a.Precio||""}`;
-        popupDiv.appendChild(dir);
+        popupDiv.innerHTML = `<b>Dirección:</b> ${a.Direccion||""}<br><b>Ambientes:</b> ${nroAmb}<br><b>Precio:</b> ${a.Precio||""}`;
 
         const verBtn = document.createElement('button');
         verBtn.className = 'popup-button';
         verBtn.textContent = 'Ver Alquiler';
         verBtn.onclick = () => {
           const detalle = document.getElementById('alquiler-detalle');
-          detalle.innerHTML = '';
-
-          const h2 = document.createElement('h2');
-          h2.textContent = `Alquiler: ${a.Direccion||''}`;
-          detalle.appendChild(h2);
-
+          detalle.innerHTML = `<h2>Alquiler: ${a.Direccion||''}</h2>`;
           const infoFields = [
             ['Ambientes', nroAmb],
             ['Precio', a.Precio||''],
@@ -228,13 +237,11 @@ function cargarAlquileres(){
             ['Detalles', detalles],
             ['Mascotas', mascotas]
           ];
-
           infoFields.forEach(([label, val]) => {
             const p = document.createElement('p');
             p.innerHTML = `<b>${label}:</b> ${val}`;
             detalle.appendChild(p);
           });
-
           if(a.Fotos){
             a.Fotos.split(',').forEach(f => {
               const img = document.createElement('img');
@@ -242,7 +249,6 @@ function cargarAlquileres(){
               detalle.appendChild(img);
             });
           }
-
           if(contacto){
             const waBtn = document.createElement('button');
             waBtn.textContent = 'Contactar por WhatsApp';
@@ -254,19 +260,17 @@ function cargarAlquileres(){
             };
             detalle.appendChild(waBtn);
           }
-
           detalle.style.display = 'block';
           map.invalidateSize();
         };
         popupDiv.appendChild(verBtn);
-
         marker.bindPopup(popupDiv);
       });
     })
     .catch(err => console.error("Error al conectar con WebApp:", err));
 }
 
-// 🔹 Mostrar el mapa como pantalla principal al cargar
+// 🔹 Mostrar el mapa como pantalla principal
 window.onload = () => {
   mostrarMapa();
 };
