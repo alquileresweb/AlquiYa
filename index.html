@@ -163,7 +163,6 @@ function cargarAlquileres(){
   L.marker([-28.5544015,-56.0389695]).addTo(map).bindPopup("<b>Facultad Fundación Barceló</b>");
   L.marker([-28.5543092,-56.0390371]).addTo(map).bindPopup("<b>Hospital</b>");
 
-  // Traer datos desde WebApp
   fetch(webAppURL + "?action=getAlquileres")
     .then(res => res.json())
     .then(res => {
@@ -172,12 +171,8 @@ function cargarAlquileres(){
       res.data.forEach(a=>{
         const lat = parseFloat(a.Latitud);
         const lng = parseFloat(a.Longitud);
-        if(isNaN(lat) || isNaN(lng)) {
-          console.warn("Registro sin coordenadas:", a);
-          return;
-        }
+        if(isNaN(lat) || isNaN(lng)) return;
 
-        // Convertir ambientes a número para mostrar en el marcador
         const nroAmb = a["Nro Ambientes"] || "";
 
         // Crear ícono personalizado con casita y número
@@ -190,9 +185,11 @@ function cargarAlquileres(){
 
         const marker = L.marker([lat,lng], {icon: icon}).addTo(map);
 
-        // Popup con todos los datos y botón a WhatsApp
+        // Crear link de WhatsApp con texto precargado
         const contacto = a.Contacto || '';
-        const whatsappLink = contacto ? `https://wa.me/${contacto}` : '#';
+        const mensaje = `Hola, Quería consultarte por el alquiler (${a.Direccion||""}) de (${nroAmb})`;
+        const whatsappLink = contacto ? `https://wa.me/${contacto}?text=${encodeURIComponent(mensaje)}` : '#';
+
         marker.bindPopup(`
           <b>Dirección:</b> ${a.Direccion||""}<br>
           <b>Ambientes:</b> ${nroAmb}<br>
