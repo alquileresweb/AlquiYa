@@ -230,18 +230,16 @@ function cargarAlquileres(){
             detalle.innerHTML += fotosHTML;
           }
 
-          // Crear botón WhatsApp dinámicamente
-          if(contacto){
-            const waBtn = document.createElement('button');
-            waBtn.textContent = 'Contactar por WhatsApp';
-            waBtn.style.background = '#25D366';
-            waBtn.style.color = 'white';
-            waBtn.style.marginTop = '10px';
-            waBtn.onclick = () => {
-              window.open(`https://wa.me/${contacto}?text=${encodeURIComponent("Hola, quiero consultar por el alquiler de "+a.Direccion)}`,'_blank');
-            };
-            detalle.appendChild(waBtn);
-          }
+          // Crear botón WhatsApp correctamente
+          const waBtn = document.createElement('button');
+          waBtn.textContent = 'Contactar por WhatsApp';
+          waBtn.style.background = '#25D366';
+          waBtn.style.color = 'white';
+          waBtn.style.marginTop = '10px';
+          waBtn.onclick = () => {
+            window.open(`https://wa.me/${contacto}?text=${encodeURIComponent("Hola, quiero consultar por el alquiler de "+a.Direccion)}`,'_blank');
+          };
+          detalle.appendChild(waBtn);
 
           detalle.style.display = 'block';
           map.invalidateSize();
