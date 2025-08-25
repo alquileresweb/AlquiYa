@@ -16,6 +16,19 @@ nav a:hover{color:#3483fa}
 input,select,button{width:100%;padding:8px;margin:5px 0;border-radius:6px}
 button{background:#3483fa;color:white;border:none;cursor:pointer}
 button:hover{background:#2565c0}
+.marker-icon {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#3483fa;
+  color:white;
+  font-weight:bold;
+  border-radius:50%;
+  width:30px;
+  height:30px;
+  border:2px solid white;
+  box-shadow:0 0 2px #000;
+}
 </style>
 </head>
 <body>
@@ -155,6 +168,7 @@ function cargarAlquileres(){
     .then(res => res.json())
     .then(res => {
       if(!res.success) return console.error("Error al cargar alquileres:", res.error);
+
       res.data.forEach(a=>{
         const lat = parseFloat(a.Latitud);
         const lng = parseFloat(a.Longitud);
@@ -163,19 +177,29 @@ function cargarAlquileres(){
           return;
         }
 
-        let color="red";
-        const amb = String(a["Nro Ambientes"] || "").toLowerCase(); // ✅ CORRECCIÓN
-        if(amb.includes("mono") || amb.includes("1")) color="yellow";
-        else if(amb.includes("2")) color="green";
-        else if(amb.includes("3")) color="blue";
+        // Convertir ambientes a número para mostrar en el marcador
+        const nroAmb = a["Nro Ambientes"] || "";
 
-        const marker = L.circleMarker([lat,lng],{radius:8,color:color,fillOpacity:0.9}).addTo(map);
+        // Crear ícono personalizado con casita y número
+        const icon = L.divIcon({
+          className: 'marker-icon',
+          html: '🏠' + `<span style="font-size:12px;margin-left:2px;">${nroAmb}</span>`,
+          iconSize: [30, 30],
+          iconAnchor: [15, 15]
+        });
+
+        const marker = L.marker([lat,lng], {icon: icon}).addTo(map);
+
+        // Popup con todos los datos y botón a WhatsApp
+        const contacto = a.Contacto || '';
+        const whatsappLink = contacto ? `https://wa.me/${contacto}` : '#';
         marker.bindPopup(`
-          <b>${a.Direccion||""}</b><br>
-          Ambientes: ${a["Nro Ambientes"]||""}<br>
-          Precio: ${a.Precio||""}<br>
-          Contacto: <a href="https://wa.me/${a.Contacto||''}" target="_blank">${a.Contacto||''}</a><br>
-          ${a.Fotos?`<img src="${a.Fotos}" width="150">`:""}
+          <b>Dirección:</b> ${a.Direccion||""}<br>
+          <b>Ambientes:</b> ${nroAmb}<br>
+          <b>Precio:</b> ${a.Precio||""}<br>
+          <b>Dueño:</b> ${a.Dueno||""}<br>
+          <button onclick="window.open('${whatsappLink}','_blank')">Contactar por WhatsApp</button>
+          ${a.Fotos?`<br><img src="${a.Fotos}" width="150">`:""}
         `);
       });
     })
