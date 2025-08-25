@@ -55,6 +55,7 @@
 
   <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
+  const MAKE_WEBHOOK = "https://hook.us2.make.com/29oaaxn76yvca7sjnvrh5xtynckowak4";
 
   let imagenBase64 = "";
 
@@ -125,9 +126,29 @@
     let action = row ? "editAlquiler" : "addAlquiler";
     let callback = row ? "alquilerEditado" : "alquilerAgregado";
 
+    // 🔹 Guardar en Sheet
     const script = document.createElement("script");
     script.src = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(imagenBase64)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&callback=${callback}`;
     document.body.appendChild(script);
+
+    // 🔹 Enviar al webhook de Make para subir imagen a Drive
+    if(imagenBase64){
+      fetch(MAKE_WEBHOOK, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          alquilerID: row || new Date().getTime(),
+          dueno: email,
+          direccion,
+          ambientes,
+          precio,
+          mascotas,
+          infoIngreso,
+          detalles,
+          imagen: imagenBase64
+        })
+      }).catch(err => console.error("Error webhook Make:", err));
+    }
   }
 
   function alquilerAgregado(res){
