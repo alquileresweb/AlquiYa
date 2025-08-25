@@ -11,7 +11,7 @@ header{background:#3483fa;color:white;padding:15px;text-align:center}
 nav{display:flex;justify-content:center;gap:20px;background:#f4f4f4;padding:10px}
 nav a{text-decoration:none;font-weight:bold;color:#333}
 nav a:hover{color:#3483fa}
-#map{height:60vh;width:100%;margin-bottom:20px;display:none}
+#map{height:60vh;width:100%;margin-bottom:20px;}
 #login,#panel-dueno,#registro{display:none;max-width:500px;margin:auto}
 #alquiler-detalle{display:none;max-width:700px;margin:20px auto;padding:15px;border:1px solid #ccc;border-radius:8px;background:#f9f9f9;}
 #alquiler-detalle img{max-width:100%;margin:5px 0;border-radius:6px;}
@@ -194,7 +194,7 @@ function cargarAlquileres(){
         const infoIngreso = a["InformacionIngreso"] || "";
         const detalles = a["Detalles"] || "";
         const mascotas = a["Mascotas"] || "";
-        const contacto = a["Contacto"] || "";  // 🔹 CAMBIO AQUÍ
+        const contacto = a["Contacto"] || "";
 
         const icon = L.divIcon({
           className: 'marker-icon',
@@ -205,9 +205,7 @@ function cargarAlquileres(){
 
         const marker = L.marker([lat,lng], {icon: icon}).addTo(map);
 
-        // Crear popup con elementos separados
         const popupDiv = document.createElement('div');
-
         const dir = document.createElement('div');
         dir.innerHTML = `<b>Dirección:</b> ${a.Direccion||""}<br><b>Ambientes:</b> ${nroAmb}<br><b>Precio:</b> ${a.Precio||""}`;
         popupDiv.appendChild(dir);
@@ -267,6 +265,11 @@ function cargarAlquileres(){
     })
     .catch(err => console.error("Error al conectar con WebApp:", err));
 }
+
+// 🔹 Mostrar el mapa como pantalla principal al cargar
+window.onload = () => {
+  mostrarMapa();
+};
 </script>
 </body>
 </html>
