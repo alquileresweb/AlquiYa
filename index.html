@@ -13,6 +13,8 @@ nav a{text-decoration:none;font-weight:bold;color:#333}
 nav a:hover{color:#3483fa}
 #map{height:60vh;width:100%;margin-bottom:20px;display:none}
 #login,#panel-dueno,#registro{display:none;max-width:500px;margin:auto}
+#alquiler-detalle{display:none;max-width:700px;margin:20px auto;padding:15px;border:1px solid #ccc;border-radius:8px;background:#f9f9f9;}
+#alquiler-detalle img{max-width:100%;margin:5px 0;border-radius:6px;}
 input,select,button{width:100%;padding:8px;margin:5px 0;border-radius:6px}
 button{background:#3483fa;color:white;border:none;cursor:pointer}
 button:hover{background:#2565c0}
@@ -56,6 +58,8 @@ button:hover{background:#2565c0}
 
 <div id="map"></div>
 
+<div id="alquiler-detalle"></div>
+
 <!-- LOGIN -->
 <div id="login">
   <h2>Login Dueños</h2>
@@ -97,6 +101,7 @@ function mostrarMapa(){
   document.getElementById("login").style.display="none";
   document.getElementById("panel-dueno").style.display="none";
   document.getElementById("registro").style.display="none";
+  document.getElementById("alquiler-detalle").style.display="none";
   setTimeout(()=>{map.invalidateSize();},200);
   cargarAlquileres();
 }
@@ -106,6 +111,7 @@ function mostrarLogin(){
   document.getElementById("login").style.display="block";
   document.getElementById("panel-dueno").style.display="none";
   document.getElementById("registro").style.display="none";
+  document.getElementById("alquiler-detalle").style.display="none";
 }
 
 function mostrarRegistro(){
@@ -113,6 +119,7 @@ function mostrarRegistro(){
   document.getElementById("registro").style.display="block";
   document.getElementById("map").style.display="none";
   document.getElementById("panel-dueno").style.display="none";
+  document.getElementById("alquiler-detalle").style.display="none";
 }
 
 function login(){
@@ -168,8 +175,12 @@ function registrarDueno(){
 }
 
 function cargarAlquileres(){
-  L.marker([-28.5544015,-56.0389695]).addTo(map).bindPopup("<b>Facultad Fundación Barceló</b>");
-  L.marker([-28.5543092,-56.0390371]).addTo(map).bindPopup("<b>Hospital</b>");
+  // Marcadores especiales
+  const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15], style:'background:blue;'});
+  const hospIcon = L.divIcon({className:'marker-icon', html:'🏥', iconSize:[30,30], iconAnchor:[15,15], style:'background:red;'});
+
+  L.marker([-28.5509978,-56.0409727],{icon:uniIcon}).addTo(map).bindPopup("<b>Facultad Fundación Barceló</b>");
+  L.marker([-28.5551127,-56.0389282],{icon:hospIcon}).addTo(map).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
 
   fetch(webAppURL + "?action=getAlquileres")
     .then(res => res.json())
@@ -205,29 +216,18 @@ function cargarAlquileres(){
         btn.className = 'popup-button';
         btn.textContent = 'Ver Alquiler';
         btn.onclick = () => {
-          const w = window.open('', '_blank');
-          const fotosHTML = a.Fotos ? `<div>${a.Fotos.split(',').map(f => `<img src="${f}" style="max-width:100%;margin:5px 0">`).join('')}</div>` : '';
-          w.document.write(`
-            <html>
-              <head>
-                <title>Alquiler - ${a.Direccion||''}</title>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <style>
-                  body{font-family:Arial,sans-serif;padding:20px;line-height:1.5;}
-                  img{border:1px solid #ccc;border-radius:6px;}
-                </style>
-              </head>
-              <body>
-                <h2>Alquiler: ${a.Direccion||''}</h2>
-                <p><b>Ambientes:</b> ${nroAmb}</p>
-                <p><b>Precio:</b> ${a.Precio||''}</p>
-                <p><b>Dueño:</b> ${a.Dueno||''}</p>
-                ${fotosHTML}
-              </body>
-            </html>
-          `);
-          w.document.close();
+          const detalle = document.getElementById('alquiler-detalle');
+          const fotosHTML = a.Fotos ? a.Fotos.split(',').map(f => `<img src="${f}">`).join('') : '';
+          detalle.innerHTML = `
+            <h2>Alquiler: ${a.Direccion||''}</h2>
+            <p><b>Ambientes:</b> ${nroAmb}</p>
+            <p><b>Precio:</b> ${a.Precio||''}</p>
+            <p><b>Dueño:</b> ${a.Dueno||''}</p>
+            ${fotosHTML}
+          `;
+          detalle.style.display = 'block';
+          // ocultar mapa si se quiere
+          map.invalidateSize();
         };
         popupContent.appendChild(btn);
 
