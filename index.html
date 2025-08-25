@@ -101,7 +101,7 @@ function mostrarMapa(){
   document.getElementById("panel-dueno").style.display="none";
   document.getElementById("registro").style.display="none";
   document.getElementById("alquiler-detalle").style.display="none";
-  map.invalidateSize(); // eliminar retraso
+  map.invalidateSize();
   cargarAlquileres();
 }
 
@@ -143,17 +143,12 @@ function registrarDueno(){
   const email = document.getElementById("reg_email").value.trim();
   const nombre = document.getElementById("reg_nombre").value.trim();
   const password = document.getElementById("reg_password").value.trim();
-  let contacto = document.getElementById("reg_contacto").value.trim();
+  const contacto = document.getElementById("reg_contacto").value.trim();
 
   if(!email || !nombre || !password || !contacto){
     document.getElementById("registro-msg").style.color="red";
     document.getElementById("registro-msg").textContent="Complete todos los campos";
     return;
-  }
-
-  // Agregar prefijo internacional si no tiene
-  if(!contacto.startsWith("54")){
-    contacto = "549" + contacto.replace(/^0+/,''); 
   }
 
   const formData = new FormData();
@@ -179,6 +174,7 @@ function registrarDueno(){
 }
 
 function cargarAlquileres(){
+  // Marcadores especiales inmediatos
   const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15], style:'background:blue;'});
   const hospIcon = L.divIcon({className:'marker-icon', html:'🏥', iconSize:[30,30], iconAnchor:[15,15], style:'background:red;'});
 
@@ -199,12 +195,7 @@ function cargarAlquileres(){
         const infoIngreso = a["InformacionIngreso"] || "";
         const detalles = a["Detalles"] || "";
         const mascotas = a["Mascotas"] || "";
-        let contacto = a.contacto || '';
-
-        // Prefijo internacional para WhatsApp
-        if(contacto && !contacto.startsWith("54")){
-          contacto = "549" + contacto.replace(/^0+/,''); 
-        }
+        const contacto = a.contacto || '';
 
         const icon = L.divIcon({
           className: 'marker-icon',
@@ -240,6 +231,7 @@ function cargarAlquileres(){
             detalle.innerHTML += fotosHTML;
           }
 
+          // Botón WhatsApp con número incluido
           if(contacto){
             const waBtn = document.createElement('button');
             waBtn.textContent = 'Contactar por WhatsApp';
@@ -247,7 +239,7 @@ function cargarAlquileres(){
             waBtn.style.color = 'white';
             waBtn.style.marginTop = '10px';
             waBtn.onclick = () => {
-              window.location.href = `https://wa.me/${contacto}?text=${encodeURIComponent("Hola, quiero consultar por el alquiler de "+a.Direccion)}`;
+              window.open(`https://wa.me/${contacto}?text=${encodeURIComponent("Hola, quiero consultar por el alquiler de "+a.Direccion)}`,'_blank');
             };
             detalle.appendChild(waBtn);
           }
