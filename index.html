@@ -62,9 +62,7 @@ button:hover{background:#2565c0}
 </div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 <script>
-const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ywR4kynlqCe7boNscWy3jq2o40iTpyx1qC1enzUVGuJyfi-GZMRrxqDMUeR3HC4w-EB2l90X5Zyp/pubhtml";
 const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 
 let map = L.map('map').setView([-28.5503, -56.0406],14);
@@ -76,9 +74,7 @@ function mostrarMapa(){
   document.getElementById("panel-dueno").style.display="none";
   document.getElementById("registro").style.display="none";
   setTimeout(()=>{map.invalidateSize();},200);
-
-  // Usamos la función con retry
-  cargarAlquileresConRetry(5);
+  cargarAlquileres();
 }
 
 function mostrarLogin(){
@@ -148,58 +144,39 @@ function registrarDueno(){
   });
 }
 
-// 🔹 CARGAR ALQUILERES CON RETRY
-function cargarAlquileresConRetry(reintentos = 5){
-  console.log("Cargando alquileres, intentos restantes:", reintentos);
-  Papa.parse(sheetURL,{
-    download:true, header:true,
-    skipEmptyLines: true,
-    complete: function(results){
-      const hasCoords = results.data.some(a => a["Latitud"] && a["Longitud"]);
-      console.log("Datos recibidos:", results.data.length, "con coordenadas:", hasCoords);
-
-      if(!hasCoords && reintentos>0){
-        console.log("Coordenadas aún no listas, reintentando en 2s...");
-        setTimeout(()=>cargarAlquileresConRetry(reintentos-1), 2000);
-        return;
-      }
-      cargarAlquileresData(results.data);
-    }
-  });
-}
-
-function cargarAlquileresData(data){
+// 🔹 CARGAR ALQUILERES DIRECTO DESDE WEBAPP
+function cargarAlquileres(){
   // Marcadores fijos
   L.marker([-28.5544015,-56.0389695]).addTo(map).bindPopup("<b>Facultad Fundación Barceló</b>");
   L.marker([-28.5543092,-56.0390371]).addTo(map).bindPopup("<b>Hospital</b>");
 
-  // Marcadores de departamentos activos
-  data.forEach(a=>{
-    if(!a["Tipo"] || a["Tipo"].toLowerCase() !== "alquiler") return;
-    if(!a["Estado"] || a["Estado"].toLowerCase() !== "activo") return;
+  // Traer datos desde WebApp
+  fetch(webAppURL + "?action=getAlquileres")
+    .then(res => res.json())
+    .then(res => {
+      if(!res.success) return console.error("Error al cargar alquileres:", res.error);
+      res.data.forEach(a=>{
+        const lat = parseFloat(a.Latitud);
+        const lng = parseFloat(a.Longitud);
+        if(isNaN(lat) || isNaN(lng)) return;
 
-    const lat = parseFloat(a["Latitud"]);
-    const lng = parseFloat(a["Longitud"]);
-    if(isNaN(lat) || isNaN(lng)) {
-      console.warn("Registro sin coordenadas:", a);
-      return;
-    }
+        let color="red";
+        const amb = (a["Nro Ambientes"] || "").toLowerCase();
+        if(amb.includes("mono") || amb.includes("1")) color="yellow";
+        else if(amb.includes("2")) color="green";
+        else if(amb.includes("3")) color="blue";
 
-    let color="red";
-    const amb = (a["Nro Ambientes"] || "").toLowerCase();
-    if(amb.includes("mono") || amb.includes("1")) color="yellow";
-    else if(amb.includes("2")) color="green";
-    else if(amb.includes("3")) color="blue";
-
-    const marker = L.circleMarker([lat,lng],{radius:8,color:color,fillOpacity:0.9}).addTo(map);
-    marker.bindPopup(`
-      <b>${a["Direccion"]||""}</b><br>
-      Ambientes: ${a["Nro Ambientes"]||""}<br>
-      Precio: ${a["Precio"]||""}<br>
-      Contacto: <a href="https://wa.me/${a["Contacto"]||''}" target="_blank">${a["Contacto"]||''}</a><br>
-      ${a["Fotos"]?`<img src="${a["Fotos"]}" width="150">`:""}
-    `);
-  });
+        const marker = L.circleMarker([lat,lng],{radius:8,color:color,fillOpacity:0.9}).addTo(map);
+        marker.bindPopup(`
+          <b>${a.Direccion||""}</b><br>
+          Ambientes: ${a["Nro Ambientes"]||""}<br>
+          Precio: ${a.Precio||""}<br>
+          Contacto: <a href="https://wa.me/${a.Contacto||''}" target="_blank">${a.Contacto||''}</a><br>
+          ${a.Fotos?`<img src="${a.Fotos}" width="150">`:""}
+        `);
+      });
+    })
+    .catch(err => console.error("Error al conectar con WebApp:", err));
 }
 </script>
 </body>
