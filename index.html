@@ -12,12 +12,13 @@ nav{display:flex;justify-content:center;gap:20px;background:#f4f4f4;padding:10px
 nav a{text-decoration:none;font-weight:bold;color:#333}
 nav a:hover{color:#3483fa}
 #map{height:60vh;width:100%;margin-bottom:20px;}
-#filtros{max-width:700px;margin:10px auto;padding:10px;background:#f9f9f9;border:1px solid #ccc;border-radius:8px;display:flex;flex-wrap:wrap;gap:10px}
+#filtros{max-width:700px;margin:10px auto;padding:10px;background:#f9f9f9;border:1px solid #ccc;border-radius:8px;display:none;flex-wrap:wrap;gap:10px}
 #filtros input{flex:1;min-width:120px;padding:8px;border-radius:6px;border:1px solid #ccc}
 #filtros button{padding:8px 15px;border-radius:6px;background:#3483fa;color:white;border:none;cursor:pointer}
 #filtros button:hover{background:#2565c0}
 #login,#panel-dueno,#registro{display:none;max-width:500px;margin:auto}
-#alquiler-detalle{display:none;max-width:700px;margin:20px auto;padding:15px;border:1px solid #ccc;border-radius:8px;background:#f9f9f9;}
+#alquiler-detalle{display:none;max-width:700px;margin:20px auto;padding:15px;border:2px solid #3483fa;border-radius:8px;background:#f9f9f9;box-shadow:0 0 10px rgba(0,0,0,0.1);}
+#alquiler-detalle.highlight{animation: resaltar 1s ease}
 #alquiler-detalle img{max-width:100%;margin:5px 0;border-radius:6px;}
 input,select,button{width:100%;padding:8px;margin:5px 0;border-radius:6px}
 button{background:#3483fa;color:white;border:none;cursor:pointer}
@@ -46,6 +47,11 @@ button:hover{background:#2565c0}
   font-weight:bold;
   cursor:pointer;
 }
+@keyframes resaltar {
+  0% {transform:scale(1);box-shadow:0 0 10px #3483fa;}
+  50% {transform:scale(1.02);box-shadow:0 0 20px #2565c0;}
+  100% {transform:scale(1);box-shadow:0 0 10px rgba(0,0,0,0.1);}
+}
 </style>
 </head>
 <body>
@@ -59,6 +65,11 @@ button:hover{background:#2565c0}
 <a href="#" onclick="mostrarMapa()">Mapa</a>
 <a href="#" onclick="mostrarLogin()">Soy Dueño</a>
 </nav>
+
+<!-- 🔹 BOTÓN MOSTRAR FILTROS -->
+<div style="text-align:center;margin:10px;">
+  <button onclick="toggleFiltros()">Añadir Filtros</button>
+</div>
 
 <!-- 🔹 FILTROS -->
 <div id="filtros">
@@ -107,9 +118,14 @@ let map = L.map('map').setView([-28.5503, -56.0406],14);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
 let markersLayer = L.layerGroup().addTo(map);
 
+// 🔹 Mostrar / Ocultar filtros
+function toggleFiltros(){
+  const f = document.getElementById("filtros");
+  f.style.display = (f.style.display==="none"||f.style.display==="") ? "flex":"none";
+}
+
 function mostrarMapa(){
   document.getElementById("map").style.display="block";
-  document.getElementById("filtros").style.display="flex";
   document.getElementById("login").style.display="none";
   document.getElementById("panel-dueno").style.display="none";
   document.getElementById("registro").style.display="none";
@@ -185,7 +201,6 @@ function cargarAlquileres(){
   L.marker([-28.5509978,-56.0409727],{icon:uniIcon}).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
   L.marker([-28.5551127,-56.0389282],{icon:hospIcon}).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
 
-  // 🔹 Leer filtros
   const filtroAmb = document.getElementById("filtroAmb").value;
   const filtroMin = parseFloat(document.getElementById("filtroMin").value) || 0;
   const filtroMax = parseFloat(document.getElementById("filtroMax").value) || Infinity;
@@ -203,7 +218,6 @@ function cargarAlquileres(){
         const nroAmb = parseInt(a["Nro Ambientes"]) || 0;
         const precio = parseFloat(a.Precio) || 0;
 
-        // 🔹 Aplicar filtros
         if(filtroAmb && nroAmb !== parseInt(filtroAmb)) return;
         if(precio < filtroMin || precio > filtroMax) return;
 
@@ -261,6 +275,9 @@ function cargarAlquileres(){
             detalle.appendChild(waBtn);
           }
           detalle.style.display = 'block';
+          detalle.classList.add("highlight");
+          detalle.scrollIntoView({behavior:"smooth", block:"start"});
+          setTimeout(()=>detalle.classList.remove("highlight"),1200);
           map.invalidateSize();
         };
         popupDiv.appendChild(verBtn);
@@ -270,7 +287,6 @@ function cargarAlquileres(){
     .catch(err => console.error("Error al conectar con WebApp:", err));
 }
 
-// 🔹 Mostrar el mapa como pantalla principal
 window.onload = () => {
   mostrarMapa();
 };
