@@ -174,7 +174,6 @@ function registrarDueno(){
 }
 
 function cargarAlquileres(){
-  // Marcadores especiales
   const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15], style:'background:blue;'});
   const hospIcon = L.divIcon({className:'marker-icon', html:'🏥', iconSize:[30,30], iconAnchor:[15,15], style:'background:red;'});
 
@@ -206,7 +205,6 @@ function cargarAlquileres(){
 
         const marker = L.marker([lat,lng], {icon: icon}).addTo(map);
 
-        // Generar popup
         const popupContent = document.createElement('div');
         popupContent.innerHTML = `
           <b>Dirección:</b> ${a.Direccion||""}<br>
@@ -219,8 +217,6 @@ function cargarAlquileres(){
         btn.textContent = 'Ver Alquiler';
         btn.onclick = () => {
           const detalle = document.getElementById('alquiler-detalle');
-          const fotosHTML = a.Fotos ? a.Fotos.split(',').map(f => `<img src="${f}">`).join('') : '';
-          const whatsappLink = contacto ? `https://wa.me/${contacto}?text=${encodeURIComponent("Hola, quiero consultar por el alquiler de "+a.Direccion)}` : '#';
           detalle.innerHTML = `
             <h2>Alquiler: ${a.Direccion||''}</h2>
             <p><b>Ambientes:</b> ${nroAmb}</p>
@@ -228,9 +224,25 @@ function cargarAlquileres(){
             <p><b>Información de ingreso:</b> ${infoIngreso}</p>
             <p><b>Detalles:</b> ${detalles}</p>
             <p><b>Mascotas:</b> ${mascotas}</p>
-            ${fotosHTML}
-            <br><button onclick="window.location.href='${whatsappLink}'" style="margin-top:10px;background:#25D366;">Contactar por WhatsApp</button>
           `;
+          if(a.Fotos){
+            const fotosHTML = a.Fotos.split(',').map(f => `<img src="${f}">`).join('');
+            detalle.innerHTML += fotosHTML;
+          }
+
+          // Crear botón WhatsApp dinámicamente
+          if(contacto){
+            const waBtn = document.createElement('button');
+            waBtn.textContent = 'Contactar por WhatsApp';
+            waBtn.style.background = '#25D366';
+            waBtn.style.color = 'white';
+            waBtn.style.marginTop = '10px';
+            waBtn.onclick = () => {
+              window.open(`https://wa.me/${contacto}?text=${encodeURIComponent("Hola, quiero consultar por el alquiler de "+a.Direccion)}`,'_blank');
+            };
+            detalle.appendChild(waBtn);
+          }
+
           detalle.style.display = 'block';
           map.invalidateSize();
         };
