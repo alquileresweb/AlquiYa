@@ -170,7 +170,6 @@ function registrarDueno(){
   });
 }
 
-// Formatea número de WhatsApp
 function formatearWhatsApp(num){
   if(!num) return '';
   let soloNums = num.replace(/\D/g,''); // solo dígitos
@@ -235,16 +234,19 @@ function cargarAlquileres(){
             detalle.innerHTML += fotosHTML;
           }
 
-          // Botón WhatsApp agregado **solo si hay contacto**
+          // Mostrar botón solo si hay contacto válido
           if(contacto){
-            const waBtn = document.createElement('button');
-            waBtn.textContent = 'Contactar por WhatsApp';
-            waBtn.style.background = '#25D366';
-            waBtn.style.color = 'white';
-            waBtn.style.marginTop = '10px';
-            waBtn.onclick = () => {
-              window.open(`https://wa.me/${contacto}?text=${encodeURIComponent("Hola, quiero consultar por el alquiler de "+a.Direccion)}`,'_blank');
-            };
+            const waBtn = document.createElement('a');
+            waBtn.href = `https://wa.me/${contacto}?text=${encodeURIComponent("Hola, quiero consultar por el alquiler de "+a.Direccion)}`;
+            waBtn.target = "_blank";
+            waBtn.textContent = "Contactar por WhatsApp";
+            waBtn.style.display = "inline-block";
+            waBtn.style.background = "#25D366";
+            waBtn.style.color = "white";
+            waBtn.style.padding = "8px";
+            waBtn.style.marginTop = "10px";
+            waBtn.style.borderRadius = "6px";
+            waBtn.style.textDecoration = "none";
             detalle.appendChild(waBtn);
           }
 
@@ -252,7 +254,6 @@ function cargarAlquileres(){
           map.invalidateSize();
         };
         popupContent.appendChild(btn);
-
         marker.bindPopup(popupContent);
       });
     })
