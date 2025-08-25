@@ -185,8 +185,8 @@ function cargarAlquileres(){
 
         const marker = L.marker([lat,lng], {icon: icon}).addTo(map);
 
-        // Crear link de WhatsApp con texto precargado
-        const contacto = a.Contacto || '';
+        // Usar columna H "contacto" de la hoja "Alquileres"
+        const contacto = a.contacto || '';
         const mensaje = `Hola, Quería consultarte por el alquiler (${a.Direccion||""}) de (${nroAmb})`;
         const whatsappLink = contacto ? `https://wa.me/${contacto}?text=${encodeURIComponent(mensaje)}` : '#';
 
