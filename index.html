@@ -174,7 +174,6 @@ function registrarDueno(){
 }
 
 function cargarAlquileres(){
-  // Marcadores especiales inmediatos
   const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15], style:'background:blue;'});
   const hospIcon = L.divIcon({className:'marker-icon', html:'🏥', iconSize:[30,30], iconAnchor:[15,15], style:'background:red;'});
 
@@ -218,20 +217,41 @@ function cargarAlquileres(){
         btn.textContent = 'Ver Alquiler';
         btn.onclick = () => {
           const detalle = document.getElementById('alquiler-detalle');
-          detalle.innerHTML = `
-            <h2>Alquiler: ${a.Direccion||''}</h2>
-            <p><b>Ambientes:</b> ${nroAmb}</p>
-            <p><b>Precio:</b> ${a.Precio||''}</p>
-            <p><b>Información de ingreso:</b> ${infoIngreso}</p>
-            <p><b>Detalles:</b> ${detalles}</p>
-            <p><b>Mascotas:</b> ${mascotas}</p>
-          `;
+          // Vaciar contenido previo
+          detalle.innerHTML = '';
+
+          const h2 = document.createElement('h2');
+          h2.textContent = `Alquiler: ${a.Direccion||''}`;
+          detalle.appendChild(h2);
+
+          const pAmb = document.createElement('p');
+          pAmb.innerHTML = `<b>Ambientes:</b> ${nroAmb}`;
+          detalle.appendChild(pAmb);
+
+          const pPrecio = document.createElement('p');
+          pPrecio.innerHTML = `<b>Precio:</b> ${a.Precio||''}`;
+          detalle.appendChild(pPrecio);
+
+          const pIngreso = document.createElement('p');
+          pIngreso.innerHTML = `<b>Información de ingreso:</b> ${infoIngreso}`;
+          detalle.appendChild(pIngreso);
+
+          const pDet = document.createElement('p');
+          pDet.innerHTML = `<b>Detalles:</b> ${detalles}`;
+          detalle.appendChild(pDet);
+
+          const pMascotas = document.createElement('p');
+          pMascotas.innerHTML = `<b>Mascotas:</b> ${mascotas}`;
+          detalle.appendChild(pMascotas);
+
           if(a.Fotos){
-            const fotosHTML = a.Fotos.split(',').map(f => `<img src="${f}">`).join('');
-            detalle.innerHTML += fotosHTML;
+            a.Fotos.split(',').forEach(f => {
+              const img = document.createElement('img');
+              img.src = f;
+              detalle.appendChild(img);
+            });
           }
 
-          // Botón WhatsApp con número incluido
           if(contacto){
             const waBtn = document.createElement('button');
             waBtn.textContent = 'Contactar por WhatsApp';
