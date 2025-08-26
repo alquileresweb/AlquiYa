@@ -158,7 +158,17 @@ function agregarAlquiler(){
       imagenes: imagenesBase64
     })
   })
-  .then(res => res.json())
+  .then(async res => {
+    let data;
+    try {
+      data = await res.json();   // si viene JSON
+    } catch(e){
+      let txt = await res.text(); // si viene texto ("Accepted")
+      console.warn("Respuesta Make (texto):", txt);
+      data = { imagenesURLs: [] }; // fallback sin URLs
+    }
+    return data;
+  })
   .then(data => {
     // data.imagenesURLs = array de URLs subidas en Make
     const fotosConcatenadas = data.imagenesURLs ? data.imagenesURLs.join(",") : "";
