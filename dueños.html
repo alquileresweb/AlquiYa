@@ -234,6 +234,27 @@ function eliminarAlquiler(row){
 function alquilerEliminado(res){ if(res.success) cargarAlquileres(); }
 
 function logout(){ localStorage.removeItem("dueno"); window.location.href="index.html"; }
+
+// ================== CALLBACKS DE JSONP ==================
+function alquilerAgregado(res) {
+  if (res.success) {
+    alert("✅ Alquiler agregado con éxito");
+    resetForm();
+    cargarAlquileres();
+  } else {
+    alert("❌ Error al agregar: " + (res.error || "desconocido"));
+  }
+}
+
+function alquilerEditado(res) {
+  if (res.success) {
+    alert("✅ Cambios guardados correctamente");
+    resetForm();
+    cargarAlquileres();
+  } else {
+    alert("❌ Error al editar: " + (res.error || "desconocido"));
+  }
+}
 </script>
 </body>
 </html>
