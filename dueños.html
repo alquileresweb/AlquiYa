@@ -61,6 +61,7 @@ const MAKE_WEBHOOK = "https://hook.us2.make.com/29oaaxn76yvca7sjnvrh5xtynckowak4
 
 let imagenesBase64 = [];
 
+// ================== PREVIEW IMÁGENES ==================
 function actualizarPreview(){
   const previewContainer = document.getElementById("previewContainer");
   previewContainer.innerHTML = "";
@@ -93,6 +94,7 @@ document.getElementById("imagenFile").addEventListener("change", function(){
   });
 });
 
+// ================== INICIO ==================
 window.onload = function(){
   const email = localStorage.getItem("dueno");
   if(!email){ window.location.href="index.html"; return; }
@@ -129,7 +131,7 @@ function mostrarAlquileres(res){
   });
 }
 
-// --- Agregar o editar alquiler con Make webhook ---
+// ================== AGREGAR / EDITAR ==================
 function agregarAlquiler(){
   const direccion = document.getElementById("direccion").value;
   const ambientes = document.getElementById("ambientes").value;
@@ -158,19 +160,18 @@ function agregarAlquiler(){
       imagenes: imagenesBase64
     })
   })
-  .then(async res => {
+  .then(res => res.text())  // 🔹 leemos siempre como texto
+  .then(txt => {
     let data;
     try {
-      data = await res.json();   // si viene JSON
+      data = JSON.parse(txt); // si es JSON válido
     } catch(e){
-      let txt = await res.text(); // si viene texto ("Accepted")
       console.warn("Respuesta Make (texto):", txt);
-      data = { imagenesURLs: [] }; // fallback sin URLs
+      data = { imagenesURLs: [] }; // fallback
     }
     return data;
   })
   .then(data => {
-    // data.imagenesURLs = array de URLs subidas en Make
     const fotosConcatenadas = data.imagenesURLs ? data.imagenesURLs.join(",") : "";
 
     // Luego guardar datos en Google Sheets vía JSONP
@@ -214,6 +215,7 @@ function resetForm(){
   actualizarPreview();
 }
 
+// ================== ESTADO / ELIMINAR ==================
 function cambiarEstado(row){
   fetch(`${API_URL}?action=toggleEstado&row=${row}`)
     .then(res=>res.json())
