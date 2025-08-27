@@ -57,7 +57,6 @@ input, select, textarea { width:100%; padding:8px; margin-bottom:10px; }
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
-const MAKE_WEBHOOK = "https://hook.us2.make.com/29oaaxn76yvca7sjnvrh5xtynckowak4";
 
 let imagenesBase64 = [];
 
@@ -124,7 +123,6 @@ function mostrarAlquileres(res){
     let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
     let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
 
-    // 🔹 Procesar imágenes (separadas por coma en la celda Fotos)
     let fotosHTML = "";
     if(alq.Fotos){
       const urls = alq.Fotos.split(",");
@@ -141,7 +139,7 @@ function mostrarAlquileres(res){
 }
 
 // ================== AGREGAR / EDITAR ==================
-function agregarAlquiler(){
+async function agregarAlquiler(){
   const direccion = document.getElementById("direccion").value;
   const ambientes = document.getElementById("ambientes").value;
   const precio = document.getElementById("precio").value;
@@ -153,44 +151,35 @@ function agregarAlquiler(){
 
   if(!direccion || !ambientes || !precio){ alert("Completa todos los campos obligatorios."); return; }
 
-  // Enviar primero las imágenes a Make
-  fetch(MAKE_WEBHOOK, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      alquilerID: row,
-      dueno: email,
-      direccion,
-      ambientes,
-      precio,
-      mascotas,
-      infoIngreso,
-      detalles,
-      imagenes: imagenesBase64
-    })
-  })
-  .then(res => res.text())  // 🔹 leemos siempre como texto
-  .then(txt => {
-    let data;
-    try {
-      data = JSON.parse(txt); // si es JSON válido
-    } catch(e){
-      console.warn("Respuesta Make (texto):", txt);
-      data = { imagenesURLs: [] }; // fallback
+  // 🔹 Subir imágenes como blobs a Google Apps Script
+  const files = document.getElementById("imagenFile").files;
+  let uploadedURLs = [];
+  if(files.length > 0){
+    const formData = new FormData();
+    for(let i=0; i<files.length; i++){
+      formData.append('file' + i, files[i]);
     }
-    return data;
-  })
-  .then(data => {
-    const fotosConcatenadas = data.imagenesURLs ? data.imagenesURLs.join(",") : "";
+    formData.append('action', 'uploadImages');
+    formData.append('row', row);
+    formData.append('dueno', email);
 
-    // Luego guardar datos en Google Sheets vía JSONP
-    const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
-    const callback = action==="editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
-    const script = document.createElement("script");
-    script.src = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&callback=${callback}`;
-    document.body.appendChild(script);
-  })
-  .catch(err => console.error("Error al subir imágenes:", err));
+    try {
+      const resp = await fetch(API_URL, { method: 'POST', body: formData });
+      const data = await resp.json();
+      uploadedURLs = data.urls || [];
+    } catch(e){
+      console.error("Error al subir imágenes como blobs:", e);
+    }
+  }
+
+  const fotosConcatenadas = uploadedURLs.join(",");
+
+  // Luego guardar datos en Google Sheets vía JSONP
+  const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
+  const callback = action==="editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
+  const script = document.createElement("script");
+  script.src = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&callback=${callback}`;
+  document.body.appendChild(script);
 }
 
 function editarAlquiler(row, datos){
