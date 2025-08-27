@@ -123,9 +123,18 @@ function mostrarAlquileres(res){
     let btnEstado = `<button onclick="cambiarEstado(${alq.row})">Cambiar Estado</button>`;
     let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
     let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
+
+    // 🔹 Procesar imágenes (separadas por coma en la celda Fotos)
+    let fotosHTML = "";
+    if(alq.Fotos){
+      const urls = alq.Fotos.split(",");
+      fotosHTML = urls.map(u => `<img src="${u.trim()}" style="max-width:120px; margin:5px;">`).join("");
+    }
+
     div.innerHTML += `<div class="alquiler">
       <b>${alq.Direccion}</b> - ${alq['Nro Ambientes']} amb - ${alq.Precio} - Mascotas: ${alq.Mascotas || "N/D"}<br>
       Estado: ${estado}<br>
+      ${fotosHTML}<br>
       ${btnEstado} ${btnEditar} ${btnEliminar}
     </div>`;
   });
