@@ -131,7 +131,7 @@ button:hover{background:#2565c0}
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
+const webAppURL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
 let map = L.map('map').setView([-28.5503, -56.0406],14);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
 let markersLayer = L.layerGroup().addTo(map);
@@ -219,6 +219,7 @@ function driveUrlDirect(url){
       if(match) fileId = match[1];
     }
   }
+  // ✅ Cambiado a export=view para que se vean en la web
   return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
 }
 
