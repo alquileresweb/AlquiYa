@@ -227,7 +227,7 @@ function mostrarAlquileres(res){
   deptosActivos = res.data.filter(a=>a.Estado==="Activo").length;
   res.data.forEach(alq => {
     let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
-    let btnEstado = `<button onclick="cambiarEstado(${alq.row})">Cambiar Estado</button>`;
+    let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Cambiar Estado</button>`;
     let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
     let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
     let precioFormateado = formatoPrecio(alq.Precio);
@@ -302,7 +302,12 @@ function resetForm(){
   document.getElementById("msg").textContent = "";
 }
 
-function cambiarEstado(row){
+/* ================== CAMBIAR ESTADO CON LÍMITE DE PLAN ================== */
+function cambiarEstado(row, estadoActual){
+  if(estadoActual === "Inactivo" && deptosActivos >= limiteDeptos){
+    alert(`No puedes activar más alquileres. Tu plan (${planActual}) permite hasta ${limiteDeptos} deptos activos.`);
+    return;
+  }
   const script = document.createElement("script");
   script.src = `${API_URL}?action=toggleEstado&row=${row}&callback=cargarAlquileres`;
   document.body.appendChild(script);
