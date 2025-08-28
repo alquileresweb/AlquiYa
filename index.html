@@ -219,6 +219,7 @@ function driveUrlDirect(url){
       if(match) fileId = match[1];
     }
   }
+  // --- Cambiado a export=view para mostrar imágenes ---
   return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
 }
 
