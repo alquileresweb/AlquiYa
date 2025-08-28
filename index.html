@@ -19,8 +19,8 @@ nav a:hover{color:#3483fa}
 #login,#panel-dueno,#registro{display:none;max-width:500px;margin:auto}
 #alquiler-detalle{display:none;max-width:700px;margin:20px auto;padding:15px;border:2px solid #3483fa;border-radius:8px;background:#f9f9f9;box-shadow:0 0 10px rgba(0,0,0,0.1);}
 #alquiler-detalle.highlight{animation: resaltar 1s ease}
-#alquiler-detalle img{max-width:120px;margin:5px;border-radius:6px;object-fit:cover;}
-#imagenes-container{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;}
+#imagenes-container{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+#imagenes-container img{max-width:120px;height:90px;margin:5px;border-radius:6px;object-fit:cover;cursor:pointer;}
 input,select,button{width:100%;padding:8px;margin:5px 0;border-radius:6px}
 button{background:#3483fa;color:white;border:none;cursor:pointer}
 button:hover{background:#2565c0}
@@ -187,8 +187,10 @@ function registrarDueno(){
   });
 }
 
+// Convertir URLs de Drive a enlace directo
 function driveUrlDirect(url){
-  const idMatch = url.match(/\/d\/(.*?)\//);
+  let idMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)\//);
+  if(!idMatch) idMatch = url.match(/id=([a-zA-Z0-9_-]+)/);
   return idMatch ? `https://drive.google.com/uc?export=view&id=${idMatch[1]}` : url;
 }
 
@@ -239,7 +241,6 @@ function cargarAlquileres(){
             const p=document.createElement('p');p.innerHTML=`<b>${label}:</b> ${val}`;detalle.appendChild(p);
           });
 
-          // Contenedor de miniaturas
           const imgContainer = document.createElement('div');
           imgContainer.id = 'imagenes-container';
           if(a.Fotos){
