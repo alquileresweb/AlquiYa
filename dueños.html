@@ -57,190 +57,191 @@ input, select, textarea { width:100%; padding:8px; margin-bottom:10px; }
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload"; // Cambia "demo" por tu cloud name
-const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres"; // Cambia si tienes otro preset
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
+const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
 let imagenesBase64 = [];
 
 // ================== PREVIEW IMÁGENES ==================
 function actualizarPreview(){
-const previewContainer = document.getElementById("previewContainer");
-previewContainer.innerHTML = "";
-imagenesBase64.forEach((imgBase64, index) => {
-const container = document.createElement("div");
-container.className = "preview-img-container";
-const img = document.createElement("img");
-img.src = imgBase64;
-img.className = "preview-img";
-const btnDel = document.createElement("button");
-btnDel.className = "delete-img";
-btnDel.textContent = "x";
-btnDel.onclick = ()=>{ imagenesBase64.splice(index,1); actualizarPreview(); };
-container.appendChild(img);
-container.appendChild(btnDel);
-previewContainer.appendChild(container);
-});
+  const previewContainer = document.getElementById("previewContainer");
+  previewContainer.innerHTML = "";
+  imagenesBase64.forEach((imgBase64, index) => {
+    const container = document.createElement("div");
+    container.className = "preview-img-container";
+    const img = document.createElement("img");
+    img.src = imgBase64;
+    img.className = "preview-img";
+    const btnDel = document.createElement("button");
+    btnDel.className = "delete-img";
+    btnDel.textContent = "x";
+    btnDel.onclick = ()=>{ imagenesBase64.splice(index,1); actualizarPreview(); };
+    container.appendChild(img);
+    container.appendChild(btnDel);
+    previewContainer.appendChild(container);
+  });
 }
 
 // Manejar selección de imágenes
 document.getElementById("imagenFile").addEventListener("change", function(){
-const files = Array.from(this.files);
-files.forEach(file=>{
-const reader = new FileReader();
-reader.onload = function(e){
-imagenesBase64.push(e.target.result);
-actualizarPreview();
-}
-reader.readAsDataURL(file);
-});
+  const files = Array.from(this.files);
+  files.forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = function(e){
+      imagenesBase64.push(e.target.result);
+      actualizarPreview();
+    }
+    reader.readAsDataURL(file);
+  });
 });
 
 // ================== SUBIR IMÁGENES A CLOUDINARY ==================
 async function subirImagenCloudinary(file){
-const formData = new FormData();
-formData.append("file", file);
-formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-try {
-const res = await fetch(CLOUDINARY_URL, { method:"POST", body:formData });
-const json = await res.json();
-return json.secure_url; // devuelve la URL pública
-} catch(err){
-console.error("Error subiendo imagen a Cloudinary:", err);
-return null;
-}
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+  try {
+    const res = await fetch(CLOUDINARY_URL, { method:"POST", body:formData });
+    const json = await res.json();
+    return json.secure_url;
+  } catch(err){
+    console.error("Error subiendo imagen a Cloudinary:", err);
+    return null;
+  }
 }
 
 // ================== INICIO ==================
 window.onload = function(){
-const email = localStorage.getItem("dueno");
-if(!email){ window.location.href="index.html"; return; }
-document.getElementById("bienvenida").textContent = "Bienvenido, " + email;
-cargarAlquileres();
+  const email = localStorage.getItem("dueno");
+  if(!email){ window.location.href="index.html"; return; }
+  document.getElementById("bienvenida").textContent = "Bienvenido, " + email;
+  cargarAlquileres();
 }
 
 // ================== CARGAR ALQUILERES via JSONP ==================
 function cargarAlquileres() {
-const email = localStorage.getItem("dueno");
-const callbackName = "mostrarAlquileres";
-const script = document.createElement("script");
-script.src = `${API_URL}?action=getAlquileresDueno&dueno=${encodeURIComponent(email)}&callback=${callbackName}`;
-document.body.appendChild(script);
+  const email = localStorage.getItem("dueno");
+  const callbackName = "mostrarAlquileres";
+  const script = document.createElement("script");
+  script.src = `${API_URL}?action=getAlquileresDueno&dueno=${encodeURIComponent(email)}&callback=${callbackName}`;
+  document.body.appendChild(script);
 }
 
 // JSONP callback global
 function mostrarAlquileres(res){
-const div = document.getElementById("listaAlquileres");
-div.innerHTML = "";
-if(!res.success || !res.data || res.data.length === 0){
-div.innerHTML="No tienes alquileres aún.";
-return;
-}
+  const div = document.getElementById("listaAlquileres");
+  div.innerHTML = "";
+  if(!res.success || !res.data || res.data.length === 0){
+    div.innerHTML="No tienes alquileres aún.";
+    return;
+  }
 
-res.data.forEach(alq => {
-let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
-let btnEstado = `<button onclick="cambiarEstado(${alq.row})">Cambiar Estado</button>`;
-let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
-let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
-let fotosHTML = "";
-if(alq.Fotos){
-const urls = alq.Fotos.split(",");
-fotosHTML = urls.map(u => `<img src="${u.trim()}" style="max-width:120px; margin:5px;">`).join("");
-}
-div.innerHTML += `<div class="alquiler">
-<b>${alq.Direccion}</b> - ${alq['Nro Ambientes']} amb - ${alq.Precio} - Mascotas: ${alq.Mascotas || "N/D"}<br>
-Estado: ${estado}<br>
-${fotosHTML}<br>
-${btnEstado} ${btnEditar} ${btnEliminar}
-</div>`;
-});
+  res.data.forEach(alq => {
+    let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
+    let btnEstado = `<button onclick="cambiarEstado(${alq.row})">Cambiar Estado</button>`;
+    let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
+    let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
+    
+    // 🔹 NO mostramos imágenes en la lista
+    div.innerHTML += `<div class="alquiler">
+      <b>${alq.Direccion}</b> - ${alq['Nro Ambientes']} amb - ${alq.Precio} - Mascotas: ${alq.Mascotas || "N/D"}<br>
+      Estado: ${estado}<br>
+      ${btnEstado} ${btnEditar} ${btnEliminar}
+    </div>`;
+  });
 }
 
 // ================== AGREGAR / EDITAR ==================
 async function agregarAlquiler(){
-const direccion = document.getElementById("direccion").value;
-const ambientes = document.getElementById("ambientes").value;
-const precio = document.getElementById("precio").value;
-const mascotas = document.getElementById("mascotas").value;
-const infoIngreso = document.getElementById("infoIngreso").value;
-const detalles = document.getElementById("detalles").value;
-let row = document.getElementById("editRow").value || new Date().getTime();
-const email = localStorage.getItem("dueno");
+  let direccion = document.getElementById("direccion").value;
+  const ambientes = document.getElementById("ambientes").value;
+  const precio = document.getElementById("precio").value;
+  const mascotas = document.getElementById("mascotas").value;
+  const infoIngreso = document.getElementById("infoIngreso").value;
+  const detalles = document.getElementById("detalles").value;
+  let row = document.getElementById("editRow").value || new Date().getTime();
+  const email = localStorage.getItem("dueno");
 
-if(!direccion || !ambientes || !precio){ alert("Completa todos los campos obligatorios."); return; }
+  if(!direccion || !ambientes || !precio){ alert("Completa todos los campos obligatorios."); return; }
 
-// 🔹 Subir imágenes a Cloudinary
-const files = document.getElementById("imagenFile").files;
-let uploadedURLs = [];
-for(let i=0; i<files.length; i++){
-const url = await subirImagenCloudinary(files[i]);
-if(url) uploadedURLs.push(url);
-}
+  // 🔹 Forzar "Santo Tomé Corrientes"
+  direccion = direccion + ", Santo Tomé Corrientes";
 
-enviarAlquiler(uploadedURLs.join(","));
+  // 🔹 Subir imágenes a Cloudinary
+  const files = document.getElementById("imagenFile").files;
+  let uploadedURLs = [];
+  for(let i=0; i<files.length; i++){
+    const url = await subirImagenCloudinary(files[i]);
+    if(url) uploadedURLs.push(url);
+  }
 
-function enviarAlquiler(fotosConcatenadas){
-const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
-const callback = action==="editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
-const script = document.createElement("script");
-script.src = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&callback=${callback}`;
-document.body.appendChild(script);
-}
+  enviarAlquiler(uploadedURLs.join(","));
+
+  function enviarAlquiler(fotosConcatenadas){
+    const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
+    const callback = action==="editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
+    const script = document.createElement("script");
+    script.src = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&contacto=auto&callback=${callback}`;
+    document.body.appendChild(script);
+  }
 }
 
 // ================== RESTO DE FUNCIONES ==================
 function editarAlquiler(row, datos){
-document.getElementById("tituloForm").textContent="✏️ Editar Alquiler";
-document.getElementById("btnGuardar").textContent="Guardar Cambios";
-document.getElementById("editRow").value=row;
-document.getElementById("direccion").value=datos.Direccion||"";
-document.getElementById("ambientes").value=datos["Nro Ambientes"]||"";
-document.getElementById("precio").value=datos.Precio||"";
-document.getElementById("mascotas").value=datos.Mascotas||"No";
-document.getElementById("infoIngreso").value=datos.InfoIngreso||"";
-document.getElementById("detalles").value=datos.Detalles||"";
+  document.getElementById("tituloForm").textContent="✏️ Editar Alquiler";
+  document.getElementById("btnGuardar").textContent="Guardar Cambios";
+  document.getElementById("editRow").value=row;
+  document.getElementById("direccion").value=datos.Direccion||"";
+  document.getElementById("ambientes").value=datos["Nro Ambientes"]||"";
+  document.getElementById("precio").value=datos.Precio||"";
+  document.getElementById("mascotas").value=datos.Mascotas||"No";
+  document.getElementById("infoIngreso").value=datos.InfoIngreso||"";
+  document.getElementById("detalles").value=datos.Detalles||"";
 
-imagenesBase64 = datos.Fotos ? datos.Fotos.split(",") : [];
-actualizarPreview();
-window.scrollTo(0, document.getElementById("formulario").offsetTop);
+  // 🔹 En edición sí mostramos imágenes
+  imagenesBase64 = datos.Fotos ? datos.Fotos.split(",") : [];
+  actualizarPreview();
+  window.scrollTo(0, document.getElementById("formulario").offsetTop);
 }
 
 function resetForm(){
-document.getElementById("tituloForm").textContent="➕ Agregar Alquiler";
-document.getElementById("btnGuardar").textContent="Agregar";
-document.getElementById("editRow").value="";
-document.getElementById("direccion").value="";
-document.getElementById("ambientes").value="";
-document.getElementById("precio").value="";
-document.getElementById("mascotas").value="Sí";
-document.getElementById("infoIngreso").value="";
-document.getElementById("detalles").value="";
-document.getElementById("imagenFile").value="";
-imagenesBase64=[];
-actualizarPreview();
+  document.getElementById("tituloForm").textContent="➕ Agregar Alquiler";
+  document.getElementById("btnGuardar").textContent="Agregar";
+  document.getElementById("editRow").value="";
+  document.getElementById("direccion").value="";
+  document.getElementById("ambientes").value="";
+  document.getElementById("precio").value="";
+  document.getElementById("mascotas").value="Sí";
+  document.getElementById("infoIngreso").value="";
+  document.getElementById("detalles").value="";
+  document.getElementById("imagenFile").value="";
+  imagenesBase64=[];
+  actualizarPreview();
 }
 
 function cambiarEstado(row){
-const script = document.createElement("script");
-script.src = `${API_URL}?action=toggleEstado&row=${row}&callback=cargarAlquileres`;
-document.body.appendChild(script);
+  const script = document.createElement("script");
+  script.src = `${API_URL}?action=toggleEstado&row=${row}&callback=cargarAlquileres`;
+  document.body.appendChild(script);
 }
 
 function eliminarAlquiler(row){
-if(!confirm("¿Seguro que deseas eliminar este alquiler?")) return;
-const script = document.createElement("script");
-script.src = `${API_URL}?action=deleteAlquiler&row=${row}&callback=cargarAlquileres`;
-document.body.appendChild(script);
+  if(!confirm("¿Seguro que deseas eliminar este alquiler?")) return;
+  const script = document.createElement("script");
+  script.src = `${API_URL}?action=deleteAlquiler&row=${row}&callback=cargarAlquileres`;
+  document.body.appendChild(script);
 }
 
 function logout(){ localStorage.removeItem("dueno"); window.location.href="index.html"; }
 
 function alquilerAgregado(res) {
-if (res.success) { alert("✅ Alquiler agregado con éxito"); resetForm(); cargarAlquileres(); }
-else { alert("❌ Error al agregar: " + (res.error || "desconocido")); }
+  if (res.success) { alert("✅ Alquiler agregado con éxito"); resetForm(); cargarAlquileres(); }
+  else { alert("❌ Error al agregar: " + (res.error || "desconocido")); }
 }
 
 function alquilerEditado(res) {
-if (res.success) { alert("✅ Cambios guardados correctamente"); resetForm(); cargarAlquileres(); }
-else { alert("❌ Error al editar: " + (res.error || "desconocido")); }
+  if (res.success) { alert("✅ Cambios guardados correctamente"); resetForm(); cargarAlquileres(); }
+  else { alert("❌ Error al editar: " + (res.error || "desconocido")); }
 }
 </script>
 </body>
+</html>
