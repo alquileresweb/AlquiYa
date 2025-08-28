@@ -174,7 +174,7 @@ async function agregarAlquiler(){
 
   const fotosConcatenadas = uploadedURLs.join(",");
 
-  // Luego guardar datos en Google Sheets vía JSONP
+  // Guardar datos en Google Sheets vía JSONP
   const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
   const callback = action==="editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
   const script = document.createElement("script");
