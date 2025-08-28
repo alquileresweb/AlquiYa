@@ -57,7 +57,6 @@ input, select, textarea { width:100%; padding:8px; margin-bottom:10px; }
 
 <script>
 const API_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"; // cambia por tu ID real
-
 let imagenesBase64 = [];
 
 // ================== PREVIEW IMÁGENES ==================
@@ -151,20 +150,20 @@ async function agregarAlquiler(){
 
   if(!direccion || !ambientes || !precio){ alert("Completa todos los campos obligatorios."); return; }
 
-  // 🔹 Subir imágenes Base64
+  // 🔹 Subir imágenes como blobs usando FormData
+  const files = document.getElementById("imagenFile").files;
   let uploadedURLs = [];
-  if(imagenesBase64.length > 0){
+  if(files.length > 0){
+    const formData = new FormData();
+    for(let i=0; i<files.length; i++){
+      formData.append('file' + i, files[i]);
+    }
+    formData.append('action', 'uploadImages');
+    formData.append('row', row);
+    formData.append('dueno', email);
+
     try {
-      const resp = await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({
-          action: "uploadImagesBase64",
-          row: row,
-          dueno: email,
-          images: imagenesBase64
-        }),
-        headers: { "Content-Type": "application/json" }
-      });
+      const resp = await fetch(API_URL, { method: 'POST', body: formData });
       const data = await resp.json();
       uploadedURLs = data.links || [];
     } catch(e){ console.error(e); }
