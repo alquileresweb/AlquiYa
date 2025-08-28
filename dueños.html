@@ -21,7 +21,6 @@ input, select, textarea { width:100%; padding:8px; margin-bottom:10px; }
 <h2 id="bienvenida"></h2>
 <button onclick="logout()">Cerrar Sesión</button>
 
-<!-- Mensaje de bloqueo de pago -->
 <div id="bloqueoPago"></div>
 
 <h3>📋 Mis Alquileres</h3>
@@ -60,13 +59,13 @@ input, select, textarea { width:100%; padding:8px; margin-bottom:10px; }
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
+const API_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
 const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
 let imagenesBase64 = [];
-let pagoHabilitado = false; // 🔑 Control de pagos
+let pagoHabilitado = false;
 
-// ================== FORMATO DE PRECIO ==================
+// Formato precio
 function formatoPrecio(valor){
   if(!valor) return "";
   valor = valor.toString().replace(/\D/g,"");
@@ -80,7 +79,7 @@ document.getElementById("precio").addEventListener("input", function(){
   this.selectionEnd = cursorPos;
 });
 
-// ================== PREVIEW IMÁGENES ==================
+// Preview imágenes
 function actualizarPreview(){
   const previewContainer = document.getElementById("previewContainer");
   previewContainer.innerHTML = "";
@@ -112,7 +111,7 @@ document.getElementById("imagenFile").addEventListener("change", function(){
   });
 });
 
-// ================== SUBIR IMÁGENES A CLOUDINARY ==================
+// Subir imagen a Cloudinary
 async function subirImagenCloudinary(file){
   const formData = new FormData();
   formData.append("file", file);
@@ -127,32 +126,33 @@ async function subirImagenCloudinary(file){
   }
 }
 
-// ================== INICIO ==================
+// Inicio
 window.onload = function(){
   const email = localStorage.getItem("dueno");
   if(!email){ window.location.href="index.html"; return; }
   document.getElementById("bienvenida").textContent = "Bienvenido, " + email;
-  verificarPago(email); // 🔑 Control de pago antes de cargar todo
+  verificarPago(email);
 }
 
-// ================== VERIFICAR PAGO ==================
+// Verificar pago
 function verificarPago(email){
   const callbackName = "respuestaPago";
   const script = document.createElement("script");
-  script.src = `${API_URL}?action=verificarPago&email=${encodeURIComponent(email)}&callback=${callbackName}`;
+  script.src = `${API_URL}?action=verificarPago&dueno=${encodeURIComponent(email)}&callback=${callbackName}`;
   document.body.appendChild(script);
 }
 
 function respuestaPago(res){
   const bloqueo = document.getElementById("bloqueoPago");
-  if(res.success && res.data){
-    let estado = res.data.Estado || "Pendiente";
-    let plan = res.data.Plan || "Sin plan";
-    let vencimiento = res.data.FechaVencimiento || "N/D";
+  if(res.success){
+    let estado = res.estado || "Pendiente";
+    let plan = res.plan || "Sin plan";
+    let vencimiento = res.vencimiento || "N/D";
 
     if(estado === "Pagado"){
       pagoHabilitado = true;
       bloqueo.style.display="none";
+      document.getElementById("formulario").style.display="block";
       cargarAlquileres();
     } else {
       pagoHabilitado = false;
@@ -169,7 +169,7 @@ function respuestaPago(res){
   }
 }
 
-// ================== CARGAR ALQUILERES via JSONP ==================
+// Cargar alquileres JSONP
 function cargarAlquileres() {
   const email = localStorage.getItem("dueno");
   const callbackName = "mostrarAlquileres";
@@ -199,7 +199,7 @@ function mostrarAlquileres(res){
   });
 }
 
-// ================== AGREGAR / EDITAR ==================
+// Agregar/editar
 async function agregarAlquiler(){
   if(!pagoHabilitado){ alert("⚠️ No puedes agregar/editar alquileres. Tu pago está pendiente o vencido."); return; }
 
@@ -239,7 +239,7 @@ async function agregarAlquiler(){
   }
 }
 
-// ================== RESTO DE FUNCIONES ==================
+// Resto de funciones (editar, resetForm, cambiarEstado, eliminar, logout, callbacks)
 function editarAlquiler(row, datos){
   if(!pagoHabilitado){ alert("⚠️ No puedes editar alquileres. Tu pago está pendiente o vencido."); return; }
   document.getElementById("tituloForm").textContent="✏️ Editar Alquiler";
