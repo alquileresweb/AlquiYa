@@ -186,11 +186,19 @@ function registrarDueno(){
   });
 }
 
-// --- Función para convertir URLs de Drive a enlace directo compatible <img> ---
+// --- Función segura para mostrar imágenes de Drive ---
 function driveUrlDirect(url){
-  let idMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)\//);
-  if(!idMatch) idMatch = url.match(/id=([a-zA-Z0-9_-]+)/);
-  return idMatch ? `https://drive.google.com/uc?export=view&id=${idMatch[1]}` : url;
+  // Convierte cualquier formato de URL de Drive a enlace directo para <img>
+  let fileId = null;
+  if(url.includes("drive.google.com")){
+    let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if(match) fileId = match[1];
+    else {
+      match = url.match(/id=([a-zA-Z0-9_-]+)/);
+      if(match) fileId = match[1];
+    }
+  }
+  return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
 }
 
 function cargarAlquileres(){
