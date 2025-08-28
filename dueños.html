@@ -56,10 +56,10 @@ input, select, textarea { width:100%; padding:8px; margin-bottom:10px; }
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 let imagenesBase64 = [];
 
-// ====== PREVIEW IMÁGENES ======
+// ================== PREVIEW IMÁGENES ==================
 function actualizarPreview(){
   const previewContainer = document.getElementById("previewContainer");
   previewContainer.innerHTML = "";
@@ -79,7 +79,7 @@ function actualizarPreview(){
   });
 }
 
-// Selección de imágenes
+// Manejar selección de imágenes
 document.getElementById("imagenFile").addEventListener("change", function(){
   const files = Array.from(this.files);
   files.forEach(file=>{
@@ -92,7 +92,7 @@ document.getElementById("imagenFile").addEventListener("change", function(){
   });
 });
 
-// ====== INICIO ======
+// ================== INICIO ==================
 window.onload = function(){
   const email = localStorage.getItem("dueno");
   if(!email){ window.location.href="index.html"; return; }
@@ -100,14 +100,16 @@ window.onload = function(){
   cargarAlquileres();
 }
 
-function cargarAlquileres(){
+// ================== CARGAR ALQUILERES via JSONP ==================
+function cargarAlquileres() {
   const email = localStorage.getItem("dueno");
-  fetch(`${API_URL}?action=getAlquileresDueno&dueno=${encodeURIComponent(email)}`)
-    .then(res => res.json())
-    .then(res => mostrarAlquileres(res))
-    .catch(err => console.error(err));
+  const callbackName = "mostrarAlquileres"; 
+  const script = document.createElement("script");
+  script.src = `${API_URL}?action=getAlquileresDueno&dueno=${encodeURIComponent(email)}&callback=${callbackName}`;
+  document.body.appendChild(script);
 }
 
+// JSONP callback global
 function mostrarAlquileres(res){
   const div = document.getElementById("listaAlquileres");
   div.innerHTML = "";
@@ -135,7 +137,7 @@ function mostrarAlquileres(res){
   });
 }
 
-// ====== AGREGAR / EDITAR ======
+// ================== AGREGAR / EDITAR ==================
 async function agregarAlquiler(){
   const direccion = document.getElementById("direccion").value;
   const ambientes = document.getElementById("ambientes").value;
@@ -143,37 +145,58 @@ async function agregarAlquiler(){
   const mascotas = document.getElementById("mascotas").value;
   const infoIngreso = document.getElementById("infoIngreso").value;
   const detalles = document.getElementById("detalles").value;
-  const row = document.getElementById("editRow").value || new Date().getTime();
+  let row = document.getElementById("editRow").value || new Date().getTime();
   const email = localStorage.getItem("dueno");
 
   if(!direccion || !ambientes || !precio){ alert("Completa todos los campos obligatorios."); return; }
 
-  // Subir imágenes Base64 a Drive
+  // 🔹 Subir imágenes como blobs
+  const files = document.getElementById("imagenFile").files;
   let uploadedURLs = [];
-  if(imagenesBase64.length > 0){
-    const payload = { action: 'uploadImagesBase64', row, dueno: email, images: imagenesBase64 };
-    try {
-      const resp = await fetch(API_URL, {
-        method: 'POST',
-        body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'application/json' }
-      });
-      const data = await resp.json();
-      uploadedURLs = data.links || [];
-    } catch(e){ console.error("❌ Error al subir Base64:", e); }
+  if(files.length > 0){
+    const formData = new FormData();
+    for(let i=0; i<files.length; i++){
+      formData.append('file' + i, files[i]);
+    }
+    formData.append('action', 'uploadImages');
+    formData.append('row', row);
+    formData.append('dueno', email);
+
+    // En este ejemplo, las imágenes se suben mediante fetch POST normal
+    fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: "uploadImagesBase64",
+        images: imagenesBase64,
+        row,
+        dueno: email
+      })
+    }).then(res=>res.json())
+      .then(res=>{
+        console.log("📄 Imágenes subidas:", res);
+        uploadedURLs = res.links || [];
+        enviarAlquiler(uploadedURLs.join(","));
+      })
+      .catch(err=>{ console.error(err); enviarAlquiler(""); });
+  } else {
+    enviarAlquiler("");
   }
 
-  const fotosConcatenadas = uploadedURLs.join(",");
-
-  // Guardar datos en Google Sheets via JSONP
-  const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
-  const callback = action==="editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
-  const script = document.createElement("script");
-  script.src = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&callback=${callback}`;
-  document.body.appendChild(script);
+  function enviarAlquiler(fotosConcatenadas){
+    const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
+    const callback = action==="editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
+    const script = document.createElement("script");
+    script.src = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&callback=${callback}`;
+    document.body.appendChild(script);
+  }
 }
 
-// ====== RESTO DE FUNCIONES ======
+// Callback de subida de imágenes
+function imagenesSubidas(res){
+  console.log("📄 Imágenes subidas:", res);
+}
+
+// ================== RESTO DE FUNCIONES ==================
 function editarAlquiler(row, datos){
   document.getElementById("tituloForm").textContent="✏️ Editar Alquiler";
   document.getElementById("btnGuardar").textContent="Guardar Cambios";
@@ -206,18 +229,16 @@ function resetForm(){
 }
 
 function cambiarEstado(row){
-  fetch(`${API_URL}?action=toggleEstado&row=${row}`)
-    .then(res=>res.json())
-    .then(res=>{ if(res.success) cargarAlquileres(); })
-    .catch(err=>console.error(err));
+  const script = document.createElement("script");
+  script.src = `${API_URL}?action=toggleEstado&row=${row}&callback=cargarAlquileres`;
+  document.body.appendChild(script);
 }
 
 function eliminarAlquiler(row){
   if(!confirm("¿Seguro que deseas eliminar este alquiler?")) return;
-  fetch(`${API_URL}?action=deleteAlquiler&row=${row}`)
-    .then(res=>res.json())
-    .then(res=>{ if(res.success) cargarAlquileres(); })
-    .catch(err=>console.error(err));
+  const script = document.createElement("script");
+  script.src = `${API_URL}?action=deleteAlquiler&row=${row}&callback=cargarAlquileres`;
+  document.body.appendChild(script);
 }
 
 function logout(){ localStorage.removeItem("dueno"); window.location.href="index.html"; }
@@ -234,4 +255,5 @@ function alquilerEditado(res) {
 </script>
 </body>
 </html>
+
 
