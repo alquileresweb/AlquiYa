@@ -132,6 +132,8 @@ button:hover{background:#2565c0}
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
 const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
+const cloudinaryURL = "https://api.cloudinary.com/v1_1/demo/image/upload"; // Cambiar demo por tu cloud name
+const cloudinaryUploadPreset = "ml_default"; // Cambiar si tienes un upload preset
 let map = L.map('map').setView([-28.5503, -56.0406],14);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
 let markersLayer = L.layerGroup().addTo(map);
@@ -208,6 +210,21 @@ function registrarDueno(){
   });
 }
 
+// --- Función para subir imagen a Cloudinary ---
+async function subirImagenCloudinary(file){
+  const data = new FormData();
+  data.append("file", file);
+  data.append("upload_preset", cloudinaryUploadPreset);
+  try {
+    const res = await fetch(cloudinaryURL, {method:"POST", body:data});
+    const json = await res.json();
+    return json.secure_url; // devuelve la URL pública de la imagen
+  } catch(err){
+    console.error("Error subiendo imagen a Cloudinary:", err);
+    return null;
+  }
+}
+
 // --- Función segura para mostrar imágenes de Drive ---
 function driveUrlDirect(url){
   let fileId = null;
@@ -219,7 +236,6 @@ function driveUrlDirect(url){
       if(match) fileId = match[1];
     }
   }
-  // --- Cambiado a export=view para mostrar imágenes ---
   return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
 }
 
