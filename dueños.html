@@ -141,7 +141,6 @@ function mostrarAlquileres(res){
     let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
     let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
     
-    // 🔹 NO mostramos imágenes en la lista
     div.innerHTML += `<div class="alquiler">
       <b>${alq.Direccion}</b> - ${alq['Nro Ambientes']} amb - ${alq.Precio} - Mascotas: ${alq.Mascotas || "N/D"}<br>
       Estado: ${estado}<br>
@@ -165,6 +164,12 @@ async function agregarAlquiler(){
 
   // 🔹 Forzar "Santo Tomé Corrientes"
   direccion = direccion + ", Santo Tomé Corrientes";
+
+  // 🔹 Mostrar mensaje "Guardando cambios" si es edición
+  const msgEl = document.getElementById("msg");
+  if(document.getElementById("editRow").value) {
+    msgEl.textContent = "Guardando cambios...";
+  }
 
   // 🔹 Subir imágenes a Cloudinary
   const files = document.getElementById("imagenFile").files;
@@ -216,6 +221,7 @@ function resetForm(){
   document.getElementById("imagenFile").value="";
   imagenesBase64=[];
   actualizarPreview();
+  document.getElementById("msg").textContent = ""; // Limpiar mensaje
 }
 
 function cambiarEstado(row){
@@ -234,13 +240,24 @@ function eliminarAlquiler(row){
 function logout(){ localStorage.removeItem("dueno"); window.location.href="index.html"; }
 
 function alquilerAgregado(res) {
-  if (res.success) { alert("✅ Alquiler agregado con éxito"); resetForm(); cargarAlquileres(); }
+  if (res.success) { 
+    alert("✅ Alquiler agregado con éxito"); 
+    resetForm(); 
+    cargarAlquileres(); 
+  }
   else { alert("❌ Error al agregar: " + (res.error || "desconocido")); }
 }
 
 function alquilerEditado(res) {
-  if (res.success) { alert("✅ Cambios guardados correctamente"); resetForm(); cargarAlquileres(); }
-  else { alert("❌ Error al editar: " + (res.error || "desconocido")); }
+  const msgEl = document.getElementById("msg");
+  if (res.success) { 
+    msgEl.textContent = "✅ Cambios guardados correctamente";
+    resetForm(); 
+    cargarAlquileres(); 
+  }
+  else { 
+    msgEl.textContent = "❌ Error al editar: " + (res.error || "desconocido"); 
+  }
 }
 </script>
 </body>
