@@ -57,6 +57,8 @@ input, select, textarea { width:100%; padding:8px; margin-bottom:10px; }
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/demo/image/upload"; // Cambia "demo" por tu cloud name
+const CLOUDINARY_UPLOAD_PRESET = "ml_default"; // Cambia si tienes otro preset
 let imagenesBase64 = [];
 
 // ================== PREVIEW IMÁGENES ==================
@@ -91,6 +93,21 @@ document.getElementById("imagenFile").addEventListener("change", function(){
     reader.readAsDataURL(file);
   });
 });
+
+// ================== SUBIR IMÁGENES A CLOUDINARY ==================
+async function subirImagenCloudinary(file){
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+  try {
+    const res = await fetch(CLOUDINARY_URL, { method:"POST", body:formData });
+    const json = await res.json();
+    return json.secure_url; // devuelve la URL pública
+  } catch(err){
+    console.error("Error subiendo imagen a Cloudinary:", err);
+    return null;
+  }
+}
 
 // ================== INICIO ==================
 window.onload = function(){
@@ -150,37 +167,15 @@ async function agregarAlquiler(){
 
   if(!direccion || !ambientes || !precio){ alert("Completa todos los campos obligatorios."); return; }
 
-  // 🔹 Subir imágenes como blobs
+  // 🔹 Subir imágenes a Cloudinary
   const files = document.getElementById("imagenFile").files;
   let uploadedURLs = [];
-  if(files.length > 0){
-    const formData = new FormData();
-    for(let i=0; i<files.length; i++){
-      formData.append('file' + i, files[i]);
-    }
-    formData.append('action', 'uploadImages');
-    formData.append('row', row);
-    formData.append('dueno', email);
-
-    // En este ejemplo, las imágenes se suben mediante fetch POST normal
-    fetch(API_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: "uploadImagesBase64",
-        images: imagenesBase64,
-        row,
-        dueno: email
-      })
-    }).then(res=>res.json())
-      .then(res=>{
-        console.log("📄 Imágenes subidas:", res);
-        uploadedURLs = res.links || [];
-        enviarAlquiler(uploadedURLs.join(","));
-      })
-      .catch(err=>{ console.error(err); enviarAlquiler(""); });
-  } else {
-    enviarAlquiler("");
+  for(let i=0; i<files.length; i++){
+    const url = await subirImagenCloudinary(files[i]);
+    if(url) uploadedURLs.push(url);
   }
+
+  enviarAlquiler(uploadedURLs.join(","));
 
   function enviarAlquiler(fotosConcatenadas){
     const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
@@ -189,11 +184,6 @@ async function agregarAlquiler(){
     script.src = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&callback=${callback}`;
     document.body.appendChild(script);
   }
-}
-
-// Callback de subida de imágenes
-function imagenesSubidas(res){
-  console.log("📄 Imágenes subidas:", res);
 }
 
 // ================== RESTO DE FUNCIONES ==================
@@ -255,5 +245,3 @@ function alquilerEditado(res) {
 </script>
 </body>
 </html>
-
-
