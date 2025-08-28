@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Panel de Dueños</title>
 <style>
+/* --- estilos originales --- */
 body { font-family: Arial, sans-serif; margin: 20px; background:#f5f5f5; }
 h2 { color:#333; }
 .alquiler { border:1px solid #ccc; padding:10px; margin:10px 0; background:#fff; }
@@ -176,11 +177,8 @@ function mostrarEstadoPlan(res){
   planActual = res.data[0].Plan;
   fechaVencimiento = res.data[0].Vencimiento;
   const estadoPago = res.data[0].EstadoPago==="Al día"?"✅ Pago al día":"⚠️ Pago vencido";
-  // Limite por plan
   limiteDeptos = planActual==="Basico"?3:planActual==="Plus"?5:10;
-
-  // Contar deptos activos
-  deptosActivos = res.data.filter(a=>a.Estado==="Activo").length;
+  deptosActivos = res.data[0].deptosActivos;
 
   document.getElementById("planStatus").innerHTML = `Plan: <b>${planActual}</b> | Estado de Pago: ${estadoPago} | Vencimiento: ${fechaVencimiento}<br>
     Deptos activos: ${deptosActivos}/${limiteDeptos} <br>
@@ -200,28 +198,24 @@ function seleccionarPlan(plan){
   document.body.appendChild(script);
   cerrarModalPlan();
 }
-
-function recargarPlan(res){
-  if(res.success){ alert("✅ Plan actualizado"); cargarEstadoPlan(); }
-  else alert("❌ Error al actualizar plan: "+(res.error||"desconocido"));
-}
+function recargarPlan(res){ if(res.success){ alert("✅ Plan actualizado"); cargarEstadoPlan(); } else alert("❌ Error al actualizar plan: "+(res.error||"desconocido")); }
 
 // ================== CARGAR ALQUILERES ==================
 function cargarAlquileres() {
   const email = localStorage.getItem("dueno");
   const script = document.createElement("script");
-  script.src = `${API_URL}?action=getAlquileresDueno&dueno=${encodeURIComponent(email)}&callback=mostrarAlquileres`;
+  script.src = `${API_URL}?action=getLoginInfo&email=${encodeURIComponent(email)}&callback=mostrarAlquileres`;
   document.body.appendChild(script);
 }
 
 function mostrarAlquileres(res){
   const div = document.getElementById("listaAlquileres");
   div.innerHTML = "";
-  if(!res.success || !res.data || res.data.length === 0){
+  if(!res.success || !res.data || res.data.length===0 || !res.data[0].data || res.data[0].data.length===0){
     div.innerHTML="No tienes alquileres aún.";
     return;
   }
-  res.data.forEach(alq => {
+  res.data[0].data.forEach(alq => {
     let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
     let btnEstado = `<button onclick="cambiarEstado(${alq.row})">Cambiar Estado</button>`;
     let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
