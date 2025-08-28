@@ -66,12 +66,10 @@ button:hover{background:#2565c0}
 <a href="#" onclick="mostrarLogin()">Soy Dueño</a>
 </nav>
 
-<!-- 🔹 BOTÓN MOSTRAR FILTROS -->
 <div style="text-align:center;margin:10px;">
   <button onclick="toggleFiltros()">Añadir Filtros</button>
 </div>
 
-<!-- 🔹 FILTROS -->
 <div id="filtros">
   <input type="number" id="filtroAmb" placeholder="Nro de Ambientes">
   <input type="number" id="filtroMin" placeholder="Precio Mínimo">
@@ -82,7 +80,6 @@ button:hover{background:#2565c0}
 <div id="map"></div>
 <div id="alquiler-detalle"></div>
 
-<!-- LOGIN -->
 <div id="login">
   <h2>Login Dueños</h2>
   <input type="text" id="email" placeholder="Email">
@@ -92,7 +89,6 @@ button:hover{background:#2565c0}
   <p>¿No tienes cuenta? <button onclick="mostrarRegistro()">Registrarme</button></p>
 </div>
 
-<!-- REGISTRO -->
 <div id="registro">
   <h2>Registro Dueños</h2>
   <input type="text" id="reg_email" placeholder="Email">
@@ -104,7 +100,6 @@ button:hover{background:#2565c0}
   <p id="registro-msg" style="color:green"></p>
 </div>
 
-<!-- PANEL -->
 <div id="panel-dueno">
   <h2>Panel de Dueños</h2>
   <p id="bienvenida"></p>
@@ -118,12 +113,10 @@ let map = L.map('map').setView([-28.5503, -56.0406],14);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
 let markersLayer = L.layerGroup().addTo(map);
 
-// 🔹 Mostrar / Ocultar filtros
 function toggleFiltros(){
   const f = document.getElementById("filtros");
   f.style.display = (f.style.display==="none"||f.style.display==="") ? "flex":"none";
 }
-
 function mostrarMapa(){
   document.getElementById("map").style.display="block";
   document.getElementById("login").style.display="none";
@@ -195,7 +188,6 @@ function registrarDueno(){
 
 function cargarAlquileres(){
   markersLayer.clearLayers();
-
   const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15]});
   const hospIcon = L.divIcon({className:'marker-icon', html:'🏥', iconSize:[30,30], iconAnchor:[15,15]});
   L.marker([-28.5509978,-56.0409727],{icon:uniIcon}).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
@@ -226,13 +218,7 @@ function cargarAlquileres(){
         const mascotas = a["Mascotas"] || "";
         const contacto = a["Contacto"] || "";
 
-        const icon = L.divIcon({
-          className: 'marker-icon',
-          html: '🏠' + `<span style="font-size:12px;margin-left:2px;">${nroAmb}</span>`,
-          iconSize: [30, 30],
-          iconAnchor: [15, 15]
-        });
-
+        const icon = L.divIcon({className: 'marker-icon', html: '🏠<span style="font-size:12px;margin-left:2px;">'+nroAmb+'</span>', iconSize: [30, 30], iconAnchor: [15, 15]});
         const marker = L.marker([lat,lng], {icon: icon}).addTo(markersLayer);
 
         const popupDiv = document.createElement('div');
@@ -244,23 +230,17 @@ function cargarAlquileres(){
         verBtn.onclick = () => {
           const detalle = document.getElementById('alquiler-detalle');
           detalle.innerHTML = `<h2>Alquiler: ${a.Direccion||''}</h2>`;
-          const infoFields = [
-            ['Ambientes', nroAmb],
-            ['Precio', a.Precio||''],
-            ['Información de ingreso', infoIngreso],
-            ['Detalles', detalles],
-            ['Mascotas', mascotas]
-          ];
-          infoFields.forEach(([label, val]) => {
-            const p = document.createElement('p');
-            p.innerHTML = `<b>${label}:</b> ${val}`;
-            detalle.appendChild(p);
+          [['Ambientes', nroAmb],['Precio', a.Precio||''],['Información de ingreso', infoIngreso],['Detalles', detalles],['Mascotas', mascotas]].forEach(([label,val])=>{
+            const p=document.createElement('p');p.innerHTML=`<b>${label}:</b> ${val}`;detalle.appendChild(p);
           });
           if(a.Fotos){
             a.Fotos.split(',').forEach(f => {
-              const img = document.createElement('img');
-              img.src = f;
-              detalle.appendChild(img);
+              const url = f.trim();
+              if(url){
+                const img = document.createElement('img');
+                img.src = url;
+                detalle.appendChild(img);
+              }
             });
           }
           if(contacto){
@@ -269,9 +249,7 @@ function cargarAlquileres(){
             waBtn.style.background = '#25D366';
             waBtn.style.color = 'white';
             waBtn.style.marginTop = '10px';
-            waBtn.onclick = () => {
-              window.open(`https://wa.me/${contacto}?text=${encodeURIComponent("Hola, quiero consultar por el alquiler de "+a.Direccion)}`,'_blank');
-            };
+            waBtn.onclick = () => { window.open(`https://wa.me/${contacto}?text=${encodeURIComponent("Hola, quiero consultar por el alquiler de "+a.Direccion)}`,'_blank'); };
             detalle.appendChild(waBtn);
           }
           detalle.style.display = 'block';
@@ -287,9 +265,7 @@ function cargarAlquileres(){
     .catch(err => console.error("Error al conectar con WebApp:", err));
 }
 
-window.onload = () => {
-  mostrarMapa();
-};
+window.onload = () => { mostrarMapa(); };
 </script>
 </body>
 </html>
