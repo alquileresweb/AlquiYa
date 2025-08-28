@@ -56,7 +56,7 @@ input, select, textarea { width:100%; padding:8px; margin-bottom:10px; }
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
+const API_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
 
 let imagenesBase64 = [];
 
@@ -83,13 +83,11 @@ function actualizarPreview(){
 // Manejar selección de imágenes
 document.getElementById("imagenFile").addEventListener("change", function(){
   const files = Array.from(this.files);
-  console.log("📂 Archivos seleccionados:", files);
   files.forEach(file=>{
     const reader = new FileReader();
     reader.onload = function(e){
       imagenesBase64.push(e.target.result);
       actualizarPreview();
-      console.log("📄 Imagen cargada en Base64");
     }
     reader.readAsDataURL(file);
   });
@@ -107,10 +105,7 @@ function cargarAlquileres(){
   const email = localStorage.getItem("dueno");
   fetch(`${API_URL}?action=getAlquileresDueno&dueno=${encodeURIComponent(email)}`)
     .then(res => res.json())
-    .then(res => {
-      console.log("📦 Alquileres cargados:", res);
-      mostrarAlquileres(res);
-    })
+    .then(res => mostrarAlquileres(res))
     .catch(err => console.error("❌ Error al cargar alquileres:", err));
 }
 
@@ -156,33 +151,24 @@ async function agregarAlquiler(){
 
   if(!direccion || !ambientes || !precio){ alert("Completa todos los campos obligatorios."); return; }
 
-  // 🔹 Subir imágenes como blobs a Google Apps Script
-  const files = document.getElementById("imagenFile").files;
   let uploadedURLs = [];
-  if(files.length > 0){
-    const formData = new FormData();
-    for(let i=0; i<files.length; i++){
-      formData.append('file' + i, files[i]);
-    }
-    formData.append('action', 'uploadImages');
-    formData.append('row', row);
-    formData.append('dueno', email);
 
-    console.log("🚀 Subiendo archivos al backend...");
+  // 🔹 Subir imágenes como Base64
+  if(imagenesBase64.length>0){
     try {
-      const resp = await fetch(API_URL, { method: 'POST', body: formData });
+      const resp = await fetch(API_URL, {
+        method:'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ action:'uploadImagesBase64', row, dueno:email, images:imagenesBase64 })
+      });
       const data = await resp.json();
-      console.log("✅ Respuesta de subida:", data);
       uploadedURLs = data.links || [];
-    } catch(e){
-      console.error("❌ Error al subir imágenes como blobs:", e);
-    }
+    } catch(e){ console.error("❌ Error subiendo Base64:", e); }
   }
 
   const fotosConcatenadas = uploadedURLs.join(",");
-  console.log("🔗 URLs concatenadas:", fotosConcatenadas);
 
-  // Guardar datos en Google Sheets vía JSONP
+  // Guardar datos en Google Sheets vía JSONP (manteniendo tu fetch original)
   const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
   const callback = action==="editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
   const script = document.createElement("script");
@@ -242,25 +228,13 @@ function alquilerEliminado(res){ if(res.success) cargarAlquileres(); }
 function logout(){ localStorage.removeItem("dueno"); window.location.href="index.html"; }
 
 function alquilerAgregado(res) {
-  console.log("📩 Callback alquilerAgregado:", res);
-  if (res.success) {
-    alert("✅ Alquiler agregado con éxito");
-    resetForm();
-    cargarAlquileres();
-  } else {
-    alert("❌ Error al agregar: " + (res.error || "desconocido"));
-  }
+  if (res.success) { alert("✅ Alquiler agregado con éxito"); resetForm(); cargarAlquileres(); }
+  else alert("❌ Error al agregar: " + (res.error || "desconocido"));
 }
 
 function alquilerEditado(res) {
-  console.log("📩 Callback alquilerEditado:", res);
-  if (res.success) {
-    alert("✅ Cambios guardados correctamente");
-    resetForm();
-    cargarAlquileres();
-  } else {
-    alert("❌ Error al editar: " + (res.error || "desconocido"));
-  }
+  if (res.success) { alert("✅ Cambios guardados correctamente"); resetForm(); cargarAlquileres(); }
+  else alert("❌ Error al editar: " + (res.error || "desconocido"));
 }
 </script>
 </body>
