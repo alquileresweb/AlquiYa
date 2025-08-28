@@ -53,6 +53,23 @@ button:hover{background:#2565c0}
   50% {transform:scale(1.02);box-shadow:0 0 20px #2565c0;}
   100% {transform:scale(1);box-shadow:0 0 10px rgba(0,0,0,0.1);}
 }
+/* Modal para imagen grande */
+#modal-img{
+  display:none;
+  position:fixed;
+  top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.8);
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+#modal-img img{
+  max-width:90%;
+  max-height:90%;
+  border-radius:8px;
+  box-shadow:0 0 15px #000;
+  cursor:pointer;
+}
 </style>
 </head>
 <body>
@@ -105,6 +122,11 @@ button:hover{background:#2565c0}
   <h2>Panel de Dueños</h2>
   <p id="bienvenida"></p>
   <button onclick="logout()">Cerrar Sesión</button>
+</div>
+
+<!-- Modal para imagen grande -->
+<div id="modal-img">
+  <img id="img-grande" onclick="cerrarModal()">
 </div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -188,7 +210,6 @@ function registrarDueno(){
 
 // --- Función segura para mostrar imágenes de Drive ---
 function driveUrlDirect(url){
-  // Convierte cualquier formato de URL de Drive a enlace directo para <img>
   let fileId = null;
   if(url.includes("drive.google.com")){
     let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
@@ -199,6 +220,17 @@ function driveUrlDirect(url){
     }
   }
   return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
+}
+
+// --- Función para abrir modal ---
+function abrirModal(src){
+  const modal = document.getElementById("modal-img");
+  const img = document.getElementById("img-grande");
+  img.src = src;
+  modal.style.display = "flex";
+}
+function cerrarModal(){
+  document.getElementById("modal-img").style.display = "none";
 }
 
 function cargarAlquileres(){
@@ -257,6 +289,7 @@ function cargarAlquileres(){
                 const img = document.createElement('img');
                 img.src = url;
                 img.alt = "Imagen del alquiler";
+                img.onclick = ()=>abrirModal(img.src);
                 imgContainer.appendChild(img);
               }
             });
