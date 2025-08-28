@@ -14,11 +14,16 @@ input, select, textarea { width:100%; padding:8px; margin-bottom:10px; }
 .preview-img { max-width: 120px; margin-top: 5px; display:inline-block; position:relative; }
 .preview-img-container { display:inline-block; margin-right:5px; position:relative; }
 .delete-img { position:absolute; top:0; right:0; background:red; color:white; border:none; border-radius:50%; cursor:pointer; }
+#panelPago { background:#fff3cd; border:1px solid #ffeeba; padding:15px; margin-bottom:20px; }
+#panelPago.ok { background:#d4edda; border:1px solid #c3e6cb; }
 </style>
 </head>
 <body>
 <h2 id="bienvenida"></h2>
 <button onclick="logout()">Cerrar Sesión</button>
+
+<!-- PANEL DE PAGO -->
+<div id="panelPago">Cargando información de pago...</div>
 
 <h3>📋 Mis Alquileres</h3>
 <div id="listaAlquileres">Cargando...</div>
@@ -60,15 +65,15 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
 const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
 let imagenesBase64 = [];
+let pagoValido = false; // 🔑 control de estado de pago
 
 // ================== FORMATO DE PRECIO ==================
 function formatoPrecio(valor){
   if(!valor) return "";
-  valor = valor.toString().replace(/\D/g,""); // eliminar cualquier no dígito
+  valor = valor.toString().replace(/\D/g,"");
   return "$" + valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 
-// Formatear input precio al escribir
 document.getElementById("precio").addEventListener("input", function(){
   const cursorPos = this.selectionStart;
   const valorSinSimbolo = this.value.replace(/\D/g,'');
@@ -129,7 +134,46 @@ window.onload = function(){
   const email = localStorage.getItem("dueno");
   if(!email){ window.location.href="index.html"; return; }
   document.getElementById("bienvenida").textContent = "Bienvenido, " + email;
-  cargarAlquileres();
+  cargarInfoPago(email); // primero control de pago
+}
+
+// ================== PANEL DE PAGO ==================
+function cargarInfoPago(email){
+  const callback = "mostrarPago";
+  const script = document.createElement("script");
+  script.src = `${API_URL}?action=getPagoDueno&email=${encodeURIComponent(email)}&callback=${callback}`;
+  document.body.appendChild(script);
+}
+
+function mostrarPago(res){
+  const div = document.getElementById("panelPago");
+  if(!res.success){
+    div.innerHTML = "❌ Error obteniendo estado de pago.";
+    pagoValido = false;
+    return;
+  }
+  const datos = res.data;
+  let hoy = new Date();
+  let venc = new Date(datos["Fecha Vencimiento"]);
+  let estado = datos["Estado del Pago"] || "Pendiente";
+
+  if(estado==="Pagado" && venc >= hoy){
+    div.classList.add("ok");
+    div.innerHTML = `✅ Plan Activo: <b>${datos.Plan}</b><br>
+                     Vence: ${datos["Fecha Vencimiento"]}<br>
+                     Estado: ${estado}`;
+    pagoValido = true;
+    cargarAlquileres(); // habilita carga de alquileres
+  }else{
+    div.classList.remove("ok");
+    div.innerHTML = `⚠️ Tu plan está vencido o impago.<br>
+                     Plan: ${datos.Plan || "N/D"}<br>
+                     Vencimiento: ${datos["Fecha Vencimiento"] || "N/D"}<br>
+                     Estado: ${estado}<br>
+                     <a target="_blank" href="https://wa.me/5493764275443?text=Hola, quiero renovar mi plan de alquileres">📲 Renovar / Contactar</a>`;
+    pagoValido = false;
+    document.getElementById("formulario").style.display="none"; // 🔒 oculta formulario
+  }
 }
 
 // ================== CARGAR ALQUILERES via JSONP ==================
@@ -149,16 +193,12 @@ function mostrarAlquileres(res){
     div.innerHTML="No tienes alquileres aún.";
     return;
   }
-
   res.data.forEach(alq => {
     let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
     let btnEstado = `<button onclick="cambiarEstado(${alq.row})">Cambiar Estado</button>`;
     let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
     let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
-    
-    // Mostrar precio formateado
     let precioFormateado = formatoPrecio(alq.Precio);
-
     div.innerHTML += `<div class="alquiler">
       <b>${alq.Direccion}</b> - ${alq['Nro Ambientes']} amb - ${precioFormateado} - Mascotas: ${alq.Mascotas || "N/D"}<br>
       Estado: ${estado}<br>
@@ -169,9 +209,10 @@ function mostrarAlquileres(res){
 
 // ================== AGREGAR / EDITAR ==================
 async function agregarAlquiler(){
+  if(!pagoValido){ alert("⚠️ No puedes agregar alquileres hasta regularizar tu pago."); return; }
   let direccion = document.getElementById("direccion").value;
   const ambientes = document.getElementById("ambientes").value;
-  let precio = document.getElementById("precio").value.replace(/\D/g,""); // solo números
+  let precio = document.getElementById("precio").value.replace(/\D/g,"");
   const mascotas = document.getElementById("mascotas").value;
   const infoIngreso = document.getElementById("infoIngreso").value;
   const detalles = document.getElementById("detalles").value;
@@ -181,11 +222,8 @@ async function agregarAlquiler(){
   if(!direccion || !ambientes || !precio){ alert("Completa todos los campos obligatorios."); return; }
 
   direccion = direccion + ", Santo Tomé Corrientes";
-
   const msgEl = document.getElementById("msg");
-  if(document.getElementById("editRow").value) {
-    msgEl.textContent = "Guardando cambios...";
-  }
+  if(document.getElementById("editRow").value) msgEl.textContent = "Guardando cambios...";
 
   const files = document.getElementById("imagenFile").files;
   let uploadedURLs = [];
@@ -195,7 +233,6 @@ async function agregarAlquiler(){
   }
 
   enviarAlquiler(uploadedURLs.join(","));
-
   function enviarAlquiler(fotosConcatenadas){
     const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
     const callback = action==="editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
@@ -216,7 +253,6 @@ function editarAlquiler(row, datos){
   document.getElementById("mascotas").value=datos.Mascotas||"No";
   document.getElementById("infoIngreso").value=datos.InfoIngreso||"";
   document.getElementById("detalles").value=datos.Detalles||"";
-
   imagenesBase64 = datos.Fotos ? datos.Fotos.split(",") : [];
   actualizarPreview();
   window.scrollTo(0, document.getElementById("formulario").offsetTop);
