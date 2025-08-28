@@ -166,7 +166,7 @@ async function agregarAlquiler(){
     try {
       const resp = await fetch(API_URL, { method: 'POST', body: formData });
       const data = await resp.json();
-      uploadedURLs = data.urls || [];
+      uploadedURLs = data.links || []; // 🔹 links en lugar de urls
     } catch(e){
       console.error("Error al subir imágenes como blobs:", e);
     }
