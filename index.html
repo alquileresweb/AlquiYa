@@ -1,368 +1,390 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Alquileres Santo Tomé</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<style>
-body{margin:0;font-family:Arial,sans-serif}
-header{background:#3483fa;color:white;padding:15px;text-align:center}
-nav{display:flex;justify-content:center;gap:20px;background:#f4f4f4;padding:10px}
-nav a{text-decoration:none;font-weight:bold;color:#333}
-nav a:hover{color:#3483fa}
-#map{height:60vh;width:100%;margin-bottom:20px;}
-#filtros{max-width:700px;margin:10px auto;padding:10px;background:#f9f9f9;border:1px solid #ccc;border-radius:8px;display:none;flex-wrap:wrap;gap:10px}
-#filtros input{flex:1;min-width:120px;padding:8px;border-radius:6px;border:1px solid #ccc}
-#filtros button{padding:8px 15px;border-radius:6px;background:#3483fa;color:white;border:none;cursor:pointer}
-#filtros button:hover{background:#2565c0}
-#login,#panel-dueno,#registro{display:none;max-width:500px;margin:auto}
-#alquiler-detalle{display:none;max-width:700px;margin:20px auto;padding:15px;border:2px solid #3483fa;border-radius:8px;background:#f9f9f9;box-shadow:0 0 10px rgba(0,0,0,0.1);}
-#alquiler-detalle.highlight{animation: resaltar 1s ease}
-#imagenes-container{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
-#imagenes-container img{max-width:120px;height:90px;margin:5px;border-radius:6px;object-fit:cover;cursor:pointer;}
-input,select,button{width:100%;padding:8px;margin:5px 0;border-radius:6px}
-button{background:#3483fa;color:white;border:none;cursor:pointer}
-button:hover{background:#2565c0}
-.marker-icon {
-display:flex;
-align-items:center;
-justify-content:center;
-background:#3483fa;
-color:white;
-font-weight:bold;
-border-radius:50%;
-width:30px;
-height:30px;
-border:2px solid white;
-box-shadow:0 0 2px #000;
-}
-.popup-button {
-display:inline-block;
-padding:5px 10px;
-margin-top:5px;
-background:#3483fa;
-color:white;
-text-decoration:none;
-border-radius:5px;
-font-weight:bold;
-cursor:pointer;
-}
-@keyframes resaltar {
-0% {transform:scale(1);box-shadow:0 0 10px #3483fa;}
-50% {transform:scale(1.02);box-shadow:0 0 20px #2565c0;}
-100% {transform:scale(1);box-shadow:0 0 10px rgba(0,0,0,0.1);}
-}
-/* Modal para imagen grande */
-#modal-img{
-display:none;
-position:fixed;
-top:0;left:0;width:100%;height:100%;
-background:rgba(0,0,0,0.8);
-align-items:center;
-justify-content:center;
-z-index:9999;
-}
-#modal-img img{
-max-width:90%;
-max-height:90%;
-border-radius:8px;
-box-shadow:0 0 15px #000;
-cursor:pointer;
-}
+// --- Datos de Cloudinary ---
+const CLOUDINARY_CLOUD_NAME = "dnugmwern";
+const CLOUDINARY_API_KEY = "877726879255954";
+const CLOUDINARY_API_SECRET = "t8CStqLDqd1hs3P9Hkr4lqicIQU";
+const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres"; // Crea uno en tu panel de Cloudinary
 
-/* --- NUEVO: mensaje cargando alquileres --- */
-#loading-msg {
-display:none;
-text-align:center;
-font-weight:bold;
-margin:10px;
-color:#3483fa;
-}
-
-</style>
-</head>
-<body>
-
-<header>
-<h1>Alquileres Santo Tomé</h1>
-<p>Encuentra tu próximo departamento fácilmente</p>
-</header>
-
-<nav>
-<a href="#" onclick="mostrarMapa()">Mapa</a>
-<a href="#" onclick="mostrarLogin()">Soy Dueño</a>
-</nav>
-
-<div style="text-align:center;margin:10px;">
-<button onclick="toggleFiltros()">Añadir Filtros</button>
-</div>
-
-<div id="filtros">
-<input type="number" id="filtroAmb" placeholder="Nro de Ambientes">
-<input type="number" id="filtroMin" placeholder="Precio Mínimo">
-<input type="number" id="filtroMax" placeholder="Precio Máximo">
-<button onclick="cargarAlquileres()">Filtrar</button>
-</div>
-
-<!-- NUEVO: Mensaje de carga -->
-<div id="loading-msg">Cargando alquileres disponibles...</div>
-
-<div id="map"></div>
-<div id="alquiler-detalle"></div>
-
-<div id="login">
-<h2>Login Dueños</h2>
-<input type="text" id="email" placeholder="Email">
-<input type="password" id="password" placeholder="Contraseña">
-<button onclick="login()">Ingresar</button>
-<p id="login-msg" style="color:red"></p>
-<p>¿No tienes cuenta? <button onclick="mostrarRegistro()">Registrarme</button></p>
-</div>
-
-<div id="registro">
-<h2>Registro Dueños</h2>
-<input type="text" id="reg_email" placeholder="Email">
-<input type="text" id="reg_nombre" placeholder="Nombre">
-<input type="password" id="reg_password" placeholder="Contraseña">
-<input type="text" id="reg_contacto" placeholder="WhatsApp (ej: 3794000000)">
-<button onclick="registrarDueno()">Registrar</button>
-<button onclick="mostrarLogin()">Cancelar</button>
-<p id="registro-msg" style="color:green"></p>
-</div>
-
-<div id="panel-dueno">
-<h2>Panel de Dueños</h2>
-<p id="bienvenida"></p>
-<button onclick="logout()">Cerrar Sesión</button>
-</div>
-
-<!-- Modal para imagen grande -->
-<div id="modal-img">
-<img id="img-grande" onclick="cerrarModal()">
-</div>
-
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script>
-const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
-const cloudinaryURL = "https://api.cloudinary.com/v1_1/demo/image/upload"; 
-const cloudinaryUploadPreset = "ml_default"; 
-let map = L.map('map').setView([-28.5503, -56.0406],14);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
-let markersLayer = L.layerGroup().addTo(map);
-
-function toggleFiltros(){
-const f = document.getElementById("filtros");
-f.style.display = (f.style.display==="none"||f.style.display==="") ? "flex":"none";
-}
-function mostrarMapa(){
-document.getElementById("map").style.display="block";
-document.getElementById("login").style.display="none";
-document.getElementById("panel-dueno").style.display="none";
-document.getElementById("registro").style.display="none";
-document.getElementById("alquiler-detalle").style.display="none";
-map.invalidateSize();
-cargarAlquileres();
-}
-function mostrarLogin(){
-document.getElementById("map").style.display="none";
-document.getElementById("filtros").style.display="none";
-document.getElementById("login").style.display="block";
-document.getElementById("panel-dueno").style.display="none";
-document.getElementById("registro").style.display="none";
-document.getElementById("alquiler-detalle").style.display="none";
-}
-function mostrarRegistro(){
-document.getElementById("login").style.display="none";
-document.getElementById("registro").style.display="block";
-document.getElementById("map").style.display="none";
-document.getElementById("filtros").style.display="none";
-document.getElementById("panel-dueno").style.display="none";
-document.getElementById("alquiler-detalle").style.display="none";
-}
-function login(){
-const email = document.getElementById("email").value.trim();
-const password = document.getElementById("password").value.trim();
-if(!email || !password){
-document.getElementById("login-msg").textContent="Ingrese email y contraseña";
-return;
-}
-// --- NUEVO: validar contra backend ---
-fetch(webAppURL+"?action=verificarLogin&email="+encodeURIComponent(email)+"&password="+encodeURIComponent(password))
-.then(r=>r.json())
-.then(data=>{
-if(data.success){
-localStorage.setItem("dueno", email);
-localStorage.setItem("dueno_email", email);
-window.location.href="dueños.html";
-}else{
-document.getElementById("login-msg").textContent="Debes registrarte";
-}
-})
-.catch(()=>{document.getElementById("login-msg").textContent="Error de conexión";});
-}
-function logout(){
-localStorage.removeItem("dueno");
-localStorage.removeItem("dueno_email");
-mostrarLogin();
-}
-function registrarDueno(){
-const email = document.getElementById("reg_email").value.trim();
-const nombre = document.getElementById("reg_nombre").value.trim();
-const password = document.getElementById("reg_password").value.trim();
-const contacto = document.getElementById("reg_contacto").value.trim();
-if(!email || !nombre || !password || !contacto){
-document.getElementById("registro-msg").style.color="red";
-document.getElementById("registro-msg").textContent="Complete todos los campos";
-return;
-}
-const formData = new FormData();
-formData.append("action","registrarDueno");
-formData.append("email",email);
-formData.append("nombre",nombre);
-formData.append("password",password);
-formData.append("contacto",contacto);
-// --- NUEVO: columnas extras ---
-formData.append("plan","Básico");
-formData.append("estadoPago","al día");
-formData.append("fechaVencimiento","30/12/2025");
-fetch(webAppURL,{method:"POST",mode:"no-cors",body:formData})
-.then(()=>{
-document.getElementById("registro-msg").style.color="green";
-document.getElementById("registro-msg").innerHTML="Dueño registrado con éxito.<br><button onclick='mostrarLogin()'>Ir a Login</button>";
-})
-.catch(()=>{
-document.getElementById("registro-msg").style.color="red";
-document.getElementById("registro-msg").textContent="Error de conexión";
-});
-}
-
-// --- Función para subir imagen a Cloudinary ---
-async function subirImagenCloudinary(file){
-const data = new FormData();
-data.append("file", file);
-data.append("upload_preset", cloudinaryUploadPreset);
-try {
-const res = await fetch(cloudinaryURL, {method:"POST", body:data});
-const json = await res.json();
-return json.secure_url;
-} catch(err){
-console.error("Error subiendo imagen a Cloudinary:", err);
-return null;
-}
-}
-function driveUrlDirect(url){
-let fileId = null;
-if(url.includes("drive.google.com")){
-let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-if(match) fileId = match[1];
-else {
-match = url.match(/id=([a-zA-Z0-9_-]+)/);
-if(match) fileId = match[1];
-}
-}
-return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
-}
-function abrirModal(src){
-const modal = document.getElementById("modal-img");
-const img = document.getElementById("img-grande");
-img.src = src;
-modal.style.display = "flex";
-}
-function cerrarModal(){
-document.getElementById("modal-img").style.display = "none";
-}
-function cargarAlquileres(){
-document.getElementById("loading-msg").style.display="block"; // NUEVO: mostrar mensaje
-markersLayer.clearLayers();
-const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15]});
-const hospIcon = L.divIcon({className:'marker-icon', html:'🏥', iconSize:[30,30], iconAnchor:[15,15]});
-L.marker([-28.5509978,-56.0409727],{icon:uniIcon}).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
-L.marker([-28.5551127,-56.0389282],{icon:hospIcon}).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
-const filtroAmb = document.getElementById("filtroAmb").value;
-const filtroMin = parseFloat(document.getElementById("filtroMin").value) || 0;
-const filtroMax = parseFloat(document.getElementById("filtroMax").value) || Infinity;
-fetch(webAppURL + "?action=getAlquileres")
-.then(res => res.json())
-.then(res => {
-document.getElementById("loading-msg").style.display="none"; // NUEVO: ocultar mensaje
-if(!res.success) return console.error("Error al cargar alquileres:", res.error);
-res.data.forEach(a=>{
-// --- NUEVO: solo mostrar si está al día ---
-if(a["Estado del Pago"]!=="al día") return;
-if(a["Fecha Vencimiento"]==="vencido") return;
-
-const lat = parseFloat(a.Latitud);
-const lng = parseFloat(a.Longitud);
-if(isNaN(lat) || isNaN(lng)) return;
-
-const nroAmb = parseInt(a["Nro Ambientes"]) || 0;
-const precio = parseFloat(a.Precio) || 0;
-if(filtroAmb && nroAmb !== parseInt(filtroAmb)) return;
-if(precio < filtroMin || precio > filtroMax) return;
-
-const infoIngreso = a["InformacionIngreso"] || "";
-const detalles = a["Detalles"] || "";
-const mascotas = a["Mascotas"] || "";
-const contacto = a["Contacto"] || "";
-
-const icon = L.divIcon({className:'marker-icon', html:'🏠<span style="font-size:12px;margin-left:2px;">'+nroAmb+'</span>', iconSize:[30,30], iconAnchor:[15,15]});
-const marker = L.marker([lat,lng], {icon: icon}).addTo(markersLayer);
-
-const popupDiv = document.createElement('div');
-popupDiv.innerHTML = `<b>Dirección:</b> ${a.Direccion||""}<br><b>Ambientes:</b> ${nroAmb}<br><b>Precio:</b> ${a.Precio||""}`;
-
-const verBtn = document.createElement('button');
-verBtn.className = 'popup-button';
-verBtn.textContent = 'Ver Alquiler';
-verBtn.onclick = () => {
-const detalle = document.getElementById('alquiler-detalle');
-detalle.innerHTML = `<h2>Alquiler: ${a.Direccion||''}</h2>`;
-[['Ambientes', nroAmb],['Precio', a.Precio||''],['Información de ingreso', infoIngreso],['Detalles', detalles],['Mascotas', mascotas]].forEach(([label,val])=>{
-const p=document.createElement('p');p.innerHTML=`<b>${label}:</b> ${val}`;detalle.appendChild(p);
-});
-
-const imgContainer = document.createElement('div');
-imgContainer.id = 'imagenes-container';
-if(a.Fotos){
-a.Fotos.split(',').forEach(f=>{
-const url = driveUrlDirect(f.trim());
-if(url){
-const img = document.createElement('img');
-img.src = url;
-img.alt = "Imagen del alquiler";
-img.onclick = ()=>abrirModal(img.src);
-imgContainer.appendChild(img);
-}
-});
-}
-detalle.appendChild(imgContainer);
-
-if(contacto){
-const waBtn = document.createElement('button');
-waBtn.textContent = 'Contactar por WhatsApp';
-waBtn.style.background = '#25D366';
-waBtn.style.color = 'white';
-waBtn.style.marginTop = '10px';
-waBtn.onclick = ()=>{ window.open(`https://wa.me/${contacto}?text=${encodeURIComponent("Hola, quiero consultar por el alquiler de "+a.Direccion)}`,'_blank'); };
-detalle.appendChild(waBtn);
-}
-detalle.style.display='block';
-detalle.classList.add("highlight");
-detalle.scrollIntoView({behavior:"smooth", block:"start"});
-setTimeout(()=>detalle.classList.remove("highlight"),1200);
-map.invalidateSize();
+// --- Planes ---
+const PLANES = {
+  Basico: { limiteDeptos: 3, limiteFotos: 3, destacar: 0 },
+  Plus: { limiteDeptos: 5, limiteFotos: 5, destacar: 1 },
+  Full: { limiteDeptos: 10, limiteFotos: 99, destacar: 99 }
 };
-popupDiv.appendChild(verBtn);
-marker.bindPopup(popupDiv);
-});
-})
-.catch(err=>{
-document.getElementById("loading-msg").style.display="none"; // NUEVO: ocultar mensaje en error
-console.error("Error al conectar con WebApp:",err)
-});
+
+// --- Manejo principal de solicitudes ---
+function doGet(e) {
+  var action = e.parameter.action;
+  var callback = e.parameter.callback || null;
+  var res = {};
+
+  try {
+    if (action == "getAlquileres") {
+      res = { success: true, data: getAlquileresActivos() };
+    } else if (action == "addAlquiler") {
+      res = addAlquiler(e);
+    } else if (action == "editAlquiler") {
+      res = editAlquiler(e);
+    } else if (action == "toggleEstado") {
+      res = toggleEstado(e);
+    } else if (action == "deleteAlquiler") {
+      res = deleteAlquiler(e);
+    } else if (action == "registerDueno") {
+      res = registerDueno(e);
+    } else if (action == "getAlquileresDueno") {
+      res = { success: true, data: getAlquileres(e) };
+    } else if (action == "mejorarPlan") {
+      res = mejorarPlan(e);
+    } else if (action == "getLoginInfo") {
+      res = getLoginInfo(e);
+    } else if (action == "verificarLogin") {
+      res = verificarLogin(e);
+    } else {
+      res = { success: false, error: "Acción no reconocida" };
+    }
+  } catch (err) {
+    res = { success: false, error: err.message };
+  }
+
+  var json = JSON.stringify(res);
+  if (callback) {
+    return ContentService.createTextOutput(callback + "(" + json + ");")
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  } else {
+    return ContentService.createTextOutput(json)
+      .setMimeType(ContentService.MimeType.JSON);
+  }
 }
-window.onload = ()=>{mostrarMapa();};
-</script>
-</body>
-</html>
+
+// --- Manejar POST ---
+function doPost(e) {
+  try {
+    if (e.postData && e.postData.contents) {
+      const params = JSON.parse(e.postData.contents);
+
+      // === Subir imágenes Base64 a Cloudinary ===
+      if (params.action === "uploadImagesCloudinary" && params.images) {
+        const links = [];
+        params.images.forEach((b64, i) => {
+          try {
+            const url = subirImagenCloudinary(b64);
+            if(url) links.push(url);
+          } catch(err){
+            Logger.log("❌ Error subiendo a Cloudinary: " + err.message);
+          }
+        });
+        if(params.row && links.length > 0){
+          const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Alquileres");
+          sheet.getRange(parseInt(params.row), 9).setValue(links.join(","));
+        }
+        return ContentService.createTextOutput(JSON.stringify({ success: true, links }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+
+      // --- comportamiento original para POST con JSON ---
+      return doGet({ parameter: params });
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: "POST vacío" }))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch (err) {
+    Logger.log("❌ Error en doPost: " + err.message);
+    return ContentService.createTextOutput(
+      JSON.stringify({ success: false, error: err.message })
+    ).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// --- Subir imagen Base64 a Cloudinary ---
+function subirImagenCloudinary(base64Data){
+  const endpoint = "https://api.cloudinary.com/v1_1/" + CLOUDINARY_CLOUD_NAME + "/image/upload";
+  const payload = { file: base64Data, upload_preset: CLOUDINARY_UPLOAD_PRESET };
+  const options = { method: "post", contentType: "application/json", payload: JSON.stringify(payload) };
+  const response = UrlFetchApp.fetch(endpoint, options);
+  const data = JSON.parse(response.getContentText());
+  return data.secure_url; // devuelve la URL pública
+}
+
+// --- Convierte texto "d/m/yyyy" o "dd/mm/yyyy" a Date ---
+function parseFecha(fechaStr){
+  if(!fechaStr) return null;
+  if(fechaStr instanceof Date) return fechaStr;
+  const partes = fechaStr.split("/");
+  if(partes.length===3) return new Date(partes[2], partes[1]-1, partes[0]);
+  return null;
+}
+
+// --- Obtener todos los alquileres activos (solo dueños con pago al día) ---
+function getAlquileresActivos() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Alquileres");
+  var loginSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Login");
+  var loginData = loginSheet.getDataRange().getValues();
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+  var alquileres = [];
+
+  for (var i = 1; i < data.length; i++) {
+    var tipo = data[i][0];
+    var estado = data[i][9];
+    var lat = data[i][3];
+    var lng = data[i][4];
+    var email = data[i][1];
+    var dueño = loginData.find(row => row[1] === email);
+    var fechaVenc = dueño ? parseFecha(dueño[7]) : null;
+    var pagoAlDia = dueño && dueño[6]==="Pago al día" && fechaVenc && fechaVenc >= new Date();
+
+    if (tipo === "alquiler" && estado === "Activo" && lat && lng && pagoAlDia) {
+      var obj = {};
+      for (var j = 0; j < headers.length; j++) obj[headers[j]] = data[i][j];
+      obj["Contacto"] = data[i][7] || "";
+      obj["Estado del Pago"] = dueño ? dueño[6] : "";
+      obj["Fecha Vencimiento"] = dueño ? Utilities.formatDate(fechaVenc, Session.getScriptTimeZone(), "yyyy-MM-dd") : "";
+      obj.row = i + 1;
+      alquileres.push(obj);
+    }
+  }
+  return alquileres;
+}
+
+// --- Obtener alquileres de un dueño específico ---
+function getAlquileres(e) {
+  var email = e.parameter.dueno;
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Alquileres");
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+  var alquileres = [];
+
+  for (var i = 1; i < data.length; i++) {
+    var tipo = data[i][0];
+    var correo = data[i][1];
+    if (tipo === "alquiler" && correo === email) {
+      var obj = {};
+      for (var j = 0; j < headers.length; j++) obj[headers[j]] = data[i][j];
+      obj["Contacto"] = data[i][7] || "";
+      obj.row = i + 1;
+      alquileres.push(obj);
+    }
+  }
+  return alquileres;
+}
+
+// --- Validar límite de deptos (solo activos) ---
+function validarLimiteDeptos(email) {
+  const loginSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Login");
+  const loginData = loginSheet.getDataRange().getValues();
+  const dueño = loginData.find(row => row[1] === email);
+  if (!dueño) throw "Dueño no encontrado";
+
+  const plan = dueño[5] || "Basico"; // columna F = Plan
+  const limite = PLANES[plan].limiteDeptos;
+
+  const alquileresSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Alquileres");
+  const cantidadDeptos = alquileresSheet.getDataRange().getValues()
+    .filter(r => r[0]==="alquiler" && r[1]===email && r[9]==="Activo").length;
+
+  if (cantidadDeptos >= limite) throw `Tu plan actual (${plan}) solo permite ${limite} deptos. Mejora tu plan para agregar más.`;
+}
+
+// --- Validar vencimiento ---
+function validarVencimiento(email) {
+  const loginSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Login");
+  const loginData = loginSheet.getDataRange().getValues();
+  const dueño = loginData.find(row => row[1] === email);
+  if (!dueño) throw "Dueño no encontrado";
+
+  const fechaVencimiento = parseFecha(dueño[7]); // columna H
+  if (!fechaVencimiento) return true;
+  if (new Date() > fechaVencimiento) throw "Tu plan está vencido. Debes renovar para poder agregar o mostrar tus deptos en el mapa.";
+  return true;
+}
+
+// --- Agregar nuevo alquiler (validando plan y vencimiento) ---
+function addAlquiler(e) {
+  var email = e.parameter.dueno;
+  validarLimiteDeptos(email);
+  validarVencimiento(email);
+
+  var direccion = e.parameter.direccion;
+  var ambientes = e.parameter.ambientes;
+  var precio = e.parameter.precio;
+  var mascotas = e.parameter.mascotas || "";
+  var fotos = e.parameter.fotos || "";
+  var infoIngreso = e.parameter.infoIngreso || "";
+  var detalles = e.parameter.detalles || "";
+
+  // --- Obtener contacto real desde Login ---
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var loginSheet = ss.getSheetByName("Login");
+  var loginData = loginSheet.getDataRange().getValues();
+  var contacto = "auto";
+  for (var i = 1; i < loginData.length; i++) {
+    if (loginData[i][1] === email) {
+      contacto = loginData[i][4] || "auto"; // columna E
+      break;
+    }
+  }
+
+  var alquileresSheet = ss.getSheetByName("Alquileres");
+  alquileresSheet.appendRow([
+    "alquiler", email, direccion, "", "", ambientes, precio, contacto, fotos, "Activo", infoIngreso, detalles, mascotas
+  ]);
+  return { success: true };
+}
+
+// --- Editar alquiler existente ---
+function editAlquiler(e) {
+  var row = parseInt(e.parameter.row);
+  if (!row || row < 2) return { success: false, error: "Fila inválida" };
+
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Alquileres");
+
+  if (e.parameter.direccion) sheet.getRange(row, 3).setValue(e.parameter.direccion);
+  if (e.parameter.ambientes) sheet.getRange(row, 6).setValue(e.parameter.ambientes);
+  if (e.parameter.precio) sheet.getRange(row, 7).setValue(e.parameter.precio);
+  if (e.parameter.mascotas) sheet.getRange(row, 13).setValue(e.parameter.mascotas);
+  if (e.parameter.infoIngreso) sheet.getRange(row, 11).setValue(e.parameter.infoIngreso);
+  if (e.parameter.detalles) sheet.getRange(row, 12).setValue(e.parameter.detalles);
+  if (e.parameter.fotos) sheet.getRange(row, 9).setValue(e.parameter.fotos);
+
+  return { success: true };
+}
+
+// --- Cambiar estado Activo/Inactivo ---
+function toggleEstado(e) {
+  var row = parseInt(e.parameter.row);
+  if (!row || row < 2) return { success: false, error: "Fila inválida" };
+
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Alquileres");
+  var estado = sheet.getRange(row, 10).getValue();
+  var nuevoEstado = estado === "Activo" ? "Inactivo" : "Activo";
+  sheet.getRange(row, 10).setValue(nuevoEstado);
+
+  return { success: true, nuevoEstado: nuevoEstado };
+}
+
+// --- Eliminar alquiler ---
+function deleteAlquiler(e) {
+  var row = parseInt(e.parameter.row);
+  if (!row || row < 2) return { success: false, error: "Fila inválida" };
+
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Alquileres");
+  sheet.deleteRow(row);
+  return { success: true };
+}
+
+// --- Registrar dueño (agrega fecha de vencimiento y plan por defecto) ---
+function registerDueno(e) {
+  var email = e.parameter.email;
+  var password = e.parameter.password;
+  var nombre = e.parameter.nombre;
+  var contacto = e.parameter.contacto;
+
+  if (!email || !password || !nombre || !contacto) 
+    return { success: false, error: "Faltan datos" };
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var loginSheet = ss.getSheetByName("Login");
+  var data = loginSheet.getDataRange().getValues();
+
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][1] === email) 
+      return { success: false, error: "El email ya está registrado" };
+  }
+
+  // Fecha vencimiento por defecto = hoy + 30 días
+  var fechaVencimiento = new Date();
+  fechaVencimiento.setDate(fechaVencimiento.getDate() + 30);
+
+  loginSheet.appendRow([
+    "Dueño",          // Col A - Tipo
+    email,            // Col B - Email
+    password,         // Col C - Password
+    nombre,           // Col D - Nombre
+    contacto,         // Col E - Contacto
+    "Basico",         // Col F - Plan
+    "Pago al día",    // Col G - Estado del Pago
+    fechaVencimiento  // Col H - Fecha Vencimiento
+  ]);
+
+  return { success: true, message: "Dueño registrado correctamente" };
+}
+
+// --- Verificar login ---
+function verificarLogin(e) {
+  var email = e.parameter.email;
+  var password = e.parameter.password;
+
+  if (!email || !password)
+    return { success: false, error: "Faltan credenciales" };
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var loginSheet = ss.getSheetByName("Login");
+  var data = loginSheet.getDataRange().getValues();
+
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][1] === email && data[i][2] === password) {
+      return {
+        success: true,
+        tipo: data[i][0],       // A
+        email: data[i][1],      // B
+        nombre: data[i][3],     // D
+        contacto: data[i][4],   // E
+        plan: data[i][5],       // F
+        estadoPago: data[i][6], // G
+        vencimiento: data[i][7] 
+          ? Utilities.formatDate(new Date(data[i][7]), Session.getScriptTimeZone(), "yyyy-MM-dd") 
+          : ""
+      };
+    }
+  }
+
+  return { success: false, error: "Email o contraseña incorrectos" };
+}
+
+// --- Mejorar plan ---
+function mejorarPlan(e) {
+  var email = e.parameter.email;
+  var nuevoPlan = e.parameter.plan;
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var loginSheet = ss.getSheetByName("Login");
+  var data = loginSheet.getDataRange().getValues();
+
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][1] === email) {
+      var fechaNueva = new Date();
+      fechaNueva.setDate(fechaNueva.getDate() + 30);
+      loginSheet.getRange(i+1, 6).setValue(nuevoPlan); // columna F
+      loginSheet.getRange(i+1, 7).setValue("Pago al día"); // columna G
+      loginSheet.getRange(i+1, 8).setValue(fechaNueva); // columna H
+      return { success: true, message: "Plan actualizado correctamente" };
+    }
+  }
+  return { success: false, error: "Dueño no encontrado" };
+}
+
+// --- NUEVA FUNCIÓN PARA FRONTEND DUEÑOS ---
+function getLoginInfo(e) {
+  var email = e.parameter.email;
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var loginSheet = ss.getSheetByName("Login");
+  var loginData = loginSheet.getDataRange().getValues();
+  var alquileresSheet = ss.getSheetByName("Alquileres");
+  var alquileresData = alquileresSheet.getDataRange().getValues();
+  var result = [];
+
+  for (var i = 1; i < loginData.length; i++) {
+    if (loginData[i][1] === email) {
+      var plan = loginData[i][5] || "Basico"; 
+      var estadoPago = loginData[i][6] || "Pago al día"; 
+      var vencimiento = loginData[i][7] ? Utilities.formatDate(parseFecha(loginData[i][7]), Session.getScriptTimeZone(), "yyyy-MM-dd") : "";
+      var deptosActivos = 0;
+      for (var j = 1; j < alquileresData.length; j++) {
+        if (alquileresData[j][0] === "alquiler" && alquileresData[j][1] === email && alquileresData[j][9] === "Activo") {
+          deptosActivos++;
+        }
+      }
+      return { success:true, plan:plan, estadoPago:estadoPago, vencimiento:vencimiento, deptosActivos: deptosActivos };
+    }
+  }
+  return { success:false, error:"Dueño no encontrado" };
+}
