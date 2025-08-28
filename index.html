@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
+/* --- estilos existentes --- */
 body{margin:0;font-family:Arial,sans-serif}
 header{background:#3483fa;color:white;padding:15px;text-align:center}
 nav{display:flex;justify-content:center;gap:20px;background:#f4f4f4;padding:10px}
@@ -162,7 +163,7 @@ function logout(){
   mostrarLogin();
 }
 
-// --- Función para subir imágenes Base64 a Google Apps Script ---
+// --- Subir imágenes Base64 a Google Apps Script ---
 function uploadImages(images, row) {
   return Promise.all(Array.from(images).map(file => new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -223,6 +224,7 @@ function driveUrlDirect(url){
   return idMatch ? `https://drive.google.com/uc?export=view&id=${idMatch[1]}` : url;
 }
 
+// --- JSONP para cargar alquileres ---
 function cargarAlquileres(){
   markersLayer.clearLayers();
   const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15]});
@@ -234,77 +236,80 @@ function cargarAlquileres(){
   const filtroMin = parseFloat(document.getElementById("filtroMin").value) || 0;
   const filtroMax = parseFloat(document.getElementById("filtroMax").value) || Infinity;
 
-  fetch(webAppURL + "?action=getAlquileres")
-    .then(res => res.json())
-    .then(res => {
-      if(!res.success) return console.error("Error al cargar alquileres:", res.error);
+  // --- Crear callback JSONP ---
+  window.mostrarAlquileres = function(res){
+    if(!res.success) return console.error(res.error);
 
-      res.data.forEach(a=>{
-        const lat = parseFloat(a.Latitud);
-        const lng = parseFloat(a.Longitud);
-        if(isNaN(lat) || isNaN(lng)) return;
+    res.data.forEach(a=>{
+      const lat = parseFloat(a.Latitud);
+      const lng = parseFloat(a.Longitud);
+      if(isNaN(lat) || isNaN(lng)) return;
 
-        const nroAmb = parseInt(a["Nro Ambientes"]) || 0;
-        const precio = parseFloat(a.Precio) || 0;
-        if(filtroAmb && nroAmb !== parseInt(filtroAmb)) return;
-        if(precio < filtroMin || precio > filtroMax) return;
+      const nroAmb = parseInt(a["Nro Ambientes"]) || 0;
+      const precio = parseFloat(a.Precio) || 0;
+      if(filtroAmb && nroAmb !== parseInt(filtroAmb)) return;
+      if(precio < filtroMin || precio > filtroMax) return;
 
-        const infoIngreso = a["InformacionIngreso"] || "";
-        const detalles = a["Detalles"] || "";
-        const mascotas = a["Mascotas"] || "";
-        const contacto = a["Contacto"] || "";
+      const infoIngreso = a["InformacionIngreso"] || "";
+      const detalles = a["Detalles"] || "";
+      const mascotas = a["Mascotas"] || "";
+      const contacto = a["Contacto"] || "";
 
-        const icon = L.divIcon({className:'marker-icon', html:'🏠<span style="font-size:12px;margin-left:2px;">'+nroAmb+'</span>', iconSize:[30,30], iconAnchor:[15,15]});
-        const marker = L.marker([lat,lng], {icon: icon}).addTo(markersLayer);
+      const icon = L.divIcon({className:'marker-icon', html:'🏠<span style="font-size:12px;margin-left:2px;">'+nroAmb+'</span>', iconSize:[30,30], iconAnchor:[15,15]});
+      const marker = L.marker([lat,lng], {icon: icon}).addTo(markersLayer);
 
-        const popupDiv = document.createElement('div');
-        popupDiv.innerHTML = `<b>Dirección:</b> ${a.Direccion||""}<br><b>Ambientes:</b> ${nroAmb}<br><b>Precio:</b> ${a.Precio||""}`;
+      const popupDiv = document.createElement('div');
+      popupDiv.innerHTML = `<b>Dirección:</b> ${a.Direccion||""}<br><b>Ambientes:</b> ${nroAmb}<br><b>Precio:</b> ${a.Precio||""}`;
 
-        const verBtn = document.createElement('button');
-        verBtn.className = 'popup-button';
-        verBtn.textContent = 'Ver Alquiler';
-        verBtn.onclick = () => {
-          const detalle = document.getElementById('alquiler-detalle');
-          detalle.innerHTML = `<h2>Alquiler: ${a.Direccion||''}</h2>`;
-          [['Ambientes', nroAmb],['Precio', a.Precio||''],['Información de ingreso', infoIngreso],['Detalles', detalles],['Mascotas', mascotas]].forEach(([label,val])=>{
-            const p=document.createElement('p');p.innerHTML=`<b>${label}:</b> ${val}`;detalle.appendChild(p);
+      const verBtn = document.createElement('button');
+      verBtn.className = 'popup-button';
+      verBtn.textContent = 'Ver Alquiler';
+      verBtn.onclick = () => {
+        const detalle = document.getElementById('alquiler-detalle');
+        detalle.innerHTML = `<h2>Alquiler: ${a.Direccion||''}</h2>`;
+        [['Ambientes', nroAmb],['Precio', a.Precio||''],['Información de ingreso', infoIngreso],['Detalles', detalles],['Mascotas', mascotas]].forEach(([label,val])=>{
+          const p=document.createElement('p');p.innerHTML=`<b>${label}:</b> ${val}`;detalle.appendChild(p);
+        });
+
+        const imgContainer = document.createElement('div');
+        imgContainer.id = 'imagenes-container';
+        if(a.Fotos){
+          a.Fotos.split(',').forEach(f=>{
+            const url = driveUrlDirect(f.trim());
+            if(url){
+              const img = document.createElement('img');
+              img.src = url;
+              img.alt = "Imagen del alquiler";
+              imgContainer.appendChild(img);
+            }
           });
+        }
+        detalle.appendChild(imgContainer);
 
-          const imgContainer = document.createElement('div');
-          imgContainer.id = 'imagenes-container';
-          if(a.Fotos){
-            a.Fotos.split(',').forEach(f=>{
-              const url = driveUrlDirect(f.trim());
-              if(url){
-                const img = document.createElement('img');
-                img.src = url;
-                img.alt = "Imagen del alquiler";
-                imgContainer.appendChild(img);
-              }
-            });
-          }
-          detalle.appendChild(imgContainer);
+        if(contacto){
+          const waBtn = document.createElement('button');
+          waBtn.textContent = 'Contactar por WhatsApp';
+          waBtn.style.background = '#25D366';
+          waBtn.style.color = 'white';
+          waBtn.style.marginTop = '10px';
+          waBtn.onclick = ()=>{ window.open(`https://wa.me/${contacto}?text=${encodeURIComponent("Hola, quiero consultar por el alquiler de "+a.Direccion)}`,'_blank'); };
+          detalle.appendChild(waBtn);
+        }
+        detalle.style.display='block';
+        detalle.classList.add("highlight");
+        detalle.scrollIntoView({behavior:"smooth", block:"start"});
+        setTimeout(()=>detalle.classList.remove("highlight"),1200);
+        map.invalidateSize();
+      };
+      popupDiv.appendChild(verBtn);
+      marker.bindPopup(popupDiv);
+    });
+  };
 
-          if(contacto){
-            const waBtn = document.createElement('button');
-            waBtn.textContent = 'Contactar por WhatsApp';
-            waBtn.style.background = '#25D366';
-            waBtn.style.color = 'white';
-            waBtn.style.marginTop = '10px';
-            waBtn.onclick = ()=>{ window.open(`https://wa.me/${contacto}?text=${encodeURIComponent("Hola, quiero consultar por el alquiler de "+a.Direccion)}`,'_blank'); };
-            detalle.appendChild(waBtn);
-          }
-          detalle.style.display='block';
-          detalle.classList.add("highlight");
-          detalle.scrollIntoView({behavior:"smooth", block:"start"});
-          setTimeout(()=>detalle.classList.remove("highlight"),1200);
-          map.invalidateSize();
-        };
-        popupDiv.appendChild(verBtn);
-        marker.bindPopup(popupDiv);
-      });
-    })
-    .catch(err=>console.error("Error al conectar con WebApp:",err));
+  // --- Crear script JSONP ---
+  const script = document.createElement('script');
+  script.src = webAppURL + "?action=getAlquileres&callback=mostrarAlquileres";
+  document.body.appendChild(script);
 }
 
 window.onload = ()=>{mostrarMapa();};
