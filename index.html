@@ -198,7 +198,7 @@ function registrarDueno(){
   formData.append("password",password);
   formData.append("contacto",contacto);
   fetch(webAppURL,{method:"POST",mode:"no-cors",body:formData})
-  .then(()=>{
+  .then(()=>{ 
     document.getElementById("registro-msg").style.color="green";
     document.getElementById("registro-msg").textContent="Dueño registrado con éxito. Ahora puede iniciar sesión.";
   })
@@ -222,7 +222,7 @@ function driveUrlDirect(url){
   return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
 }
 
-// --- Función para abrir modal ---
+// --- Modal de imagen ---
 function abrirModal(src){
   const modal = document.getElementById("modal-img");
   const img = document.getElementById("img-grande");
@@ -233,6 +233,7 @@ function cerrarModal(){
   document.getElementById("modal-img").style.display = "none";
 }
 
+// --- Cargar alquileres ---
 function cargarAlquileres(){
   markersLayer.clearLayers();
   const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15]});
