@@ -19,7 +19,8 @@ nav a:hover{color:#3483fa}
 #login,#panel-dueno,#registro{display:none;max-width:500px;margin:auto}
 #alquiler-detalle{display:none;max-width:700px;margin:20px auto;padding:15px;border:2px solid #3483fa;border-radius:8px;background:#f9f9f9;box-shadow:0 0 10px rgba(0,0,0,0.1);}
 #alquiler-detalle.highlight{animation: resaltar 1s ease}
-#alquiler-detalle img{max-width:100%;margin:5px 0;border-radius:6px;}
+#alquiler-detalle img{max-width:120px;margin:5px;border-radius:6px;object-fit:cover;}
+#imagenes-container{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;}
 input,select,button{width:100%;padding:8px;margin:5px 0;border-radius:6px}
 button{background:#3483fa;color:white;border:none;cursor:pointer}
 button:hover{background:#2565c0}
@@ -187,7 +188,6 @@ function registrarDueno(){
 }
 
 function driveUrlDirect(url){
-  // Convierte URL de Drive en enlace directo
   const idMatch = url.match(/\/d\/(.*?)\//);
   return idMatch ? `https://drive.google.com/uc?export=view&id=${idMatch[1]}` : url;
 }
@@ -238,16 +238,23 @@ function cargarAlquileres(){
           [['Ambientes', nroAmb],['Precio', a.Precio||''],['Información de ingreso', infoIngreso],['Detalles', detalles],['Mascotas', mascotas]].forEach(([label,val])=>{
             const p=document.createElement('p');p.innerHTML=`<b>${label}:</b> ${val}`;detalle.appendChild(p);
           });
+
+          // Contenedor de miniaturas
+          const imgContainer = document.createElement('div');
+          imgContainer.id = 'imagenes-container';
           if(a.Fotos){
             a.Fotos.split(',').forEach(f=>{
               const url = driveUrlDirect(f.trim());
               if(url){
                 const img = document.createElement('img');
                 img.src = url;
-                detalle.appendChild(img);
+                img.alt = "Imagen del alquiler";
+                imgContainer.appendChild(img);
               }
             });
           }
+          detalle.appendChild(imgContainer);
+
           if(contacto){
             const waBtn = document.createElement('button');
             waBtn.textContent = 'Contactar por WhatsApp';
