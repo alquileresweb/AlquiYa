@@ -96,6 +96,7 @@ button:hover{background:#2565c0}
   <input type="text" id="reg_nombre" placeholder="Nombre">
   <input type="password" id="reg_password" placeholder="Contraseña">
   <input type="text" id="reg_contacto" placeholder="WhatsApp (ej: 3794000000)">
+  <input type="file" id="reg_imagenes" accept="image/*" multiple>
   <button onclick="registrarDueno()">Registrar</button>
   <button onclick="mostrarLogin()">Cancelar</button>
   <p id="registro-msg" style="color:green"></p>
@@ -109,7 +110,7 @@ button:hover{background:#2565c0}
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
+const webAppURL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
 let map = L.map('map').setView([-28.5503, -56.0406],14);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
 let markersLayer = L.layerGroup().addTo(map);
@@ -160,24 +161,52 @@ function logout(){
   localStorage.removeItem("dueno_email");
   mostrarLogin();
 }
+
+// --- Función para subir imágenes Base64 a Google Apps Script ---
+function uploadImages(images, row) {
+  return Promise.all(Array.from(images).map(file => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = e => reject(e);
+    reader.readAsDataURL(file);
+  }))).then(base64Array => {
+    return fetch(webAppURL, {
+      method:"POST",
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ action: "uploadImagesBase64", row: row, images: base64Array })
+    }).then(res => res.json());
+  });
+}
+
 function registrarDueno(){
   const email = document.getElementById("reg_email").value.trim();
   const nombre = document.getElementById("reg_nombre").value.trim();
   const password = document.getElementById("reg_password").value.trim();
   const contacto = document.getElementById("reg_contacto").value.trim();
+  const imagenes = document.getElementById("reg_imagenes").files;
+  
   if(!email || !nombre || !password || !contacto){
     document.getElementById("registro-msg").style.color="red";
     document.getElementById("registro-msg").textContent="Complete todos los campos";
     return;
   }
+
   const formData = new FormData();
   formData.append("action","registerDueno"); 
   formData.append("email",email);
   formData.append("nombre",nombre);
   formData.append("password",password);
   formData.append("contacto",contacto);
+
   fetch(webAppURL,{method:"POST",mode:"no-cors",body:formData})
   .then(()=>{
+    if(imagenes.length>0){
+      uploadImages(imagenes, null).then(res=>{
+        console.log("Imágenes subidas:", res.links);
+      }).catch(err=>{
+        console.error("Error subiendo imágenes:", err);
+      });
+    }
     document.getElementById("registro-msg").style.color="green";
     document.getElementById("registro-msg").textContent="Dueño registrado con éxito. Ahora puede iniciar sesión.";
   })
