@@ -56,8 +56,7 @@ input, select, textarea { width:100%; padding:8px; margin-bottom:10px; }
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
-
+const API_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
 let imagenesBase64 = [];
 
 // ================== PREVIEW IMÁGENES ==================
@@ -149,24 +148,20 @@ async function agregarAlquiler(){
 
   if(!direccion || !ambientes || !precio){ alert("Completa todos los campos obligatorios."); return; }
 
-  // 🔹 Subir imágenes como blobs (evita CORS)
-  const files = document.getElementById("imagenFile").files;
+  // 🔹 Subir imágenes Base64
   let uploadedURLs = [];
-  if(files.length > 0){
-    const formData = new FormData();
-    for(let i=0; i<files.length; i++){
-      formData.append('file' + i, files[i]);
-    }
-    formData.append('action', 'uploadImages');
-    formData.append('row', row);
-    formData.append('dueno', email);
-
+  if(imagenesBase64.length > 0){
+    const payload = { action: 'uploadImagesBase64', row, dueno: email, images: imagenesBase64 };
     try {
-      // JSONP vía <script> no requiere CORS
-      const script = document.createElement("script");
-      script.src = `${API_URL}?action=uploadImages&row=${row}&dueno=${encodeURIComponent(email)}&callback=imagenesSubidas`;
-      document.body.appendChild(script);
-    } catch(e){ console.error(e); }
+      const resp = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await resp.json();
+      uploadedURLs = data.links || [];
+      console.log("📄 Imágenes subidas:", uploadedURLs);
+    } catch(e){ console.error("❌ Error al subir Base64:", e); }
   }
 
   const fotosConcatenadas = uploadedURLs.join(",");
@@ -177,11 +172,6 @@ async function agregarAlquiler(){
   const script = document.createElement("script");
   script.src = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&callback=${callback}`;
   document.body.appendChild(script);
-}
-
-// Callback de subida de imágenes (opcional)
-function imagenesSubidas(res){
-  console.log("📄 Imágenes subidas:", res);
 }
 
 // ================== RESTO DE FUNCIONES ==================
