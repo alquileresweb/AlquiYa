@@ -83,13 +83,11 @@ function actualizarPreview(){
 // Manejar selección de imágenes
 document.getElementById("imagenFile").addEventListener("change", function(){
   const files = Array.from(this.files);
-  console.log("📂 Archivos seleccionados:", files);
   files.forEach(file=>{
     const reader = new FileReader();
     reader.onload = function(e){
       imagenesBase64.push(e.target.result);
       actualizarPreview();
-      console.log("📄 Imagen cargada en Base64");
     }
     reader.readAsDataURL(file);
   });
@@ -107,11 +105,8 @@ function cargarAlquileres(){
   const email = localStorage.getItem("dueno");
   fetch(`${API_URL}?action=getAlquileresDueno&dueno=${encodeURIComponent(email)}`)
     .then(res => res.json())
-    .then(res => {
-      console.log("📦 Alquileres cargados:", res);
-      mostrarAlquileres(res);
-    })
-    .catch(err => console.error("❌ Error al cargar alquileres:", err));
+    .then(res => mostrarAlquileres(res))
+    .catch(err => console.error(err));
 }
 
 function mostrarAlquileres(res){
@@ -127,13 +122,11 @@ function mostrarAlquileres(res){
     let btnEstado = `<button onclick="cambiarEstado(${alq.row})">Cambiar Estado</button>`;
     let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
     let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
-
     let fotosHTML = "";
     if(alq.Fotos){
       const urls = alq.Fotos.split(",");
       fotosHTML = urls.map(u => `<img src="${u.trim()}" style="max-width:120px; margin:5px;">`).join("");
     }
-
     div.innerHTML += `<div class="alquiler">
       <b>${alq.Direccion}</b> - ${alq['Nro Ambientes']} amb - ${alq.Precio} - Mascotas: ${alq.Mascotas || "N/D"}<br>
       Estado: ${estado}<br>
@@ -156,7 +149,7 @@ async function agregarAlquiler(){
 
   if(!direccion || !ambientes || !precio){ alert("Completa todos los campos obligatorios."); return; }
 
-  // 🔹 Subir imágenes como blobs a Google Apps Script
+  // 🔹 Subir imágenes como blobs
   const files = document.getElementById("imagenFile").files;
   let uploadedURLs = [];
   if(files.length > 0){
@@ -167,20 +160,33 @@ async function agregarAlquiler(){
     formData.append('action', 'uploadImages');
     formData.append('row', row);
     formData.append('dueno', email);
-
-    console.log("🚀 Subiendo archivos al backend...");
     try {
       const resp = await fetch(API_URL, { method: 'POST', body: formData });
       const data = await resp.json();
-      console.log("✅ Respuesta de subida:", data);
       uploadedURLs = data.links || [];
-    } catch(e){
-      console.error("❌ Error al subir imágenes como blobs:", e);
-    }
+    } catch(e){ console.error(e); }
+  }
+
+  // 🔹 Subir imágenes Base64
+  if(imagenesBase64.length > 0){
+    const payload = {
+      action: 'uploadImagesBase64',
+      row,
+      dueno: email,
+      images: imagenesBase64
+    };
+    try {
+      const resp = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await resp.json();
+      uploadedURLs = data.links || [];
+    } catch(e){ console.error("❌ Error al subir Base64:", e); }
   }
 
   const fotosConcatenadas = uploadedURLs.join(",");
-  console.log("🔗 URLs concatenadas:", fotosConcatenadas);
 
   // Guardar datos en Google Sheets vía JSONP
   const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
@@ -225,48 +231,29 @@ function resetForm(){
 function cambiarEstado(row){
   fetch(`${API_URL}?action=toggleEstado&row=${row}`)
     .then(res=>res.json())
-    .then(estadoCambiado)
+    .then(res=>{ if(res.success) cargarAlquileres(); })
     .catch(err=>console.error(err));
 }
-function estadoCambiado(res){ if(res.success) cargarAlquileres(); }
 
 function eliminarAlquiler(row){
   if(!confirm("¿Seguro que deseas eliminar este alquiler?")) return;
   fetch(`${API_URL}?action=deleteAlquiler&row=${row}`)
     .then(res=>res.json())
-    .then(alquilerEliminado)
+    .then(res=>{ if(res.success) cargarAlquileres(); })
     .catch(err=>console.error(err));
 }
-function alquilerEliminado(res){ if(res.success) cargarAlquileres(); }
 
 function logout(){ localStorage.removeItem("dueno"); window.location.href="index.html"; }
 
 function alquilerAgregado(res) {
-  console.log("📩 Callback alquilerAgregado:", res);
-  if (res.success) {
-    alert("✅ Alquiler agregado con éxito");
-    resetForm();
-    cargarAlquileres();
-  } else {
-    alert("❌ Error al agregar: " + (res.error || "desconocido"));
-  }
+  if (res.success) { alert("✅ Alquiler agregado con éxito"); resetForm(); cargarAlquileres(); } 
+  else { alert("❌ Error al agregar: " + (res.error || "desconocido")); }
 }
 
 function alquilerEditado(res) {
-  console.log("📩 Callback alquilerEditado:", res);
-  if (res.success) {
-    alert("✅ Cambios guardados correctamente");
-    resetForm();
-    cargarAlquileres();
-  } else {
-    alert("❌ Error al editar: " + (res.error || "desconocido"));
-  }
+  if (res.success) { alert("✅ Cambios guardados correctamente"); resetForm(); cargarAlquileres(); } 
+  else { alert("❌ Error al editar: " + (res.error || "desconocido")); }
 }
 </script>
 </body>
 </html>
-
-
-
-
-
