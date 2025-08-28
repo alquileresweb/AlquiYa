@@ -33,7 +33,7 @@ input, select, textarea { width:100%; padding:8px; margin-bottom:10px; }
 <input type="number" id="ambientes">
 
 <label>Precio</label>
-<input type="number" id="precio">
+<input type="text" id="precio">
 
 <label>Mascotas Permitidas</label>
 <select id="mascotas">
@@ -60,6 +60,21 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
 const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
 let imagenesBase64 = [];
+
+// ================== FORMATO DE PRECIO ==================
+function formatoPrecio(valor){
+  if(!valor) return "";
+  valor = valor.toString().replace(/\D/g,""); // eliminar cualquier no dígito
+  return "$" + valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
+// Formatear input precio al escribir
+document.getElementById("precio").addEventListener("input", function(){
+  const cursorPos = this.selectionStart;
+  const valorSinSimbolo = this.value.replace(/\D/g,'');
+  this.value = formatoPrecio(valorSinSimbolo);
+  this.selectionEnd = cursorPos;
+});
 
 // ================== PREVIEW IMÁGENES ==================
 function actualizarPreview(){
@@ -141,8 +156,11 @@ function mostrarAlquileres(res){
     let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
     let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
     
+    // Mostrar precio formateado
+    let precioFormateado = formatoPrecio(alq.Precio);
+
     div.innerHTML += `<div class="alquiler">
-      <b>${alq.Direccion}</b> - ${alq['Nro Ambientes']} amb - ${alq.Precio} - Mascotas: ${alq.Mascotas || "N/D"}<br>
+      <b>${alq.Direccion}</b> - ${alq['Nro Ambientes']} amb - ${precioFormateado} - Mascotas: ${alq.Mascotas || "N/D"}<br>
       Estado: ${estado}<br>
       ${btnEstado} ${btnEditar} ${btnEliminar}
     </div>`;
@@ -153,7 +171,7 @@ function mostrarAlquileres(res){
 async function agregarAlquiler(){
   let direccion = document.getElementById("direccion").value;
   const ambientes = document.getElementById("ambientes").value;
-  const precio = document.getElementById("precio").value;
+  let precio = document.getElementById("precio").value.replace(/\D/g,""); // solo números
   const mascotas = document.getElementById("mascotas").value;
   const infoIngreso = document.getElementById("infoIngreso").value;
   const detalles = document.getElementById("detalles").value;
@@ -162,16 +180,13 @@ async function agregarAlquiler(){
 
   if(!direccion || !ambientes || !precio){ alert("Completa todos los campos obligatorios."); return; }
 
-  // 🔹 Forzar "Santo Tomé Corrientes"
   direccion = direccion + ", Santo Tomé Corrientes";
 
-  // 🔹 Mostrar mensaje "Guardando cambios" si es edición
   const msgEl = document.getElementById("msg");
   if(document.getElementById("editRow").value) {
     msgEl.textContent = "Guardando cambios...";
   }
 
-  // 🔹 Subir imágenes a Cloudinary
   const files = document.getElementById("imagenFile").files;
   let uploadedURLs = [];
   for(let i=0; i<files.length; i++){
@@ -197,12 +212,11 @@ function editarAlquiler(row, datos){
   document.getElementById("editRow").value=row;
   document.getElementById("direccion").value=datos.Direccion||"";
   document.getElementById("ambientes").value=datos["Nro Ambientes"]||"";
-  document.getElementById("precio").value=datos.Precio||"";
+  document.getElementById("precio").value = formatoPrecio(datos.Precio);
   document.getElementById("mascotas").value=datos.Mascotas||"No";
   document.getElementById("infoIngreso").value=datos.InfoIngreso||"";
   document.getElementById("detalles").value=datos.Detalles||"";
 
-  // 🔹 En edición sí mostramos imágenes
   imagenesBase64 = datos.Fotos ? datos.Fotos.split(",") : [];
   actualizarPreview();
   window.scrollTo(0, document.getElementById("formulario").offsetTop);
@@ -221,7 +235,7 @@ function resetForm(){
   document.getElementById("imagenFile").value="";
   imagenesBase64=[];
   actualizarPreview();
-  document.getElementById("msg").textContent = ""; // Limpiar mensaje
+  document.getElementById("msg").textContent = "";
 }
 
 function cambiarEstado(row){
