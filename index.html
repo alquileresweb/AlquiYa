@@ -48,6 +48,7 @@ button:hover{background:#2565c0}
   font-weight:bold;
   cursor:pointer;
 }
+#cargando-msg { text-align:center; font-weight:bold; margin:10px 0; color:#3483fa; }
 @keyframes resaltar {
   0% {transform:scale(1);box-shadow:0 0 10px #3483fa;}
   50% {transform:scale(1.02);box-shadow:0 0 20px #2565c0;}
@@ -95,6 +96,7 @@ button:hover{background:#2565c0}
   <button onclick="cargarAlquileres()">Filtrar</button>
 </div>
 
+<div id="cargando-msg">Cargando alquileres disponibles...</div>
 <div id="map"></div>
 <div id="alquiler-detalle"></div>
 
@@ -132,8 +134,6 @@ button:hover{background:#2565c0}
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
 const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
-const cloudinaryURL = "https://api.cloudinary.com/v1_1/demo/image/upload"; // Cambiar demo por tu cloud name
-const cloudinaryUploadPreset = "ml_default"; // Cambiar si tienes un upload preset
 let map = L.map('map').setView([-28.5503, -56.0406],14);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
 let markersLayer = L.layerGroup().addTo(map);
@@ -148,6 +148,7 @@ function mostrarMapa(){
   document.getElementById("panel-dueno").style.display="none";
   document.getElementById("registro").style.display="none";
   document.getElementById("alquiler-detalle").style.display="none";
+  document.getElementById("cargando-msg").style.display="block";
   map.invalidateSize();
   cargarAlquileres();
 }
@@ -167,22 +168,8 @@ function mostrarRegistro(){
   document.getElementById("panel-dueno").style.display="none";
   document.getElementById("alquiler-detalle").style.display="none";
 }
-function login(){
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-  if(email && password){
-    localStorage.setItem("dueno_email", email);
-    localStorage.setItem("dueno", email);
-    window.location.href="dueños.html";
-  } else {
-    document.getElementById("login-msg").textContent="Ingrese email y contraseña";
-  }
-}
-function logout(){
-  localStorage.removeItem("dueno");
-  localStorage.removeItem("dueno_email");
-  mostrarLogin();
-}
+
+// --- Registrar dueño ---
 function registrarDueno(){
   const email = document.getElementById("reg_email").value.trim();
   const nombre = document.getElementById("reg_nombre").value.trim();
@@ -194,49 +181,45 @@ function registrarDueno(){
     return;
   }
   const formData = new FormData();
-  formData.append("action","registerDueno"); 
+  formData.append("action","registerDueno");
   formData.append("email",email);
   formData.append("nombre",nombre);
   formData.append("password",password);
   formData.append("contacto",contacto);
+  formData.append("plan","Basico");
+  formData.append("estadoPago","Al día");
+  const hoy = new Date(); 
+  const venc = new Date(); venc.setMonth(hoy.getMonth()+1); 
+  formData.append("vencimiento", venc.toISOString().split("T")[0]);
   fetch(webAppURL,{method:"POST",mode:"no-cors",body:formData})
-  .then(()=>{ 
+  .then(()=>{
     document.getElementById("registro-msg").style.color="green";
     document.getElementById("registro-msg").textContent="Dueño registrado con éxito. Ahora puede iniciar sesión.";
   })
-  .catch(()=>{ 
+  .catch(()=>{
     document.getElementById("registro-msg").style.color="red";
     document.getElementById("registro-msg").textContent="Error de conexión";
   });
 }
 
-// --- Función para subir imagen a Cloudinary ---
-async function subirImagenCloudinary(file){
-  const data = new FormData();
-  data.append("file", file);
-  data.append("upload_preset", cloudinaryUploadPreset);
-  try {
-    const res = await fetch(cloudinaryURL, {method:"POST", body:data});
-    const json = await res.json();
-    return json.secure_url; // devuelve la URL pública de la imagen
-  } catch(err){
-    console.error("Error subiendo imagen a Cloudinary:", err);
-    return null;
-  }
-}
+// --- Login con validación ---
+function login(){
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  if(!email || !password){ document.getElementById("login-msg").textContent="Ingrese email y contraseña"; return; }
 
-// --- Función segura para mostrar imágenes de Drive ---
-function driveUrlDirect(url){
-  let fileId = null;
-  if(url.includes("drive.google.com")){
-    let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-    if(match) fileId = match[1];
-    else {
-      match = url.match(/id=([a-zA-Z0-9_-]+)/);
-      if(match) fileId = match[1];
-    }
+  const script = document.createElement("script");
+  script.src = `${webAppURL}?action=checkLogin&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&callback=loginCallback`;
+  document.body.appendChild(script);
+}
+function loginCallback(res){
+  if(res.success && res.data && res.data.length>0){
+    localStorage.setItem("dueno_email", res.data[0].Email);
+    localStorage.setItem("dueno", res.data[0].Email);
+    window.location.href="dueños.html";
+  } else {
+    document.getElementById("login-msg").textContent="Debes registrarte primero.";
   }
-  return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
 }
 
 // --- Modal de imagen ---
@@ -246,28 +229,39 @@ function abrirModal(src){
   img.src = src;
   modal.style.display = "flex";
 }
-function cerrarModal(){
-  document.getElementById("modal-img").style.display = "none";
+function cerrarModal(){ document.getElementById("modal-img").style.display = "none"; }
+
+// --- Función segura para mostrar imágenes de Drive ---
+function driveUrlDirect(url){
+  let fileId = null;
+  if(url.includes("drive.google.com")){
+    let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if(match) fileId = match[1];
+    else { match = url.match(/id=([a-zA-Z0-9_-]+)/); if(match) fileId = match[1]; }
+  }
+  return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
 }
 
-// --- Cargar alquileres ---
+// --- Cargar alquileres solo activos y dueños al día ---
 function cargarAlquileres(){
   markersLayer.clearLayers();
-  const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15]});
-  const hospIcon = L.divIcon({className:'marker-icon', html:'🏥', iconSize:[30,30], iconAnchor:[15,15]});
-  L.marker([-28.5509978,-56.0409727],{icon:uniIcon}).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
-  L.marker([-28.5551127,-56.0389282],{icon:hospIcon}).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
+  document.getElementById("cargando-msg").style.display="block";
 
   const filtroAmb = document.getElementById("filtroAmb").value;
   const filtroMin = parseFloat(document.getElementById("filtroMin").value) || 0;
   const filtroMax = parseFloat(document.getElementById("filtroMax").value) || Infinity;
 
-  fetch(webAppURL + "?action=getAlquileres")
-    .then(res => res.json())
-    .then(res => {
+  fetch(webAppURL + "?action=getAlquileresConDueno")
+    .then(res=>res.json())
+    .then(res=>{
+      document.getElementById("cargando-msg").style.display="none";
       if(!res.success) return console.error("Error al cargar alquileres:", res.error);
 
       res.data.forEach(a=>{
+        if(a.Estado!=="Activo") return;
+        if(a.EstadoPago!=="Al día") return;
+        if(a.Vencimiento && new Date(a.Vencimiento) < new Date()) return;
+
         const lat = parseFloat(a.Latitud);
         const lng = parseFloat(a.Longitud);
         if(isNaN(lat) || isNaN(lng)) return;
@@ -276,11 +270,6 @@ function cargarAlquileres(){
         const precio = parseFloat(a.Precio) || 0;
         if(filtroAmb && nroAmb !== parseInt(filtroAmb)) return;
         if(precio < filtroMin || precio > filtroMax) return;
-
-        const infoIngreso = a["InformacionIngreso"] || "";
-        const detalles = a["Detalles"] || "";
-        const mascotas = a["Mascotas"] || "";
-        const contacto = a["Contacto"] || "";
 
         const icon = L.divIcon({className:'marker-icon', html:'🏠<span style="font-size:12px;margin-left:2px;">'+nroAmb+'</span>', iconSize:[30,30], iconAnchor:[15,15]});
         const marker = L.marker([lat,lng], {icon: icon}).addTo(markersLayer);
@@ -294,10 +283,9 @@ function cargarAlquileres(){
         verBtn.onclick = () => {
           const detalle = document.getElementById('alquiler-detalle');
           detalle.innerHTML = `<h2>Alquiler: ${a.Direccion||''}</h2>`;
-          [['Ambientes', nroAmb],['Precio', a.Precio||''],['Información de ingreso', infoIngreso],['Detalles', detalles],['Mascotas', mascotas]].forEach(([label,val])=>{
+          [['Ambientes', nroAmb],['Precio', a.Precio||''],['Información de ingreso', a["InformacionIngreso"]||""],['Detalles', a["Detalles"]||""],['Mascotas', a["Mascotas"]||""]].forEach(([label,val])=>{
             const p=document.createElement('p');p.innerHTML=`<b>${label}:</b> ${val}`;detalle.appendChild(p);
           });
-
           const imgContainer = document.createElement('div');
           imgContainer.id = 'imagenes-container';
           if(a.Fotos){
@@ -313,14 +301,13 @@ function cargarAlquileres(){
             });
           }
           detalle.appendChild(imgContainer);
-
-          if(contacto){
+          if(a.Contacto){
             const waBtn = document.createElement('button');
             waBtn.textContent = 'Contactar por WhatsApp';
             waBtn.style.background = '#25D366';
             waBtn.style.color = 'white';
             waBtn.style.marginTop = '10px';
-            waBtn.onclick = ()=>{ window.open(`https://wa.me/${contacto}?text=${encodeURIComponent("Hola, quiero consultar por el alquiler de "+a.Direccion)}`,'_blank'); };
+            waBtn.onclick = ()=>{ window.open(`https://wa.me/${a.Contacto}?text=${encodeURIComponent("Hola, quiero consultar por el alquiler de "+a.Direccion)}`,'_blank'); };
             detalle.appendChild(waBtn);
           }
           detalle.style.display='block';
