@@ -56,10 +56,12 @@ input, select, textarea { width:100%; padding:8px; margin-bottom:10px; }
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/demo/image/upload"; // Cambia "demo" por tu cloud name
-const CLOUDINARY_UPLOAD_PRESET = "ml_default"; // Cambia si tienes otro preset
+const API_URL = "https://script.google.com/macros/s/TU_SCRIPT_ID/exec";
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/alquileresweb/image/upload";
+const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
+
 let imagenesBase64 = [];
+let uploadedCloudinaryURLs = [];
 
 // ================== PREVIEW IMÁGENES ==================
 function actualizarPreview(){
@@ -74,40 +76,44 @@ function actualizarPreview(){
     const btnDel = document.createElement("button");
     btnDel.className = "delete-img";
     btnDel.textContent = "x";
-    btnDel.onclick = ()=>{ imagenesBase64.splice(index,1); actualizarPreview(); };
+    btnDel.onclick = ()=>{ 
+      imagenesBase64.splice(index,1); 
+      uploadedCloudinaryURLs.splice(index,1); 
+      actualizarPreview(); 
+    };
     container.appendChild(img);
     container.appendChild(btnDel);
     previewContainer.appendChild(container);
   });
 }
 
-// Manejar selección de imágenes
-document.getElementById("imagenFile").addEventListener("change", function(){
+// ================== SUBIR IMÁGENES A CLOUDINARY ==================
+document.getElementById("imagenFile").addEventListener("change", async function(){
   const files = Array.from(this.files);
-  files.forEach(file=>{
+  for(const file of files){
     const reader = new FileReader();
     reader.onload = function(e){
       imagenesBase64.push(e.target.result);
       actualizarPreview();
-    }
+    };
     reader.readAsDataURL(file);
-  });
-});
 
-// ================== SUBIR IMÁGENES A CLOUDINARY ==================
-async function subirImagenCloudinary(file){
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-  try {
-    const res = await fetch(CLOUDINARY_URL, { method:"POST", body:formData });
-    const json = await res.json();
-    return json.secure_url; // devuelve la URL pública
-  } catch(err){
-    console.error("Error subiendo imagen a Cloudinary:", err);
-    return null;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    try{
+      const res = await fetch(CLOUDINARY_URL, { method: "POST", body: formData });
+      const data = await res.json();
+      if(data.secure_url){
+        uploadedCloudinaryURLs.push(data.secure_url);
+      } else {
+        console.error("Error al subir imagen:", data);
+      }
+    }catch(err){
+      console.error("Error de conexión con Cloudinary:", err);
+    }
   }
-}
+});
 
 // ================== INICIO ==================
 window.onload = function(){
@@ -126,7 +132,6 @@ function cargarAlquileres() {
   document.body.appendChild(script);
 }
 
-// JSONP callback global
 function mostrarAlquileres(res){
   const div = document.getElementById("listaAlquileres");
   div.innerHTML = "";
@@ -167,23 +172,13 @@ async function agregarAlquiler(){
 
   if(!direccion || !ambientes || !precio){ alert("Completa todos los campos obligatorios."); return; }
 
-  // 🔹 Subir imágenes a Cloudinary
-  const files = document.getElementById("imagenFile").files;
-  let uploadedURLs = [];
-  for(let i=0; i<files.length; i++){
-    const url = await subirImagenCloudinary(files[i]);
-    if(url) uploadedURLs.push(url);
-  }
+  const fotosConcatenadas = uploadedCloudinaryURLs.join(",");
+  const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
+  const callback = action==="editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
 
-  enviarAlquiler(uploadedURLs.join(","));
-
-  function enviarAlquiler(fotosConcatenadas){
-    const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
-    const callback = action==="editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
-    const script = document.createElement("script");
-    script.src = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&callback=${callback}`;
-    document.body.appendChild(script);
-  }
+  const script = document.createElement("script");
+  script.src = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&callback=${callback}`;
+  document.body.appendChild(script);
 }
 
 // ================== RESTO DE FUNCIONES ==================
@@ -199,6 +194,7 @@ function editarAlquiler(row, datos){
   document.getElementById("detalles").value=datos.Detalles||"";
 
   imagenesBase64 = datos.Fotos ? datos.Fotos.split(",") : [];
+  uploadedCloudinaryURLs = datos.Fotos ? datos.Fotos.split(",") : [];
   actualizarPreview();
   window.scrollTo(0, document.getElementById("formulario").offsetTop);
 }
@@ -215,6 +211,7 @@ function resetForm(){
   document.getElementById("detalles").value="";
   document.getElementById("imagenFile").value="";
   imagenesBase64=[];
+  uploadedCloudinaryURLs=[];
   actualizarPreview();
 }
 
