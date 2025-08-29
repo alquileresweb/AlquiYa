@@ -218,13 +218,37 @@ function mostrarRegistro(){
 /* =========================
    AUTH
 ========================= */
-function login(){
+function login() {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
-  if(!email || !password){
-    document.getElementById("login-msg").textContent="Ingrese email y contraseña";
+
+  if (!email || !password) {
+    document.getElementById("login-msg").textContent = "Ingrese email y contraseña";
     return;
   }
+
+  fetch(SCRIPT_URL + "?action=verificarLogin&email=" + encodeURIComponent(email) + "&password=" + encodeURIComponent(password))
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        localStorage.setItem("dueno", email);
+        localStorage.setItem("dueno_email", email);
+        window.location.href = "dueños.html";
+      } else {
+        if (data.error === "Usuario no registrado") {
+          document.getElementById("login-msg").textContent = "Usuario no registrado";
+        } else if (data.error === "Contraseña incorrecta") {
+          document.getElementById("login-msg").textContent = "Contraseña incorrecta";
+        } else {
+          document.getElementById("login-msg").textContent = "Error en el inicio de sesión";
+        }
+      }
+    })
+    .catch(err => {
+      console.error("❌ Error en login:", err);
+      document.getElementById("login-msg").textContent = "Error en el servidor";
+    });
+}
   // Validar contra backend
   fetch(webAppURL+"?action=verificarLogin&email="+encodeURIComponent(email)+"&password="+encodeURIComponent(password))
   .then(r=>r.json())
