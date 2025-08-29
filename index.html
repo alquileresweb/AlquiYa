@@ -144,224 +144,313 @@ color:#3483fa;
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
+/* =========================
+   CONFIG
+========================= */
 const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
-const cloudinaryURL = "https://api.cloudinary.com/v1_1/demo/image/upload"; 
-const cloudinaryUploadPreset = "ml_default"; 
+const cloudinaryURL = "https://api.cloudinary.com/v1_1/demo/image/upload";
+const cloudinaryUploadPreset = "ml_default";
+
+/* =========================
+   MAPA
+========================= */
 let map = L.map('map').setView([-28.5503, -56.0406],14);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
 let markersLayer = L.layerGroup().addTo(map);
 
+/* =========================
+   UTILS
+========================= */
+// Lee un campo de varias formas posibles (por si cambian encabezados)
+function getField(obj, keys){
+  for (const k of keys){
+    if (Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null && obj[k] !== "") return obj[k];
+  }
+  return "";
+}
+// Convierte precio string como "$200,000.00" o "150000" a número
+function toNumber(val){
+  if (typeof val === "number") return val;
+  if (!val) return 0;
+  const clean = String(val).replace(/[^\d.,-]/g,"").replace(/\./g,"").replace(",",".");
+  const num = parseFloat(clean);
+  return isNaN(num) ? 0 : num;
+}
+// parsea int seguro
+function toInt(val, def=0){
+  const n = parseInt(val,10);
+  return isNaN(n) ? def : n;
+}
+
+/* =========================
+   UI NAV
+========================= */
 function toggleFiltros(){
-const f = document.getElementById("filtros");
-f.style.display = (f.style.display==="none"||f.style.display==="") ? "flex":"none";
+  const f = document.getElementById("filtros");
+  f.style.display = (f.style.display==="none"||f.style.display==="") ? "flex":"none";
 }
 function mostrarMapa(){
-document.getElementById("map").style.display="block";
-document.getElementById("login").style.display="none";
-document.getElementById("panel-dueno").style.display="none";
-document.getElementById("registro").style.display="none";
-document.getElementById("alquiler-detalle").style.display="none";
-map.invalidateSize();
-cargarAlquileres();
+  document.getElementById("map").style.display="block";
+  document.getElementById("login").style.display="none";
+  document.getElementById("panel-dueno").style.display="none";
+  document.getElementById("registro").style.display="none";
+  document.getElementById("alquiler-detalle").style.display="none";
+  map.invalidateSize();
+  cargarAlquileres();
 }
 function mostrarLogin(){
-document.getElementById("map").style.display="none";
-document.getElementById("filtros").style.display="none";
-document.getElementById("login").style.display="block";
-document.getElementById("panel-dueno").style.display="none";
-document.getElementById("registro").style.display="none";
-document.getElementById("alquiler-detalle").style.display="none";
+  document.getElementById("map").style.display="none";
+  document.getElementById("filtros").style.display="none";
+  document.getElementById("login").style.display="block";
+  document.getElementById("panel-dueno").style.display="none";
+  document.getElementById("registro").style.display="none";
+  document.getElementById("alquiler-detalle").style.display="none";
 }
 function mostrarRegistro(){
-document.getElementById("login").style.display="none";
-document.getElementById("registro").style.display="block";
-document.getElementById("map").style.display="none";
-document.getElementById("filtros").style.display="none";
-document.getElementById("panel-dueno").style.display="none";
-document.getElementById("alquiler-detalle").style.display="none";
+  document.getElementById("login").style.display="none";
+  document.getElementById("registro").style.display="block";
+  document.getElementById("map").style.display="none";
+  document.getElementById("filtros").style.display="none";
+  document.getElementById("panel-dueno").style.display="none";
+  document.getElementById("alquiler-detalle").style.display="none";
 }
+
+/* =========================
+   AUTH
+========================= */
 function login(){
-const email = document.getElementById("email").value.trim();
-const password = document.getElementById("password").value.trim();
-if(!email || !password){
-document.getElementById("login-msg").textContent="Ingrese email y contraseña";
-return;
-}
-// --- NUEVO: validar contra backend ---
-fetch(webAppURL+"?action=verificarLogin&email="+encodeURIComponent(email)+"&password="+encodeURIComponent(password))
-.then(r=>r.json())
-.then(data=>{
-if(data.success){
-localStorage.setItem("dueno", email);
-localStorage.setItem("dueno_email", email);
-window.location.href="dueños.html";
-}else{
-document.getElementById("login-msg").textContent="Debes registrarte";
-}
-})
-.catch(()=>{document.getElementById("login-msg").textContent="Error de conexión";});
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  if(!email || !password){
+    document.getElementById("login-msg").textContent="Ingrese email y contraseña";
+    return;
+  }
+  // Validar contra backend
+  fetch(webAppURL+"?action=verificarLogin&email="+encodeURIComponent(email)+"&password="+encodeURIComponent(password))
+  .then(r=>r.json())
+  .then(data=>{
+    if(data.success){
+      localStorage.setItem("dueno", email);
+      localStorage.setItem("dueno_email", email);
+      window.location.href="dueños.html";
+    }else{
+      document.getElementById("login-msg").textContent="Debes registrarte";
+    }
+  })
+  .catch(()=>{document.getElementById("login-msg").textContent="Error de conexión";});
 }
 function logout(){
-localStorage.removeItem("dueno");
-localStorage.removeItem("dueno_email");
-mostrarLogin();
+  localStorage.removeItem("dueno");
+  localStorage.removeItem("dueno_email");
+  mostrarLogin();
 }
 function registrarDueno(){
-const email = document.getElementById("reg_email").value.trim();
-const nombre = document.getElementById("reg_nombre").value.trim();
-const password = document.getElementById("reg_password").value.trim();
-const contacto = document.getElementById("reg_contacto").value.trim();
-if(!email || !nombre || !password || !contacto){
-document.getElementById("registro-msg").style.color="red";
-document.getElementById("registro-msg").textContent="Complete todos los campos";
-return;
-}
-const formData = new FormData();
-formData.append("action","registrarDueno");
-formData.append("email",email);
-formData.append("nombre",nombre);
-formData.append("password",password);
-formData.append("contacto",contacto);
-// --- NUEVO: columnas extras ---
-formData.append("plan","Básico");
-formData.append("estadoPago","al día");
-formData.append("fechaVencimiento","30/12/2025");
-fetch(webAppURL,{method:"POST",mode:"no-cors",body:formData})
-.then(()=>{
-document.getElementById("registro-msg").style.color="green";
-document.getElementById("registro-msg").innerHTML="Dueño registrado con éxito.<br><button onclick='mostrarLogin()'>Ir a Login</button>";
-})
-.catch(()=>{
-document.getElementById("registro-msg").style.color="red";
-document.getElementById("registro-msg").textContent="Error de conexión";
-});
+  const email = document.getElementById("reg_email").value.trim();
+  const nombre = document.getElementById("reg_nombre").value.trim();
+  const password = document.getElementById("reg_password").value.trim();
+  const contacto = document.getElementById("reg_contacto").value.trim();
+  if(!email || !nombre || !password || !contacto){
+    document.getElementById("registro-msg").style.color="red";
+    document.getElementById("registro-msg").textContent="Complete todos los campos";
+    return;
+  }
+  const formData = new FormData();
+  formData.append("action","registrarDueno");
+  formData.append("email",email);
+  formData.append("nombre",nombre);
+  formData.append("password",password);
+  formData.append("contacto",contacto);
+  // columnas extra (no estrictamente necesarias si el backend lo define)
+  formData.append("plan","Básico");
+  formData.append("estadoPago","al día");
+  formData.append("fechaVencimiento","30/12/2025");
+  fetch(webAppURL,{method:"POST",mode:"no-cors",body:formData})
+  .then(()=>{
+    document.getElementById("registro-msg").style.color="green";
+    document.getElementById("registro-msg").innerHTML="Dueño registrado con éxito.<br><button onclick='mostrarLogin()'>Ir a Login</button>";
+  })
+  .catch(()=>{
+    document.getElementById("registro-msg").style.color="red";
+    document.getElementById("registro-msg").textContent="Error de conexión";
+  });
 }
 
-// --- Función para subir imagen a Cloudinary ---
+/* =========================
+   IMÁGENES
+========================= */
 async function subirImagenCloudinary(file){
-const data = new FormData();
-data.append("file", file);
-data.append("upload_preset", cloudinaryUploadPreset);
-try {
-const res = await fetch(cloudinaryURL, {method:"POST", body:data});
-const json = await res.json();
-return json.secure_url;
-} catch(err){
-console.error("Error subiendo imagen a Cloudinary:", err);
-return null;
-}
+  const data = new FormData();
+  data.append("file", file);
+  data.append("upload_preset", cloudinaryUploadPreset);
+  try {
+    const res = await fetch(cloudinaryURL, {method:"POST", body:data});
+    const json = await res.json();
+    return json.secure_url;
+  } catch(err){
+    console.error("Error subiendo imagen a Cloudinary:", err);
+    return null;
+  }
 }
 function driveUrlDirect(url){
-let fileId = null;
-if(url.includes("drive.google.com")){
-let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-if(match) fileId = match[1];
-else {
-match = url.match(/id=([a-zA-Z0-9_-]+)/);
-if(match) fileId = match[1];
-}
-}
-return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
+  let fileId = null;
+  if(url && url.includes("drive.google.com")){
+    let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if(match) fileId = match[1];
+    else {
+      match = url.match(/id=([a-zA-Z0-9_-]+)/);
+      if(match) fileId = match[1];
+    }
+  }
+  return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
 }
 function abrirModal(src){
-const modal = document.getElementById("modal-img");
-const img = document.getElementById("img-grande");
-img.src = src;
-modal.style.display = "flex";
+  const modal = document.getElementById("modal-img");
+  const img = document.getElementById("img-grande");
+  img.src = src;
+  modal.style.display = "flex";
 }
 function cerrarModal(){
-document.getElementById("modal-img").style.display = "none";
+  document.getElementById("modal-img").style.display = "none";
 }
+
+/* =========================
+   CARGA DE ALQUILERES
+========================= */
 function cargarAlquileres(){
-document.getElementById("loading-msg").style.display="block"; // NUEVO: mostrar mensaje
-markersLayer.clearLayers();
-const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15]});
-const hospIcon = L.divIcon({className:'marker-icon', html:'🏥', iconSize:[30,30], iconAnchor:[15,15]});
-L.marker([-28.5509978,-56.0409727],{icon:uniIcon}).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
-L.marker([-28.5551127,-56.0389282],{icon:hospIcon}).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
-const filtroAmb = document.getElementById("filtroAmb").value;
-const filtroMin = parseFloat(document.getElementById("filtroMin").value) || 0;
-const filtroMax = parseFloat(document.getElementById("filtroMax").value) || Infinity;
-fetch(webAppURL + "?action=getAlquileres")
-.then(res => res.json())
-.then(res => {
-document.getElementById("loading-msg").style.display="none"; // NUEVO: ocultar mensaje
-if(!res.success) return console.error("Error al cargar alquileres:", res.error);
-res.data.forEach(a=>{
-// --- NUEVO: solo mostrar si está al día ---
-if(a["Estado del Pago"]!=="al día") return;
-if(a["Fecha Vencimiento"]==="vencido") return;
+  document.getElementById("loading-msg").style.display="block";
+  markersLayer.clearLayers();
 
-const lat = parseFloat(a.Latitud);
-const lng = parseFloat(a.Longitud);
-if(isNaN(lat) || isNaN(lng)) return;
+  // Marcadores fijos de interés
+  const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15]});
+  const hospIcon = L.divIcon({className:'marker-icon', html:'🏥', iconSize:[30,30], iconAnchor:[15,15]});
+  L.marker([-28.5509978,-56.0409727],{icon:uniIcon}).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
+  L.marker([-28.5551127,-56.0389282],{icon:hospIcon}).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
 
-const nroAmb = parseInt(a["Nro Ambientes"]) || 0;
-const precio = parseFloat(a.Precio) || 0;
-if(filtroAmb && nroAmb !== parseInt(filtroAmb)) return;
-if(precio < filtroMin || precio > filtroMax) return;
+  const filtroAmb = document.getElementById("filtroAmb").value;
+  const filtroMin = toNumber(document.getElementById("filtroMin").value) || 0;
+  const filtroMax = toNumber(document.getElementById("filtroMax").value) || Infinity;
 
-const infoIngreso = a["InformacionIngreso"] || "";
-const detalles = a["Detalles"] || "";
-const mascotas = a["Mascotas"] || "";
-const contacto = a["Contacto"] || "";
+  fetch(webAppURL + "?action=getAlquileres")
+  .then(res => res.json())
+  .then(res => {
+    document.getElementById("loading-msg").style.display="none";
+    if(!res.success || !Array.isArray(res.data)) {
+      console.error("Error al cargar alquileres:", res.error || "Respuesta inválida");
+      return;
+    }
 
-const icon = L.divIcon({className:'marker-icon', html:'🏠<span style="font-size:12px;margin-left:2px;">'+nroAmb+'</span>', iconSize:[30,30], iconAnchor:[15,15]});
-const marker = L.marker([lat,lng], {icon: icon}).addTo(markersLayer);
+    let cont = 0;
 
-const popupDiv = document.createElement('div');
-popupDiv.innerHTML = `<b>Dirección:</b> ${a.Direccion||""}<br><b>Ambientes:</b> ${nroAmb}<br><b>Precio:</b> ${a.Precio||""}`;
+    res.data.forEach(a=>{
+      // IMPORTANTE: el backend ya devuelve solo los que están vigentes y activos.
+      // No filtramos por "Estado del Pago" ni "Fecha Vencimiento" aquí.
 
-const verBtn = document.createElement('button');
-verBtn.className = 'popup-button';
-verBtn.textContent = 'Ver Alquiler';
-verBtn.onclick = () => {
-const detalle = document.getElementById('alquiler-detalle');
-detalle.innerHTML = `<h2>Alquiler: ${a.Direccion||''}</h2>`;
-[['Ambientes', nroAmb],['Precio', a.Precio||''],['Información de ingreso', infoIngreso],['Detalles', detalles],['Mascotas', mascotas]].forEach(([label,val])=>{
-const p=document.createElement('p');p.innerHTML=`<b>${label}:</b> ${val}`;detalle.appendChild(p);
-});
+      const lat = parseFloat(getField(a, ["Latitud","lat","LAT","Lat"]));
+      const lng = parseFloat(getField(a, ["Longitud","lng","LNG","Long"]));
+      if(isNaN(lat) || isNaN(lng)) return;
 
-const imgContainer = document.createElement('div');
-imgContainer.id = 'imagenes-container';
-if(a.Fotos){
-a.Fotos.split(',').forEach(f=>{
-const url = driveUrlDirect(f.trim());
-if(url){
-const img = document.createElement('img');
-img.src = url;
-img.alt = "Imagen del alquiler";
-img.onclick = ()=>abrirModal(img.src);
-imgContainer.appendChild(img);
+      const ambVal = getField(a, ["Nro Ambientes","Ambientes","Nro de Ambientes","Nro"]);
+      const nroAmb = toInt(ambVal, 0);
+
+      const precioVal = getField(a, ["Precio","precio","$"]);
+      const precio = toNumber(precioVal);
+
+      if(filtroAmb && nroAmb !== toInt(filtroAmb)) return;
+      if(precio < filtroMin || precio > filtroMax) return;
+
+      const direccion = getField(a, ["Direccion","Dirección","Domicilio"]);
+      const infoIngreso = getField(a, ["Informacion ingreso","Información ingreso","InformacionIngreso","InfoIngreso","Informacion de ingreso"]);
+      const detalles = getField(a, ["Detalles","Detalle","Descripcion","Descripción"]);
+      const mascotas = getField(a, ["Mascotas"]);
+      const contacto = getField(a, ["Contacto","Whatsapp","WhatsApp","Tel","Telefono","Teléfono"]);
+
+      const icon = L.divIcon({
+        className:'marker-icon',
+        html:'🏠<span style="font-size:12px;margin-left:2px;">'+(nroAmb||"-")+'</span>',
+        iconSize:[30,30],
+        iconAnchor:[15,15]
+      });
+      const marker = L.marker([lat,lng], {icon: icon}).addTo(markersLayer);
+
+      const popupDiv = document.createElement('div');
+      popupDiv.innerHTML = `<b>Dirección:</b> ${direccion||""}<br><b>Ambientes:</b> ${nroAmb||""}<br><b>Precio:</b> ${precioVal||""}`;
+
+      const verBtn = document.createElement('button');
+      verBtn.className = 'popup-button';
+      verBtn.textContent = 'Ver Alquiler';
+      verBtn.onclick = () => {
+        const detalle = document.getElementById('alquiler-detalle');
+        detalle.innerHTML = `<h2>Alquiler: ${direccion||''}</h2>`;
+
+        const rows = [
+          ['Ambientes', nroAmb||''],
+          ['Precio', precioVal||''],
+          ['Información de ingreso', infoIngreso||''],
+          ['Detalles', detalles||''],
+          ['Mascotas', mascotas||'']
+        ];
+        rows.forEach(([label,val])=>{
+          const p=document.createElement('p');
+          p.innerHTML=`<b>${label}:</b> ${val}`;
+          detalle.appendChild(p);
+        });
+
+        const imgContainer = document.createElement('div');
+        imgContainer.id = 'imagenes-container';
+
+        const fotos = getField(a, ["Fotos","Imagenes","Imágenes","images"]);
+        if(fotos){
+          fotos.split(',').forEach(f=>{
+            const url = driveUrlDirect(f.trim());
+            if(url){
+              const img = document.createElement('img');
+              img.src = url;
+              img.alt = "Imagen del alquiler";
+              img.referrerPolicy = "no-referrer";
+              img.onclick = ()=>abrirModal(img.src);
+              imgContainer.appendChild(img);
+            }
+          });
+        }
+        detalle.appendChild(imgContainer);
+
+        if(contacto){
+          const waBtn = document.createElement('button');
+          waBtn.textContent = 'Contactar por WhatsApp';
+          waBtn.style.background = '#25D366';
+          waBtn.style.color = 'white';
+          waBtn.style.marginTop = '10px';
+          waBtn.onclick = ()=>{
+            const mensaje = `Hola, quiero consultar por el alquiler de ${direccion}`;
+            window.open(`https://wa.me/${contacto}?text=${encodeURIComponent(mensaje)}`,'_blank');
+          };
+          detalle.appendChild(waBtn);
+        }
+
+        detalle.style.display='block';
+        detalle.classList.add("highlight");
+        detalle.scrollIntoView({behavior:"smooth", block:"start"});
+        setTimeout(()=>detalle.classList.remove("highlight"),1200);
+        map.invalidateSize();
+      };
+      popupDiv.appendChild(verBtn);
+      marker.bindPopup(popupDiv);
+      cont++;
+    });
+
+    if (cont === 0){
+      console.warn("No se encontraron alquileres para los filtros actuales.");
+    }
+  })
+  .catch(err=>{
+    document.getElementById("loading-msg").style.display="none";
+    console.error("Error al conectar con WebApp:",err)
+  });
 }
-});
-}
-detalle.appendChild(imgContainer);
 
-if(contacto){
-const waBtn = document.createElement('button');
-waBtn.textContent = 'Contactar por WhatsApp';
-waBtn.style.background = '#25D366';
-waBtn.style.color = 'white';
-waBtn.style.marginTop = '10px';
-waBtn.onclick = ()=>{ window.open(`https://wa.me/${contacto}?text=${encodeURIComponent("Hola, quiero consultar por el alquiler de "+a.Direccion)}`,'_blank'); };
-detalle.appendChild(waBtn);
-}
-detalle.style.display='block';
-detalle.classList.add("highlight");
-detalle.scrollIntoView({behavior:"smooth", block:"start"});
-setTimeout(()=>detalle.classList.remove("highlight"),1200);
-map.invalidateSize();
-};
-popupDiv.appendChild(verBtn);
-marker.bindPopup(popupDiv);
-});
-})
-.catch(err=>{
-document.getElementById("loading-msg").style.display="none"; // NUEVO: ocultar mensaje en error
-console.error("Error al conectar con WebApp:",err)
-});
-}
+/* =========================
+   INIT
+========================= */
 window.onload = ()=>{mostrarMapa();};
 </script>
 </body>
