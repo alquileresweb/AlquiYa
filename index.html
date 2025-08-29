@@ -229,14 +229,20 @@ function login(){
   fetch(webAppURL+"?action=verificarLogin&email="+encodeURIComponent(email)+"&password="+encodeURIComponent(password))
   .then(r=>r.json())
   .then(data=>{
-    if(data.success){
+    if (data.success) {
       localStorage.setItem("dueno", email);
       localStorage.setItem("dueno_email", email);
-      window.location.href="dueños.html";
-    }else{
-      document.getElementById("login-msg").textContent="Debes registrarte";
+      window.location.href = "dueños.html";
+    } else {
+      if (data.error === "Usuario no registrado") {
+        document.getElementById("login-msg").textContent = "Usuario no registrado";
+      } else if (data.error === "Contraseña incorrecta") {
+        document.getElementById("login-msg").textContent = "Contraseña incorrecta";
+      } else {
+        document.getElementById("login-msg").textContent = "Error en el inicio de sesión";
+      }
     }
-  })
+})
   .catch(()=>{document.getElementById("login-msg").textContent="Error de conexión";});
 }
 function logout(){
