@@ -225,6 +225,26 @@ function login(){
     document.getElementById("login-msg").textContent="Ingrese email y contraseña";
     return;
   }
+
+  fetch(webAppURL+"?action=verificarLogin&email="+encodeURIComponent(email)+"&password="+encodeURIComponent(password))
+    .then(r => r.json())
+    .then(data=>{
+      if(data.success){
+        localStorage.setItem("dueno", email);
+        localStorage.setItem("dueno_email", email);
+        window.location.href="dueños.html";
+      } else {
+        document.getElementById("login-msg").textContent = data.error || "Error en el inicio de sesión";
+      }
+    })
+    .catch(()=>{
+      document.getElementById("login-msg").textContent="Error de conexión";
+    });
+}
+    .catch(()=>{
+      document.getElementById("login-msg").textContent="Error de conexión";
+    });
+}
   // Validar contra backend
   fetch(webAppURL+"?action=verificarLogin&email="+encodeURIComponent(email)+"&password="+encodeURIComponent(password))
   .then(r=>r.json())
