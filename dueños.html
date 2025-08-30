@@ -187,7 +187,12 @@ function cargarPreciosPlanes(){
 function mostrarPreciosPlanes(res){
   if(res.success && res.data && res.data[0]){
     const p = res.data[0];
-    preciosPlanes = {Basico:p.E2||0, Plus:p.F2||0, Full:p.G2||0};
+    // Columnas E,F,G
+    preciosPlanes = {
+      Basico: parseFloat(String(p.E2).replace(/\D/g,""))||0,
+      Plus: parseFloat(String(p.F2).replace(/\D/g,""))||0,
+      Full: parseFloat(String(p.G2).replace(/\D/g,""))||0
+    };
     document.getElementById("precioBasico").textContent = formatoPrecio(preciosPlanes.Basico) + " / mes";
     document.getElementById("precioPlus").textContent = formatoPrecio(preciosPlanes.Plus) + " / mes";
     document.getElementById("precioFull").textContent = formatoPrecio(preciosPlanes.Full) + " / mes";
