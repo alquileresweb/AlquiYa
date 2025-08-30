@@ -218,6 +218,10 @@ function mostrarEstadoPlan(res){
   const vencimiento = login.Vencimiento || "N/D";
   document.getElementById("planStatus").innerHTML = `Plan: <b>${planActual || "Sin plan"}</b> | Estado de Pago: ${estadoPago} | Vencimiento: ${vencimiento}`;
   document.getElementById("btnPlan").textContent = planActual ? "💳 Mejorar Plan" : "💳 Elegir Plan";
+  // Mostrar mensaje solo si pago aprobado
+  if(estadoPago.toLowerCase()==="aprobado" || estadoPago.toLowerCase()==="approved"){
+    alert("✅ Plan actualizado correctamente");
+  }
 }
 
 /* ================== MODAL PLAN ================== */
@@ -227,10 +231,6 @@ function cerrarModalPlan(){ document.getElementById("modalPlan").style.display="
 async function seleccionarPlan(plan){
   const email = localStorage.getItem("dueno");
   const precio = preciosPlanes[plan]||0;
-
-  const script = document.createElement("script");
-  script.src = `${API_URL}?action=mejorarPlan&email=${encodeURIComponent(email)}&plan=${encodeURIComponent(plan)}&callback=recargarPlan`;
-  document.body.appendChild(script);
 
   const preferenceData = {
     items:[{ title:`Plan ${plan}`, quantity:1, unit_price:parseFloat(precio), currency_id:"ARS" }],
@@ -255,15 +255,6 @@ async function seleccionarPlan(plan){
   .catch(err => console.error("Error MP:", err));
 
   cerrarModalPlan();
-}
-
-function recargarPlan(res){
-  if(res.success){
-    alert("✅ Plan actualizado correctamente");
-    cargarEstadoPlan();
-  } else {
-    alert("❌ Error al actualizar plan: " + (res.error||"desconocido"));
-  }
 }
 
 /* ================== CARGAR ALQUILERES ================== */
