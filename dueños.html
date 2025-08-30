@@ -41,7 +41,6 @@ progress { width: 100%; height:20px; }
 
 <h3 id="tituloForm">➕ Agregar Alquiler</h3>
 <div id="formulario">
-<!-- --- tu formulario original --- -->
 <input type="hidden" id="editRow" value="">
 <label>Dirección</label>
 <input type="text" id="direccion">
@@ -80,16 +79,19 @@ progress { width: 100%; height:20px; }
       <b>Básico</b> - Hasta 3 deptos activos
       <p id="precioBasico">$0 / mes</p>
       <button onclick="seleccionarPlan('Basico')">Elegir Básico</button>
+      <div id="mpBtnBasico"></div>
     </div>
     <div class="plan-option">
       <b>Plus</b> - Hasta 5 deptos activos
       <p id="precioPlus">$0 / mes</p>
       <button onclick="seleccionarPlan('Plus')">Elegir Plus</button>
+      <div id="mpBtnPlus"></div>
     </div>
     <div class="plan-option">
       <b>Full</b> - Hasta 10 deptos activos
       <p id="precioFull">$0 / mes</p>
       <button onclick="seleccionarPlan('Full')">Elegir Full</button>
+      <div id="mpBtnFull"></div>
     </div>
     <button onclick="cerrarModalPlan()">Cerrar</button>
   </div>
@@ -220,28 +222,49 @@ function mostrarEstadoPlan(res){
 /* ================== MODAL PLAN ================== */
 function abrirModalPlan(){ document.getElementById("modalPlan").style.display="block"; }
 function cerrarModalPlan(){ document.getElementById("modalPlan").style.display="none"; }
-function seleccionarPlan(plan){
+
+async function seleccionarPlan(plan){
   const email = localStorage.getItem("dueno");
   const precio = preciosPlanes[plan]||0;
-  // Crear link de Mercado Pago
-  fetch("https://api.mercadopago.com/checkout/preferences", {
-    method:"POST",
-    headers:{ "Authorization": "Bearer " + MP_BEARER, "Content-Type":"application/json" },
-    body: JSON.stringify({
-      items:[{ title:`Plan ${plan}`, quantity:1, unit_price:parseFloat(precio), currency_id:"ARS" }]
-    })
-  }).then(r=>r.json()).then(res=>{
-    if(res.init_point) alert(`🔗 Link de pago generado:\n${res.init_point}`);
-    else console.error("Error MP:", res);
-  });
+
+  // Actualizar plan en GAS
   const script = document.createElement("script");
   script.src = `${API_URL}?action=mejorarPlan&email=${encodeURIComponent(email)}&plan=${encodeURIComponent(plan)}&callback=recargarPlan`;
   document.body.appendChild(script);
+
+  // Crear preferencia de Mercado Pago
+  const preferenceData = {
+    items:[{ title:`Plan ${plan}`, quantity:1, unit_price:parseFloat(precio), currency_id:"ARS" }],
+    payer: { email: email }
+  };
+
+  fetch("https://api.mercadopago.com/checkout/preferences", {
+    method:"POST",
+    headers:{ "Authorization": "Bearer " + MP_BEARER, "Content-Type":"application/json" },
+    body: JSON.stringify(preferenceData)
+  })
+  .then(r => r.json())
+  .then(res => {
+    if(res.init_point){
+      const mpContainer = document.getElementById("mpBtn" + plan);
+      mpContainer.innerHTML = `<iframe src="${res.init_point}" width="100%" height="650" frameborder="0" allowtransparency="true"></iframe>`;
+    } else {
+      console.error("Error MP:", res);
+      alert("No se pudo generar el botón de pago. Revisa la consola.");
+    }
+  })
+  .catch(err => console.error("Error MP:", err));
+
   cerrarModalPlan();
 }
+
 function recargarPlan(res){
-  if(res.success){ alert("✅ Plan actualizado correctamente"); cargarEstadoPlan(); }
-  else alert("❌ Error al actualizar plan: " + (res.error||"desconocido"));
+  if(res.success){
+    alert("✅ Plan actualizado correctamente");
+    cargarEstadoPlan();
+  } else {
+    alert("❌ Error al actualizar plan: " + (res.error||"desconocido"));
+  }
 }
 
 /* ================== CARGAR ALQUILERES ================== */
@@ -292,7 +315,6 @@ async function agregarAlquiler(){
     const url = await subirImagenCloudinary(files[i]);
     if(url) uploadedURLs.push(url);
   }
-  // Geocoding
   fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(direccion)}&key=${GEOCODE_KEY}`)
   .then(r=>r.json()).then(data=>{
     let lat="", lng="";
@@ -343,7 +365,6 @@ function resetForm(){
   document.getElementById("msg").textContent = "";
 }
 
-/* ================== CAMBIAR ESTADO CON LÍMITE DE PLAN ================== */
 function cambiarEstado(row, estadoActual){
   if(estadoActual === "Inactivo" && deptosActivos >= limiteDeptos){
     alert(`No puedes activar más alquileres. Tu plan (${planActual}) permite hasta ${limiteDeptos} deptos activos.`);
