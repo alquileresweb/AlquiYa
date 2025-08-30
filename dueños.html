@@ -185,14 +185,10 @@ function cargarPreciosPlanes(){
   document.body.appendChild(script);
 }
 function mostrarPreciosPlanes(res){
-  if(res.success && res.data && res.data[0]){
-    const p = res.data[0];
-    // Columnas E,F,G
-    preciosPlanes = {
-      Basico: parseFloat(String(p.E2).replace(/\D/g,""))||0,
-      Plus: parseFloat(String(p.F2).replace(/\D/g,""))||0,
-      Full: parseFloat(String(p.G2).replace(/\D/g,""))||0
-    };
+  if(res.success && res.data && res.data.length){
+    res.data.forEach(plan=>{
+      preciosPlanes[plan.nombre] = parseFloat(plan.precio)||0;
+    });
     document.getElementById("precioBasico").textContent = formatoPrecio(preciosPlanes.Basico) + " / mes";
     document.getElementById("precioPlus").textContent = formatoPrecio(preciosPlanes.Plus) + " / mes";
     document.getElementById("precioFull").textContent = formatoPrecio(preciosPlanes.Full) + " / mes";
@@ -232,12 +228,10 @@ async function seleccionarPlan(plan){
   const email = localStorage.getItem("dueno");
   const precio = preciosPlanes[plan]||0;
 
-  // Actualizar plan en GAS
   const script = document.createElement("script");
   script.src = `${API_URL}?action=mejorarPlan&email=${encodeURIComponent(email)}&plan=${encodeURIComponent(plan)}&callback=recargarPlan`;
   document.body.appendChild(script);
 
-  // Crear preferencia de Mercado Pago
   const preferenceData = {
     items:[{ title:`Plan ${plan}`, quantity:1, unit_price:parseFloat(precio), currency_id:"ARS" }],
     payer: { email: email }
