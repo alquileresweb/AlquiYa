@@ -78,17 +78,17 @@ progress { width: 100%; height:20px; }
     <h3>Elige tu plan</h3>
     <div class="plan-option">
       <b>Básico</b> - Hasta 3 deptos activos
-      <p>$0 / mes</p>
+      <p id="precioBasico">$0 / mes</p>
       <button onclick="seleccionarPlan('Basico')">Elegir Básico</button>
     </div>
     <div class="plan-option">
       <b>Plus</b> - Hasta 5 deptos activos
-      <p>$5 / mes</p>
+      <p id="precioPlus">$0 / mes</p>
       <button onclick="seleccionarPlan('Plus')">Elegir Plus</button>
     </div>
     <div class="plan-option">
       <b>Full</b> - Hasta 10 deptos activos
-      <p>$10 / mes</p>
+      <p id="precioFull">$0 / mes</p>
       <button onclick="seleccionarPlan('Full')">Elegir Full</button>
     </div>
     <button onclick="cerrarModalPlan()">Cerrar</button>
@@ -99,10 +99,13 @@ progress { width: 100%; height:20px; }
 const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
 const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
+const GEOCODE_KEY = "AIzaSyAisqYSTfpQ_rqqutAomzitD2v_dtKYtLE";
+const MP_BEARER = "APP_USR-595288641172928-010710-d915bce4137b3ee26e0c6e04873f1ac1-695835795";
 let imagenesBase64 = [];
 let planActual = null;
 let limiteDeptos = 0;
 let deptosActivos = 0;
+let preciosPlanes = {Basico:0, Plus:0, Full:0};
 
 /* ================== FORMATO DE PRECIO ================== */
 function formatoPrecio(valor){
@@ -170,6 +173,23 @@ window.onload = function(){
   document.getElementById("bienvenida").textContent = "Bienvenido, " + email;
   cargarEstadoPlan();
   cargarAlquileres();
+  cargarPreciosPlanes();
+}
+
+/* ================== CARGAR PRECIOS PLANES ================== */
+function cargarPreciosPlanes(){
+  const script = document.createElement("script");
+  script.src = `${API_URL}?action=getPlanes&callback=mostrarPreciosPlanes`;
+  document.body.appendChild(script);
+}
+function mostrarPreciosPlanes(res){
+  if(res.success && res.data && res.data[0]){
+    const p = res.data[0];
+    preciosPlanes = {Basico:p.E2||0, Plus:p.F2||0, Full:p.G2||0};
+    document.getElementById("precioBasico").textContent = formatoPrecio(preciosPlanes.Basico) + " / mes";
+    document.getElementById("precioPlus").textContent = formatoPrecio(preciosPlanes.Plus) + " / mes";
+    document.getElementById("precioFull").textContent = formatoPrecio(preciosPlanes.Full) + " / mes";
+  }
 }
 
 /* ================== CARGAR ESTADO DE PLAN ================== */
@@ -202,6 +222,18 @@ function abrirModalPlan(){ document.getElementById("modalPlan").style.display="b
 function cerrarModalPlan(){ document.getElementById("modalPlan").style.display="none"; }
 function seleccionarPlan(plan){
   const email = localStorage.getItem("dueno");
+  const precio = preciosPlanes[plan]||0;
+  // Crear link de Mercado Pago
+  fetch("https://api.mercadopago.com/checkout/preferences", {
+    method:"POST",
+    headers:{ "Authorization": "Bearer " + MP_BEARER, "Content-Type":"application/json" },
+    body: JSON.stringify({
+      items:[{ title:`Plan ${plan}`, quantity:1, unit_price:parseFloat(precio), currency_id:"ARS" }]
+    })
+  }).then(r=>r.json()).then(res=>{
+    if(res.init_point) alert(`🔗 Link de pago generado:\n${res.init_point}`);
+    else console.error("Error MP:", res);
+  });
   const script = document.createElement("script");
   script.src = `${API_URL}?action=mejorarPlan&email=${encodeURIComponent(email)}&plan=${encodeURIComponent(plan)}&callback=recargarPlan`;
   document.body.appendChild(script);
@@ -239,7 +271,7 @@ function mostrarAlquileres(res){
   });
 }
 
-/* ================== AGREGAR ALQUILER ================== */
+/* ================== AGREGAR / EDITAR ALQUILER ================== */
 async function agregarAlquiler(){
   if(deptosActivos >= limiteDeptos){ alert(`Tu plan (${planActual||"Sin plan"}) permite hasta ${limiteDeptos} deptos activos.`); return; }
   let direccion = document.getElementById("direccion").value;
@@ -260,12 +292,21 @@ async function agregarAlquiler(){
     const url = await subirImagenCloudinary(files[i]);
     if(url) uploadedURLs.push(url);
   }
-  enviarAlquiler(uploadedURLs.join(","));
-  function enviarAlquiler(fotosConcatenadas){
+  // Geocoding
+  fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(direccion)}&key=${GEOCODE_KEY}`)
+  .then(r=>r.json()).then(data=>{
+    let lat="", lng="";
+    if(data.results && data.results[0]){
+      lat = data.results[0].geometry.location.lat;
+      lng = data.results[0].geometry.location.lng;
+    }
+    enviarAlquiler(uploadedURLs.join(","), lat, lng);
+  });
+  function enviarAlquiler(fotosConcatenadas, lat, lng){
     const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
     const callback = action==="editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
     const script = document.createElement("script");
-    script.src = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&contacto=auto&callback=${callback}`;
+    script.src = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&contacto=auto&callback=${callback}`;
     document.body.appendChild(script);
   }
 }
