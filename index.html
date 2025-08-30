@@ -94,14 +94,15 @@ color:#3483fa;
 <a href="#" onclick="mostrarLogin()">Soy Dueño</a>
 </nav>
 
-<div style="text-align:center;margin:10px;">
+<div id="boton-filtros-container" style="text-align:center;margin:10px;">
 <button onclick="toggleFiltros()">Añadir Filtros</button>
 </div>
 
 <div id="filtros">
 <input type="number" id="filtroAmb" placeholder="Nro de Ambientes">
-<input type="number" id="filtroMin" placeholder="Precio Mínimo">
-<input type="number" id="filtroMax" placeholder="Precio Máximo">
+<!-- switch a input text para formateo, pero mantenemos el id original -->
+<input type="text" id="filtroMin" placeholder="Precio Mínimo" oninput="formatCurrency(this)">
+<input type="text" id="filtroMax" placeholder="Precio Máximo" oninput="formatCurrency(this)">
 <button onclick="cargarAlquileres()">Filtrar</button>
 </div>
 
@@ -183,6 +184,36 @@ function toInt(val, def=0){
 }
 
 /* =========================
+   FORMATO MONEDA (inputs visibles)
+   - formatCurrency(): muestra $100.000 mientras se escribe
+   - parseCurrency(): convierte la cadena formateada a número usable
+========================= */
+function formatCurrency(el){
+  // mantener cursor razonable: guardamos posición y restauramos lo más coherente posible
+  let selectionStart = el.selectionStart;
+  let raw = String(el.value || "");
+  // eliminar todo excepto dígitos
+  let digits = raw.replace(/\D/g,'');
+  if(digits === '') { el.value = ''; return; }
+  // parsear como entero y formatear sin decimales
+  let n = parseInt(digits, 10);
+  if(isNaN(n)) { el.value = ''; return; }
+  // formatear con separador de miles para AR (sin decimales) y sin símbolo en locales donde currency lo pone
+  let formatted = n.toLocaleString('es-AR');
+  el.value = '$' + formatted;
+  // intentar restaurar cursor al final (mejor comportamiento en la mayoría casos)
+  try { el.setSelectionRange(el.value.length, el.value.length); } catch(e){}
+}
+function parseCurrency(str){
+  if(!str) return 0;
+  // acepta '$100.000' o '100.000' o '100000'
+  let cleaned = String(str).replace(/[^\d]/g,'');
+  if(cleaned === '') return 0;
+  let num = parseInt(cleaned,10);
+  return isNaN(num) ? 0 : num;
+}
+
+/* =========================
    UI NAV
 ========================= */
 function toggleFiltros(){
@@ -195,6 +226,9 @@ function mostrarMapa(){
   document.getElementById("panel-dueno").style.display="none";
   document.getElementById("registro").style.display="none";
   document.getElementById("alquiler-detalle").style.display="none";
+  // mostrar el botón de filtros y el mensaje de carga solo en mapa
+  document.getElementById("boton-filtros-container").style.display = "block";
+  document.getElementById("loading-msg").style.display = "none";
   map.invalidateSize();
   cargarAlquileres();
 }
@@ -205,6 +239,9 @@ function mostrarLogin(){
   document.getElementById("panel-dueno").style.display="none";
   document.getElementById("registro").style.display="none";
   document.getElementById("alquiler-detalle").style.display="none";
+  // ocultar botón y mensaje cuando no estamos en mapa
+  document.getElementById("boton-filtros-container").style.display = "none";
+  document.getElementById("loading-msg").style.display = "none";
 }
 function mostrarRegistro(){
   document.getElementById("login").style.display="none";
@@ -213,6 +250,9 @@ function mostrarRegistro(){
   document.getElementById("filtros").style.display="none";
   document.getElementById("panel-dueno").style.display="none";
   document.getElementById("alquiler-detalle").style.display="none";
+  // ocultar botón y mensaje cuando no estamos en mapa
+  document.getElementById("boton-filtros-container").style.display = "none";
+  document.getElementById("loading-msg").style.display = "none";
 }
 
 /* =========================
@@ -323,7 +363,9 @@ function cerrarModal(){
    CARGA DE ALQUILERES
 ========================= */
 function cargarAlquileres(){
-  document.getElementById("loading-msg").style.display="block";
+  // Mostrar mensaje de carga (solo cuando estamos en vista mapa)
+  const loadingEl = document.getElementById("loading-msg");
+  loadingEl.style.display="block";
   markersLayer.clearLayers();
 
   // Marcadores fijos de interés
@@ -333,13 +375,14 @@ function cargarAlquileres(){
   L.marker([-28.5551127,-56.0389282],{icon:hospIcon}).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
 
   const filtroAmb = document.getElementById("filtroAmb").value;
-  const filtroMin = toNumber(document.getElementById("filtroMin").value) || 0;
-  const filtroMax = toNumber(document.getElementById("filtroMax").value) || Infinity;
+  // parseamos los inputs con parseCurrency() para obtener número real
+  const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
+  const filtroMax = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
 
   fetch(webAppURL + "?action=getAlquileres")
   .then(res => res.json())
   .then(res => {
-    document.getElementById("loading-msg").style.display="none";
+    loadingEl.style.display="none";
     if(!res.success || !Array.isArray(res.data)) {
       console.error("Error al cargar alquileres:", res.error || "Respuesta inválida");
       return;
