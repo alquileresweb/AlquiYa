@@ -36,6 +36,7 @@ iframe { width:100%; min-height:450px; border:none; border-radius:5px; margin-to
 <div id="accountBox">
   Bienvenido, <span id="bienvenida"></span><br>
   <button onclick="logout()">Cerrar Sesión</button>
+  <button onclick="abrirModalRegistro()">Registrarse</button>
 </div>
 
 <div id="planStatus"></div>
@@ -100,6 +101,20 @@ iframe { width:100%; min-height:450px; border:none; border-radius:5px; margin-to
 <div id="mpBtnFull"></div>
 </div>
 <button onclick="cerrarModalPlan()">Cerrar</button>
+</div>
+</div>
+
+<!-- Modal de Registro -->
+<div id="modalRegistro" class="modal">
+<div class="modal-content">
+<h3>Registrarse</h3>
+<label>Email</label>
+<input type="email" id="regEmail" required>
+<label>Contraseña</label>
+<input type="password" id="regPassword" required>
+<button onclick="registrarDueno()">Registrar</button>
+<p id="regMsg" style="color:red"></p>
+<button onclick="cerrarModalRegistro()">Cerrar</button>
 </div>
 </div>
 
@@ -178,11 +193,51 @@ return null;
 // === INICIO ===
 window.onload = function(){
 const email = localStorage.getItem("dueno");
-if(!email){ window.location.href="index.html"; return; }
+if(!email){
+document.getElementById("accountBox").innerHTML = `<button onclick="abrirModalRegistro()">Registrarse</button>`;
+return;
+}
 document.getElementById("bienvenida").textContent = email;
 cargarEstadoPlan();
 cargarAlquileres();
 cargarPreciosPlanes();
+}
+
+// === REGISTRO DE DUEÑO ===
+function abrirModalRegistro(){ document.getElementById("modalRegistro").style.display="block"; }
+function cerrarModalRegistro(){
+document.getElementById("modalRegistro").style.display="none";
+document.getElementById("regEmail").value = "";
+document.getElementById("regPassword").value = "";
+document.getElementById("regMsg").textContent = "";
+}
+
+async function registrarDueno(){
+const email = document.getElementById("regEmail").value;
+const password = document.getElementById("regPassword").value;
+const msgEl = document.getElementById("regMsg");
+if(!email || !password){
+msgEl.textContent = "Completa todos los campos.";
+return;
+}
+msgEl.textContent = "Registrando...";
+const script = document.createElement("script");
+script.src = `${API_URL}?action=registerDueno&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&callback=duenoRegistrado`;
+document.body.appendChild(script);
+}
+
+function duenoRegistrado(res){
+const msgEl = document.getElementById("regMsg");
+if(res.success){
+msgEl.textContent = "✅ Registro exitoso. Inicia sesión para continuar.";
+localStorage.setItem("dueno", document.getElementById("regEmail").value);
+setTimeout(() => {
+cerrarModalRegistro();
+window.location.href = "index.html";
+}, 2000);
+} else {
+msgEl.textContent = "❌ Error al registrar: " + (res.error || "desconocido");
+}
 }
 
 // === CARGAR PRECIOS PLANES ===
