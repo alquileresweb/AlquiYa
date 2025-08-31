@@ -12,6 +12,7 @@ h3 { color:#333; font-size:1.8em; margin-bottom:15px; }
 button { margin: 5px; padding:12px 18px; font-size:1.2em; border-radius:5px; cursor:pointer; }
 #formulario { background:#fff; padding:18px; border:1px solid #ccc; margin-top:20px; border-radius:10px; font-size:1.2em; text-align:left; display:none; }
 #formulario.active { display:block; }
+#registroForm { background:#fff; padding:18px; border:1px solid #ccc; margin-top:20px; border-radius:10px; font-size:1.2em; text-align:left; }
 label { display:block; margin:10px 0 6px; font-weight:bold; }
 input, select, textarea { width:100%; padding:12px; margin-bottom:14px; font-size:1.1em; border-radius:6px; border:1px solid #ccc; }
 .preview-img { max-width: 120px; margin-top: 5px; display:inline-block; position:relative; border-radius:5px; }
@@ -35,73 +36,82 @@ iframe { width:100%; min-height:450px; border:none; border-radius:5px; margin-to
 </style>
 </head>
 <body>
-<div id="cuentaContainer">
+<!-- Contenedor para cuenta (visible solo si está autenticado) -->
+<div id="cuentaContainer" style="display:none;">
   <span id="bienvenida"></span>
   <button onclick="logout()">Cerrar Sesión</button>
 </div>
 
-<div id="planStatus"></div>
-<button id="btnPlan" onclick="abrirModalPlan()">💳 Mejorar Plan</button>
-
-<h3>📋 Mis Alquileres <span id="limiteAlquileres"></span></h3>
-<div id="listaAlquileres">Cargando...</div>
-
-<button id="btnAgregarAlquiler" onclick="toggleFormulario()">➕ Agregar Alquiler</button>
-<div id="formulario">
-<input type="hidden" id="editRow" value="">
-<label>Dirección</label>
-<input type="text" id="direccion">
-
-<label>Ambientes</label>
-<input type="number" id="ambientes">
-
-<label>Precio</label>
-<input type="text" id="precio">
-
-<label>Mascotas Permitidas</label>
-<select id="mascotas">
-<option value="Sí">Sí</option>
-<option value="No">No</option>
-</select>
-
-<label>Imágenes del Alquiler (PNG/JPG, múltiples)</label>
-<input type="file" id="imagenFile" accept="image/png, image/jpeg" multiple>
-<div id="previewContainer"></div>
-
-<label>Información de ingreso</label>
-<textarea id="infoIngreso" rows="2"></textarea>
-
-<label>Detalles</label>
-<textarea id="detalles" rows="3"></textarea>
-
-<button id="btnGuardar" onclick="agregarAlquiler()">Agregar</button>
-<p id="msg" style="color:green"></p>
+<!-- Formulario de registro (visible si no está autenticado) -->
+<div id="registroForm">
+  <h2>Registrar Nuevo Dueño</h2>
+  <label>Email</label>
+  <input type="email" id="regEmail">
+  <label>Contraseña</label>
+  <input type="password" id="regPassword">
+  <label>Nombre</label>
+  <input type="text" id="regNombre">
+  <label>Contacto (Teléfono)</label>
+  <input type="text" id="regContacto">
+  <button onclick="registrarDueno()">Registrar</button>
+  <p id="regMsg" style="color:green"></p>
 </div>
 
-<!-- Modal de Planes -->
-<div id="modalPlan" class="modal">
-<div class="modal-content">
-<h3>Elige tu plan</h3>
-<div class="plan-option">
-<b>Básico</b> - Hasta 3 deptos activos
-<p id="precioBasico">$0 / mes</p>
-<button onclick="seleccionarPlan('Basico')">Elegir Básico</button>
-<div id="mpBtnBasico"></div>
-</div>
-<div class="plan-option">
-<b>Plus</b> - Hasta 5 deptos activos
-<p id="precioPlus">$0 / mes</p>
-<button onclick="seleccionarPlan('Plus')">Elegir Plus</button>
-<div id="mpBtnPlus"></div>
-</div>
-<div class="plan-option">
-<b>Full</b> - Hasta 10 deptos activos
-<p id="precioFull">$0 / mes</p>
-<button onclick="seleccionarPlan('Full')">Elegir Full</button>
-<div id="mpBtnFull"></div>
-</div>
-<button onclick="cerrarModalPlan()">Cerrar</button>
-</div>
+<!-- Contenido del panel de dueños (visible solo si está autenticado) -->
+<div id="panelDuenos" style="display:none;">
+  <div id="planStatus"></div>
+  <button id="btnPlan" onclick="abrirModalPlan()">💳 Mejorar Plan</button>
+  <h3>📋 Mis Alquileres <span id="limiteAlquileres"></span></h3>
+  <div id="listaAlquileres">Cargando...</div>
+  <button id="btnAgregarAlquiler" onclick="toggleFormulario()">➕ Agregar Alquiler</button>
+  <div id="formulario">
+    <input type="hidden" id="editRow" value="">
+    <label>Dirección</label>
+    <input type="text" id="direccion">
+    <label>Ambientes</label>
+    <input type="number" id="ambientes">
+    <label>Precio</label>
+    <input type="text" id="precio">
+    <label>Mascotas Permitidas</label>
+    <select id="mascotas">
+      <option value="Sí">Sí</option>
+      <option value="No">No</option>
+    </select>
+    <label>Imágenes del Alquiler (PNG/JPG, múltiples)</label>
+    <input type="file" id="imagenFile" accept="image/png, image/jpeg" multiple>
+    <div id="previewContainer"></div>
+    <label>Información de ingreso</label>
+    <textarea id="infoIngreso" rows="2"></textarea>
+    <label>Detalles</label>
+    <textarea id="detalles" rows="3"></textarea>
+    <button id="btnGuardar" onclick="agregarAlquiler()">Agregar</button>
+    <p id="msg" style="color:green"></p>
+  </div>
+  <!-- Modal de Planes -->
+  <div id="modalPlan" class="modal">
+    <div class="modal-content">
+      <h3>Elige tu plan</h3>
+      <div class="plan-option">
+        <b>Básico</b> - Hasta 3 deptos activos
+        <p id="precioBasico">$0 / mes</p>
+        <button onclick="seleccionarPlan('Basico')">Elegir Básico</button>
+        <div id="mpBtnBasico"></div>
+      </div>
+      <div class="plan-option">
+        <b>Plus</b> - Hasta 5 deptos activos
+        <p id="precioPlus">$0 / mes</p>
+        <button onclick="seleccionarPlan('Plus')">Elegir Plus</button>
+        <div id="mpBtnPlus"></div>
+      </div>
+      <div class="plan-option">
+        <b>Full</b> - Hasta 10 deptos activos
+        <p id="precioFull">$0 / mes</p>
+        <button onclick="seleccionarPlan('Full')">Elegir Full</button>
+        <div id="mpBtnFull"></div>
+      </div>
+      <button onclick="cerrarModalPlan()">Cerrar</button>
+    </div>
+  </div>
 </div>
 
 <button id="contactoBtn" onclick="window.open('https://wa.me/5493764275443', '_blank')">❓</button>
@@ -121,118 +131,126 @@ let preciosPlanes = {Basico:0, Plus:0, Full:0};
 
 // === FORMATO DE PRECIO ===
 function formatoPrecio(valor){
-if(!valor) return "";
-valor = valor.toString().replace(/\D/g,"");
-return "$" + valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  if(!valor) return "";
+  valor = valor.toString().replace(/\D/g,"");
+  return "$" + valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 document.getElementById("precio").addEventListener("input", function(){
-const cursorPos = this.selectionStart;
-const valorSinSimbolo = this.value.replace(/\D/g,'');
-this.value = formatoPrecio(valorSinSimbolo);
-this.selectionEnd = cursorPos;
+  const cursorPos = this.selectionStart;
+  const valorSinSimbolo = this.value.replace(/\D/g,'');
+  this.value = formatoPrecio(valorSinSimbolo);
+  this.selectionEnd = cursorPos;
 });
 
 // === PREVIEW IMÁGENES ===
 function actualizarPreview(){
-const previewContainer = document.getElementById("previewContainer");
-previewContainer.innerHTML = "";
-imagenesBase64.forEach((imgBase64, index) => {
-const container = document.createElement("div");
-container.className = "preview-img-container";
-const img = document.createElement("img");
-img.src = imgBase64;
-img.className = "preview-img";
-const btnDel = document.createElement("button");
-btnDel.className = "delete-img";
-btnDel.textContent = "x";
-btnDel.onclick = ()=>{ imagenesBase64.splice(index,1); actualizarPreview(); };
-container.appendChild(img);
-container.appendChild(btnDel);
-previewContainer.appendChild(container);
-});
+  const previewContainer = document.getElementById("previewContainer");
+  previewContainer.innerHTML = "";
+  imagenesBase64.forEach((imgBase64, index) => {
+    const container = document.createElement("div");
+    container.className = "preview-img-container";
+    const img = document.createElement("img");
+    img.src = imgBase64;
+    img.className = "preview-img";
+    const btnDel = document.createElement("button");
+    btnDel.className = "delete-img";
+    btnDel.textContent = "x";
+    btnDel.onclick = ()=>{ imagenesBase64.splice(index,1); actualizarPreview(); };
+    container.appendChild(img);
+    container.appendChild(btnDel);
+    previewContainer.appendChild(container);
+  });
 }
 document.getElementById("imagenFile").addEventListener("change", function(){
-const files = Array.from(this.files);
-files.forEach(file=>{
-const reader = new FileReader();
-reader.onload = function(e){
-imagenesBase64.push(e.target.result);
-actualizarPreview();
-}
-reader.readAsDataURL(file);
-});
+  const files = Array.from(this.files);
+  files.forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = function(e){
+      imagenesBase64.push(e.target.result);
+      actualizarPreview();
+    }
+    reader.readAsDataURL(file);
+  });
 });
 
 // === SUBIR IMÁGENES ===
 async function subirImagenCloudinary(file){
-const formData = new FormData();
-formData.append("file", file);
-formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-try {
-const res = await fetch(CLOUDINARY_URL, { method:"POST", body:formData });
-const json = await res.json();
-return json.secure_url;
-} catch(err){
-console.error("Error subiendo imagen a Cloudinary:", err);
-return null;
-}
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+  try {
+    const res = await fetch(CLOUDINARY_URL, { method:"POST", body:formData });
+    const json = await res.json();
+    return json.secure_url;
+  } catch(err){
+    console.error("Error subiendo imagen a Cloudinary:", err);
+    return null;
+  }
 }
 
 // === INICIO ===
 window.onload = function(){
-const email = localStorage.getItem("dueno");
-if(!email){ window.location.href="index.html"; return; }
-document.getElementById("bienvenida").textContent = "Bienvenido, " + email;
-cargarEstadoPlan();
-cargarAlquileres();
-cargarPreciosPlanes();
+  const email = localStorage.getItem("dueno");
+  if(email){
+    document.getElementById("cuentaContainer").style.display = "block";
+    document.getElementById("panelDuenos").style.display = "block";
+    document.getElementById("registroForm").style.display = "none";
+    document.getElementById("bienvenida").textContent = "Bienvenido, " + email;
+    cargarEstadoPlan();
+    cargarAlquileres();
+    cargarPreciosPlanes();
+  } else {
+    document.getElementById("cuentaContainer").style.display = "none";
+    document.getElementById("panelDuenos").style.display = "none";
+    document.getElementById("registroForm").style.display = "block";
+  }
 }
 
 // === CARGAR PRECIOS PLANES ===
 function cargarPreciosPlanes(){
-const script = document.createElement("script");
-script.src = `${API_URL}?action=getPlanes&callback=mostrarPreciosPlanes`;
-document.body.appendChild(script);
+  const script = document.createElement("script");
+  script.src = `${API_URL}?action=getPlanes&callback=mostrarPreciosPlanes`;
+  document.body.appendChild(script);
 }
 function mostrarPreciosPlanes(res){
-if(res.success && res.data && res.data.length){
-res.data.forEach(plan=>{
-preciosPlanes[plan.nombre] = parseFloat(plan.precio)||0;
-});
-document.getElementById("precioBasico").textContent = formatoPrecio(preciosPlanes.Basico) + " / mes";
-document.getElementById("precioPlus").textContent = formatoPrecio(preciosPlanes.Plus) + " / mes";
-document.getElementById("precioFull").textContent = formatoPrecio(preciosPlanes.Full) + " / mes";
-}
+  if(res.success && res.data && res.data.length){
+    res.data.forEach(plan=>{
+      preciosPlanes[plan.nombre] = parseFloat(plan.precio)||0;
+    });
+    document.getElementById("precioBasico").textContent = formatoPrecio(preciosPlanes.Basico) + " / mes";
+    document.getElementById("precioPlus").textContent = formatoPrecio(preciosPlanes.Plus) + " / mes";
+    document.getElementById("precioFull").textContent = formatoPrecio(preciosPlanes.Full) + " / mes";
+  }
 }
 
 // === CARGAR ESTADO DE PLAN ===
 function cargarEstadoPlan(){
-const email = localStorage.getItem("dueno");
-const script = document.createElement("script");
-script.src = `${API_URL}?action=getLoginInfo&email=${encodeURIComponent(email)}&callback=mostrarEstadoPlan`;
-document.body.appendChild(script);
+  const email = localStorage.getItem("dueno");
+  const script = document.createElement("script");
+  script.src = `${API_URL}?action=getLoginInfo&email=${encodeURIComponent(email)}&callback=mostrarEstadoPlan`;
+  document.body.appendChild(script);
 }
 
 function mostrarEstadoPlan(res){
-if(!res.success || !res.data || !res.data[0]){
-planActual = null;
-limiteDeptos = 0;
-document.getElementById("planStatus").innerHTML = `Plan: <b>Sin plan</b> | Estado de Pago: N/D | Vencimiento: N/D`;
-document.getElementById("btnPlan").textContent = "💳 Elegir Plan";
-document.getElementById("limiteAlquileres").textContent = "";
-return;
-}
-const login = res.data[0];
-planActual = login.Plan || null;
-limiteDeptos = planActual==="Basico"?3:planActual==="Plus"?5:planActual==="Full"?10:0;
-const estadoPago = login.EstadoPago || "No registrado";
-const vencimiento = login.Vencimiento || "N/D";
-document.getElementById("planStatus").innerHTML = `Plan: <b>${planActual || "Sin plan"}</b> | Estado de Pago: ${estadoPago} | Vencimiento: ${vencimiento}`;
-document.getElementById("btnPlan").textContent = planActual ? "💳 Mejorar Plan" : "💳 Elegir Plan";
-document.getElementById("limiteAlquileres").textContent = `(${deptosActivos}/${limiteDeptos} alquileres)`;
-if(estadoPago.toLowerCase()==="aprobado" || estadoPago.toLowerCase()==="approved"){
-alert("✅ Plan actualizado correctamente");
-}
+  if(!res.success || !res.data || !res.data[0]){
+    planActual = null;
+    limiteDeptos = 0;
+    document.getElementById("planStatus").innerHTML = `Plan: <b>Sin plan</b> | Estado de Pago: N/D | Vencimiento: N/D`;
+    document.getElementById("btnPlan").textContent = "💳 Elegir Plan";
+    document.getElementById("limiteAlquileres").textContent = "";
+    return;
+  }
+  const login = res.data[0];
+  planActual = login.Plan || null;
+  limiteDeptos = planActual==="Basico"?3:planActual==="Plus"?5:planActual==="Full"?10:0;
+  const estadoPago = login.EstadoPago || "No registrado";
+  const vencimiento = login.Vencimiento || "N/D";
+  document.getElementById("planStatus").innerHTML = `Plan: <b>${planActual || "Sin plan"}</b> | Estado de Pago: ${estadoPago} | Vencimiento: ${vencimiento}`;
+  document.getElementById("btnPlan").textContent = planActual ? "💳 Mejorar Plan" : "💳 Elegir Plan";
+  document.getElementById("limiteAlquileres").textContent = `(${deptosActivos}/${limiteDeptos} alquileres)`;
+  if(estadoPago.toLowerCase()==="aprobado" || estadoPago.toLowerCase()==="approved"){
+    alert("✅ Plan actualizado correctamente");
+  }
 }
 
 // === MODAL PLAN ===
@@ -240,206 +258,232 @@ function abrirModalPlan(){ document.getElementById("modalPlan").style.display="b
 function cerrarModalPlan(){ document.getElementById("modalPlan").style.display="none"; }
 
 async function seleccionarPlan(plan){
-const email = localStorage.getItem("dueno");
-const precio = preciosPlanes[plan]||0;
-const preferenceData = {
-items:[{ title:`Plan ${plan}`, quantity:1, unit_price:parseFloat(precio), currency_id:"ARS" }],
-payer: { email: email }
-};
-fetch("https://api.mercadopago.com/checkout/preferences", {
-method:"POST",
-headers:{ "Authorization": "Bearer " + MP_BEARER, "Content-Type":"application/json" },
-body: JSON.stringify(preferenceData)
-})
-.then(r => r.json())
-.then(res => {
-if(res.init_point){
-const mpContainer = document.getElementById("mpBtn" + plan);
-mpContainer.innerHTML = `<iframe src="${res.init_point}" width="100%" height="650" frameborder="0" allowtransparency="true"></iframe>`;
-} else {
-console.error("Error MP:", res);
-alert("No se pudo generar el botón de pago. Revisa la consola.");
-}
-})
-.catch(err => console.error("Error MP:", err));
-// Modal **no se cierra** al seleccionar plan
+  const email = localStorage.getItem("dueno");
+  const precio = preciosPlanes[plan]||0;
+  const preferenceData = {
+    items:[{ title:`Plan ${plan}`, quantity:1, unit_price:parseFloat(precio), currency_id:"ARS" }],
+    payer: { email: email }
+  };
+  fetch("https://api.mercadopago.com/checkout/preferences", {
+    method:"POST",
+    headers:{ "Authorization": "Bearer " + MP_BEARER, "Content-Type":"application/json" },
+    body: JSON.stringify(preferenceData)
+  })
+  .then(r => r.json())
+  .then(res => {
+    if(res.init_point){
+      const mpContainer = document.getElementById("mpBtn" + plan);
+      mpContainer.innerHTML = `<iframe src="${res.init_point}" width="100%" height="650" frameborder="0" allowtransparency="true"></iframe>`;
+    } else {
+      console.error("Error MP:", res);
+      alert("No se pudo generar el botón de pago. Revisa la consola.");
+    }
+  })
+  .catch(err => console.error("Error MP:", err));
 }
 
 // === CARGAR ALQUILERES ===
 function cargarAlquileres() {
-const email = localStorage.getItem("dueno");
-const script = document.createElement("script");
-script.src = `${API_URL}?action=getAlquileresDueno&dueno=${encodeURIComponent(email)}&callback=mostrarAlquileres`;
-document.body.appendChild(script);
+  const email = localStorage.getItem("dueno");
+  const script = document.createElement("script");
+  script.src = `${API_URL}?action=getAlquileresDueno&dueno=${encodeURIComponent(email)}&callback=mostrarAlquileres`;
+  document.body.appendChild(script);
 }
 
 function mostrarAlquileres(res){
-const div = document.getElementById("listaAlquileres");
-div.innerHTML = "";
-if(!res.success || !res.data || res.data.length === 0){ div.innerHTML="No tienes alquileres aún."; return; }
-deptosActivos = res.data.filter(a=>a.Estado==="Activo").length;
-document.getElementById("limiteAlquileres").textContent = `(${deptosActivos}/${limiteDeptos} alquileres)`;
-res.data.forEach(alq => {
-let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
-let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Cambiar Estado</button>`;
-let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
-let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
-let precioFormateado = formatoPrecio(alq.Precio);
-div.innerHTML += `<div class="alquiler">
-<b>${alq.Direccion}</b> - ${alq['Nro Ambientes']} amb - ${precioFormateado} - Mascotas: ${alq.Mascotas || "N/D"}<br>
-Estado: ${estado}<br>
-${btnEstado} ${btnEditar} ${btnEliminar}
-</div>`;
-});
+  const div = document.getElementById("listaAlquileres");
+  div.innerHTML = "";
+  if(!res.success || !res.data || res.data.length === 0){ div.innerHTML="No tienes alquileres aún."; return; }
+  deptosActivos = res.data.filter(a=>a.Estado==="Activo").length;
+  document.getElementById("limiteAlquileres").textContent = `(${deptosActivos}/${limiteDeptos} alquileres)`;
+  res.data.forEach(alq => {
+    let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
+    let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Cambiar Estado</button>`;
+    let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
+    let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
+    let precioFormateado = formatoPrecio(alq.Precio);
+    div.innerHTML += `<div class="alquiler">
+      <b>${alq.Direccion}</b> - ${alq['Nro Ambientes']} amb - ${precioFormateado} - Mascotas: ${alq.Mascotas || "N/D"}<br>
+      Estado: ${estado}<br>
+      ${btnEstado} ${btnEditar} ${btnEliminar}
+    </div>`;
+  });
 }
 
 // === TOGGLE FORMULARIO ===
 function toggleFormulario(){
-const form = document.getElementById("formulario");
-const btn = document.getElementById("btnAgregarAlquiler");
-if(form.classList.contains("active")){
-form.classList.remove("active");
-btn.textContent = "➕ Agregar Alquiler";
-resetForm();
-} else {
-form.classList.add("active");
-btn.textContent = "➖ Cerrar Formulario";
-window.scrollTo(0, document.getElementById("formulario").offsetTop);
-}
+  const form = document.getElementById("formulario");
+  const btn = document.getElementById("btnAgregarAlquiler");
+  if(form.classList.contains("active")){
+    form.classList.remove("active");
+    btn.textContent = "➕ Agregar Alquiler";
+    resetForm();
+  } else {
+    form.classList.add("active");
+    btn.textContent = "➖ Cerrar Formulario";
+    window.scrollTo(0, document.getElementById("formulario").offsetTop);
+  }
 }
 
 // === AGREGAR / EDITAR ALQUILER ===
 async function agregarAlquiler(){
-let direccion = document.getElementById("direccion").value;
-const ambientes = document.getElementById("ambientes").value;
-let precio = document.getElementById("precio").value.replace(/\D/g,"");
-const mascotas = document.getElementById("mascotas").value;
-const infoIngreso = document.getElementById("infoIngreso").value;
-const detalles = document.getElementById("detalles").value;
-let row = document.getElementById("editRow").value || new Date().getTime();
-const email = localStorage.getItem("dueno");
-if(!direccion || !ambientes || !precio){ alert("Completa todos los campos obligatorios."); return; }
-direccion = direccion + ", Santo Tomé Corrientes";
-const msgEl = document.getElementById("msg");
-if(document.getElementById("editRow").value) msgEl.textContent = "Guardando cambios...";
-const files = document.getElementById("imagenFile").files;
-let uploadedURLs = [];
-for(let i=0; i<files.length; i++){
-const url = await subirImagenCloudinary(files[i]);
-if(url) uploadedURLs.push(url);
-}
-fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(direccion)}&key=${GEOCODE_KEY}`)
-.then(r=>r.json()).then(data=>{
-let lat="", lng="";
-if(data.results && data.results[0]){
-lat = data.results[0].geometry.location.lat;
-lng = data.results[0].geometry.location.lng;
-}
-enviarAlquiler(uploadedURLs.join(","), lat, lng);
-});
-function enviarAlquiler(fotosConcatenadas, lat, lng){
-const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
-const callback = action==="editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
-let estado = "Activo";
-if(action==="editAlquiler" && deptosActivos >= limiteDeptos){
-estado = "Inactivo";
-}
-const script = document.createElement("script");
-script.src = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&contacto=auto&estado=${estado}&callback=${callback}`;
-document.body.appendChild(script);
-}
-}
-
-// === FUNCIONES RESTANTES ===
-function editarAlquiler(row, datos){
-document.getElementById("btnAgregarAlquiler").textContent="➖ Cerrar Formulario";
-document.getElementById("formulario").classList.add("active");
-document.getElementById("btnGuardar").textContent="Guardar Cambios";
-document.getElementById("editRow").value=row;
-document.getElementById("direccion").value=datos.Direccion||"";
-document.getElementById("ambientes").value=datos["Nro Ambientes"]||"";
-document.getElementById("precio").value = formatoPrecio(datos.Precio);
-document.getElementById("mascotas").value=datos.Mascotas||"No";
-document.getElementById("infoIngreso").value=datos.InfoIngreso||"";
-document.getElementById("detalles").value=datos.Detalles||"";
-imagenesBase64 = datos.Fotos ? datos.Fotos.split(",") : [];
-actualizarPreview();
-window.scrollTo(0, document.getElementById("formulario").offsetTop);
-}
-
-function resetForm(){
-document.getElementById("btnAgregarAlquiler").textContent="➕ Agregar Alquiler";
-document.getElementById("formulario").classList.remove("active");
-document.getElementById("btnGuardar").textContent="Agregar";
-document.getElementById("editRow").value="";
-document.getElementById("direccion").value="";
-document.getElementById("ambientes").value="";
-document.getElementById("precio").value="";
-document.getElementById("mascotas").value="Sí";
-document.getElementById("infoIngreso").value="";
-document.getElementById("detalles").value="";
-document.getElementById("imagenFile").value="";
-imagenesBase64=[];
-actualizarPreview();
-document.getElementById("msg").textContent = "";
-}
-
-function cambiarEstado(row, estadoActual){
-alert("Cambiando estado del alquiler");
-if(estadoActual === "Inactivo" && deptosActivos >= limiteDeptos){
-alert(`No puedes activar más alquileres. Tu plan (${planActual}) permite hasta ${limiteDeptos} deptos activos.`);
-return;
-}
-const script = document.createElement("script");
-script.src = `${API_URL}?action=toggleEstado&row=${row}&callback=cargarAlquileres`;
-document.body.appendChild(script);
-}
-
-function eliminarAlquiler(row){
-if(!confirm("¿Seguro que deseas eliminar este alquiler?")) return;
-const script = document.createElement("script");
-script.src = `${API_URL}?action=deleteAlquiler&row=${row}&callback=cargarAlquileres`;
-document.body.appendChild(script);
-}
-
-function logout(){ localStorage.removeItem("dueno"); window.location.href="index.html"; }
-
-function alquilerAgregado(res) {
-if (res.success) {
-alert("✅ Alquiler agregado con éxito");
-resetForm();
-cargarAlquileres();
-cargarEstadoPlan();
-}
-else { alert("❌ Error al agregar: " + (res.error || "desconocido")); }
-}
-
-function alquilerEditado(res) {
-const msgEl = document.getElementById("msg");
-if (res.success) {
-msgEl.textContent = "✅ Cambios guardados correctamente";
-resetForm();
-cargarAlquileres();
-}
-else {
-msgEl.textContent = "❌ Error al editar: " + (res.error || "desconocido");
-}
+  let direccion = document.getElementById("direccion").value;
+  const ambientes = document.getElementById("ambientes").value;
+  let precio = document.getElementById("precio").value.replace(/\D/g,"");
+  const mascotas = document.getElementById("mascotas").value;
+  const infoIngreso = document.getElementById("infoIngreso").value;
+  const detalles = document.getElementById("detalles").value;
+  let row = document.getElementById("editRow").value || new Date().getTime();
+  const email = localStorage.getItem("dueno");
+  if(!direccion || !ambientes || !precio){ alert("Completa todos los campos obligatorios."); return; }
+  direccion = direccion + ", Santo Tomé Corrientes";
+  const msgEl = document.getElementById("msg");
+  if(document.getElementById("editRow").value) msgEl.textContent = "Guardando cambios...";
+  const files = document.getElementById("imagenFile").files;
+  let uploadedURLs = [];
+  for(let i=0; i<files.length; i++){
+    const url = await subirImagenCloudinary(files[i]);
+    if(url) uploadedURLs.push(url);
+  }
+  fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(direccion)}&key=${GEOCODE_KEY}`)
+  .then(r=>r.json()).then(data=>{
+    let lat="", lng="";
+    if(data.results && data.results[0]){
+      lat = data.results[0].geometry.location.lat;
+      lng = data.results[0].geometry.location.lng;
+    }
+    enviarAlquiler(uploadedURLs.join(","), lat, lng);
+  });
+  function enviarAlquiler(fotosConcatenadas, lat, lng){
+    const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
+    const callback = action==="editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
+    let estado = "Activo";
+    if(action==="editAlquiler" && deptosActivos >= limiteDeptos){
+      estado = "Inactivo";
+    }
+    const script = document.createElement("script");
+    script.src = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&contacto=auto&estado=${estado}&callback=${callback}`;
+    document.body.appendChild(script);
+  }
 }
 
 // === REGISTRAR NUEVO DUEÑO ===
-function registrarDueno(email, plan, estadoPago, vencimiento){
-const script = document.createElement("script");
-script.src = `${API_URL}?action=registrarDueno&email=${encodeURIComponent(email)}&plan=${encodeURIComponent(plan)}&estadoPago=${encodeURIComponent(estadoPago)}&vencimiento=${encodeURIComponent(vencimiento)}&callback=duenoRegistrado`;
-document.body.appendChild(script);
+function registrarDueno(){
+  const email = document.getElementById("regEmail").value;
+  const password = document.getElementById("regPassword").value;
+  const nombre = document.getElementById("regNombre").value;
+  const contacto = document.getElementById("regContacto").value;
+  const msgEl = document.getElementById("regMsg");
+  if(!email || !password || !nombre || !contacto){
+    msgEl.style.color = "red";
+    msgEl.textContent = "Completa todos los campos obligatorios.";
+    return;
+  }
+  msgEl.textContent = "Registrando...";
+  const script = document.createElement("script");
+  script.src = `${API_URL}?action=registerDueno&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&nombre=${encodeURIComponent(nombre)}&contacto=${encodeURIComponent(contacto)}&callback=duenoRegistrado`;
+  document.body.appendChild(script);
 }
 
 function duenoRegistrado(res){
-if(res.success){
-alert("✅ Dueño registrado con éxito");
-cargarEstadoPlan();
-} else {
-alert("❌ Error al registrar dueño: " + (res.error || "desconocido"));
+  const msgEl = document.getElementById("regMsg");
+  if(res.success){
+    msgEl.style.color = "green";
+    msgEl.textContent = "✅ Dueño registrado con éxito";
+    localStorage.setItem("dueno", document.getElementById("regEmail").value);
+    document.getElementById("registroForm").style.display = "none";
+    document.getElementById("cuentaContainer").style.display = "block";
+    document.getElementById("panelDuenos").style.display = "block";
+    document.getElementById("bienvenida").textContent = "Bienvenido, " + document.getElementById("regEmail").value;
+    cargarEstadoPlan();
+    cargarAlquileres();
+    cargarPreciosPlanes();
+  } else {
+    msgEl.style.color = "red";
+    msgEl.textContent = "❌ Error al registrar: " + (res.error || "desconocido");
+  }
 }
+
+// === FUNCIONES RESTANTES ===
+function editar3068
+function editarAlquiler(row, datos){
+  document.getElementById("btnAgregarAlquiler").textContent="➖ Cerrar Formulario";
+  document.getElementById("formulario").classList.add("active");
+  document.getElementById("btnGuardar").textContent="Guardar Cambios";
+  document.getElementById("editRow").value=row;
+  document.getElementById("direccion").value=datos.Direccion||"";
+  document.getElementById("ambientes").value=datos["Nro Ambientes"]||"";
+  document.getElementById("precio").value = formatoPrecio(datos.Precio);
+  document.getElementById("mascotas").value=datos.Mascotas||"No";
+  document.getElementById("infoIngreso").value=datos.InfoIngreso||"";
+  document.getElementById("detalles").value=datos.Detalles||"";
+  imagenesBase64 = datos.Fotos ? datos.Fotos.split(",") : [];
+  actualizarPreview();
+  window.scrollTo(0, document.getElementById("formulario").offsetTop);
+}
+
+function resetForm(){
+  document.getElementById("btnAgregarAlquiler").textContent="➕ Agregar Alquiler";
+  document.getElementById("formulario").classList.remove("active");
+  document.getElementById("btnGuardar").textContent="Agregar";
+  document.getElementById("editRow").value="";
+  document.getElementById("direccion").value="";
+  document.getElementById("ambientes").value="";
+  document.getElementById("precio").value="";
+  document.getElementById("mascotas").value="Sí";
+  document.getElementById("infoIngreso").value="";
+  document.getElementById("detalles").value="";
+  document.getElementById("imagenFile").value="";
+  imagenesBase64=[];
+  actualizarPreview();
+  document.getElementById("msg").textContent = "";
+}
+
+function cambiarEstado(row, estadoActual){
+  alert("Cambiando estado del alquiler");
+  if(estadoActual === "Inactivo" && deptosActivos >= limiteDeptos){
+    alert(`No puedes activar más alquileres. Tu plan (${planActual}) permite hasta ${limiteDeptos} deptos activos.`);
+    return;
+  }
+  const script = document.createElement("script");
+  script.src = `${API_URL}?action=toggleEstado&row=${row}&callback=cargarAlquileres`;
+  document.body.appendChild(script);
+}
+
+function eliminarAlquiler(row){
+  if(!confirm("¿Seguro que deseas eliminar este alquiler?")) return;
+  const script = document.createElement("script");
+  script.src = `${API_URL}?action=deleteAlquiler&row=${row}&callback=cargarAlquileres`;
+  document.body.appendChild(script);
+}
+
+function logout(){ 
+  localStorage.removeItem("dueno"); 
+  document.getElementById("registroForm").style.display = "block";
+  document.getElementById("cuentaContainer").style.display = "none";
+  document.getElementById("panelDuenos").style.display = "none";
+}
+
+function alquilerAgregado(res) {
+  if (res.success) {
+    alert("✅ Alquiler agregado con éxito");
+    resetForm();
+    cargarAlquileres();
+    cargarEstadoPlan();
+  } else { 
+    alert("❌ Error al agregar: " + (res.error || "desconocido")); 
+  }
+}
+
+function alquilerEditado(res) {
+  const msgEl = document.getElementById("msg");
+  if (res.success) {
+    msgEl.textContent = "✅ Cambios guardados correctamente";
+    resetForm();
+    cargarAlquileres();
+  } else {
+    msgEl.textContent = "❌ Error al editar: " + (res.error || "desconocido");
+  }
 }
 </script>
 </body>
