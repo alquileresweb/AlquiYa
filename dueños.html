@@ -7,15 +7,17 @@
 /* --- CSS adaptado para móvil con textos más grandes y centrados --- */
 body { font-family: Arial, sans-serif; margin: 10px; background:#f5f5f5; font-size:18px; text-align:center; }
 h2 { color:#333; font-size:2em; margin-bottom:15px; }
-.alquiler { border:1px solid #ccc; padding:14px; margin:12px 0; background:#fff; font-size:1.3em; text-align:left; }
+h3 { color:#333; font-size:1.8em; margin-bottom:15px; }
+.alquiler { border:1px solid #ccc; padding:14px; margin:12px 0; background:#fff; font-size:1.1em; text-align:left; }
 button { margin: 5px; padding:12px 18px; font-size:1.2em; border-radius:5px; cursor:pointer; }
-#formulario { background:#fff; padding:18px; border:1px solid #ccc; margin-top:20px; border-radius:10px; font-size:1.3em; text-align:left; display:none; }
+#formulario { background:#fff; padding:18px; border:1px solid #ccc; margin-top:20px; border-radius:10px; font-size:1.2em; text-align:left; display:none; }
+#formulario.active { display:block; }
 label { display:block; margin:10px 0 6px; font-weight:bold; }
 input, select, textarea { width:100%; padding:12px; margin-bottom:14px; font-size:1.1em; border-radius:6px; border:1px solid #ccc; }
 .preview-img { max-width: 120px; margin-top: 5px; display:inline-block; position:relative; border-radius:5px; }
 .preview-img-container { display:inline-block; margin-right:5px; position:relative; }
 .delete-img { position:absolute; top:0; right:0; background:red; color:white; border:none; border-radius:50%; cursor:pointer; font-weight:bold; padding:2px 6px; }
-#planStatus { margin:12px 0; font-weight:bold; font-size:1.2em; text-align:center; background:#b3e5fc; padding:10px; border-radius:5px; }
+#planStatus { margin:12px 0; font-weight:bold; font-size:1em; text-align:center; background:#e0f7fa; padding:10px; border-radius:5px; }
 progress { width: 100%; height:20px; }
 .modal {
 display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
@@ -28,22 +30,20 @@ background-color: #fefefe; margin: 8% auto; padding: 20px; border: 1px solid #88
 .plan-option { border:1px solid #ccc; padding:12px; margin:12px 0; border-radius:10px; font-size:1.2em; }
 .plan-option button { margin-top:6px; padding:10px 16px; font-size:1.1em; border-radius:6px; }
 iframe { width:100%; min-height:450px; border:none; border-radius:5px; margin-top:10px; }
-#accountBox { position:absolute; top:10px; right:10px; background:#fff; padding:8px; border:1px solid #ccc; border-radius:5px; font-size:0.9em; }
-#contactBtn { position:fixed; bottom:20px; right:20px; background:#25D366; color:white; border:none; border-radius:50%; width:50px; height:50px; font-size:1.5em; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 5px rgba(0,0,0,0.2); }
+#cuentaContainer { position:absolute; top:10px; right:10px; background:#fff; padding:10px; border:1px solid #ccc; border-radius:5px; font-size:0.9em; }
+#contactoBtn { position:fixed; bottom:20px; right:20px; background:#25D366; color:white; border:none; border-radius:50%; padding:15px; font-size:1.4em; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.2); }
 </style>
 </head>
 <body>
-<div id="accountBox">
-  Bienvenido, <span id="bienvenida"></span><br>
+<div id="cuentaContainer">
+  <span id="bienvenida"></span>
   <button onclick="logout()">Cerrar Sesión</button>
-  <button onclick="abrirModalRegistro()">Registrarse</button>
 </div>
 
 <div id="planStatus"></div>
 <button id="btnPlan" onclick="abrirModalPlan()">💳 Mejorar Plan</button>
-<button id="contactBtn" onclick="window.location.href='https://wa.me/5493764275443'">❓</button>
 
-<h3 id="misAlquileresTitle">📋 Mis Alquileres</h3>
+<h3>📋 Mis Alquileres <span id="limiteAlquileres"></span></h3>
 <div id="listaAlquileres">Cargando...</div>
 
 <button id="btnAgregarAlquiler" onclick="toggleFormulario()">➕ Agregar Alquiler</button>
@@ -104,19 +104,7 @@ iframe { width:100%; min-height:450px; border:none; border-radius:5px; margin-to
 </div>
 </div>
 
-<!-- Modal de Registro -->
-<div id="modalRegistro" class="modal">
-<div class="modal-content">
-<h3>Registrarse</h3>
-<label>Email</label>
-<input type="email" id="regEmail" required>
-<label>Contraseña</label>
-<input type="password" id="regPassword" required>
-<button onclick="registrarDueno()">Registrar</button>
-<p id="regMsg" style="color:red"></p>
-<button onclick="cerrarModalRegistro()">Cerrar</button>
-</div>
-</div>
+<button id="contactoBtn" onclick="window.open('https://wa.me/5493764275443', '_blank')">❓</button>
 
 <script>
 // === CONSTANTES Y VARIABLES ===
@@ -193,51 +181,11 @@ return null;
 // === INICIO ===
 window.onload = function(){
 const email = localStorage.getItem("dueno");
-if(!email){
-document.getElementById("accountBox").innerHTML = `<button onclick="abrirModalRegistro()">Registrarse</button>`;
-return;
-}
-document.getElementById("bienvenida").textContent = email;
+if(!email){ window.location.href="index.html"; return; }
+document.getElementById("bienvenida").textContent = "Bienvenido, " + email;
 cargarEstadoPlan();
 cargarAlquileres();
 cargarPreciosPlanes();
-}
-
-// === REGISTRO DE DUEÑO ===
-function abrirModalRegistro(){ document.getElementById("modalRegistro").style.display="block"; }
-function cerrarModalRegistro(){
-document.getElementById("modalRegistro").style.display="none";
-document.getElementById("regEmail").value = "";
-document.getElementById("regPassword").value = "";
-document.getElementById("regMsg").textContent = "";
-}
-
-async function registrarDueno(){
-const email = document.getElementById("regEmail").value;
-const password = document.getElementById("regPassword").value;
-const msgEl = document.getElementById("regMsg");
-if(!email || !password){
-msgEl.textContent = "Completa todos los campos.";
-return;
-}
-msgEl.textContent = "Registrando...";
-const script = document.createElement("script");
-script.src = `${API_URL}?action=registerDueno&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&callback=duenoRegistrado`;
-document.body.appendChild(script);
-}
-
-function duenoRegistrado(res){
-const msgEl = document.getElementById("regMsg");
-if(res.success){
-msgEl.textContent = "✅ Registro exitoso. Inicia sesión para continuar.";
-localStorage.setItem("dueno", document.getElementById("regEmail").value);
-setTimeout(() => {
-cerrarModalRegistro();
-window.location.href = "index.html";
-}, 2000);
-} else {
-msgEl.textContent = "❌ Error al registrar: " + (res.error || "desconocido");
-}
 }
 
 // === CARGAR PRECIOS PLANES ===
@@ -270,8 +218,8 @@ if(!res.success || !res.data || !res.data[0]){
 planActual = null;
 limiteDeptos = 0;
 document.getElementById("planStatus").innerHTML = `Plan: <b>Sin plan</b> | Estado de Pago: N/D | Vencimiento: N/D`;
-document.getElementById("misAlquileresTitle").innerHTML = `📋 Mis Alquileres (0/${limiteDeptos})`;
 document.getElementById("btnPlan").textContent = "💳 Elegir Plan";
+document.getElementById("limiteAlquileres").textContent = "";
 return;
 }
 const login = res.data[0];
@@ -280,8 +228,8 @@ limiteDeptos = planActual==="Basico"?3:planActual==="Plus"?5:planActual==="Full"
 const estadoPago = login.EstadoPago || "No registrado";
 const vencimiento = login.Vencimiento || "N/D";
 document.getElementById("planStatus").innerHTML = `Plan: <b>${planActual || "Sin plan"}</b> | Estado de Pago: ${estadoPago} | Vencimiento: ${vencimiento}`;
-document.getElementById("misAlquileresTitle").innerHTML = `📋 Mis Alquileres (${deptosActivos}/${limiteDeptos})`;
 document.getElementById("btnPlan").textContent = planActual ? "💳 Mejorar Plan" : "💳 Elegir Plan";
+document.getElementById("limiteAlquileres").textContent = `(${deptosActivos}/${limiteDeptos} alquileres)`;
 if(estadoPago.toLowerCase()==="aprobado" || estadoPago.toLowerCase()==="approved"){
 alert("✅ Plan actualizado correctamente");
 }
@@ -330,7 +278,7 @@ const div = document.getElementById("listaAlquileres");
 div.innerHTML = "";
 if(!res.success || !res.data || res.data.length === 0){ div.innerHTML="No tienes alquileres aún."; return; }
 deptosActivos = res.data.filter(a=>a.Estado==="Activo").length;
-document.getElementById("misAlquileresTitle").innerHTML = `📋 Mis Alquileres (${deptosActivos}/${limiteDeptos})`;
+document.getElementById("limiteAlquileres").textContent = `(${deptosActivos}/${limiteDeptos} alquileres)`;
 res.data.forEach(alq => {
 let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
 let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Cambiar Estado</button>`;
@@ -347,15 +295,16 @@ ${btnEstado} ${btnEditar} ${btnEliminar}
 
 // === TOGGLE FORMULARIO ===
 function toggleFormulario(){
-const formulario = document.getElementById("formulario");
-const btnAgregar = document.getElementById("btnAgregarAlquiler");
-if(formulario.style.display === "none"){
-formulario.style.display = "block";
-btnAgregar.textContent = "➖ Cerrar Formulario";
-} else {
-formulario.style.display = "none";
-btnAgregar.textContent = "➕ Agregar Alquiler";
+const form = document.getElementById("formulario");
+const btn = document.getElementById("btnAgregarAlquiler");
+if(form.classList.contains("active")){
+form.classList.remove("active");
+btn.textContent = "➕ Agregar Alquiler";
 resetForm();
+} else {
+form.classList.add("active");
+btn.textContent = "➖ Cerrar Formulario";
+window.scrollTo(0, document.getElementById("formulario").offsetTop);
 }
 }
 
@@ -389,10 +338,12 @@ lng = data.results[0].geometry.location.lng;
 enviarAlquiler(uploadedURLs.join(","), lat, lng);
 });
 function enviarAlquiler(fotosConcatenadas, lat, lng){
-const isEditing = document.getElementById("editRow").value;
-const action = isEditing ? "editAlquiler" : "addAlquiler";
+const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
 const callback = action==="editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
-const estado = isEditing && deptosActivos >= limiteDeptos ? "Inactivo" : "Activo";
+let estado = "Activo";
+if(action==="editAlquiler" && deptosActivos >= limiteDeptos){
+estado = "Inactivo";
+}
 const script = document.createElement("script");
 script.src = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&contacto=auto&estado=${estado}&callback=${callback}`;
 document.body.appendChild(script);
@@ -402,7 +353,7 @@ document.body.appendChild(script);
 // === FUNCIONES RESTANTES ===
 function editarAlquiler(row, datos){
 document.getElementById("btnAgregarAlquiler").textContent="➖ Cerrar Formulario";
-document.getElementById("formulario").style.display="block";
+document.getElementById("formulario").classList.add("active");
 document.getElementById("btnGuardar").textContent="Guardar Cambios";
 document.getElementById("editRow").value=row;
 document.getElementById("direccion").value=datos.Direccion||"";
@@ -418,7 +369,8 @@ window.scrollTo(0, document.getElementById("formulario").offsetTop);
 
 function resetForm(){
 document.getElementById("btnAgregarAlquiler").textContent="➕ Agregar Alquiler";
-document.getElementById("formulario").style.display="none";
+document.getElementById("formulario").classList.remove("active");
+document.getElementById("btnGuardar").textContent="Agregar";
 document.getElementById("editRow").value="";
 document.getElementById("direccion").value="";
 document.getElementById("ambientes").value="";
@@ -471,6 +423,22 @@ cargarAlquileres();
 }
 else {
 msgEl.textContent = "❌ Error al editar: " + (res.error || "desconocido");
+}
+}
+
+// === REGISTRAR NUEVO DUEÑO ===
+function registrarDueno(email, plan, estadoPago, vencimiento){
+const script = document.createElement("script");
+script.src = `${API_URL}?action=registrarDueno&email=${encodeURIComponent(email)}&plan=${encodeURIComponent(plan)}&estadoPago=${encodeURIComponent(estadoPago)}&vencimiento=${encodeURIComponent(vencimiento)}&callback=duenoRegistrado`;
+document.body.appendChild(script);
+}
+
+function duenoRegistrado(res){
+if(res.success){
+alert("✅ Dueño registrado con éxito");
+cargarEstadoPlan();
+} else {
+alert("❌ Error al registrar dueño: " + (res.error || "desconocido"));
 }
 }
 </script>
