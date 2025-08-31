@@ -468,21 +468,40 @@ msgEl.textContent = "❌ Error al editar: " + (res.error || "desconocido");
 }
 
 // === REGISTRAR NUEVO DUEÑO ===
-function registrarDueno(){
+async function registrarDueno(){
 const email = document.getElementById("emailRegistro").value;
 const password = document.getElementById("passwordRegistro").value;
 const nombre = document.getElementById("nombreRegistro").value;
 const contacto = document.getElementById("contactoRegistro").value;
 const msgEl = document.getElementById("msgRegistro");
+
+// Validaciones básicas
 if(!email || !password || !nombre || !contacto){
 msgEl.style.color = "red";
 msgEl.textContent = "Completa todos los campos obligatorios.";
 return;
 }
+if(!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)){
+msgEl.style.color = "red";
+msgEl.textContent = "Ingresa un email válido.";
+return;
+}
+if(password.length < 6){
+msgEl.style.color = "red";
+msgEl.textContent = "La contraseña debe tener al menos 6 caracteres.";
+return;
+}
+
 msgEl.textContent = "Registrando...";
-const script = document.createElement("script");
-script.src = `${API_URL}?action=registerDueno&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&nombre=${encodeURIComponent(nombre)}&contacto=${encodeURIComponent(contacto)}&callback=duenoRegistrado`;
-document.body.appendChild(script);
+try {
+const response = await fetch(`${API_URL}?action=RegistrarDueño&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&nombre=${encodeURIComponent(nombre)}&contacto=${encodeURIComponent(contacto)}`);
+const res = await response.json();
+duenoRegistrado(res);
+} catch(err){
+msgEl.style.color = "red";
+msgEl.textContent = "❌ Error al registrar: " + (err.message || "Error de conexión");
+console.error("Error en registro:", err);
+}
 }
 
 function duenoRegistrado(res){
