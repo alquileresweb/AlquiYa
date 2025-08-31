@@ -80,8 +80,8 @@ iframe { width:100%; min-height:450px; border:none; border-radius:5px; margin-to
 <p id="msg" style="color:green"></p>
 </div>
 
-<button id="btnRegistrarDueno" onclick="toggleFormularioRegistro()">👤 Registrar Nuevo Dueño</button>
-<div id="formularioRegistro">
+<!-- <button id="btnRegistrarDueno" onclick="toggleFormularioRegistro()">👤 Registrar Nuevo Dueño</button> -->
+<!-- <div id="formularioRegistro">
 <label>Email</label>
 <input type="email" id="emailRegistro">
 <label>Contraseña</label>
@@ -92,7 +92,7 @@ iframe { width:100%; min-height:450px; border:none; border-radius:5px; margin-to
 <input type="text" id="contactoRegistro">
 <button onclick="registrarDueno()">Registrar</button>
 <p id="msgRegistro" style="color:green"></p>
-</div>
+</div> -->
 
 <!-- Modal de Planes -->
 <div id="modalPlan" class="modal">
@@ -326,7 +326,7 @@ window.scrollTo(0, document.getElementById("formulario").offsetTop);
 
 // === TOGGLE FORMULARIO REGISTRO ===
 function toggleFormularioRegistro(){
-const form = document.getElementById("formularioRegistro");
+/*const form = document.getElementById("formularioRegistro");
 const btn = document.getElementById("btnRegistrarDueno");
 if(form.classList.contains("active")){
 form.classList.remove("active");
@@ -336,7 +336,7 @@ resetFormRegistro();
 form.classList.add("active");
 btn.textContent = "👤 Cerrar Formulario Registro";
 window.scrollTo(0, document.getElementById("formularioRegistro").offsetTop);
-}
+}*/
 }
 
 // === AGREGAR / EDITAR ALQUILER ===
@@ -416,13 +416,13 @@ document.getElementById("msg").textContent = "";
 }
 
 function resetFormRegistro(){
-document.getElementById("formularioRegistro").classList.remove("active");
+/*document.getElementById("formularioRegistro").classList.remove("active");
 document.getElementById("btnRegistrarDueno").textContent = "👤 Registrar Nuevo Dueño";
 document.getElementById("emailRegistro").value = "";
 document.getElementById("passwordRegistro").value = "";
 document.getElementById("nombreRegistro").value = "";
 document.getElementById("contactoRegistro").value = "";
-document.getElementById("msgRegistro").textContent = "";
+document.getElementById("msgRegistro").textContent = "";*/
 }
 
 function cambiarEstado(row, estadoActual){
@@ -467,7 +467,7 @@ msgEl.textContent = "❌ Error al editar: " + (res.error || "desconocido");
 }
 }
 
-// === REGISTRAR NUEVO DUEÑO ===
+/*// === REGISTRAR NUEVO DUEÑO ===
 async function registrarDueno(){
 const email = document.getElementById("emailRegistro").value;
 const password = document.getElementById("passwordRegistro").value;
@@ -518,7 +518,7 @@ cargarAlquileres();
 msgEl.style.color = "red";
 msgEl.textContent = "❌ Error al registrar: " + (res.error || "desconocido");
 }
-}
+}*/
 </script>
 </body>
 </html>
