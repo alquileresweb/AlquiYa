@@ -5,7 +5,7 @@
 <title>Panel de Dueños</title>
 <style>
 /* --- CSS adaptado para móvil con textos más grandes y centrados --- */
-body { font-family: Arial, sans-serif; margin: 10px; background:#f5f5f5; font-size:20px; text-align:center; margin-top: 120px; }
+body { font-family: Arial, sans-serif; margin: 10px; background:#f5f5f5; font-size:20px; text-align:center; margin-top: 0px; }
 h2 { color:#333; font-size:2.2em; margin-bottom:18px; }
 h3 { color:#333; font-size:2em; margin-bottom:18px; }
 .alquiler { border:1px solid #ccc; padding:16px; margin:14px 0; background:#fff; font-size:1.2em; text-align:left; }
@@ -41,8 +41,9 @@ background-color: #fefefe; margin: 10% auto; padding: 28px; border: 1px solid #8
 iframe { width:100%; min-height:500px; border:none; border-radius:6px; margin-top:12px; }
 #cuentaContainer { position:absolute; top:10px; right:10px; background:#fff; padding:12px; border:1px solid #ccc; border-radius:6px; font-size:1em; display:flex; flex-direction:column; align-items:center; min-width: 200px; }
 #cuentaContainer button { margin: 6px; padding: 10px 14px; font-size: 1.1em; }
-#planContainer { background:#e0f7fa; padding:12px; border:1px solid #ccc; border-radius:6px; font-size:1em; display:flex; flex-direction:column; align-items:center; min-width: 200px; max-width: 300px; margin: 20px auto; }
+#planContainer { position:fixed; top:10px; left:10px; background:#e0f7fa; padding:12px 20px; border:1px solid #ccc; border-radius:6px; font-size:1em; display:flex; flex-direction:column; align-items:center; min-width: 200px; width: 300px; height: auto; }
 #planContainer button { background:#fff; }
+#mainContent { margin-top:140px; }
 #contactoBtn { position:fixed; bottom:24px; right:24px; background:#25D366; color:white; border:none; border-radius:50%; padding:24px; font-size:2em; cursor:pointer; box-shadow:0 3px 6px rgba(0,0,0,0.2); }
 .estado-msg { font-size: 1.1em; margin-top: 6px; display: block; }
 .estado-msg.loading { color: blue; }
@@ -50,7 +51,7 @@ iframe { width:100%; min-height:500px; border:none; border-radius:6px; margin-to
 .estado-msg.error { color: red; }
 /* Mobile-specific styles */
 @media screen and (max-width: 600px) {
-  body { font-size: 24px; margin-top: 140px; }
+  body { font-size: 24px; margin-top: 0px; }
   h2 { font-size: 2.6em; }
   h3 { font-size: 2.4em; }
   .alquiler { font-size: 1.4em; padding: 20px; }
@@ -66,6 +67,8 @@ iframe { width:100%; min-height:500px; border:none; border-radius:6px; margin-to
   .plan-option { font-size: 1.5em; padding: 14px; }
   #cuentaContainer, #planContainer { font-size: 1.2em; padding: 12px; min-width: 200px; }
   #cuentaContainer button { font-size: 1.3em; padding: 12px 16px; }
+  #planContainer { padding: 12px 20px; width: 300px; height: auto; }
+  #mainContent { margin-top:160px; }
   #contactoBtn { font-size: 2.2em; padding: 28px; }
 }
 </style>
@@ -87,6 +90,7 @@ iframe { width:100%; min-height:500px; border:none; border-radius:6px; margin-to
   <button id="btnPlan" onclick="abrirModalPlan()">💳 Mejorar Plan</button>
 </div>
 
+<div id="mainContent">
 <h3>📋 Mis Alquileres</h3>
 <div id="listaAlquileres">Cargando...</div>
 
@@ -135,6 +139,7 @@ iframe { width:100%; min-height:500px; border:none; border-radius:6px; margin-to
 <button onclick="registrarDueno()">Registrar</button>
 <p id="msgRegistro" style="color:green"></p>
 </div> -->
+</div>
 
 <!-- Modal de Planes -->
 <div id="modalPlan" class="modal">
