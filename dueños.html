@@ -32,8 +32,10 @@ background-color: #fefefe; margin: 8% auto; padding: 20px; border: 1px solid #88
 .plan-option { border:1px solid #ccc; padding:12px; margin:12px 0; border-radius:10px; font-size:1.2em; }
 .plan-option button { margin-top:6px; padding:10px 16px; font-size:1.1em; border-radius:6px; }
 iframe { width:100%; min-height:450px; border:none; border-radius:5px; margin-top:10px; }
-#cuentaContainer { position:absolute; top:10px; right:10px; background:#fff; padding:10px; border:1px solid #ccc; border-radius:5px; font-size:0.9em; display:flex; flex-direction:column; align-items:center; }
-#planContainer { position:absolute; top:10px; left:10px; background:#fff; padding:10px; border:1px solid #ccc; border-radius:5px; font-size:0.9em; display:flex; flex-direction:column; align-items:center; }
+#cuentaContainer { position:fixed; top:10px; right:10px; background:#fff; padding:10px; border:1px solid #ccc; border-radius:5px; font-size:0.9em; display:flex; flex-direction:row; align-items:center; flex-wrap:wrap; }
+#cuentaContainer button { margin:5px; padding:8px 12px; font-size:0.8em; }
+#planContainer { position:fixed; top:10px; left:10px; background:#fff; padding:10px; border:1px solid #ccc; border-radius:5px; font-size:0.9em; display:flex; flex-direction:column; align-items:center; }
+#mainContent { margin-top:120px; }
 #contactoBtn { position:fixed; bottom:20px; right:20px; background:#25D366; color:white; border:none; border-radius:50%; padding:15px; font-size:1.4em; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.2); }
 </style>
 </head>
@@ -51,54 +53,56 @@ iframe { width:100%; min-height:450px; border:none; border-radius:5px; margin-to
   <button id="btnPlan" onclick="abrirModalPlan()">💳 Mejorar Plan</button>
 </div>
 
-<h3>📋 Mis Alquileres <span id="limiteAlquileres"></span></h3>
-<div id="listaAlquileres">Cargando...</div>
+<div id="mainContent">
+  <h3>📋 Mis Alquileres</h3>
+  <div id="listaAlquileres">Cargando...</div>
 
-<button id="btnAgregarAlquiler" onclick="toggleFormulario()">➕ Agregar Alquiler</button>
-<div id="formulario">
-<input type="hidden" id="editRow" value="">
-<label>Dirección</label>
-<input type="text" id="direccion">
+  <button id="btnAgregarAlquiler" onclick="toggleFormulario()">➕ Agregar Alquiler</button>
+  <div id="formulario">
+    <input type="hidden" id="editRow" value="">
+    <label>Dirección</label>
+    <input type="text" id="direccion">
 
-<label>Ambientes</label>
-<input type="number" id="ambientes">
+    <label>Ambientes</label>
+    <input type="number" id="ambientes">
 
-<label>Precio</label>
-<input type="text" id="precio">
+    <label>Precio</label>
+    <input type="text" id="precio">
 
-<label>Mascotas Permitidas</label>
-<select id="mascotas">
-<option value="Sí">Sí</option>
-<option value="No">No</option>
-</select>
+    <label>Mascotas Permitidas</label>
+    <select id="mascotas">
+      <option value="Sí">Sí</option>
+      <option value="No">No</option>
+    </select>
 
-<label>Imágenes del Alquiler (PNG/JPG, múltiples)</label>
-<input type="file" id="imagenFile" accept="image/png, image/jpeg" multiple>
-<div id="previewContainer"></div>
+    <label>Imágenes del Alquiler (PNG/JPG, múltiples)</label>
+    <input type="file" id="imagenFile" accept="image/png, image/jpeg" multiple>
+    <div id="previewContainer"></div>
 
-<label>Información de ingreso</label>
-<textarea id="infoIngreso" rows="2"></textarea>
+    <label>Información de ingreso</label>
+    <textarea id="infoIngreso" rows="2"></textarea>
 
-<label>Detalles</label>
-<textarea id="detalles" rows="3"></textarea>
+    <label>Detalles</label>
+    <textarea id="detalles" rows="3"></textarea>
 
-<button id="btnGuardar" onclick="agregarAlquiler()">Agregar</button>
-<p id="msg" style="color:green"></p>
+    <button id="btnGuardar" onclick="agregarAlquiler()">Agregar</button>
+    <p id="msg" style="color:green"></p>
+  </div>
+
+  <!-- <button id="btnRegistrarDueno" onclick="toggleFormularioRegistro()">👤 Registrar Nuevo Dueño</button> -->
+  <!-- <div id="formularioRegistro">
+    <label>Email</label>
+    <input type="email" id="emailRegistro">
+    <label>Contraseña</label>
+    <input type="password" id="passwordRegistro">
+    <label>Nombre</label>
+    <input type="text" id="nombreRegistro">
+    <label>Contacto (Teléfono)</label>
+    <input type="text" id="contactoRegistro">
+    <button onclick="registrarDueno()">Registrar</button>
+    <p id="msgRegistro" style="color:green"></p>
+  </div> -->
 </div>
-
-<!-- <button id="btnRegistrarDueno" onclick="toggleFormularioRegistro()">👤 Registrar Nuevo Dueño</button> -->
-<!-- <div id="formularioRegistro">
-<label>Email</label>
-<input type="email" id="emailRegistro">
-<label>Contraseña</label>
-<input type="password" id="passwordRegistro">
-<label>Nombre</label>
-<input type="text" id="nombreRegistro">
-<label>Contacto (Teléfono)</label>
-<input type="text" id="contactoRegistro">
-<button onclick="registrarDueno()">Registrar</button>
-<p id="msgRegistro" style="color:green"></p>
-</div> -->
 
 <!-- Modal de Planes -->
 <div id="modalPlan" class="modal">
@@ -142,7 +146,7 @@ iframe { width:100%; min-height:450px; border:none; border-radius:5px; margin-to
 </div>
 </div>
 
-<button id="contactoBtn" onclick="window.open('https://wa.me/5493764275443', '_blank')">❓</button>
+<button id="contactoBtn" onclick="window.open('https://wa.me/5493764275443', '_blank')" title="¿Necesitas ayuda o tuviste inconvenientes?">Ayuda</button>
 
 <script>
 // === CONSTANTES Y VARIABLES ===
@@ -256,9 +260,8 @@ function mostrarEstadoPlan(res){
 if(!res.success || !res.data || !res.data[0]){
 planActual = null;
 limiteDeptos = 0;
-document.getElementById("planStatus").innerHTML = `Plan: <b>Sin plan</b> | Estado de Pago: N/D | Vencimiento: N/D`;
+document.getElementById("planStatus").innerHTML = `Plan: <b>Sin plan</b> | Estado de Pago: N/D | Vencimiento: N/D<br>0/0 alquileres`;
 document.getElementById("btnPlan").textContent = "💳 Elegir Plan";
-document.getElementById("limiteAlquileres").textContent = "";
 return;
 }
 const login = res.data[0];
@@ -266,9 +269,8 @@ planActual = login.Plan || null;
 limiteDeptos = planActual==="Basico"?3:planActual==="Plus"?5:planActual==="Full"?10:0;
 const estadoPago = login.EstadoPago || "No registrado";
 const vencimiento = login.Vencimiento || "N/D";
-document.getElementById("planStatus").innerHTML = `Plan: <b>${planActual || "Sin plan"}</b> | Estado de Pago: ${estadoPago} | Vencimiento: ${vencimiento}`;
+document.getElementById("planStatus").innerHTML = `Plan: <b>${planActual || "Sin plan"}</b> | Estado de Pago: ${estadoPago} | Vencimiento: ${vencimiento}<br>${deptosActivos}/${limiteDeptos} alquileres`;
 document.getElementById("btnPlan").textContent = planActual ? "💳 Mejorar Plan" : "💳 Elegir Plan";
-document.getElementById("limiteAlquileres").textContent = `(${deptosActivos}/${limiteDeptos} alquileres)`;
 if(estadoPago.toLowerCase()==="aprobado" || estadoPago.toLowerCase()==="approved"){
 alert("✅ Plan actualizado correctamente");
 }
@@ -317,7 +319,6 @@ const div = document.getElementById("listaAlquileres");
 div.innerHTML = "";
 if(!res.success || !res.data || res.data.length === 0){ div.innerHTML="No tienes alquileres aún."; return; }
 deptosActivos = res.data.filter(a=>a.Estado==="Activo").length;
-document.getElementById("limiteAlquileres").textContent = `(${deptosActivos}/${limiteDeptos} alquileres)`;
 res.data.forEach(alq => {
 let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
 let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Cambiar Estado</button>`;
