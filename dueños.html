@@ -39,12 +39,12 @@ background-color: #fefefe; margin: 10% auto; padding: 28px; border: 1px solid #8
 .plan-option { border:1px solid #ccc; padding:14px; margin:14px 0; border-radius:12px; font-size:1.3em; }
 .plan-option button { margin-top:8px; padding:12px 18px; font-size:1.2em; border-radius:8px; }
 iframe { width:100%; min-height:500px; border:none; border-radius:6px; margin-top:12px; }
-#cuentaContainer { position: fixed; top: 10px; right: 10px; background: #fff; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1em; display: flex; flex-direction: row; align-items: center; flex-wrap: wrap; min-width: 200px; }
-#cuentaContainer button { margin: 6px; padding: 10px 14px; font-size: 0.8em; }
-#planContainer { position: fixed; top: 10px; left: 10px; background: #e0f7fa; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1em; display: flex; flex-direction: column; align-items: center; width: 300px; min-width: 260px; box-sizing: border-box; }
-#planContainer button { background: #fff; }
-#mainContent { margin-top: 120px; }
-#contactoBtn { position: fixed; bottom: 24px; right: 24px; background: #25D366; color: white; border: none; border-radius: 50%; padding: 24px; font-size: 2em; cursor: pointer; box-shadow: 0 3px 6px rgba(0,0,0,0.2); }
+#cuentaContainer { position:fixed; top:10px; right:10px; background:#fff; padding:12px; border:1px solid #ccc; border-radius:6px; font-size:1em; display:flex; flex-direction:row; align-items:center; flex-wrap:wrap; min-width: 200px; }
+#cuentaContainer button { margin: 6px; padding: 10px 14px; font-size: 1.1em; }
+#planContainer { background:#e0f7fa; padding:12px; border:1px solid #ccc; border-radius:0; font-size:1em; display:flex; flex-direction:column; align-items:center; min-width: 200px; max-width: 300px; position: fixed; top: 10px; left: 10px; }
+#planContainer button { background:#fff; }
+#mainContent { margin-top:120px; }
+#contactoBtn { position:fixed; bottom:24px; right:24px; background:#25D366; color:white; border:none; border-radius:50%; padding:24px; font-size:2em; cursor:pointer; box-shadow:0 3px 6px rgba(0,0,0,0.2); }
 .estado-msg { font-size: 1.1em; margin-top: 6px; display: block; }
 .estado-msg.loading { color: blue; }
 .estado-msg.success { color: green; }
@@ -65,9 +65,7 @@ iframe { width:100%; min-height:500px; border:none; border-radius:6px; margin-to
   #planStatus { font-size: 1.3em; }
   .modal-content { width: 98%; max-width: 98%; font-size: 1.3em; padding: 28px; }
   .plan-option { font-size: 1.5em; padding: 14px; }
-  #cuentaContainer, #planContainer { font-size: 1.2em; padding: 12px; }
-  #cuentaContainer { min-width: 220px; }
-  #planContainer { width: 260px; min-width: 220px; }
+  #cuentaContainer, #planContainer { font-size: 1.2em; padding: 12px; min-width: 200px; border-radius: 0; }
   #cuentaContainer button { font-size: 1.3em; padding: 12px 16px; }
   #contactoBtn { font-size: 2.2em; padding: 28px; }
 }
@@ -310,7 +308,7 @@ function mostrarEstadoPlan(res){
 if(!res.success || !res.data || !res.data[0]){
 planActual = null;
 limiteDeptos = 0;
-document.getElementById("planStatus").innerHTML = `Plan: <b>Sin plan</b> | Estado de Pago: N/D | Vencimiento: N/D<br>0/0 alquileres`;
+document.getElementById("planStatus").innerHTML = `Plan: <b>Sin plan</b> | Estado de Pago: N/D | Vencimiento: N/D<br>0/0 alquileres activos`;
 document.getElementById("btnPlan").textContent = "💳 Elegir Plan";
 return;
 }
@@ -319,7 +317,7 @@ planActual = login.Plan || null;
 limiteDeptos = planActual==="Basico"?3:planActual==="Plus"?5:planActual==="Full"?10:0;
 const estadoPago = login.EstadoPago || "No registrado";
 const vencimiento = login.Vencimiento || "N/D";
-document.getElementById("planStatus").innerHTML = `Plan: <b>${planActual || "Sin plan"}</b> | Estado de Pago: ${estadoPago} | Vencimiento: ${vencimiento}<br>${deptosActivos}/${limiteDeptos} alquileres`;
+document.getElementById("planStatus").innerHTML = `Plan: <b>${planActual || "Sin plan"}</b> | Estado de Pago: ${estadoPago} | Vencimiento: ${vencimiento}<br>${deptosActivos}/${limiteDeptos} alquileres activos`;
 document.getElementById("btnPlan").textContent = planActual ? "💳 Mejorar Plan" : "💳 Elegir Plan";
 if(estadoPago.toLowerCase()==="aprobado" || estadoPago.toLowerCase()==="approved"){
 alert("✅ Plan actualizado correctamente");
