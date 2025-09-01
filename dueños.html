@@ -5,7 +5,7 @@
 <title>Panel de Dueños</title>
 <style>
 /* --- CSS adaptado para móvil con textos más grandes y centrados --- */
-body { font-family: Arial, sans-serif; margin: 10px; background:#f5f5f5; font-size:18px; text-align:center; margin-top: 120px; }
+body { font-family: Arial, sans-serif; margin: 10px; background:#f5f5f5; font-size:18px; text-align:center; margin-top: 200px; }
 h2 { color:#333; font-size:2em; margin-bottom:15px; }
 h3 { color:#333; font-size:1.8em; margin-bottom:15px; }
 .alquiler { border:1px solid #ccc; padding:14px; margin:12px 0; background:#fff; font-size:1.1em; text-align:left; }
@@ -39,7 +39,7 @@ iframe { width:100%; min-height:450px; border:none; border-radius:5px; margin-to
 #contactoBtn { position:fixed; bottom:20px; right:20px; background:#25D366; color:white; border:none; border-radius:50%; padding:20px; font-size:1.8em; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.2); }
 /* Mobile-specific styles */
 @media screen and (max-width: 600px) {
-  body { font-size: 22px; }
+  body { font-size: 22px; margin-top: 220px; }
   h2 { font-size: 2.4em; }
   h3 { font-size: 2.2em; }
   .alquiler { font-size: 1.3em; padding: 18px; }
@@ -153,13 +153,13 @@ iframe { width:100%; min-height:450px; border:none; border-radius:5px; margin-to
 <div class="modal-content">
 <h3>Editar Cuenta</h3>
 <label>Email</label>
-<input type="email" id="emailEditar">
+<input type="email" id="emailEditar" placeholder="Dejar en blanco para mantener actual">
 <label>Nombre</label>
-<input type="text" id="nombreEditar">
+<input type="text" id="nombreEditar" placeholder="Dejar en blanco para mantener actual">
 <label>Contacto (Teléfono)</label>
-<input type="text" id="contactoEditar">
+<input type="text" id="contactoEditar" placeholder="Dejar en blanco para mantener actual">
 <label>Contraseña</label>
-<input type="password" id="passwordEditar">
+<input type="password" id="passwordEditar" placeholder="Dejar en blanco para mantener actual">
 <button onclick="editarCuenta()">Guardar Cambios</button>
 <button onclick="cerrarModalEditarCuenta()">Cerrar</button>
 <p id="msgEditarCuenta" style="color:green"></p>
