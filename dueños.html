@@ -5,7 +5,7 @@
 <title>Panel de Dueños</title>
 <style>
 /* --- CSS adaptado para móvil con textos más grandes y centrados --- */
-body { font-family: Arial, sans-serif; margin: 10px; background:#f5f5f5; font-size:18px; text-align:center; padding-top: 120px; }
+body { font-family: Arial, sans-serif; margin: 10px; background:#f5f5f5; font-size:18px; text-align:center; margin-top: 120px; }
 h2 { color:#333; font-size:2em; margin-bottom:15px; }
 h3 { color:#333; font-size:1.8em; margin-bottom:15px; }
 .alquiler { border:1px solid #ccc; padding:14px; margin:12px 0; background:#fff; font-size:1.1em; text-align:left; }
@@ -32,11 +32,28 @@ background-color: #fefefe; margin: 8% auto; padding: 20px; border: 1px solid #88
 .plan-option { border:1px solid #ccc; padding:12px; margin:12px 0; border-radius:10px; font-size:1.2em; }
 .plan-option button { margin-top:6px; padding:10px 16px; font-size:1.1em; border-radius:6px; }
 iframe { width:100%; min-height:450px; border:none; border-radius:5px; margin-top:10px; }
-#cuentaContainer { position:fixed; top:10px; right:10px; background:#fff; padding:10px; border:1px solid #ccc; border-radius:5px; font-size:0.9em; display:flex; flex-direction:column; align-items:center; z-index:100; }
+#cuentaContainer { position:absolute; top:10px; right:10px; background:#fff; padding:10px; border:1px solid #ccc; border-radius:5px; font-size:0.9em; display:flex; flex-direction:column; align-items:center; }
 #cuentaContainer button { margin: 5px; padding: 8px 12px; font-size: 1em; }
-#planContainer { position:fixed; top:10px; left:10px; background:#e0f7fa; padding:10px; border:1px solid #ccc; border-radius:5px; font-size:0.9em; display:flex; flex-direction:column; align-items:center; z-index:100; }
+#planContainer { position:absolute; top:10px; left:10px; background:#e0f7fa; padding:10px; border:1px solid #ccc; border-radius:5px; font-size:0.9em; display:flex; flex-direction:column; align-items:center; }
 #planContainer button { background:#fff; }
-#contactoBtn { position:fixed; bottom:20px; right:20px; background:#25D366; color:white; border:none; border-radius:50%; padding:15px; font-size:1.4em; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.2); }
+#contactoBtn { position:fixed; bottom:20px; right:20px; background:#25D366; color:white; border:none; border-radius:50%; padding:20px; font-size:1.8em; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.2); }
+/* Mobile-specific styles */
+@media screen and (max-width: 600px) {
+  body { font-size: 22px; }
+  h2 { font-size: 2.4em; }
+  h3 { font-size: 2.2em; }
+  .alquiler { font-size: 1.3em; padding: 18px; }
+  button { font-size: 1.4em; padding: 14px 20px; }
+  #formulario, #formularioRegistro { font-size: 1.4em; padding: 22px; }
+  input, select, textarea { font-size: 1.3em; padding: 14px; }
+  .preview-img { max-width: 150px; }
+  #planStatus { font-size: 1.2em; }
+  .modal-content { width: 95%; max-width: 500px; font-size: 1.2em; }
+  .plan-option { font-size: 1.4em; }
+  #cuentaContainer, #planContainer { font-size: 1.1em; }
+  #cuentaContainer button { font-size: 1.2em; padding: 10px 14px; }
+  #contactoBtn { font-size: 2em; padding: 25px; }
+}
 </style>
 </head>
 <body>
@@ -135,6 +152,8 @@ iframe { width:100%; min-height:450px; border:none; border-radius:5px; margin-to
 <div id="modalEditarCuenta" class="modal">
 <div class="modal-content">
 <h3>Editar Cuenta</h3>
+<label>Email</label>
+<input type="email" id="emailEditar">
 <label>Nombre</label>
 <input type="text" id="nombreEditar">
 <label>Contacto (Teléfono)</label>
@@ -556,6 +575,7 @@ cargarDatosCuenta();
 
 function cerrarModalEditarCuenta(){
 document.getElementById("modalEditarCuenta").style.display = "none";
+document.getElementById("emailEditar").value = "";
 document.getElementById("nombreEditar").value = "";
 document.getElementById("contactoEditar").value = "";
 document.getElementById("passwordEditar").value = "";
@@ -572,6 +592,7 @@ document.body.appendChild(script);
 function mostrarDatosCuenta(res){
 if(res.success && res.data && res.data[0]){
 const login = res.data[0];
+document.getElementById("emailEditar").value = login.Email || "";
 document.getElementById("nombreEditar").value = login.Nombre || "";
 document.getElementById("contactoEditar").value = login.Contacto || "";
 document.getElementById("passwordEditar").value = login.Password || "";
@@ -583,17 +604,23 @@ document.getElementById("msgEditarCuenta").textContent = "❌ Error al cargar lo
 
 async function editarCuenta(){
 const email = localStorage.getItem("dueno");
+const newEmail = document.getElementById("emailEditar").value;
 const nombre = document.getElementById("nombreEditar").value;
 const contacto = document.getElementById("contactoEditar").value;
 const password = document.getElementById("passwordEditar").value;
 const msgEl = document.getElementById("msgEditarCuenta");
 
-if(!nombre || !contacto || !password){
+if(!newEmail && !nombre && !contacto && !password){
 msgEl.style.color = "red";
-msgEl.textContent = "Completa todos los campos obligatorios.";
+msgEl.textContent = "Debes completar al menos un campo para actualizar.";
 return;
 }
-if(password.length < 6){
+if(newEmail && !newEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)){
+msgEl.style.color = "red";
+msgEl.textContent = "Ingresa un email válido.";
+return;
+}
+if(password && password.length < 6){
 msgEl.style.color = "red";
 msgEl.textContent = "La contraseña debe tener al menos 6 caracteres.";
 return;
@@ -601,11 +628,18 @@ return;
 
 msgEl.textContent = "Guardando cambios...";
 try {
-const response = await fetch(`${API_URL}?action=editarDueno&email=${encodeURIComponent(email)}&nombre=${encodeURIComponent(nombre)}&contacto=${encodeURIComponent(contacto)}&password=${encodeURIComponent(password)}`);
+let query = `${API_URL}?action=editarDueno&email=${encodeURIComponent(email)}`;
+if(newEmail) query += `&newEmail=${encodeURIComponent(newEmail)}`;
+if(nombre) query += `&nombre=${encodeURIComponent(nombre)}`;
+if(contacto) query += `&contacto=${encodeURIComponent(contacto)}`;
+if(password) query += `&password=${encodeURIComponent(password)}`;
+const response = await fetch(query);
 const res = await response.json();
 if(res.success){
 msgEl.style.color = "green";
 msgEl.textContent = "✅ Cambios guardados con éxito";
+if(newEmail) localStorage.setItem("dueno", newEmail);
+document.getElementById("bienvenida").textContent = newEmail || email;
 setTimeout(cerrarModalEditarCuenta, 1000);
 } else {
 msgEl.style.color = "red";
