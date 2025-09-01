@@ -295,30 +295,58 @@ function registrarDueno(){
   const nombre = document.getElementById("reg_nombre").value.trim();
   const password = document.getElementById("reg_password").value.trim();
   const contacto = document.getElementById("reg_contacto").value.trim();
-  if(!email || !nombre || !password || !contacto){
-    document.getElementById("registro-msg").style.color="red";
-    document.getElementById("registro-msg").textContent="Complete todos los campos";
+  
+  // Validaciones mejoradas
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Validación básica de email
+  const contactoRegex = /^\d{10}$/; // Asume número de WhatsApp de 10 dígitos (ej: 3794000000)
+  
+  if (!email || !nombre || !password || !contacto) {
+    document.getElementById("registro-msg").style.color = "red";
+    document.getElementById("registro-msg").textContent = "Complete todos los campos";
     return;
   }
+  if (!emailRegex.test(email)) {
+    document.getElementById("registro-msg").style.color = "red";
+    document.getElementById("registro-msg").textContent = "Ingrese un email válido";
+    return;
+  }
+  if (!contactoRegex.test(contacto)) {
+    document.getElementById("registro-msg").style.color = "red";
+    document.getElementById("registro-msg").textContent = "Ingrese un número de WhatsApp válido (10 dígitos)";
+    return;
+  }
+  if (password.length < 6) {
+    document.getElementById("registro-msg").style.color = "red";
+    document.getElementById("registro-msg").textContent = "La contraseña debe tener al menos 6 caracteres";
+    return;
+  }
+
   const formData = new FormData();
-  formData.append("action","registrarDueno");
-  formData.append("email",email);
-  formData.append("nombre",nombre);
-  formData.append("password",password);
-  formData.append("contacto",contacto);
-  // columnas extra (no estrictamente necesarias si el backend lo define)
-  formData.append("plan","Básico");
-  formData.append("estadoPago","al día");
-  formData.append("fechaVencimiento","30/12/2025");
-  fetch(webAppURL,{method:"POST",mode:"no-cors",body:formData})
-  .then(()=>{
-    document.getElementById("registro-msg").style.color="green";
-    document.getElementById("registro-msg").innerHTML="Dueño registrado con éxito.<br><button onclick='mostrarLogin()'>Ir a Login</button>";
-  })
-  .catch(()=>{
-    document.getElementById("registro-msg").style.color="red";
-    document.getElementById("registro-msg").textContent="Error de conexión";
-  });
+  formData.append("action", "registrarDueno");
+  formData.append("sheetName", "Login"); // Especificar la hoja "Login"
+  formData.append("email", email);
+  formData.append("nombre", nombre);
+  formData.append("password", password);
+  formData.append("contacto", contacto);
+  formData.append("plan", "Básico");
+  formData.append("estadoPago", "al día");
+  formData.append("fechaVencimiento", "30/12/2025");
+
+  fetch(webAppURL, { method: "POST", body: formData })
+    .then(response => response.json()) // Intentar parsear JSON para manejar respuesta del backend
+    .then(data => {
+      if (data.success) {
+        document.getElementById("registro-msg").style.color = "green";
+        document.getElementById("registro-msg").innerHTML = "Dueño registrado con éxito en la hoja Login.<br><button onclick='mostrarLogin()'>Ir a Login</button>";
+      } else {
+        document.getElementById("registro-msg").style.color = "red";
+        document.getElementById("registro-msg").textContent = data.error || "Error al registrar el dueño";
+      }
+    })
+    .catch(() => {
+      document.getElementById("registro-msg").style.color = "red";
+      document.getElementById("registro-msg").textContent = "Error de conexión";
+    });
 }
 
 /* =========================
