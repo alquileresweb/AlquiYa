@@ -17,8 +17,11 @@ button { margin: 5px; padding:12px 18px; font-size:1.2em; border-radius:5px; cur
 label { display:block; margin:10px 0 6px; font-weight:bold; }
 input, select, textarea { width:100%; padding:12px; margin-bottom:14px; font-size:1.1em; border-radius:6px; border:1px solid #ccc; }
 .contacto-container { display: flex; gap: 10px; align-items: center; }
-.contacto-container select { width: 100px; }
+.contacto-container select { width: 70px; }
 .contacto-container input { flex: 1; }
+.password-container { display: flex; gap: 10px; align-items: center; }
+.password-container input { flex: 1; }
+.password-container .toggle-password { padding: 8px; font-size: 1.2em; border: 1px solid #ccc; border-radius: 6px; cursor: pointer; background: #fff; }
 .preview-img { max-width: 120px; margin-top: 5px; display:inline-block; position:relative; border-radius:5px; }
 .preview-img-container { display:inline-block; margin-right:5px; position:relative; }
 .delete-img { position:absolute; top:0; right:0; background:red; color:white; border:none; border-radius:50%; cursor:pointer; font-weight:bold; padding:2px 6px; }
@@ -54,6 +57,8 @@ iframe { width:100%; min-height:450px; border:none; border-radius:5px; margin-to
   button { font-size: 1.4em; padding: 14px 20px; }
   #formulario, #formularioRegistro { font-size: 1.4em; padding: 22px; }
   input, select, textarea { font-size: 1.3em; padding: 14px; }
+  .contacto-container select { width: 90px; }
+  .password-container .toggle-password { padding: 10px; font-size: 1.4em; }
   .preview-img { max-width: 150px; }
   #planStatus { font-size: 1.2em; }
   .modal-content { width: 98%; max-width: 98%; font-size: 1.2em; }
@@ -176,7 +181,10 @@ iframe { width:100%; min-height:450px; border:none; border-radius:5px; margin-to
   <input type="text" id="contactoEditar" placeholder="Ej: 3764275443">
 </div>
 <label>Contraseña</label>
-<input type="password" id="passwordEditar" placeholder="Dejar en blanco para mantener actual">
+<div class="password-container">
+  <input type="password" id="passwordEditar" placeholder="Dejar en blanco para mantener actual">
+  <button class="toggle-password" onclick="togglePasswordVisibility()">👁</button>
+</div>
 <button onclick="editarCuenta()">Guardar Cambios</button>
 <button onclick="cerrarModalEditarCuenta()">Cerrar</button>
 <p id="msgEditarCuenta" style="color:green"></p>
@@ -624,12 +632,13 @@ document.getElementById("contactoEditar").value = "";
 document.getElementById("passwordEditar").value = "";
 document.getElementById("codigoPaisEditar").value = "+549";
 document.getElementById("msgEditarCuenta").textContent = "";
+document.getElementById("passwordEditar").type = "password";
+document.querySelector(".toggle-password").textContent = "👁";
 }
 
 function cargarDatosCuenta(){
 const email = localStorage.getItem("dueno");
 const msgEl = document.getElementById("msgEditarCuenta");
-msgEl.textContent = "Cargando datos...";
 const script = document.createElement("script");
 script.src = `${API_URL}?action=getLoginInfo&email=${encodeURIComponent(email)}&callback=mostrarDatosCuenta`;
 document.body.appendChild(script);
@@ -659,8 +668,20 @@ msgEl.textContent = "";
 } else {
 msgEl.style.color = "red";
 msgEl.textContent = "❌ Error al cargar los datos de la cuenta";
-}
 setTimeout(() => { msgEl.textContent = ""; }, 3000);
+}
+}
+
+function togglePasswordVisibility() {
+const passwordInput = document.getElementById("passwordEditar");
+const toggleButton = document.querySelector(".toggle-password");
+if (passwordInput.type === "password") {
+  passwordInput.type = "text";
+  toggleButton.textContent = "👁‍🗨";
+} else {
+  passwordInput.type = "password";
+  toggleButton.textContent = "👁";
+}
 }
 
 async function editarCuenta(){
