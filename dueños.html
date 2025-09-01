@@ -16,6 +16,9 @@ button { margin: 5px; padding:12px 18px; font-size:1.2em; border-radius:5px; cur
 #formularioRegistro.active { display:block; }
 label { display:block; margin:10px 0 6px; font-weight:bold; }
 input, select, textarea { width:100%; padding:12px; margin-bottom:14px; font-size:1.1em; border-radius:6px; border:1px solid #ccc; }
+.contacto-container { display: flex; gap: 10px; align-items: center; }
+.contacto-container select { width: 100px; }
+.contacto-container input { flex: 1; }
 .preview-img { max-width: 120px; margin-top: 5px; display:inline-block; position:relative; border-radius:5px; }
 .preview-img-container { display:inline-block; margin-right:5px; position:relative; }
 .delete-img { position:absolute; top:0; right:0; background:red; color:white; border:none; border-radius:50%; cursor:pointer; font-weight:bold; padding:2px 6px; }
@@ -26,8 +29,9 @@ display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; hei
 overflow: auto; background-color: rgba(0,0,0,0.5);
 }
 .modal-content {
-background-color: #fefefe; margin: 8% auto; padding: 20px; border: 1px solid #888; width: 95%; max-width: 450px; border-radius:12px; text-align:center;
+background-color: #fefefe; margin: 8% auto; padding: 24px; border: 1px solid #888; width: 90%; max-width: 600px; border-radius:12px; text-align:center;
 }
+.modal-content input, .modal-content select { width: calc(100% - 24px); }
 .modal h3 { margin-top:0; font-size:1.5em; }
 .plan-option { border:1px solid #ccc; padding:12px; margin:12px 0; border-radius:10px; font-size:1.2em; }
 .plan-option button { margin-top:6px; padding:10px 16px; font-size:1.1em; border-radius:6px; }
@@ -52,7 +56,7 @@ iframe { width:100%; min-height:450px; border:none; border-radius:5px; margin-to
   input, select, textarea { font-size: 1.3em; padding: 14px; }
   .preview-img { max-width: 150px; }
   #planStatus { font-size: 1.2em; }
-  .modal-content { width: 95%; max-width: 500px; font-size: 1.2em; }
+  .modal-content { width: 98%; max-width: 98%; font-size: 1.2em; }
   .plan-option { font-size: 1.4em; }
   #cuentaContainer, #planContainer { font-size: 1.1em; }
   #cuentaContainer button { font-size: 1.2em; padding: 10px 14px; }
@@ -161,7 +165,16 @@ iframe { width:100%; min-height:450px; border:none; border-radius:5px; margin-to
 <label>Nombre</label>
 <input type="text" id="nombreEditar" placeholder="Dejar en blanco para mantener actual">
 <label>Contacto (Teléfono)</label>
-<input type="text" id="contactoEditar" placeholder="Dejar en blanco para mantener actual">
+<div class="contacto-container">
+  <select id="codigoPaisEditar">
+    <option value="+549">Argentina (+549)</option>
+    <option value="+55">Brasil (+55)</option>
+    <option value="+598">Uruguay (+598)</option>
+    <option value="+56">Chile (+56)</option>
+    <option value="+595">Paraguay (+595)</option>
+  </select>
+  <input type="text" id="contactoEditar" placeholder="Ej: 3764275443">
+</div>
 <label>Contraseña</label>
 <input type="password" id="passwordEditar" placeholder="Dejar en blanco para mantener actual">
 <button onclick="editarCuenta()">Guardar Cambios</button>
@@ -609,6 +622,7 @@ document.getElementById("emailEditar").value = "";
 document.getElementById("nombreEditar").value = "";
 document.getElementById("contactoEditar").value = "";
 document.getElementById("passwordEditar").value = "";
+document.getElementById("codigoPaisEditar").value = "+549";
 document.getElementById("msgEditarCuenta").textContent = "";
 }
 
@@ -623,23 +637,37 @@ document.body.appendChild(script);
 
 function mostrarDatosCuenta(res){
 const msgEl = document.getElementById("msgEditarCuenta");
+const countryCodes = ["+549", "+55", "+598", "+56", "+595"];
 if(res.success && res.data && res.data[0]){
 const login = res.data[0];
 document.getElementById("emailEditar").value = login.Email || "";
 document.getElementById("nombreEditar").value = login.Nombre || "";
-document.getElementById("contactoEditar").value = login.Contacto || "";
 document.getElementById("passwordEditar").value = login.Password || "";
+const contacto = login.Contacto || "";
+let codigoPais = "+549"; // Default to Argentina
+let numero = contacto;
+for (const code of countryCodes) {
+  if (contacto.startsWith(code)) {
+    codigoPais = code;
+    numero = contacto.slice(code.length);
+    break;
+  }
+}
+document.getElementById("codigoPaisEditar").value = codigoPais;
+document.getElementById("contactoEditar").value = numero;
 msgEl.textContent = "";
 } else {
 msgEl.style.color = "red";
 msgEl.textContent = "❌ Error al cargar los datos de la cuenta";
 }
+setTimeout(() => { msgEl.textContent = ""; }, 3000);
 }
 
 async function editarCuenta(){
 const email = localStorage.getItem("dueno");
 const newEmail = document.getElementById("emailEditar").value;
 const nombre = document.getElementById("nombreEditar").value;
+const codigoPais = document.getElementById("codigoPaisEditar").value;
 const contacto = document.getElementById("contactoEditar").value;
 const password = document.getElementById("passwordEditar").value;
 const msgEl = document.getElementById("msgEditarCuenta");
@@ -659,13 +687,18 @@ msgEl.style.color = "red";
 msgEl.textContent = "La contraseña debe tener al menos 6 caracteres.";
 return;
 }
+if(contacto && !contacto.match(/^\d{6,}$/)){
+msgEl.style.color = "red";
+msgEl.textContent = "El número de teléfono debe contener solo dígitos y al menos 6 caracteres.";
+return;
+}
 
 msgEl.textContent = "Guardando cambios...";
 try {
 let query = `${API_URL}?action=editarDueno&email=${encodeURIComponent(email)}`;
 if(newEmail) query += `&newEmail=${encodeURIComponent(newEmail)}`;
 if(nombre) query += `&nombre=${encodeURIComponent(nombre)}`;
-if(contacto) query += `&contacto=${encodeURIComponent(contacto)}`;
+if(contacto) query += `&contacto=${encodeURIComponent(codigoPais + contacto)}`;
 if(password) query += `&password=${encodeURIComponent(password)}`;
 const response = await fetch(query);
 const res = await response.json();
