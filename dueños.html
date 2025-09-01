@@ -5,7 +5,7 @@
 <title>Panel de Dueños</title>
 <style>
 /* --- CSS adaptado para móvil con textos más grandes y centrados --- */
-body { font-family: Arial, sans-serif; margin: 10px; background:#f5f5f5; font-size:18px; text-align:center; margin-top: 200px; }
+body { font-family: Arial, sans-serif; margin: 10px; background:#f5f5f5; font-size:18px; text-align:center; margin-top: 250px; }
 h2 { color:#333; font-size:2em; margin-bottom:15px; }
 h3 { color:#333; font-size:1.8em; margin-bottom:15px; }
 .alquiler { border:1px solid #ccc; padding:14px; margin:12px 0; background:#fff; font-size:1.1em; text-align:left; }
@@ -37,9 +37,13 @@ iframe { width:100%; min-height:450px; border:none; border-radius:5px; margin-to
 #planContainer { position:absolute; top:10px; left:10px; background:#e0f7fa; padding:10px; border:1px solid #ccc; border-radius:5px; font-size:0.9em; display:flex; flex-direction:column; align-items:center; }
 #planContainer button { background:#fff; }
 #contactoBtn { position:fixed; bottom:20px; right:20px; background:#25D366; color:white; border:none; border-radius:50%; padding:20px; font-size:1.8em; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.2); }
+.estado-msg { font-size: 1em; margin-top: 5px; display: block; }
+.estado-msg.loading { color: blue; }
+.estado-msg.success { color: green; }
+.estado-msg.error { color: red; }
 /* Mobile-specific styles */
 @media screen and (max-width: 600px) {
-  body { font-size: 22px; margin-top: 220px; }
+  body { font-size: 22px; margin-top: 270px; }
   h2 { font-size: 2.4em; }
   h3 { font-size: 2.2em; }
   .alquiler { font-size: 1.3em; padding: 18px; }
@@ -352,6 +356,7 @@ div.innerHTML += `<div class="alquiler">
 <b>${alq.Direccion}</b> - ${alq['Nro Ambientes']} amb - ${precioFormateado} - Mascotas: ${alq.Mascotas || "N/D"}<br>
 Estado: ${estado}<br>
 ${btnEstado} ${btnEditar} ${btnEliminar}
+<span id="estadoMsg-${alq.row}" class="estado-msg"></span>
 </div>`;
 });
 }
@@ -472,15 +477,40 @@ document.getElementById("contactoRegistro").value = "";
 document.getElementById("msgRegistro").textContent = "";*/
 }
 
-function cambiarEstado(row, estadoActual){
-alert("Cambiando estado del alquiler");
+async function cambiarEstado(row, estadoActual){
+const msgEl = document.getElementById(`estadoMsg-${row}`);
 if(estadoActual === "Inactivo" && deptosActivos >= limiteDeptos){
-alert(`No puedes activar más alquileres. Tu plan (${planActual}) permite hasta ${limiteDeptos} deptos activos.`);
+msgEl.className = "estado-msg error";
+msgEl.textContent = `No puedes activar más alquileres. Tu plan (${planActual}) permite hasta ${limiteDeptos} deptos activos. ❌`;
+setTimeout(() => { msgEl.textContent = ""; }, 5000);
 return;
 }
-const script = document.createElement("script");
-script.src = `${API_URL}?action=toggleEstado&row=${row}&callback=cargarAlquileres`;
-document.body.appendChild(script);
+msgEl.className = "estado-msg loading";
+msgEl.textContent = "Cambiando Estado ⏳";
+try {
+const response = await fetch(`${API_URL}?action=toggleEstado&row=${row}`);
+const res = await response.json();
+estadoCambiado(res, row);
+} catch(err) {
+msgEl.className = "estado-msg error";
+msgEl.textContent = `Error al cambiar estado: ${err.message || "Error de conexión"} ❌`;
+setTimeout(() => { msgEl.textContent = ""; }, 5000);
+console.error("Error en cambio de estado:", err);
+}
+}
+
+function estadoCambiado(res, row) {
+const msgEl = document.getElementById(`estadoMsg-${row}`);
+if(res.success) {
+msgEl.className = "estado-msg success";
+msgEl.textContent = "Estado cambiado con éxito ✅";
+setTimeout(() => { msgEl.textContent = ""; }, 3000);
+cargarAlquileres();
+} else {
+msgEl.className = "estado-msg error";
+msgEl.textContent = `Error al cambiar estado: ${res.error || "desconocido"} ❌`;
+setTimeout(() => { msgEl.textContent = ""; }, 5000);
+}
 }
 
 function eliminarAlquiler(row){
@@ -584,21 +614,25 @@ document.getElementById("msgEditarCuenta").textContent = "";
 
 function cargarDatosCuenta(){
 const email = localStorage.getItem("dueno");
+const msgEl = document.getElementById("msgEditarCuenta");
+msgEl.textContent = "Cargando datos...";
 const script = document.createElement("script");
 script.src = `${API_URL}?action=getLoginInfo&email=${encodeURIComponent(email)}&callback=mostrarDatosCuenta`;
 document.body.appendChild(script);
 }
 
 function mostrarDatosCuenta(res){
+const msgEl = document.getElementById("msgEditarCuenta");
 if(res.success && res.data && res.data[0]){
 const login = res.data[0];
 document.getElementById("emailEditar").value = login.Email || "";
 document.getElementById("nombreEditar").value = login.Nombre || "";
 document.getElementById("contactoEditar").value = login.Contacto || "";
 document.getElementById("passwordEditar").value = login.Password || "";
+msgEl.textContent = "";
 } else {
-document.getElementById("msgEditarCuenta").style.color = "red";
-document.getElementById("msgEditarCuenta").textContent = "❌ Error al cargar los datos de la cuenta";
+msgEl.style.color = "red";
+msgEl.textContent = "❌ Error al cargar los datos de la cuenta";
 }
 }
 
