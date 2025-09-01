@@ -126,7 +126,7 @@ color:#3483fa;
 <input type="text" id="reg_email" placeholder="Email">
 <input type="text" id="reg_nombre" placeholder="Nombre">
 <input type="password" id="reg_password" placeholder="Contraseña">
-<input type="text" id="reg_contacto" placeholder="WhatsApp (ej: 3794000000)">
+<input type="text" id="reg_contacto" placeholder="WhatsApp (ej: +5493794000000)">
 <button onclick="registrarDueno()">Registrar</button>
 <button onclick="mostrarLogin()">Cancelar</button>
 <p id="registro-msg" style="color:green"></p>
@@ -189,24 +189,18 @@ function toInt(val, def=0){
    - parseCurrency(): convierte la cadena formateada a número usable
 ========================= */
 function formatCurrency(el){
-  // mantener cursor razonable: guardamos posición y restauramos lo más coherente posible
   let selectionStart = el.selectionStart;
   let raw = String(el.value || "");
-  // eliminar todo excepto dígitos
   let digits = raw.replace(/\D/g,'');
   if(digits === '') { el.value = ''; return; }
-  // parsear como entero y formatear sin decimales
   let n = parseInt(digits, 10);
   if(isNaN(n)) { el.value = ''; return; }
-  // formatear con separador de miles para AR (sin decimales) y sin símbolo en locales donde currency lo pone
   let formatted = n.toLocaleString('es-AR');
   el.value = '$' + formatted;
-  // intentar restaurar cursor al final (mejor comportamiento en la mayoría casos)
   try { el.setSelectionRange(el.value.length, el.value.length); } catch(e){}
 }
 function parseCurrency(str){
   if(!str) return 0;
-  // acepta '$100.000' o '100.000' o '100000'
   let cleaned = String(str).replace(/[^\d]/g,'');
   if(cleaned === '') return 0;
   let num = parseInt(cleaned,10);
@@ -226,7 +220,6 @@ function mostrarMapa(){
   document.getElementById("panel-dueno").style.display="none";
   document.getElementById("registro").style.display="none";
   document.getElementById("alquiler-detalle").style.display="none";
-  // mostrar el botón de filtros y el mensaje de carga solo en mapa
   document.getElementById("boton-filtros-container").style.display = "block";
   document.getElementById("loading-msg").style.display = "none";
   map.invalidateSize();
@@ -239,7 +232,6 @@ function mostrarLogin(){
   document.getElementById("panel-dueno").style.display="none";
   document.getElementById("registro").style.display="none";
   document.getElementById("alquiler-detalle").style.display="none";
-  // ocultar botón y mensaje cuando no estamos en mapa
   document.getElementById("boton-filtros-container").style.display = "none";
   document.getElementById("loading-msg").style.display = "none";
 }
@@ -250,7 +242,6 @@ function mostrarRegistro(){
   document.getElementById("filtros").style.display="none";
   document.getElementById("panel-dueno").style.display="none";
   document.getElementById("alquiler-detalle").style.display="none";
-  // ocultar botón y mensaje cuando no estamos en mapa
   document.getElementById("boton-filtros-container").style.display = "none";
   document.getElementById("loading-msg").style.display = "none";
 }
@@ -265,7 +256,6 @@ function login(){
     document.getElementById("login-msg").textContent="Ingrese email y contraseña";
     return;
   }
-  // Validar contra backend
   fetch(webAppURL+"?action=verificarLogin&email="+encodeURIComponent(email)+"&password="+encodeURIComponent(password))
   .then(r=>r.json())
   .then(data=>{
@@ -282,7 +272,7 @@ function login(){
         document.getElementById("login-msg").textContent = "Error en el inicio de sesión";
       }
     }
-})
+  })
   .catch(()=>{document.getElementById("login-msg").textContent="Error de conexión";});
 }
 function logout(){
@@ -295,10 +285,10 @@ function registrarDueno(){
   const nombre = document.getElementById("reg_nombre").value.trim();
   const password = document.getElementById("reg_password").value.trim();
   const contacto = document.getElementById("reg_contacto").value.trim();
-  
-  // Validaciones mejoradas
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Validación básica de email
-  const contactoRegex = /^\d{10}$/; // Asume número de WhatsApp de 10 dígitos (ej: 3794000000)
+
+  // Validaciones
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const contactoRegex = /^\+\d+$/;
   
   if (!email || !nombre || !password || !contacto) {
     document.getElementById("registro-msg").style.color = "red";
@@ -312,7 +302,7 @@ function registrarDueno(){
   }
   if (!contactoRegex.test(contacto)) {
     document.getElementById("registro-msg").style.color = "red";
-    document.getElementById("registro-msg").textContent = "Ingrese un número de WhatsApp válido (10 dígitos)";
+    document.getElementById("registro-msg").textContent = "El contacto debe empezar con '+' seguido de dígitos (ej: +5493794000000)";
     return;
   }
   if (password.length < 6) {
@@ -323,29 +313,25 @@ function registrarDueno(){
 
   const formData = new FormData();
   formData.append("action", "registrarDueno");
-  formData.append("sheetName", "Login"); // Especificar la hoja "Login"
   formData.append("email", email);
   formData.append("nombre", nombre);
   formData.append("password", password);
   formData.append("contacto", contacto);
-  formData.append("plan", "Básico");
-  formData.append("estadoPago", "al día");
-  formData.append("fechaVencimiento", "30/12/2025");
 
   fetch(webAppURL, { method: "POST", body: formData })
-    .then(response => response.json()) // Intentar parsear JSON para manejar respuesta del backend
+    .then(response => response.json())
     .then(data => {
       if (data.success) {
         document.getElementById("registro-msg").style.color = "green";
-        document.getElementById("registro-msg").innerHTML = "Dueño registrado con éxito en la hoja Login.<br><button onclick='mostrarLogin()'>Ir a Login</button>";
+        document.getElementById("registro-msg").innerHTML = "Dueño registrado con éxito.<br><button onclick='mostrarLogin()'>Ir a Login</button>";
       } else {
         document.getElementById("registro-msg").style.color = "red";
         document.getElementById("registro-msg").textContent = data.error || "Error al registrar el dueño";
       }
     })
-    .catch(() => {
+    .catch(err => {
       document.getElementById("registro-msg").style.color = "red";
-      document.getElementById("registro-msg").textContent = "Error de conexión";
+      document.getElementById("registro-msg").textContent = "Error de conexión: " + err.message;
     });
 }
 
@@ -391,19 +377,16 @@ function cerrarModal(){
    CARGA DE ALQUILERES
 ========================= */
 function cargarAlquileres(){
-  // Mostrar mensaje de carga (solo cuando estamos en vista mapa)
   const loadingEl = document.getElementById("loading-msg");
   loadingEl.style.display="block";
   markersLayer.clearLayers();
 
-  // Marcadores fijos de interés
   const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15]});
   const hospIcon = L.divIcon({className:'marker-icon', html:'🏥', iconSize:[30,30], iconAnchor:[15,15]});
   L.marker([-28.5509978,-56.0409727],{icon:uniIcon}).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
   L.marker([-28.5551127,-56.0389282],{icon:hospIcon}).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
 
   const filtroAmb = document.getElementById("filtroAmb").value;
-  // parseamos los inputs con parseCurrency() para obtener número real
   const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
   const filtroMax = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
 
@@ -419,9 +402,6 @@ function cargarAlquileres(){
     let cont = 0;
 
     res.data.forEach(a=>{
-      // IMPORTANTE: el backend ya devuelve solo los que están vigentes y activos.
-      // No filtramos por "Estado del Pago" ni "Fecha Vencimiento" aquí.
-
       const lat = parseFloat(getField(a, ["Latitud","lat","LAT","Lat"]));
       const lng = parseFloat(getField(a, ["Longitud","lng","LNG","Long"]));
       if(isNaN(lat) || isNaN(lng)) return;
