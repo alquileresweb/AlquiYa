@@ -134,6 +134,37 @@ width: 70%;
 #registro input#reg_email, #registro input#reg_nombre {
 display: block;
 }
+/* Estilos para el modal de términos y condiciones */
+#modal-terminos {
+display: none;
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(0,0,0,0.5);
+z-index: 10000;
+align-items: center;
+justify-content: center;
+}
+#modal-terminos-content {
+background: white;
+max-width: 90%;
+max-height: 80%;
+overflow-y: auto;
+padding: 20px;
+border-radius: 8px;
+box-shadow: 0 0 10px rgba(0,0,0,0.3);
+text-align: left;
+}
+#modal-terminos-content h2 {
+margin-top: 0;
+}
+#modal-terminos-content button {
+width: auto;
+padding: 10px 20px;
+margin-top: 20px;
+}
 </style>
 </head>
 <body>
@@ -145,6 +176,60 @@ display: block;
 <p>Encuentra tu próximo departamento fácilmente</p>
 </div>
 </header>
+
+<!-- Modal de Términos y Condiciones -->
+<div id="modal-terminos">
+<div id="modal-terminos-content">
+<h2>Términos y Condiciones de Uso</h2>
+<p><strong>Última actualización: 02/09/2025</strong></p>
+<p>Bienvenido/a a AlquiYa (en adelante, “la Plataforma”).<br>
+Al acceder o utilizar la Plataforma, usted acepta estos Términos y Condiciones. Si no está de acuerdo, debe abstenerse de usarla.</p>
+<h3>1. Naturaleza del Servicio – Exclusión de Intermediación Inmobiliaria</h3>
+<p>La Plataforma es un espacio de publicación y publicidad online de ofertas de alquiler de inmuebles.<br>
+No somos corredores inmobiliarios ni intermediamos en operaciones de compraventa o alquiler.<br>
+La Plataforma no participa en la negociación, celebración ni ejecución de contratos entre Dueños y Usuarios.<br>
+Cualquier gestión vinculada al contrato de alquiler se realiza directamente entre las partes, sin intervención de la Plataforma.</p>
+<h3>2. Publicaciones y Responsabilidad de los Dueños</h3>
+<p>Los Dueños son responsables de la información, imágenes y condiciones que publiquen.<br>
+La Plataforma no garantiza la veracidad ni autenticidad de las publicaciones.<br>
+Si un Usuario detecta un anuncio falso o sospechoso, podrá reportarlo a través de alquiya@gmail.com para que sea revisado y eventualmente eliminado.<br>
+El Dueño se compromete a proporcionar datos de contacto reales y verificables (email y teléfono).</p>
+<h3>3. Exención de Responsabilidad por Fraudes o Estafas</h3>
+<p>La Plataforma no será responsable por fraudes, engaños o incumplimientos cometidos por Dueños o Usuarios.<br>
+El Usuario reconoce y acepta que:<br>
+- Debe verificar por su cuenta la existencia del inmueble y la identidad del Dueño antes de concretar operaciones.<br>
+- Cualquier perjuicio económico, daño o pérdida derivados de anuncios falsos es ajeno a la responsabilidad de la Plataforma.</p>
+<h3>4. Protección de Datos Personales</h3>
+<p>La Plataforma cumple con la Ley de Protección de Datos Personales Nº 25.326.<br>
+Los datos proporcionados serán utilizados únicamente para el funcionamiento de la Plataforma.<br>
+El Usuario puede ejercer sus derechos de acceso, rectificación o supresión comunicándose a alquiya@gmail.com.<br>
+La base de datos será registrada ante la Agencia de Acceso a la Información Pública conforme a la normativa vigente.</p>
+<h3>5. Relación de Consumo – Limitaciones de Responsabilidad</h3>
+<p>En caso de que el servicio contratado (ej. publicación destacada, plan pago) no funcione correctamente, el Usuario deberá notificarlo dentro de los 7 días posteriores para gestionar un ajuste o reembolso si corresponde.<br>
+La responsabilidad de la Plataforma se limita estrictamente al monto abonado por el servicio contratado.<br>
+En ningún caso la Plataforma será responsable por:<br>
+- Lucro cesante, pérdida de chance o daños indirectos.<br>
+- El éxito de la operación de alquiler entre Dueños y Usuarios.</p>
+<h3>6. Facturación y Aspectos Fiscales</h3>
+<p>Los servicios pagos ofrecidos por la Plataforma (planes de publicación, suscripciones u otros) serán facturados conforme a la legislación fiscal argentina.<br>
+El Usuario reconoce que la contratación implica la emisión de la correspondiente factura electrónica.</p>
+<h3>7. Contenido y Derechos de Autor</h3>
+<p>El Dueño declara que cuenta con derechos de uso sobre las imágenes, textos y contenidos que publique.<br>
+La Plataforma no será responsable por infracciones a derechos de autor cometidas por los Dueños.<br>
+En caso de reclamo de terceros, el Dueño mantendrá indemne a la Plataforma.</p>
+<h3>8. Uso Permitido</h3>
+<p>Queda prohibido utilizar la Plataforma para:<br>
+- Publicar información falsa, ilegal, discriminatoria o que vulnere derechos de terceros.<br>
+- Suplantar la identidad de otra persona.<br>
+- Subir material protegido sin autorización.</p>
+<h3>9. Modificaciones</h3>
+<p>La Plataforma podrá modificar los presentes Términos y Condiciones en cualquier momento, notificando a los Usuarios mediante su publicación en el sitio.</p>
+<h3>10. Ley Aplicable y Jurisdicción</h3>
+<p>Los presentes Términos se rigen por las leyes de la República Argentina.<br>
+Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé Corrientes, renunciando expresamente a cualquier otro fuero.</p>
+<button onclick="aceptarTerminos()">Aceptar Términos y Condiciones</button>
+</div>
+</div>
 
 <nav>
 <a href="#" onclick="mostrarMapa()">Mapa</a>
@@ -318,6 +403,20 @@ function mostrarRegistro(){
   document.getElementById("alquiler-detalle").style.display="none";
   document.getElementById("boton-filtros-container").style.display = "none";
   document.getElementById("loading-msg").style.display = "none";
+}
+
+/* =========================
+   TÉRMINOS Y CONDICIONES
+========================= */
+function mostrarTerminos() {
+  const terminosAceptados = localStorage.getItem("terminosAceptados");
+  if (!terminosAceptados) {
+    document.getElementById("modal-terminos").style.display = "flex";
+  }
+}
+function aceptarTerminos() {
+  localStorage.setItem("terminosAceptados", "true");
+  document.getElementById("modal-terminos").style.display = "none";
 }
 
 /* =========================
@@ -606,7 +705,10 @@ function togglePassword(inputId) {
 /* =========================
    INIT
 ========================= */
-window.onload = ()=>{mostrarMapa();};
+window.onload = ()=>{
+  mostrarTerminos();
+  mostrarMapa();
+};
 </script>
 </body>
 </html>
