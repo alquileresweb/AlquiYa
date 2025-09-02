@@ -3,10 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Panel de Dueños</title>
-<script src="https://sdk.mercadopago.com/js/v2"></script>
-<script>
-  const mp = new MercadoPago('APP_USR-c0e7bf6c-497b-4ec5-b8e9-e3df9b13149b');
-</script>
 <style>
 /* --- CSS adaptado para móvil con textos más grandes y centrados --- */
 body { font-family: Arial, sans-serif; margin: 10px; background:#f5f5f5; font-size:20px; text-align:center; margin-top: 120px; }
@@ -225,7 +221,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
 const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
 const GEOCODE_KEY = "AIzaSyAisqYSTfpQ_rqqutAomzitD2v_dtKYtLE";
-const MP_BEARER = "APP_USR-3201395671266724-090211-f1480967257e9dfd0557cb72e22eae81-2213255576";
+const MP_BEARER = "APP_USR-595288641172928-010710-d915bce4137b3ee26e0c6e04873f1ac1-695835795";
 let imagenesBase64 = [];
 let planActual = null;
 let limiteDeptos = 0;
@@ -305,6 +301,24 @@ window.onload = function() {
   cargarAlquileres();
   cargarPreciosPlanes();
   cargarDatosCuenta();
+  checkPaymentStatus(); // Check for payment status on page load
+}
+
+// === VERIFICAR ESTADO DE PAGO DESPUÉS DE REDIRECCIÓN ===
+function checkPaymentStatus() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const status = urlParams.get("status");
+  const paymentId = urlParams.get("payment_id");
+  const plan = urlParams.get("plan");
+  const email = localStorage.getItem("dueno");
+
+  if (status && paymentId && plan && email) {
+    const script = document.createElement("script");
+    script.src = `${API_URL}?action=updatePlan&email=${encodeURIComponent(email)}&plan=${encodeURIComponent(plan)}&payment_id=${paymentId}&callback=planActualizado`;
+    document.body.appendChild(script);
+    // Clean URL after processing
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
 }
 
 // === CARGAR PRECIOS PLANES ===
@@ -368,9 +382,9 @@ async function seleccionarPlan(plan) {
     payer: { email: email },
     external_reference: email + "_" + plan + "_" + new Date().getTime(),
     back_urls: {
-      success: window.location.href,
-      failure: window.location.href,
-      pending: window.location.href
+      success: `${window.location.href}?status=approved&plan=${plan}`,
+      failure: `${window.location.href}?status=failed&plan=${plan}`,
+      pending: `${window.location.href}?status=pending&plan=${plan}`
     },
     auto_return: "approved",
     notification_url: `${API_URL}?action=updatePlan&email=${encodeURIComponent(email)}&plan=${encodeURIComponent(plan)}`
@@ -382,14 +396,9 @@ async function seleccionarPlan(plan) {
       body: JSON.stringify(preferenceData)
     });
     const res = await response.json();
-    if (res.id) {
+    if (res.init_point) {
       const mpContainer = document.getElementById("mpBtn" + plan);
-      mpContainer.innerHTML = ""; // Clear previous content
-      // Initialize Mercado Pago Checkout Pro
-      const checkout = mp.checkout({
-        preference: { id: res.id },
-        autoOpen: true // Automatically open the checkout
-      });
+      mpContainer.innerHTML = `<iframe src="${res.init_point}" width="100%" height="650" frameborder="0" allowtransparency="true"></iframe>`;
     } else {
       console.error("Error MP:", res);
       alert("No se pudo generar el botón de pago. Revisa la consola.");
