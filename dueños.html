@@ -301,11 +301,11 @@ window.onload = function() {
   cargarAlquileres();
   cargarPreciosPlanes();
   cargarDatosCuenta();
-  checkPaymentStatus(); // Check for payment status on page load
+  checkPaymentStatus();
 }
 
 // === VERIFICAR ESTADO DE PAGO DESPUÉS DE REDIRECCIÓN ===
-function checkPaymentStatus() {
+async function checkPaymentStatus() {
   const urlParams = new URLSearchParams(window.location.search);
   const status = urlParams.get("status");
   const paymentId = urlParams.get("payment_id");
@@ -313,11 +313,15 @@ function checkPaymentStatus() {
   const email = localStorage.getItem("dueno");
 
   if (status && paymentId && plan && email) {
-    const script = document.createElement("script");
-    script.src = `${API_URL}?action=updatePlan&email=${encodeURIComponent(email)}&plan=${encodeURIComponent(plan)}&payment_id=${paymentId}&callback=planActualizado`;
-    document.body.appendChild(script);
-    // Clean URL after processing
-    window.history.replaceState({}, document.title, window.location.pathname);
+    try {
+      const response = await fetch(`${API_URL}?action=updatePlan&email=${encodeURIComponent(email)}&plan=${encodeURIComponent(plan)}&payment_id=${paymentId}`);
+      const res = await response.json();
+      planActualizado(res);
+      // Clean URL after processing
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } catch (err) {
+      alert("❌ Error al verificar el pago: " + (err.message || "Error de conexión"));
+    }
   }
 }
 
@@ -372,7 +376,12 @@ function mostrarEstadoPlan(res) {
 
 // === MODAL PLAN ===
 function abrirModalPlan() { document.getElementById("modalPlan").style.display = "block"; }
-function cerrarModalPlan() { document.getElementById("modalPlan").style.display = "none"; }
+function cerrarModalPlan() { 
+  document.getElementById("modalPlan").style.display = "none";
+  document.getElementById("mpBtnBasico").innerHTML = "";
+  document.getElementById("mpBtnPlus").innerHTML = "";
+  document.getElementById("mpBtnFull").innerHTML = "";
+}
 
 async function seleccionarPlan(plan) {
   const email = localStorage.getItem("dueno");
@@ -380,14 +389,14 @@ async function seleccionarPlan(plan) {
   const preferenceData = {
     items: [{ title: `Plan ${plan}`, quantity: 1, unit_price: parseFloat(precio), currency_id: "ARS" }],
     payer: { email: email },
-    external_reference: email + "_" + plan + "_" + new Date().getTime(),
+    external_reference: email + "_" + plan,
     back_urls: {
-      success: `${window.location.href}?status=approved&plan=${plan}`,
-      failure: `${window.location.href}?status=failed&plan=${plan}`,
-      pending: `${window.location.href}?status=pending&plan=${plan}`
+      success: `${window.location.href}?status=approved&plan=${plan}&payment_id={payment_id}`,
+      failure: `${window.location.href}?status=failed&plan=${plan}&payment_id={payment_id}`,
+      pending: `${window.location.href}?status=pending&plan=${plan}&payment_id={payment_id}`
     },
     auto_return: "approved",
-    notification_url: `${API_URL}?action=updatePlan&email=${encodeURIComponent(email)}&plan=${encodeURIComponent(plan)}`
+    notification_url: `${API_URL}?action=updatePlan`
   };
   try {
     const response = await fetch("https://api.mercadopago.com/checkout/preferences", {
@@ -413,6 +422,7 @@ function planActualizado(res) {
   if (res.success) {
     alert("✅ Plan actualizado con éxito");
     cargarEstadoPlan();
+    cargarAlquileres();
     cerrarModalPlan();
   } else {
     alert("❌ Error al actualizar el plan: " + (res.error || "desconocido"));
