@@ -311,16 +311,19 @@ async function checkPaymentStatus() {
   const paymentId = urlParams.get("payment_id");
   const plan = urlParams.get("plan");
   const email = localStorage.getItem("dueno");
+  const planStatusEl = document.getElementById("planStatus");
 
   if (status && paymentId && plan && email) {
+    planStatusEl.innerHTML = `<span class="estado-msg loading">Verificando pago ⏳</span>`;
     try {
-      const response = await fetch(`${API_URL}?action=updatePlan&email=${encodeURIComponent(email)}&plan=${encodeURIComponent(plan)}&payment_id=${paymentId}`);
+      const response = await fetch(`${API_URL}?action=updatePlan&email=${encodeURIComponent(email)}&plan=${encodeURIComponent(plan)}&payment_id=${paymentId}&callback=planActualizado`);
       const res = await response.json();
       planActualizado(res);
       // Clean URL after processing
       window.history.replaceState({}, document.title, window.location.pathname);
     } catch (err) {
-      alert("❌ Error al verificar el pago: " + (err.message || "Error de conexión"));
+      planStatusEl.innerHTML = `<span class="estado-msg error">❌ Error al verificar el pago: ${err.message || "Error de conexión"}</span>`;
+      setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
     }
   }
 }
@@ -370,7 +373,11 @@ function mostrarEstadoPlan(res) {
   document.getElementById("limiteAlquileres").textContent = `${deptosActivos}/${limiteDeptos} alquileres activos`;
   document.getElementById("btnPlan").textContent = planActual ? "💳 Mejorar Plan" : "💳 Elegir Plan";
   if (estadoPago.toLowerCase() === "aprobado" || estadoPago.toLowerCase() === "approved") {
-    alert("✅ Plan actualizado correctamente");
+    document.getElementById("planStatus").innerHTML += `<span class="estado-msg success">✅ Plan actualizado correctamente</span>`;
+    setTimeout(() => { 
+      const msg = document.querySelector("#planStatus .estado-msg");
+      if (msg) msg.remove();
+    }, 5000);
   }
 }
 
@@ -386,6 +393,8 @@ function cerrarModalPlan() {
 async function seleccionarPlan(plan) {
   const email = localStorage.getItem("dueno");
   const precio = preciosPlanes[plan] || 0;
+  const planStatusEl = document.getElementById("planStatus");
+  planStatusEl.innerHTML = `<span class="estado-msg loading">Procesando pago ⏳</span>`;
   const preferenceData = {
     items: [{ title: `Plan ${plan}`, quantity: 1, unit_price: parseFloat(precio), currency_id: "ARS" }],
     payer: { email: email },
@@ -408,24 +417,35 @@ async function seleccionarPlan(plan) {
     if (res.init_point) {
       const mpContainer = document.getElementById("mpBtn" + plan);
       mpContainer.innerHTML = `<iframe src="${res.init_point}" width="100%" height="650" frameborder="0" allowtransparency="true"></iframe>`;
+      planStatusEl.innerHTML = "";
     } else {
       console.error("Error MP:", res);
-      alert("No se pudo generar el botón de pago. Revisa la consola.");
+      planStatusEl.innerHTML = `<span class="estado-msg error">❌ No se pudo generar el botón de pago. Revisa la consola.</span>`;
+      setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
     }
   } catch (err) {
     console.error("Error MP:", err);
-    alert("Error al procesar el pago. Por favor, intenta de nuevo.");
+    planStatusEl.innerHTML = `<span class="estado-msg error">❌ Error al procesar el pago. Por favor, intenta de nuevo.</span>`;
+    setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
   }
 }
 
 function planActualizado(res) {
+  const planStatusEl = document.getElementById("planStatus");
   if (res.success) {
-    alert("✅ Plan actualizado con éxito");
-    cargarEstadoPlan();
-    cargarAlquileres();
-    cerrarModalPlan();
+    planStatusEl.innerHTML = `<span class="estado-msg success">✅ Plan actualizado con éxito</span>`;
+    setTimeout(() => {
+      planStatusEl.innerHTML = "";
+      cargarEstadoPlan();
+      cargarAlquileres();
+      cerrarModalPlan();
+    }, 3000);
   } else {
-    alert("❌ Error al actualizar el plan: " + (res.error || "desconocido"));
+    planStatusEl.innerHTML = `<span class="estado-msg error">❌ Error al actualizar el plan: ${res.error || "desconocido"}</span>`;
+    setTimeout(() => { 
+      planStatusEl.innerHTML = "";
+      cargarEstadoPlan();
+    }, 5000);
   }
 }
 
