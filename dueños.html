@@ -372,13 +372,6 @@ function mostrarEstadoPlan(res) {
   document.getElementById("planStatus").innerHTML = `Plan: <b>${planActual || "Sin plan"}</b> | Estado de Pago: ${estadoPago} | Vencimiento: ${vencimiento}`;
   document.getElementById("limiteAlquileres").textContent = `${deptosActivos}/${limiteDeptos} alquileres activos`;
   document.getElementById("btnPlan").textContent = planActual ? "💳 Mejorar Plan" : "💳 Elegir Plan";
-  if (estadoPago.toLowerCase() === "aprobado" || estadoPago.toLowerCase() === "approved") {
-    document.getElementById("planStatus").innerHTML += `<span class="estado-msg success">✅ Plan actualizado correctamente</span>`;
-    setTimeout(() => { 
-      const msg = document.querySelector("#planStatus .estado-msg");
-      if (msg) msg.remove();
-    }, 5000);
-  }
 }
 
 // === MODAL PLAN ===
@@ -433,7 +426,7 @@ async function seleccionarPlan(plan) {
 function planActualizado(res) {
   const planStatusEl = document.getElementById("planStatus");
   if (res.success) {
-    planStatusEl.innerHTML = `<span class="estado-msg success">✅ Plan actualizado con éxito</span>`;
+    planStatusEl.innerHTML = `<span class="estado-msg success">✅ Pago confirmado y plan actualizado a ${res.plan} con éxito</span>`;
     setTimeout(() => {
       planStatusEl.innerHTML = "";
       cargarEstadoPlan();
