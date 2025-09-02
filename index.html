@@ -484,37 +484,35 @@ function registrarDueno(){
     return;
   }
 
-  const formData = new FormData();
-  formData.append("action", "registrarDueno");
-  formData.append("sheetName", "Login");
-  formData.append("email", email);
-  formData.append("nombre", nombre);
-  formData.append("password", password);
-  formData.append("contacto", codigoPais + contacto);
-  formData.append("plan", "Básico");
-  formData.append("estadoPago", "al día");
-  formData.append("fechaVencimiento", "30/12/2025");
+  // Construir la URL con parámetros de consulta para la solicitud GET
+  const queryParams = new URLSearchParams({
+    action: "registrarDueno",
+    sheetName: "Login",
+    email: email,
+    nombre: nombre,
+    password: password,
+    contacto: codigoPais + contacto,
+    plan: "Básico",
+    estadoPago: "al día",
+    fechaVencimiento: "30/12/2025"
+  }).toString();
 
-  fetch(webAppURL, { method: "POST", body: formData })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error("Error en la respuesta del servidor");
-      }
-      return response.json();
-    })
-    .then(data => {
-      if (data.success) {
-        document.getElementById("registro-msg").style.color = "green";
-        document.getElementById("registro-msg").innerHTML = "Dueño registrado con éxito.<br><button onclick='mostrarLogin()'>Ir a Login</button>";
-      } else {
-        document.getElementById("registro-msg").style.color = "red";
-        document.getElementById("registro-msg").textContent = data.error || "Error al registrar el dueño";
-      }
-    })
-    .catch(() => {
-      document.getElementById("registro-msg").style.color = "red";
-      document.getElementById("registro-msg").textContent = "Error de conexión al servidor. Por favor, intenta de nuevo.";
-    });
+  // Usar un script dinámico para evitar problemas de CORS
+  const script = document.createElement("script");
+  script.src = `${webAppURL}?${queryParams}&callback=registrarDuenoCallback`;
+  document.body.appendChild(script);
+}
+
+// Callback para manejar la respuesta de registrarDueno
+function registrarDuenoCallback(data) {
+  const msgEl = document.getElementById("registro-msg");
+  if (data.success) {
+    msgEl.style.color = "green";
+    msgEl.innerHTML = "Dueño registrado con éxito.<br><button onclick='mostrarLogin()'>Ir a Login</button>";
+  } else {
+    msgEl.style.color = "red";
+    msgEl.textContent = data.error || "Error al registrar el dueño";
+  }
 }
 
 /* =========================
