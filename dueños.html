@@ -157,20 +157,6 @@ cursor: pointer;
 <p id="msg" style="color:green"></p>
 </div>
 
-<!-- <button id="btnRegistrarDueno" onclick="toggleFormularioRegistro()">👤 Registrar Nuevo Dueño</button> -->
-<!-- <div id="formularioRegistro">
-<label>Email</label>
-<input type="email" id="emailRegistro">
-<label>Contraseña</label>
-<input type="password" id="passwordRegistro">
-<label>Nombre</label>
-<input type="text" id="nombreRegistro">
-<label>Contacto (Teléfono)</label>
-<input type="text" id="contactoRegistro">
-<button onclick="registrarDueno()">Registrar</button>
-<p id="msgRegistro" style="color:green"></p>
-</div> -->
-
 <!-- Modal de Planes -->
 <div id="modalPlan" class="modal">
 <div class="modal-content">
@@ -370,18 +356,26 @@ function cerrarModalPlan(){ document.getElementById("modalPlan").style.display="
 
 async function seleccionarPlan(plan){
 const email = localStorage.getItem("dueno");
-const precio = preciosPlanes[plan]||0;
+const precio = preciosPlanes[plan] || 0;
 const preferenceData = {
-items:[{ title:`Plan ${plan}`, quantity:1, unit_price:parseFloat(precio), currency_id:"ARS" }],
-payer: { email: email }
+items: [{ title: `Plan ${plan}`, quantity: 1, unit_price: parseFloat(precio), currency_id: "ARS" }],
+payer: { email: email },
+external_reference: email + "_" + plan + "_" + new Date().getTime(),
+back_urls: {
+success: window.location.href,
+failure: window.location.href,
+pending: window.location.href
+},
+auto_return: "approved",
+notification_url: `${API_URL}?action=updatePlan&email=${encodeURIComponent(email)}&plan=${encodeURIComponent(plan)}`
 };
-fetch("https://api.mercadopago.com/checkout/preferences", {
-method:"POST",
-headers:{ "Authorization": "Bearer " + MP_BEARER, "Content-Type":"application/json" },
+try {
+const response = await fetch("https://api.mercadopago.com/checkout/preferences", {
+method: "POST",
+headers: { "Authorization": "Bearer " + MP_BEARER, "Content-Type": "application/json" },
 body: JSON.stringify(preferenceData)
-})
-.then(r => r.json())
-.then(res => {
+});
+const res = await response.json();
 if(res.init_point){
 const mpContainer = document.getElementById("mpBtn" + plan);
 mpContainer.innerHTML = `<iframe src="${res.init_point}" width="100%" height="650" frameborder="0" allowtransparency="true"></iframe>`;
@@ -389,9 +383,21 @@ mpContainer.innerHTML = `<iframe src="${res.init_point}" width="100%" height="65
 console.error("Error MP:", res);
 alert("No se pudo generar el botón de pago. Revisa la consola.");
 }
-})
-.catch(err => console.error("Error MP:", err));
-// Modal **no se cierra** al seleccionar plan
+} catch(err) {
+console.error("Error MP:", err);
+alert("Error al procesar el pago. Por favor, intenta de nuevo.");
+}
+// Modal no se cierra al seleccionar plan
+}
+
+function planActualizado(res) {
+if(res.success) {
+alert("✅ Plan actualizado con éxito");
+cargarEstadoPlan();
+cerrarModalPlan();
+} else {
+alert("❌ Error al actualizar el plan: " + (res.error || "desconocido"));
+}
 }
 
 // === CARGAR ALQUILERES ===
