@@ -308,8 +308,8 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
    CONFIG
 ========================= */
 const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
-const cloudinaryURL = "https://api.cloudinary.com/v1_1/demo/image/upload";
-const cloudinaryUploadPreset = "ml_default";
+const cloudinaryURL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
+const cloudinaryUploadPreset = "preset_alquileres";
 
 /* =========================
    MAPA
@@ -486,19 +486,21 @@ function registrarDueno(){
 
   const formData = new FormData();
   formData.append("action", "registrarDueno");
-  formData.append("sheetName", "Login");
   formData.append("email", email);
   formData.append("nombre", nombre);
   formData.append("password", password);
   formData.append("contacto", codigoPais + contacto);
-  formData.append("plan", "Básico");
-  formData.append("estadoPago", "al día");
-  formData.append("fechaVencimiento", "30/12/2025");
 
-  fetch(webAppURL, { method: "POST", body: formData })
+  fetch(webAppURL, { 
+    method: "POST", 
+    body: formData,
+    headers: {
+      "Accept": "application/json"
+    }
+  })
     .then(response => {
       if (!response.ok) {
-        throw new Error("Error en la respuesta del servidor");
+        throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
       }
       return response.json();
     })
@@ -511,9 +513,12 @@ function registrarDueno(){
         document.getElementById("registro-msg").textContent = data.error || "Error al registrar el dueño";
       }
     })
-    .catch(() => {
+    .catch(error => {
+      console.error("Error en registro:", error);
       document.getElementById("registro-msg").style.color = "red";
-      document.getElementById("registro-msg").textContent = "Error de conexión al servidor. Por favor, intenta de nuevo.";
+      document.getElementById("registro-msg").textContent = error.message.includes("Acción no reconocida") 
+        ? "Error: Acción no reconocida por el servidor. Verifique la configuración del servidor."
+        : "Error de conexión al servidor: " + error.message + ". Por favor, intenta de nuevo.";
     });
 }
 
