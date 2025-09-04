@@ -408,10 +408,12 @@ async function seleccionarPlan(plan) {
     notification_url: `${API_URL}?action=updatePlan`
   };
   try {
-    const response = await fetch(`${API_URL}?action=createPreference`, {
+    const params = new URLSearchParams();
+    params.append("action", "createPreference");
+    params.append("preferenceData", JSON.stringify(preferenceData));
+    const response = await fetch(API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(preferenceData)
+      body: params
     });
     const res = await response.json();
     if (res.success && res.sandbox_init_point) {
