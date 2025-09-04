@@ -417,7 +417,7 @@ async function seleccionarPlan(plan) {
     const res = await response.json();
     if (res.sandbox_init_point) {
       const mpContainer = document.getElementById("mpBtn" + plan);
-      mpContainer.innerHTML = `<iframe src="${res.init_point}" width="100%" height="650" frameborder="0" allowtransparency="true"></iframe>`;
+      mpContainer.innerHTML = `<iframe src="${res.sandbox_init_point}" width="100%" height="650" frameborder="0" allowtransparency="true"></iframe>`;
       planStatusEl.innerHTML = "";
     } else {
       console.error("Error MP:", res);
