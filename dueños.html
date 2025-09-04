@@ -1,748 +1,803 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Panel de Dueños</title>
-<style>
-/* --- CSS adaptado para móvil con textos más grandes y centrados --- */
-body { font-family: Arial, sans-serif; margin: 10px; background:#f5f5f5; font-size:20px; text-align:center; margin-top: 120px; }
-h2 { color:#333; font-size:2.2em; margin-bottom:18px; }
-h3 { color:#333; font-size:2em; margin-bottom:18px; }
-.alquiler { border:1px solid #ccc; padding:16px; margin:14px 0; background:#fff; font-size:1.4em; text-align:left; }
-button { margin: 6px; padding:14px 20px; font-size:1.3em; border-radius:6px; cursor:pointer; }
-#btnAgregarAlquiler { background:#3681f3; color:white; }
-#formulario { background:#fff; padding:20px; border:1px solid #ccc; margin-top:24px; border-radius:12px; font-size:1.3em; text-align:left; display:none; }
-#formulario.active { display:block; }
-#formularioRegistro { background:#fff; padding:20px; border:1px solid #ccc; margin-top:24px; border-radius:12px; font-size:1.3em; text-align:left; display:none; }
-#formularioRegistro.active { display:block; }
-label { display:block; margin:12px 0 8px; font-weight:bold; }
-input, select, textarea { width:100%; padding:14px; margin-bottom:16px; font-size:1.2em; border-radius:8px; border:1px solid #ccc; }
-.contacto-container { display: flex; gap: 12px; align-items: center; }
-.contacto-container select { width: 60px; }
-.contacto-container input { flex: 1; min-width: 150px; }
-.password-container { display: flex; gap: 12px; align-items: center; }
-.password-container input { flex: 1; }
-.password-container .toggle-password { padding: 10px; font-size: 1.3em; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; background: #fff; }
-.preview-img { max-width: 140px; margin-top: 6px; display:inline-block; position:relative; border-radius:6px; }
-.preview-img-container { display:inline-block; margin-right:6px; position:relative; }
-.delete-img { position:absolute; top:0; right:0; background:red; color:white; border:none; border-radius:50%; cursor:pointer; font-weight:bold; padding:3px 8px; }
-#planStatus { margin:14px 0; font-weight:bold; font-size:1.4em; text-align:center; padding:12px; border-radius:6px; }
-progress { width: 100%; height:24px; }
-.modal {
-display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
-overflow: auto; background-color: rgba(0,0,0,0.5);
-}
-.modal-content {
-background-color: #fefefe; margin: 10% auto; padding: 28px; border: 1px solid #888; width: 95%; max-width: 700px; border-radius:14px; text-align:center;
-}
-.modal-content input, .modal-content select { width: calc(100% - 28px); }
-.modal h3 { margin-top:0; font-size:1.7em; }
-.plan-option { border:1px solid #ccc; padding:14px; margin:14px 0; border-radius:12px; font-size:1.3em; }
-.plan-option button { margin-top:8px; padding:12px 18px; font-size:1.2em; border-radius:8px; }
-iframe { width:100%; min-height:500px; border:none; border-radius:6px; margin-top:12px; }
-#planContainer { background:#3681f3; color:white; padding:12px; border:1px solid #ccc; border-radius:6px; font-size:1.2em; display:flex; flex-direction:column; align-items:center; width: calc(100% - 24px); min-height: 250px; height: auto; margin: 20px auto; }
-#planContainer button { background:#fff; }
-#contactoBtn { position:fixed; bottom:24px; right:24px; background:#25D366; color:white; border:none; border-radius:50%; padding:24px; font-size:2em; cursor:pointer; box-shadow:0 3px 6px rgba(0,0,0,0.2); }
-.estado-msg { font-size: 1.1em; margin-top: 6px; display: block; }
-.estado-msg.loading { color: blue; }
-.estado-msg.success { color: green; }
-.estado-msg.error { color: red; }
-/* Estilos para el menú hamburguesa */
-#menu-toggle {
-position: fixed;
-top: 20px;
-right: 20px;
-font-size: 30px;
-cursor: pointer;
-z-index: 1001;
-background: none;
-border: none;
-color: #333;
-}
-#menu {
-display: none;
-position: fixed;
-top: 60px;
-right: 20px;
-background: #fff;
-border: 1px solid #ccc;
-border-radius: 8px;
-box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-z-index: 1001;
-}
-#menu.active { display: block; }
-#menu button {
-display: block;
-width: 100%;
-padding: 14px 20px;
-font-size: 1.3em;
-text-align: left;
-border: none;
-background: none;
-cursor: pointer;
-}
-#menu button:hover { background: #f0f0f0; }
-/* Mobile-specific styles */
-@media screen and (max-width: 600px) {
-  body { font-size: 24px; margin-top: 140px; }
-  h2 { font-size: 2.6em; }
-  h3 { font-size: 2.4em; }
-  .alquiler { font-size: 1.6em; padding: 20px; }
-  button { font-size: 1.5em; padding: 16px 22px; }
-  #formulario, #formularioRegistro { font-size: 1.5em; padding: 24px; }
-  input, select, textarea { font-size: 1.4em; padding: 16px; }
-  .contacto-container select { width: 80px; }
-  .contacto-container input { min-width: 150px; }
-  .password-container .toggle-password { padding: 12px; font-size: 1.5em; }
-  .preview-img { max-width: 160px; }
-  #planStatus { font-size: 1.6em; }
-  .modal-content { width: 98%; max-width: 98%; font-size: 1.3em; padding: 28px; }
-  .plan-option { font-size: 1.5em; padding: 14px; }
-  #planContainer { font-size: 1.4em; padding: 12px; min-width: 200px; }
-  #contactoBtn { font-size: 2.2em; padding: 28px; }
-  #menu-toggle { font-size: 34px; top: 24px; right: 24px; }
-  #menu { top: 70px; right: 24px; }
-  #menu button { font-size: 1.5em; padding: 16px 22px; }
-}
-</style>
-</head>
-<body>
-<header style="position: static; top: 0; left: 0; width: 100%; background: white; z-index: 1000; text-align: center; padding: 15px; box-sizing: border-box;">
-  <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya" style="max-width: 300px; margin-bottom: 10px;">
-  <button id="menu-toggle" onclick="toggleMenu()">☰</button>
-  <div id="menu">
-    <button onclick="abrirModalEditarCuenta()">Editar Cuenta</button>
-    <button onclick="logout()">Cerrar Sesión</button>
-  </div>
-</header>
+/* --- Datos de Cloudinary --- */
+const CLOUDINARY_CLOUD_NAME = "dnugmwern";
+const CLOUDINARY_API_KEY = "877726879255954";
+const CLOUDINARY_API_SECRET = "t8CStqLDqd1hs3P9Hkr4lqicIQU";
+const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres"; // Crea uno en tu panel de Cloudinary
 
-<div id="planContainer">
-  <b>Mi plan</b>
-  <div id="planStatus"></div>
-  <span id="limiteAlquileres"></span>
-  <button id="btnPlan" onclick="abrirModalPlan()">💳 Mejorar Plan</button>
-</div>
+/* --- Clave secreta para verificación de webhooks --- */
+const WEBHOOK_SECRET = "2a2b5b39aefa97460ab135de0ee6c2363bf7bfde8a9b621304751e5789bafa58";
 
-<h3>📋 Mis Alquileres</h3>
-<div id="listaAlquileres">Cargando...</div>
-
-<button id="btnAgregarAlquiler" onclick="toggleFormulario()">➕ Agregar Alquiler</button>
-<div id="formulario">
-<input type="hidden" id="editRow" value="">
-<label>Dirección</label>
-<input type="text" id="direccion">
-
-<label>Ambientes</label>
-<input type="number" id="ambientes">
-
-<label>Precio</label>
-<input type="text" id="precio">
-
-<label>Mascotas Permitidas</label>
-<select id="mascotas">
-<option value="Sí">Sí</option>
-<option value="No">No</option>
-</select>
-
-<label>Imágenes del Alquiler (PNG/JPG, múltiples)</label>
-<input type="file" id="imagenFile" accept="image/png, image/jpeg" multiple>
-<div id="previewContainer"></div>
-
-<label>Información de ingreso</label>
-<textarea id="infoIngreso" rows="2"></textarea>
-
-<label>Detalles</label>
-<textarea id="detalles" rows="3"></textarea>
-
-<button id="btnGuardar" onclick="agregarAlquiler()">Agregar</button>
-<p id="msg" style="color:green"></p>
-</div>
-
-<!-- Modal de Planes -->
-<div id="modalPlan" class="modal">
-<div class="modal-content">
-<h3>Elige tu plan</h3>
-<div class="plan-option">
-<b>Básico</b> - Hasta 3 deptos activos
-<p id="precioBasico">$0 / mes</p>
-<button onclick="seleccionarPlan('Basico')">Elegir Básico</button>
-<div id="mpBtnBasico"></div>
-</div>
-<div class="plan-option">
-<b>Plus</b> - Hasta 5 deptos activos
-<p id="precioPlus">$0 / mes</p>
-<button onclick="seleccionarPlan('Plus')">Elegir Plus</button>
-<div id="mpBtnPlus"></div>
-</div>
-<div class="plan-option">
-<b>Full</b> - Hasta 10 deptos activos
-<p id="precioFull">$0 / mes</p>
-<button onclick="seleccionarPlan('Full')">Elegir Full</button>
-<div id="mpBtnFull"></div>
-</div>
-<button onclick="cerrarModalPlan()">Cerrar</button>
-</div>
-</div>
-
-<!-- Modal de Editar Cuenta -->
-<div id="modalEditarCuenta" class="modal">
-<div class="modal-content">
-<h3>Editar Cuenta</h3>
-<label>Email</label>
-<input type="email" id="emailEditar" placeholder="Dejar en blanco para mantener actual">
-<label>Nombre</label>
-<input type="text" id="nombreEditar" placeholder="Dejar en blanco para mantener actual">
-<label>Contacto (Teléfono)</label>
-<div class="contacto-container">
-  <select id="codigoPaisEditar">
-    <option value="+549">Argentina (+549)</option>
-    <option value="+55">Brasil (+55)</option>
-    <option value="+598">Uruguay (+598)</option>
-    <option value="+56">Chile (+56)</option>
-    <option value="+595">Paraguay (+595)</option>
-  </select>
-  <input type="text" id="contactoEditar" placeholder="Ej: 3764275443">
-</div>
-<label>Contraseña</label>
-<div class="password-container">
-  <input type="password" id="passwordEditar" placeholder="Dejar en blanco para mantener actual">
-  <button class="toggle-password" onclick="togglePasswordVisibility()">👁</button>
-</div>
-<button onclick="editarCuenta()">Guardar Cambios</button>
-<button onclick="cerrarModalEditarCuenta()">Cerrar</button>
-<p id="msgEditarCuenta" style="color:green"></p>
-</div>
-</div>
-
-<button id="contactoBtn" title="¿Necesitas ayuda o tuviste inconvenientes?" onclick="window.open('https://wa.me/5493764275443', '_blank')">Ayuda</button>
-
-<script>
-// === CONSTANTES Y VARIABLES ===
-const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
-const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
-const GEOCODE_KEY = "AIzaSyAisqYSTfpQ_rqqutAomzitD2v_dtKYtLE";
-const MP_BEARER = "APP_USR-595288641172928-010710-d915bce4137b3ee26e0c6e04873f1ac1-695835795";
-let imagenesBase64 = [];
-let planActual = null;
-let limiteDeptos = 0;
-let deptosActivos = 0;
-let preciosPlanes = {Basico: 0, Plus: 0, Full: 0};
-
-// === FORMATO DE PRECIO ===
-function formatoPrecio(valor) {
-  if (!valor) return "";
-  valor = valor.toString().replace(/\D/g, "");
-  return "$" + valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-}
-document.getElementById("precio").addEventListener("input", function() {
-  const cursorPos = this.selectionStart;
-  const valorSinSimbolo = this.value.replace(/\D/g, '');
-  this.value = formatoPrecio(valorSinSimbolo);
-  this.selectionEnd = cursorPos;
-});
-
-// === PREVIEW IMÁGENES ===
-function actualizarPreview() {
-  const previewContainer = document.getElementById("previewContainer");
-  previewContainer.innerHTML = "";
-  imagenesBase64.forEach((imgBase64, index) => {
-    const container = document.createElement("div");
-    container.className = "preview-img-container";
-    const img = document.createElement("img");
-    img.src = imgBase64;
-    img.className = "preview-img";
-    const btnDel = document.createElement("button");
-    btnDel.className = "delete-img";
-    btnDel.textContent = "x";
-    btnDel.onclick = () => { imagenesBase64.splice(index, 1); actualizarPreview(); };
-    container.appendChild(img);
-    container.appendChild(btnDel);
-    previewContainer.appendChild(container);
-  });
-}
-document.getElementById("imagenFile").addEventListener("change", function() {
-  const files = Array.from(this.files);
-  files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      imagenesBase64.push(e.target.result);
-      actualizarPreview();
-    }
-    reader.readAsDataURL(file);
-  });
-});
-
-// === SUBIR IMÁGENES ===
-async function subirImagenCloudinary(file) {
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-  try {
-    const res = await fetch(CLOUDINARY_URL, { method: "POST", body: formData });
-    const json = await res.json();
-    return json.secure_url;
-  } catch (err) {
-    console.error("Error subiendo imagen a Cloudinary:", err);
-    return null;
-  }
-}
-
-// === MENÚ HAMBURGUESA ===
-function toggleMenu() {
-  const menu = document.getElementById("menu");
-  menu.classList.toggle("active");
-}
-
-// === INICIO ===
-window.onload = function() {
-  const email = localStorage.getItem("dueno");
-  if (!email) { window.location.href = "index.html"; return; }
-  cargarEstadoPlan();
-  cargarAlquileres();
-  cargarPreciosPlanes();
-  cargarDatosCuenta();
-  checkPaymentOnReturn(); // Verificar estado del pago al regresar
-}
-
-// === VERIFICAR PAGO AL REGRESAR ===
-function checkPaymentOnReturn() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const status = urlParams.get("status");
-  const paymentId = urlParams.get("payment_id");
-  const planStatusEl = document.getElementById("planStatus");
-  
-  if (status && paymentId) {
-    planStatusEl.innerHTML = `<span class="estado-msg loading">⏳ Verificando estado del pago...</span>`;
-    setTimeout(() => {
-      cargarEstadoPlan(); // Recargar estado del plan tras 3 segundos para permitir que el webhook procese
-      window.history.replaceState({}, document.title, window.location.pathname); // Limpiar parámetros de la URL
-    }, 3000);
-  }
-}
-
-// === CARGAR PRECIOS PLANES ===
-function cargarPreciosPlanes() {
-  const script = document.createElement("script");
-  script.src = `${API_URL}?action=getPlanes&callback=mostrarPreciosPlanes`;
-  document.body.appendChild(script);
-}
-function mostrarPreciosPlanes(res) {
-  if (res.success && res.data && res.data.length) {
-    res.data.forEach(plan => {
-      preciosPlanes[plan.nombre] = parseFloat(plan.precio) || 0;
-    });
-    document.getElementById("precioBasico").textContent = formatoPrecio(preciosPlanes.Basico) + " / mes";
-    document.getElementById("precioPlus").textContent = formatoPrecio(preciosPlanes.Plus) + " / mes";
-    document.getElementById("precioFull").textContent = formatoPrecio(preciosPlanes.Full) + " / mes";
-  } else {
-    console.error("Error al cargar precios de planes:", res);
-  }
-}
-
-// === CARGAR ESTADO DE PLAN ===
-function cargarEstadoPlan() {
-  const email = localStorage.getItem("dueno");
-  const script = document.createElement("script");
-  script.src = `${API_URL}?action=getLoginInfo&email=${encodeURIComponent(email)}&callback=mostrarEstadoPlan`;
-  document.body.appendChild(script);
-}
-
-function mostrarEstadoPlan(res) {
-  const planStatusEl = document.getElementById("planStatus");
-  if (!res.success || !res.data || !res.data[0]) {
-    planActual = null;
-    limiteDeptos = 0;
-    planStatusEl.innerHTML = `Plan: <b>Sin plan</b> | Estado de Pago: N/D | Vencimiento: N/D`;
-    document.getElementById("btnPlan").textContent = "💳 Elegir Plan";
-    document.getElementById("limiteAlquileres").textContent = "";
-    return;
-  }
-  const login = res.data[0];
-  planActual = login.Plan || null;
-  limiteDeptos = planActual === "Basico" ? 3 : planActual === "Plus" ? 5 : planActual === "Full" ? 10 : 0;
-  const estadoPago = login.EstadoPago || "No registrado";
-  const vencimiento = login.Vencimiento || "N/D";
-  planStatusEl.innerHTML = `Plan: <b>${planActual || "Sin plan"}</b> | Estado de Pago: ${estadoPago} | Vencimiento: ${vencimiento}`;
-  document.getElementById("limiteAlquileres").textContent = `${deptosActivos}/${limiteDeptos} alquileres activos`;
-  document.getElementById("btnPlan").textContent = planActual ? "💳 Mejorar Plan" : "💳 Elegir Plan";
-}
-
-// === MODAL PLAN ===
-function abrirModalPlan() { document.getElementById("modalPlan").style.display = "block"; }
-function cerrarModalPlan() { 
-  document.getElementById("modalPlan").style.display = "none";
-  document.getElementById("mpBtnBasico").innerHTML = "";
-  document.getElementById("mpBtnPlus").innerHTML = "";
-  document.getElementById("mpBtnFull").innerHTML = "";
-}
-
-async function seleccionarPlan(plan) {
-  const email = localStorage.getItem("dueno");
-  const precio = preciosPlanes[plan] || 0;
-  const planStatusEl = document.getElementById("planStatus");
-  planStatusEl.innerHTML = `<span class="estado-msg loading">⏳ Procesando pago...</span>`;
-  const preferenceData = {
-    items: [{ title: `Plan ${plan}`, quantity: 1, unit_price: parseFloat(precio), currency_id: "ARS" }],
-    payer: { email: email },
-    external_reference: email + "_" + plan,
-    back_urls: {
-      success: window.location.href,
-      failure: window.location.href,
-      pending: window.location.href
-    },
-    auto_return: "approved",
-    notification_url: `${API_URL}?action=updatePlan`
+/* --- Obtener precios y límites dinámicos desde la hoja "Planes" --- */
+function getPlanesDinamicos() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Planes");
+  var data = sheet.getRange("E2:G2").getValues()[0]; // fila 2, columnas E,F,G
+  return {
+    Basico: { limiteDeptos: 3, limiteFotos: 3, destacar: 0, precio: data[0] || 0 },
+    Plus:   { limiteDeptos: 5, limiteFotos: 5, destacar: 1, precio: data[1] || 0 },
+    Full:   { limiteDeptos: 10, limiteFotos: 99, destacar: 99, precio: data[2] || 0 }
   };
+}
+
+/* --- Manejo principal de solicitudes GET --- */
+function doGet(e) {
+  var action = e.parameter.action;
+  var callback = e.parameter.callback || null;
+  var res = {};
+
   try {
-    const response = await fetch("https://api.mercadopago.com/checkout/preferences", {
-      method: "POST",
-      headers: { "Authorization": "Bearer " + MP_BEARER, "Content-Type": "application/json" },
-      body: JSON.stringify(preferenceData)
-    });
-    const res = await response.json();
-    if (res.init_point) {
-      const mpContainer = document.getElementById("mpBtn" + plan);
-      mpContainer.innerHTML = `<iframe src="${res.init_point}" width="100%" height="650" frameborder="0" allowtransparency="true"></iframe>`;
-      planStatusEl.innerHTML = `<span class="estado-msg loading">⏳ Iniciando pago. Esperando confirmación...</span>`;
+    if (action == "getAlquileres") {
+      res = { success: true, data: getAlquileresActivos() };
+    } else if (action == "addAlquiler") {
+      res = addAlquiler(e);
+    } else if (action == "editAlquiler") {
+      res = editAlquiler(e);
+    } else if (action == "toggleEstado") {
+      res = toggleEstado(e);
+    } else if (action == "deleteAlquiler") {
+      res = deleteAlquiler(e);
+    } else if (action == "registerDueno") {
+      res = registerDueno(e);
+    } else if (action == "getAlquileresDueno") {
+      res = { success: true, data: getAlquileres(e) };
+    } else if (action == "mejorarPlan") {
+      res = mejorarPlan(e);
+    } else if (action == "getLoginInfo") {
+      res = getLoginInfo(e);
+    } else if (action == "verificarLogin") {
+      res = verificarLogin(e);
+    } else if (action == "getPlanes") {
+      res = getPlanes();
+    } else if (action == "editarDueno") {
+      res = editarDueno(e);
+    } else if (action == "updatePlan") {
+      res = updatePlan(e);
     } else {
-      console.error("Error MP:", res);
-      planStatusEl.innerHTML = `<span class="estado-msg error">❌ No se pudo generar el botón de pago. Revisa la consola.</span>`;
-      setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
+      res = { success: false, error: "Acción no reconocida" };
     }
   } catch (err) {
-    console.error("Error MP:", err);
-    planStatusEl.innerHTML = `<span class="estado-msg error">❌ Error al procesar el pago. Por favor, intenta de nuevo.</span>`;
-    setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
+    res = { success: false, error: err.message };
   }
-}
 
-function planActualizado(res) {
-  const planStatusEl = document.getElementById("planStatus");
-  if (res.success) {
-    planStatusEl.innerHTML = `<span class="estado-msg success">✅ Plan actualizado con éxito: ${res.plan}</span>`;
-    setTimeout(() => {
-      planStatusEl.innerHTML = "";
-      cargarEstadoPlan();
-      cargarAlquileres();
-      cerrarModalPlan();
-    }, 3000);
+  var json = JSON.stringify(res);
+  if (callback) {
+    return ContentService.createTextOutput(callback + "(" + json + ");")
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
   } else {
-    planStatusEl.innerHTML = `<span class="estado-msg error">❌ Error al actualizar el plan: ${res.error || "desconocido"}</span>`;
-    setTimeout(() => { 
-      planStatusEl.innerHTML = "";
-      cargarEstadoPlan();
-    }, 5000);
+    return ContentService.createTextOutput(json)
+      .setMimeType(ContentService.MimeType.JSON);
   }
 }
 
-// === CARGAR ALQUILERES ===
-function cargarAlquileres() {
-  const email = localStorage.getItem("dueno");
-  const script = document.createElement("script");
-  script.src = `${API_URL}?action=getAlquileresDueno&dueno=${encodeURIComponent(email)}&callback=mostrarAlquileres`;
-  document.body.appendChild(script);
-}
-
-function mostrarAlquileres(res) {
-  const div = document.getElementById("listaAlquileres");
-  div.innerHTML = "";
-  if (!res.success || !res.data || res.data.length === 0) { div.innerHTML = "No tienes alquileres aún."; return; }
-  deptosActivos = res.data.filter(a => a.Estado === "Activo").length;
-  document.getElementById("limiteAlquileres").textContent = `${deptosActivos}/${limiteDeptos} alquileres activos`;
-  res.data.forEach(alq => {
-    let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
-    let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Cambiar Estado</button>`;
-    let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
-    let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
-    let precioFormateado = formatoPrecio(alq.Precio);
-    div.innerHTML += `<div class="alquiler">
-<b>${alq.Direccion}</b> - ${alq['Nro Ambientes']} amb - ${precioFormateado} - Mascotas: ${alq.Mascotas || "N/D"}<br>
-Estado: ${estado}<br>
-${btnEstado} ${btnEditar} ${btnEliminar}
-<span id="estadoMsg-${alq.row}" class="estado-msg"></span>
-</div>`;
-  });
-}
-
-// === TOGGLE FORMULARIO ===
-function toggleFormulario() {
-  const form = document.getElementById("formulario");
-  const btn = document.getElementById("btnAgregarAlquiler");
-  if (form.classList.contains("active")) {
-    form.classList.remove("active");
-    btn.textContent = "➕ Agregar Alquiler";
-    resetForm();
-  } else {
-    form.classList.add("active");
-    btn.textContent = "➖ Cerrar Formulario";
-    window.scrollTo(0, document.getElementById("formulario").offsetTop);
-  }
-}
-
-// === AGREGAR / EDITAR ALQUILER ===
-async function agregarAlquiler() {
-  let direccion = document.getElementById("direccion").value;
-  const ambientes = document.getElementById("ambientes").value;
-  let precio = document.getElementById("precio").value.replace(/\D/g, "");
-  const mascotas = document.getElementById("mascotas").value;
-  const infoIngreso = document.getElementById("infoIngreso").value;
-  const detalles = document.getElementById("detalles").value;
-  let row = document.getElementById("editRow").value || new Date().getTime();
-  const email = localStorage.getItem("dueno");
-  if (!direccion || !ambientes || !precio) { alert("Completa todos los campos obligatorios."); return; }
-  direccion = direccion + ", Santo Tomé Corrientes";
-  const msgEl = document.getElementById("msg");
-  if (document.getElementById("editRow").value) msgEl.textContent = "Guardando cambios...";
-  const files = document.getElementById("imagenFile").files;
-  let uploadedURLs = [];
-  for (let i = 0; i < files.length; i++) {
-    const url = await subirImagenCloudinary(files[i]);
-    if (url) uploadedURLs.push(url);
-  }
-  fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(direccion)}&key=${GEOCODE_KEY}`)
-    .then(r => r.json()).then(data => {
-      let lat = "", lng = "";
-      if (data.results && data.results[0]) {
-        lat = data.results[0].geometry.location.lat;
-        lng = data.results[0].geometry.location.lng;
-      }
-      enviarAlquiler(uploadedURLs.join(","), lat, lng);
-    });
-  function enviarAlquiler(fotosConcatenadas, lat, lng) {
-    const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
-    const callback = action === "editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
-    let estado = "Activo";
-    if (action === "editAlquiler" && deptosActivos >= limiteDeptos) {
-      estado = "Inactivo";
-    }
-    const script = document.createElement("script");
-    script.src = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&contacto=auto&estado=${estado}&callback=${callback}`;
-    document.body.appendChild(script);
-  }
-}
-
-// === FUNCIONES RESTANTES ===
-function editarAlquiler(row, datos) {
-  document.getElementById("btnAgregarAlquiler").textContent = "➖ Cerrar Formulario";
-  document.getElementById("formulario").classList.add("active");
-  document.getElementById("btnGuardar").textContent = "Guardar Cambios";
-  document.getElementById("editRow").value = row;
-  document.getElementById("direccion").value = datos.Direccion || "";
-  document.getElementById("ambientes").value = datos["Nro Ambientes"] || "";
-  document.getElementById("precio").value = formatoPrecio(datos.Precio);
-  document.getElementById("mascotas").value = datos.Mascotas || "No";
-  document.getElementById("infoIngreso").value = datos.InfoIngreso || "";
-  document.getElementById("detalles").value = datos.Detalles || "";
-  imagenesBase64 = datos.Fotos ? datos.Fotos.split(",") : [];
-  actualizarPreview();
-  window.scrollTo(0, document.getElementById("formulario").offsetTop);
-}
-
-function resetForm() {
-  document.getElementById("btnAgregarAlquiler").textContent = "➕ Agregar Alquiler";
-  document.getElementById("formulario").classList.remove("active");
-  document.getElementById("btnGuardar").textContent = "Agregar";
-  document.getElementById("editRow").value = "";
-  document.getElementById("direccion").value = "";
-  document.getElementById("ambientes").value = "";
-  document.getElementById("precio").value = "";
-  document.getElementById("mascotas").value = "Sí";
-  document.getElementById("infoIngreso").value = "";
-  document.getElementById("detalles").value = "";
-  document.getElementById("imagenFile").value = "";
-  imagenesBase64 = [];
-  actualizarPreview();
-  document.getElementById("msg").textContent = "";
-}
-
-async function cambiarEstado(row, estadoActual) {
-  const msgEl = document.getElementById(`estadoMsg-${row}`);
-  if (estadoActual === "Inactivo" && deptosActivos >= limiteDeptos) {
-    msgEl.className = "estado-msg error";
-    msgEl.textContent = `No puedes activar más alquileres. Tu plan (${planActual}) permite hasta ${limiteDeptos} deptos activos. ❌`;
-    setTimeout(() => { msgEl.textContent = ""; }, 5000);
-    return;
-  }
-  msgEl.className = "estado-msg loading";
-  msgEl.textContent = "Cambiando Estado ⏳";
+/* --- Manejo de solicitudes POST (Webhooks y FormData) --- */
+function doPost(e) {
   try {
-    const response = await fetch(`${API_URL}?action=toggleEstado&row=${row}`);
-    const res = await response.json();
-    estadoCambiado(res, row);
+    // Handle FormData requests for registrarDueno
+    if (e.parameters && e.parameters.action && e.parameters.action === "registrarDueno") {
+      var params = e.parameters;
+      var response = registerDueno({
+        parameter: {
+          email: params.email,
+          password: params.password,
+          nombre: params.nombre,
+          contacto: params.contacto
+        }
+      });
+      return ContentService.createTextOutput(JSON.stringify(response))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // Handle JSON requests, including Mercado Pago webhooks
+    if (e.postData && e.postData.contents) {
+      const params = JSON.parse(e.postData.contents);
+
+      // Handle Mercado Pago webhook for payment events
+      if (params.type === "payment" && params.data && params.data.id) {
+        // Verify webhook signature
+        var signature = e.parameter['x-signature'] || '';
+        var requestId = e.parameter['x-request-id'] || '';
+        var timestamp = signature.split(',')[0]?.split('ts=')[1] || '';
+        var signatureHash = signature.split(',')[1]?.split('v1=')[1] || '';
+        var expectedSignature = Utilities.computeHmacSha256Signature(
+          timestamp + '.' + requestId + '.' + e.postData.contents,
+          WEBHOOK_SECRET
+        ).reduce(function(str, byte) {
+          return str + ('0' + (byte & 0xFF).toString(16)).slice(-2);
+        }, '');
+        
+        if (signatureHash !== expectedSignature) {
+          Logger.log("❌ Error en doPost: Firma de webhook inválida - " + signature);
+          return ContentService.createTextOutput(JSON.stringify({ success: false, error: "Firma de webhook inválida" }))
+            .setMimeType(ContentService.MimeType.JSON)
+            .setHttpStatusCode(401);
+        }
+
+        var externalReference = params.data.external_reference || "";
+        var [email, plan] = externalReference.split("_");
+        if (!email || !plan) {
+          Logger.log("❌ Error en doPost: external_reference inválido - " + externalReference);
+          return ContentService.createTextOutput(JSON.stringify({ success: false, error: "external_reference inválido" }))
+            .setMimeType(ContentService.MimeType.JSON)
+            .setHttpStatusCode(400);
+        }
+
+        var response = updatePlan({
+          parameter: {
+            payment_id: params.data.id,
+            email: email,
+            plan: plan,
+            estadoPago: "Aprobado",
+            fechaVencimiento: new Date(new Date().setDate(new Date().getDate() + 30)).toLocaleDateString("es-AR"),
+            descripcionPago: `Pago plan ${plan} - ID: ${params.data.id}`
+          }
+        });
+        return ContentService.createTextOutput(JSON.stringify(response))
+          .setMimeType(ContentService.MimeType.JSON)
+          .setHttpStatusCode(200);
+      }
+
+      // Subir imágenes Base64 a Cloudinary
+      if (params.action === "uploadImagesCloudinary" && params.images) {
+        const links = [];
+        params.images.forEach((b64, i) => {
+          try {
+            const url = subirImagenCloudinary(b64);
+            if (url) links.push(url);
+          } catch (err) {
+            Logger.log("❌ Error subiendo a Cloudinary: " + err.message);
+          }
+        });
+        if (params.row && links.length > 0) {
+          const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Alquileres");
+          sheet.getRange(parseInt(params.row), 9).setValue(links.join(","));
+        }
+        return ContentService.createTextOutput(JSON.stringify({ success: true, links }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+
+      // Forward JSON-based actions to doGet
+      return doGet({ parameter: params });
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: "POST vacío" }))
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHttpStatusCode(400);
+
   } catch (err) {
-    msgEl.className = "estado-msg error";
-    msgEl.textContent = `Error al cambiar estado: ${err.message || "Error de conexión"} ❌`;
-    setTimeout(() => { msgEl.textContent = ""; }, 5000);
-    console.error("Error en cambio de estado:", err);
+    Logger.log("❌ Error en doPost: " + err.message);
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.message }))
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHttpStatusCode(500);
   }
 }
 
-function estadoCambiado(res, row) {
-  const msgEl = document.getElementById(`estadoMsg-${row}`);
-  if (res.success) {
-    msgEl.className = "estado-msg success";
-    msgEl.textContent = "Estado cambiado con éxito ✅";
-    setTimeout(() => { msgEl.textContent = ""; }, 3000);
-    cargarAlquileres();
-  } else {
-    msgEl.className = "estado-msg error";
-    msgEl.textContent = `Error al cambiar estado: ${res.error || "desconocido"} ❌`;
-    setTimeout(() => { msgEl.textContent = ""; }, 5000);
+/* --- Subir imagen Base64 a Cloudinary --- */
+function subirImagenCloudinary(base64Data) {
+  const endpoint = "https://api.cloudinary.com/v1_1/" + CLOUDINARY_CLOUD_NAME + "/image/upload";
+  const payload = {
+    file: base64Data,
+    upload_preset: CLOUDINARY_UPLOAD_PRESET
+  };
+  const options = {
+    method: "post",
+    contentType: "application/json",
+    payload: JSON.stringify(payload)
+  };
+  const response = UrlFetchApp.fetch(endpoint, options);
+  const data = JSON.parse(response.getContentText());
+  return data.secure_url;
+}
+
+/* --- Obtener todos los alquileres activos (solo dueños con pago al día) --- */
+function getAlquileresActivos() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Alquileres");
+  var loginSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Login");
+  var loginData = loginSheet.getDataRange().getValues();
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+  var alquileres = [];
+
+  for (var i = 1; i < data.length; i++) {
+    var tipo = data[i][0];
+    var estado = data[i][9];
+    var lat = data[i][3];
+    var lng = data[i][4];
+    var email = data[i][1];
+    var dueño = loginData.find(row => row[1] === email);
+    var pagoAlDia = dueño && new Date(dueño[7]) >= new Date();
+
+    if (tipo === "alquiler" && estado === "Activo" && lat && lng && pagoAlDia) {
+      var obj = {};
+      for (var j = 0; j < headers.length; j++) obj[headers[j]] = data[i][j];
+      obj["Contacto"] = data[i][7] || "";
+      obj.row = i + 1;
+      alquileres.push(obj);
+    }
+  }
+  return alquileres;
+}
+
+/* --- Obtener alquileres de un dueño específico --- */
+function getAlquileres(e) {
+  var email = e.parameter.dueno;
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Alquileres");
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+  var alquileres = [];
+
+  for (var i = 1; i < data.length; i++) {
+    var tipo = data[i][0];
+    var correo = data[i][1];
+    if (tipo === "alquiler" && correo === email) {
+      var obj = {};
+      for (var j = 0; j < headers.length; j++) obj[headers[j]] = data[i][j];
+      obj["Contacto"] = data[i][7] || "";
+      obj.row = i + 1;
+      alquileres.push(obj);
+    }
+  }
+  return alquileres;
+}
+
+/* --- Validar límite de deptos (solo activos) --- */
+function validarLimiteDeptos(email) {
+  const loginSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Login");
+  const loginData = loginSheet.getDataRange().getValues();
+  const dueño = loginData.find(row => row[1] === email);
+  if (!dueño) throw "Dueño no encontrado";
+
+  const plan = dueño[5] || "Basico";
+  const planes = getPlanesDinamicos();
+  const limite = planes[plan].limiteDeptos;
+
+  const alquileresSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Alquileres");
+  const cantidadDeptos = alquileresSheet.getDataRange().getValues()
+    .filter(r => r[0] === "alquiler" && r[1] === email && r[9] === "Activo").length;
+
+  if (cantidadDeptos >= limite) throw `Tu plan actual (${plan}) solo permite ${limite} deptos. Mejora tu plan para agregar más.`;
+}
+
+/* --- Validar vencimiento --- */
+function validarVencimiento(email) {
+  const loginSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Login");
+  const loginData = loginSheet.getDataRange().getValues();
+  const dueño = loginData.find(row => row[1] === email);
+  if (!dueño) throw "Dueño no encontrado";
+
+  const fechaVencimiento = dueño[7];
+  if (!fechaVencimiento) return true;
+  if (new Date() > new Date(fechaVencimiento)) throw "Tu plan está vencido. Debes renovar para poder agregar o mostrar tus deptos en el mapa.";
+  return true;
+}
+
+/* --- Agregar nuevo alquiler (validando plan y vencimiento) --- */
+function addAlquiler(e) {
+  var email = e.parameter.dueno;
+
+  validarLimiteDeptos(email);
+  validarVencimiento(email);
+
+  var direccion = e.parameter.direccion;
+  var ambientes = e.parameter.ambientes;
+  var precio = e.parameter.precio;
+  var mascotas = e.parameter.mascotas || "";
+  var fotos = e.parameter.fotos || "";
+  var infoIngreso = e.parameter.infoIngreso || "";
+  var detalles = e.parameter.detalles || "";
+  var lat = e.parameter.lat || "";
+  var lng = e.parameter.lng || "";
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var loginSheet = ss.getSheetByName("Login");
+  var loginData = loginSheet.getDataRange().getValues();
+  var contacto = "auto";
+  for (var i = 1; i < loginData.length; i++) {
+    if (loginData[i][1] === email) {
+      contacto = loginData[i][4] || "auto";
+      break;
+    }
+  }
+
+  var alquileresSheet = ss.getSheetByName("Alquileres");
+  alquileresSheet.appendRow([
+    "alquiler", email, direccion, lat, lng, ambientes, precio, contacto, fotos, "Activo", infoIngreso, detalles, mascotas
+  ]);
+  return { success: true };
+}
+
+/* --- Editar alquiler existente --- */
+function editAlquiler(e) {
+  var row = parseInt(e.parameter.row);
+  if (!row || row < 2) return { success: false, error: "Fila inválida" };
+
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Alquileres");
+
+  if (e.parameter.direccion) sheet.getRange(row, 3).setValue(e.parameter.direccion);
+  if (e.parameter.lat) sheet.getRange(row, 4).setValue(e.parameter.lat);
+  if (e.parameter.lng) sheet.getRange(row, 5).setValue(e.parameter.lng);
+  if (e.parameter.ambientes) sheet.getRange(row, 6).setValue(e.parameter.ambientes);
+  if (e.parameter.precio) sheet.getRange(row, 7).setValue(e.parameter.precio);
+  if (e.parameter.mascotas) sheet.getRange(row, 13).setValue(e.parameter.mascotas);
+  if (e.parameter.infoIngreso) sheet.getRange(row, 11).setValue(e.parameter.infoIngreso);
+  if (e.parameter.detalles) sheet.getRange(row, 12).setValue(e.parameter.detalles);
+  if (e.parameter.fotos) sheet.getRange(row, 9).setValue(e.parameter.fotos);
+
+  return { success: true };
+}
+
+/* --- Cambiar estado Activo/Inactivo --- */
+function toggleEstado(e) {
+  var row = parseInt(e.parameter.row);
+  if (!row || row < 2) return { success: false, error: "Fila inválida" };
+
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Alquileres");
+  var estado = sheet.getRange(row, 10).getValue();
+  var nuevoEstado = estado === "Activo" ? "Inactivo" : "Activo";
+  sheet.getRange(row, 10).setValue(nuevoEstado);
+
+  return { success: true, nuevoEstado: nuevoEstado };
+}
+
+/* --- Eliminar alquiler --- */
+function deleteAlquiler(e) {
+  var row = parseInt(e.parameter.row);
+  if (!row || row < 2) return { success: false, error: "Fila inválida" };
+
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Alquileres");
+  sheet.deleteRow(row);
+  return { success: true };
+}
+
+/* --- Registrar dueño --- */
+function registerDueno(e) {
+  var email = e.parameter.email;
+  var password = e.parameter.password;
+  var nombre = e.parameter.nombre;
+  var contacto = e.parameter.contacto;
+
+  // Validate input parameters
+  if (!email || !password || !nombre || !contacto) {
+    Logger.log("❌ Error en registerDueno: Faltan datos - email: " + email + ", password: " + password + ", nombre: " + nombre + ", contacto: " + contacto);
+    return { success: false, error: "Faltan datos requeridos" };
+  }
+
+  // Validate email format
+  if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+    Logger.log("❌ Error en registerDueno: Email inválido - " + email);
+    return { success: false, error: "El email no es válido" };
+  }
+
+  // Validate password length
+  if (password.length < 6) {
+    Logger.log("❌ Error en registerDueno: Contraseña demasiado corta - " + password);
+    return { success: false, error: "La contraseña debe tener al menos 6 caracteres" };
+  }
+
+  // Validate contacto format
+  if (!contacto.match(/^\+\d+$/)) {
+    Logger.log("❌ Error en registerDueno: Contacto inválido - " + contacto);
+    return { success: false, error: "El contacto debe empezar con '+' seguido de dígitos" };
+  }
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var loginSheet = ss.getSheetByName("Login");
+  var data = loginSheet.getDataRange().getValues();
+
+  // Check for existing email
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][1] === email) {
+      Logger.log("❌ Error en registerDueno: Email ya registrado - " + email);
+      return { success: false, error: "El email ya está registrado" };
+    }
+  }
+
+  // Append new owner to Login sheet
+  try {
+    loginSheet.appendRow([
+      "Dueño", email, password, nombre, contacto
+    ]);
+    Logger.log("✅ Dueño registrado correctamente: " + email);
+    return { success: true, message: "Dueño registrado correctamente" };
+  } catch (err) {
+    Logger.log("❌ Error al registrar dueño en la hoja Login: " + err.message);
+    return { success: false, error: "Error al guardar en la hoja: " + err.message };
   }
 }
 
-function eliminarAlquiler(row) {
-  if (!confirm("¿Seguro que deseas eliminar este alquiler?")) return;
-  const script = document.createElement("script");
-  script.src = `${API_URL}?action=deleteAlquiler&row=${row}&callback=cargarAlquileres`;
-  document.body.appendChild(script);
+/* --- Verificar login --- */
+function verificarLogin(e) {
+  var email = e.parameter.email;
+  var password = e.parameter.password;
+
+  if (!email || !password)
+    return { success: false, error: "Faltan credenciales" };
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var loginSheet = ss.getSheetByName("Login");
+  var data = loginSheet.getDataRange().getValues();
+
+  for (var i = 1; i < data.length; i++) {
+    var fila = data[i];
+    var tipo = fila[0];
+    var correo = fila[1];
+    var pass = fila[2];
+
+    if (tipo === "Dueño" && correo === email) {
+      if (String(pass) == String(password)) {
+        return {
+          success: true,
+          tipo: tipo,
+          email: correo,
+          nombre: fila[3] || "",
+          contacto: fila[4] || "",
+          plan: fila[5] || "",
+          estadoPago: fila[6] || "",
+          vencimiento: fila[7]
+            ? Utilities.formatDate(new Date(fila[7]), Session.getScriptTimeZone(), "yyyy-MM-dd")
+            : ""
+        };
+      } else {
+        return { success: false, error: "Contraseña incorrecta" };
+      }
+    }
+  }
+
+  return { success: false, error: "Usuario no registrado" };
 }
 
-function logout() { localStorage.removeItem("dueno"); window.location.href = "index.html"; }
+/* --- Mejorar plan --- */
+function mejorarPlan(e) {
+  var email = e.parameter.email;
+  var nuevoPlan = e.parameter.plan;
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var loginSheet = ss.getSheetByName("Login");
+  var data = loginSheet.getDataRange().getValues();
 
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][1] === email) {
+      var fechaNueva = new Date();
+      fechaNueva.setDate(fechaNueva.getDate() + 30);
+      loginSheet.getRange(i + 1, 6).setValue(nuevoPlan);
+      loginSheet.getRange(i + 1, 7).setValue("Pago al día");
+      loginSheet.getRange(i + 1, 8).setValue(fechaNueva);
+      SpreadsheetApp.flush(); // Forzar sincronización
+      return { success: true, message: "Plan actualizado correctamente" };
+    }
+  }
+  return { success: false, error: "Dueño no encontrado" };
+}
+
+/* --- Actualizar plan tras pago de Mercado Pago --- */
+function updatePlan(e) {
+  var email = e.parameter.email || null;
+  var plan = e.parameter.plan || null;
+  var paymentId = e.parameter.payment_id || (e.parameter.data && e.parameter.data.id) || null;
+  var estadoPago = e.parameter.estadoPago || "Aprobado";
+  var fechaVencimiento = e.parameter.fechaVencimiento || null;
+  var descripcionPago = e.parameter.descripcionPago || null;
+
+  // Validate input parameters
+  if (!paymentId) {
+    Logger.log("❌ Error en updatePlan: Faltan parámetros - payment_id: " + paymentId);
+    return { success: false, error: "Falta el payment_id" };
+  }
+  if (!email || !plan) {
+    Logger.log("❌ Error en updatePlan: email o plan faltantes - email: " + email + ", plan: " + plan);
+    return { success: false, error: "Faltan parámetros email o plan" };
+  }
+
+  // Verify payment with Mercado Pago
+  var mpAccessToken = "APP_USR-595288641172928-010710-d915bce4137b3ee26e0c6e04873f1ac1-695835795";
+  var url = "https://api.mercadopago.com/v1/payments/" + encodeURIComponent(paymentId);
+  var options = {
+    method: "get",
+    headers: { "Authorization": "Bearer " + mpAccessToken },
+    muteHttpExceptions: true
+  };
+
+  try {
+    var response = UrlFetchApp.fetch(url, options);
+    var paymentData = JSON.parse(response.getContentText());
+
+    // Check if payment is approved
+    if (response.getResponseCode() === 200 && paymentData.status === "approved") {
+      // Extract email and plan from external_reference if not provided
+      var externalReference = paymentData.external_reference || "";
+      if (externalReference && (!email || !plan)) {
+        var [refEmail, refPlan] = externalReference.split("_");
+        email = email || refEmail;
+        plan = plan || refPlan;
+      }
+
+      // Validate email and plan
+      if (!email || !plan) {
+        Logger.log("❌ Error en updatePlan: email o plan faltantes después de external_reference - email: " + email + ", plan: " + plan);
+        return { success: false, error: "Faltan parámetros email o plan" };
+      }
+      if (externalReference && externalReference !== email + "_" + plan) {
+        Logger.log("❌ Error en updatePlan: external_reference no coincide - " + externalReference);
+        return { success: false, error: "El external_reference no coincide con los parámetros proporcionados" };
+      }
+
+      // Validate plan against getPlanesDinamicos
+      var planesValidos = Object.keys(getPlanesDinamicos());
+      if (!planesValidos.includes(plan)) {
+        Logger.log("❌ Error en updatePlan: Plan inválido - " + plan);
+        return { success: false, error: "Plan inválido: debe ser Basico, Plus o Full" };
+      }
+
+      var ss = SpreadsheetApp.getActiveSpreadsheet();
+      var loginSheet = ss.getSheetByName("Login");
+      var data = loginSheet.getDataRange().getValues();
+
+      // Find the owner's row
+      for (var i = 1; i < data.length; i++) {
+        if (data[i][1] === email) {
+          // Use provided fechaVencimiento or calculate default (30 days from now)
+          var fechaNueva = fechaVencimiento
+            ? new Date(fechaVencimiento)
+            : new Date(new Date().setDate(new Date().getDate() + 30));
+          var formattedDate = Utilities.formatDate(fechaNueva, Session.getScriptTimeZone(), "dd/MM/yyyy");
+
+          // Use provided descripcionPago or default
+          var descPago = descripcionPago || `Pago plan ${plan} - ID: ${paymentId}`;
+
+          // Update plan, payment status, expiration date, and payment description
+          loginSheet.getRange(i + 1, 6).setValue(plan); // Column F: Plan
+          loginSheet.getRange(i + 1, 7).setValue(estadoPago); // Column G: Estado del Pago
+          loginSheet.getRange(i + 1, 8).setValue(formattedDate); // Column H: Fecha Vencimiento
+          loginSheet.getRange(i + 1, 9).setValue(descPago); // Column I: Descripción del Pago
+
+          // Send notification email to the owner
+          var nombre = data[i][3] || "Usuario";
+          var message = `Hola ${nombre},\n\nTu pago para el ${"Plan " + plan} ha sido procesado correctamente.\nTu plan estará activo hasta el ${formattedDate}.\n\nGracias por tu suscripción.\n\nSaludos,\nEquipo Alqui Ya`;
+          MailApp.sendEmail(email, "Confirmación de Pago - Alqui Ya", message);
+
+          SpreadsheetApp.flush(); // Forzar sincronización
+          Logger.log("✅ Plan actualizado para " + email + ": " + plan + ", Payment ID: " + paymentId);
+          return {
+            success: true,
+            message: "Plan actualizado correctamente",
+            plan: plan,
+            email: email,
+            estadoPago: estadoPago,
+            fechaVencimiento: formattedDate,
+            descripcionPago: descPago
+          };
+        }
+      }
+      Logger.log("❌ Error en updatePlan: Dueño no encontrado - " + email);
+      return { success: false, error: "Dueño no encontrado" };
+    } else {
+      Logger.log("❌ Error en updatePlan: Pago no aprobado - Status: " + (paymentData.status || "Desconocido") + ", Response Code: " + response.getResponseCode());
+      return { success: false, error: "El pago no fue aprobado o no se encontró" };
+    }
+  } catch (err) {
+    Logger.log("❌ Error en updatePlan: Error al verificar el pago - " + err.message);
+    return { success: false, error: "Error al verificar el pago: " + err.message };
+  }
+}
+
+/* --- Callbacks JSONP --- */
 function alquilerAgregado(res) {
-  if (res.success) {
-    alert("✅ Alquiler agregado con éxito");
-    resetForm();
-    cargarAlquileres();
-    cargarEstadoPlan();
-  } else {
-    alert("❌ Error al agregar: " + (res.error || "desconocido"));
-  }
+  if (res.success) return { success: true, message: "Alquiler agregado con éxito" };
+  else return { success: false, error: res.error || "Error al agregar el alquiler" };
 }
 
 function alquilerEditado(res) {
-  const msgEl = document.getElementById("msg");
-  if (res.success) {
-    msgEl.textContent = "✅ Cambios guardados correctamente";
-    resetForm();
-    cargarAlquileres();
-  } else {
-    msgEl.textContent = "❌ Error al editar: " + (res.error || "desconocido");
+  if (res.success) return { success: true, message: "Alquiler editado con éxito" };
+  else return { success: false, error: res.error || "Error al editar el alquiler" };
+}
+
+/* --- Trigger diario para notificaciones --- */
+function enviarNotificaciones() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const loginSheet = ss.getSheetByName("Login");
+  const data = loginSheet.getDataRange().getValues();
+  const hoy = new Date();
+
+  for (var i = 1; i < data.length; i++) {
+    const email = data[i][1];
+    const nombre = data[i][3];
+    const fechaVencimiento = new Date(data[i][7]);
+    const diffDias = Math.ceil((fechaVencimiento - hoy) / (1000 * 60 * 60 * 24));
+
+    if (diffDias === 5) {
+      MailApp.sendEmail(email, "Tu plan vence en 5 días", `Hola ${nombre}, tu plan vence en 5 días. Renueva para no perder servicios.`);
+    }
+    if (diffDias <= 0) {
+      MailApp.sendEmail(email, "Plan vencido", `Hola ${nombre}, tu plan está vencido. Renueva para seguir mostrando tus deptos.`);
+      loginSheet.getRange(i + 1, 7).setValue("Pago vencido");
+    }
   }
 }
 
-// === EDITAR CUENTA ===
-function abrirModalEditarCuenta() {
-  document.getElementById("modalEditarCuenta").style.display = "block";
-  cargarDatosCuenta();
-}
+/* --- Obtener información de login --- */
+function getLoginInfo(e) {
+  var email = e.parameter.email;
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var loginSheet = ss.getSheetByName("Login");
+  var loginData = loginSheet.getDataRange().getValues();
+  var alquileresSheet = ss.getSheetByName("Alquileres");
+  var alquileresData = alquileresSheet.getDataRange().getValues();
+  var result = [];
 
-function cerrarModalEditarCuenta() {
-  document.getElementById("modalEditarCuenta").style.display = "none";
-  document.getElementById("emailEditar").value = "";
-  document.getElementById("nombreEditar").value = "";
-  document.getElementById("contactoEditar").value = "";
-  document.getElementById("passwordEditar").value = "";
-  document.getElementById("codigoPaisEditar").value = "+549";
-  document.getElementById("msgEditarCuenta").textContent = "";
-  document.getElementById("passwordEditar").type = "password";
-  document.querySelector(".toggle-password").textContent = "👁";
-}
-
-function cargarDatosCuenta() {
-  const email = localStorage.getItem("dueno");
-  const msgEl = document.getElementById("msgEditarCuenta");
-  const script = document.createElement("script");
-  script.src = `${API_URL}?action=getLoginInfo&email=${encodeURIComponent(email)}&callback=mostrarDatosCuenta`;
-  document.body.appendChild(script);
-}
-
-function mostrarDatosCuenta(res) {
-  const msgEl = document.getElementById("msgEditarCuenta");
-  const countryCodes = ["+549", "+55", "+598", "+56", "+595"];
-  if (res.success && res.data && res.data[0]) {
-    const login = res.data[0];
-    document.getElementById("emailEditar").value = login.Email || "";
-    document.getElementById("nombreEditar").value = login.Nombre || "";
-    document.getElementById("passwordEditar").value = login.Password || "";
-    const contacto = login.Contacto || "";
-    let codigoPais = "+549"; // Default to Argentina
-    let numero = contacto;
-    for (const code of countryCodes) {
-      if (contacto.startsWith(code)) {
-        codigoPais = code;
-        numero = contacto.slice(code.length);
-        break;
+  for (var i = 1; i < loginData.length; i++) {
+    if (loginData[i][1] === email) {
+      var plan = loginData[i][5] || "Basico";
+      var estadoPago = loginData[i][6] || "Pago al día";
+      var vencimiento = loginData[i][7] ? Utilities.formatDate(new Date(loginData[i][7]), Session.getScriptTimeZone(), "yyyy-MM-dd") : "";
+      var deptosActivos = 0;
+      for (var j = 1; j < alquileresData.length; j++) {
+        if (alquileresData[j][0] === "alquiler" && alquileresData[j][1] === email && alquileresData[j][9] === "Activo") {
+          deptosActivos++;
+        }
       }
+
+      result.push({
+        Email: loginData[i][1],
+        Nombre: loginData[i][3] || "",
+        Contacto: loginData[i][4] || "",
+        Password: loginData[i][2] || "",
+        Plan: plan,
+        EstadoPago: estadoPago,
+        Vencimiento: vencimiento,
+        deptosActivos: deptosActivos,
+        data: alquileresData.slice(1).filter(r => r[0] === "alquiler" && r[1] === email).map((r, index) => {
+          return {
+            row: index + 2,
+            Direccion: r[2],
+            "Nro Ambientes": r[5],
+            Precio: r[6],
+            Mascotas: r[12],
+            Estado: r[9],
+            Fotos: r[8],
+            InfoIngreso: r[10],
+            Detalles: r[11]
+          };
+        })
+      });
+      break;
     }
-    document.getElementById("codigoPaisEditar").value = codigoPais;
-    document.getElementById("contactoEditar").value = numero;
-    msgEl.textContent = "";
-  } else {
-    msgEl.style.color = "red";
-    msgEl.textContent = "❌ Error al cargar los datos de la cuenta";
-    setTimeout(() => { msgEl.textContent = ""; }, 3000);
   }
+
+  return { success: true, data: result };
 }
 
-function togglePasswordVisibility() {
-  const passwordInput = document.getElementById("passwordEditar");
-  const toggleButton = document.querySelector(".toggle-password");
-  if (passwordInput.type === "password") {
-    passwordInput.type = "text";
-    toggleButton.textContent = "👁‍🗨";
-  } else {
-    passwordInput.type = "password";
-    toggleButton.textContent = "👁";
+/* --- Obtener planes dinámicamente --- */
+function getPlanes() {
+  const planes = getPlanesDinamicos();
+  var planesArray = [];
+  for (var key in planes) {
+    planesArray.push({ nombre: key, ...planes[key] });
   }
+  return { success: true, data: planesArray };
 }
 
-async function editarCuenta() {
-  const email = localStorage.getItem("dueno");
-  const newEmail = document.getElementById("emailEditar").value;
-  const nombre = document.getElementById("nombreEditar").value;
-  const codigoPais = document.getElementById("codigoPaisEditar").value;
-  const contacto = document.getElementById("contactoEditar").value;
-  const password = document.getElementById("passwordEditar").value;
-  const msgEl = document.getElementById("msgEditarCuenta");
+/* --- Editar datos de un dueño --- */
+function editarDueno(e) {
+  var email = e.parameter.email;
+  var newEmail = e.parameter.newEmail;
+  var nombre = e.parameter.nombre;
+  var contacto = e.parameter.contacto;
+  var password = e.parameter.password;
 
-  if (!newEmail && !nombre && !contacto && !password) {
-    msgEl.style.color = "red";
-    msgEl.textContent = "Debes completar al menos un campo para actualizar.";
-    return;
-  }
-  if (newEmail && !newEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-    msgEl.style.color = "red";
-    msgEl.textContent = "Ingresa un email válido.";
-    return;
-  }
-  if (password && password.length < 6) {
-    msgEl.style.color = "red";
-    msgEl.textContent = "La contraseña debe tener al menos 6 caracteres.";
-    return;
-  }
-  if (contacto && !contacto.match(/^\d{6,}$/)) {
-    msgEl.style.color = "red";
-    msgEl.textContent = "El número de teléfono debe contener solo dígitos y al menos 6 caracteres.";
-    return;
-  }
+  if (!email)
+    return { success: false, error: "Falta el email del dueño" };
 
-  msgEl.textContent = "Guardando cambios...";
-  try {
-    let query = `${API_URL}?action=editarDueno&email=${encodeURIComponent(email)}`;
-    if (newEmail) query += `&newEmail=${encodeURIComponent(newEmail)}`;
-    if (nombre) query += `&nombre=${encodeURIComponent(nombre)}`;
-    if (contacto) query += `&contacto=${encodeURIComponent(codigoPais + contacto)}`;
-    if (password) query += `&password=${encodeURIComponent(password)}`;
-    const response = await fetch(query);
-    const res = await response.json();
-    if (res.success) {
-      msgEl.style.color = "green";
-      msgEl.textContent = "✅ Cambios guardados con éxito";
-      if (newEmail) localStorage.setItem("dueno", newEmail);
-      setTimeout(cerrarModalEditarCuenta, 1000);
-    } else {
-      msgEl.style.color = "red";
-      msgEl.textContent = "❌ Error al guardar: " + (res.error || "desconocido");
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var loginSheet = ss.getSheetByName("Login");
+  var data = loginSheet.getDataRange().getValues();
+  var rowIndex = -1;
+
+  // Find the owner
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][1] === email) {
+      rowIndex = i + 1;
+      break;
     }
-  } catch (err) {
-    msgEl.style.color = "red";
-    msgEl.textContent = "❌ Error al guardar: " + (err.message || "Error de conexión");
-    console.error("Error en edición de cuenta:", err);
   }
+
+  if (rowIndex === -1)
+    return { success: false, error: "Dueño no encontrado" };
+
+  // Validate newEmail if provided
+  if (newEmail) {
+    if (!newEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/))
+      return { success: false, error: "El nuevo email no es válido" };
+
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][1] === newEmail && i + 1 !== rowIndex)
+        return { success: false, error: "El nuevo email ya está registrado" };
+    }
+    loginSheet.getRange(rowIndex, 2).setValue(newEmail); // Update Email (column B)
+  }
+
+  // Validate and update password if provided
+  if (password && password.length < 6)
+    return { success: false, error: "La contraseña debe tener al menos 6 caracteres" };
+  if (password)
+    loginSheet.getRange(rowIndex, 3).setValue(password); // Update Password (column C)
+
+  // Validate and update nombre if provided
+  if (nombre)
+    loginSheet.getRange(rowIndex, 4).setValue(nombre); // Update Nombre (column D)
+
+  // Validate and update contacto if provided
+  if (contacto && !contacto.match(/^\+\d+$/))
+    return { success: false, error: "El contacto debe empezar con '+' seguido de dígitos" };
+  if (contacto)
+    loginSheet.getRange(rowIndex, 5).setValue(contacto); // Update Contacto (column E)
+
+  SpreadsheetApp.flush(); // Forzar sincronización
+  return { success: true, message: "Datos del dueño actualizados correctamente" };
 }
-</script>
-</body>
-</html>
+
+/* --- Obtener planes dinámicamente --- */
+function getPlanes() {
+  const planes = getPlanesDinamicos();
+  var planesArray = [];
+  for (var key in planes) {
+    planesArray.push({ nombre: key, ...planes[key] });
+  }
+  return { success: true, data: planesArray };
+}
+
+/* --- Editar datos de un dueño --- */
+function editarDueno(e) {
+  var email = e.parameter.email;
+  var newEmail = e.parameter.newEmail;
+  var nombre = e.parameter.nombre;
+  var contacto = e.parameter.contacto;
+  var password = e.parameter.password;
+
+  if (!email)
+    return { success: false, error: "Falta el email del dueño" };
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var loginSheet = ss.getSheetByName("Login");
+  var data = loginSheet.getDataRange().getValues();
+  var rowIndex = -1;
+
+  // Find the owner
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][1] === email) {
+      rowIndex = i + 1;
+      break;
+    }
+  }
+
+  if (rowIndex === -1)
+    return { success: false, error: "Dueño no encontrado" };
+
+  // Validate newEmail if provided
+  if (newEmail) {
+    if (!newEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/))
+      return { success: false, error: "El nuevo email no es válido" };
+
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][1] === newEmail && i + 1 !== rowIndex)
+        return { success: false, error: "El nuevo email ya está registrado" };
+    }
+    loginSheet.getRange(rowIndex, 2).setValue(newEmail); // Update Email (column B)
+  }
+
+  // Validate and update password if provided
+  if (password && password.length < 6)
+    return { success: false, error: "La contraseña debe tener al menos 6 caracteres" };
+  if (password)
+    loginSheet.getRange(rowIndex, 3).setValue(password); // Update Password (column C)
+
+  // Validate and update nombre if provided
+  if (nombre)
+    loginSheet.getRange(rowIndex, 4).setValue(nombre); // Update Nombre (column D)
+
+  // Validate and update contacto if provided
+  if (contacto && !contacto.match(/^\+\d+$/))
+    return { success: false, error: "El contacto debe empezar con '+' seguido de dígitos" };
+  if (contacto)
+    loginSheet.getRange(rowIndex, 5).setValue(contacto); // Update Contacto (column E)
+
+  SpreadsheetApp.flush(); // Forzar sincronización
+  return { success: true, message: "Datos del dueño actualizados correctamente" };
+}
