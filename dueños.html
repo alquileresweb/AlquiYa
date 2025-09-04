@@ -228,6 +228,7 @@ let planActual = null;
 let limiteDeptos = 0;
 let deptosActivos = 0;
 let preciosPlanes = {Basico: 0, Plus: 0, Full: 0};
+let pollingInterval = null;
 
 // === FORMATO DE PRECIO ===
 function formatoPrecio(valor) {
@@ -302,50 +303,41 @@ window.onload = function() {
   cargarAlquileres();
   cargarPreciosPlanes();
   cargarDatosCuenta();
-  checkPaymentStatus();
 }
 
-// === VERIFICAR ESTADO DE PAGO DESPUÉS DE REDIRECCIÓN ===
-async function checkPaymentStatus() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const status = urlParams.get("status");
-  const paymentId = urlParams.get("payment_id");
-  const plan = urlParams.get("plan");
-  const email = localStorage.getItem("dueno");
+// === POLLING PARA ESTADO DE PAGO ===
+async function pollPaymentStatus(paymentId, plan, email) {
   const planStatusEl = document.getElementById("planStatus");
-
-  if (status && paymentId && plan && email) {
-    planStatusEl.innerHTML = `<span class="estado-msg loading">Verificando pago ⏳</span>`;
+  pollingInterval = setInterval(async () => {
     try {
-      // Verificar el estado del pago con Mercado Pago
-      const paymentResponse = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
-        headers: { "Authorization": `Bearer ${MP_BEARER}` }
-      });
-      const paymentData = await paymentResponse.json();
-      
-      if (paymentData.status === "approved") {
-        // Calcular fecha de vencimiento (30 días desde hoy)
-        const today = new Date();
-        const vencimiento = new Date(today.setDate(today.getDate() + 30)).toLocaleDateString("es-AR");
-        const descripcionPago = `Pago plan ${plan} - ID: ${paymentId}`;
-        
-        // Actualizar la hoja Login
-        const updateResponse = await fetch(`${API_URL}?action=updatePlan&email=${encodeURIComponent(email)}&plan=${encodeURIComponent(plan)}&estadoPago=Aprobado&fechaVencimiento=${encodeURIComponent(vencimiento)}&descripcionPago=${encodeURIComponent(descripcionPago)}`);
-        const updateData = await updateResponse.json();
-        
-        planActualizado(updateData);
+      const response = await fetch(`${API_URL}?action=checkPaymentStatus&paymentId=${encodeURIComponent(paymentId)}&email=${encodeURIComponent(email)}`);
+      const data = await response.json();
+      if (data.success && data.status) {
+        if (data.status === "approved") {
+          clearInterval(pollingInterval);
+          const vencimiento = data.fechaVencimiento || new Date(new Date().setDate(new Date().getDate() + 30)).toLocaleDateString("es-AR");
+          const descripcionPago = `Pago plan ${plan} - ID: ${paymentId}`;
+          planStatusEl.innerHTML = `<span class="estado-msg success">✅ Pago aprobado. Actualizando plan...</span>`;
+          const updateResponse = await fetch(`${API_URL}?action=updatePlan&email=${encodeURIComponent(email)}&plan=${encodeURIComponent(plan)}&estadoPago=Aprobado&fechaVencimiento=${encodeURIComponent(vencimiento)}&descripcionPago=${encodeURIComponent(descripcionPago)}`);
+          const updateData = await updateResponse.json();
+          planActualizado(updateData);
+        } else if (data.status === "pending") {
+          planStatusEl.innerHTML = `<span class="estado-msg loading">⏳ Pago pendiente. Esperando confirmación...</span>`;
+        } else {
+          clearInterval(pollingInterval);
+          planStatusEl.innerHTML = `<span class="estado-msg error">❌ Pago ${data.status || "desconocido"}. Intenta de nuevo.</span>`;
+          setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
+        }
       } else {
-        throw new Error(`Estado del pago: ${paymentData.status}`);
+        console.error("Error en polling:", data.error || "desconocido");
       }
-      
-      // Limpiar URL después de procesar
-      window.history.replaceState({}, document.title, window.location.pathname);
     } catch (err) {
-      console.error("Error verificando pago:", err);
+      console.error("Error en polling:", err);
+      clearInterval(pollingInterval);
       planStatusEl.innerHTML = `<span class="estado-msg error">❌ Error al verificar el pago: ${err.message || "Error de conexión"}</span>`;
       setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
     }
-  }
+  }, 5000); // Poll cada 5 segundos
 }
 
 // === CARGAR PRECIOS PLANES ===
@@ -401,6 +393,7 @@ function cerrarModalPlan() {
   document.getElementById("mpBtnBasico").innerHTML = "";
   document.getElementById("mpBtnPlus").innerHTML = "";
   document.getElementById("mpBtnFull").innerHTML = "";
+  if (pollingInterval) clearInterval(pollingInterval);
 }
 
 async function seleccionarPlan(plan) {
@@ -413,12 +406,12 @@ async function seleccionarPlan(plan) {
     payer: { email: email },
     external_reference: email + "_" + plan,
     back_urls: {
-      success: `${window.location.href}?status=approved&plan=${plan}&payment_id={payment_id}`,
-      failure: `${window.location.href}?status=failed&plan=${plan}&payment_id={payment_id}`,
-      pending: `${window.location.href}?status=pending&plan=${plan}&payment_id={payment_id}`
+      success: window.location.href,
+      failure: window.location.href,
+      pending: window.location.href
     },
     auto_return: "approved",
-    notification_url: `${API_URL}?action=updatePlan`
+    notification_url: `${API_URL}?action=webhook`
   };
   try {
     const response = await fetch("https://api.mercadopago.com/checkout/preferences", {
@@ -427,10 +420,11 @@ async function seleccionarPlan(plan) {
       body: JSON.stringify(preferenceData)
     });
     const res = await response.json();
-    if (res.init_point) {
+    if (res.init_point && res.id) {
       const mpContainer = document.getElementById("mpBtn" + plan);
       mpContainer.innerHTML = `<iframe src="${res.init_point}" width="100%" height="650" frameborder="0" allowtransparency="true"></iframe>`;
-      planStatusEl.innerHTML = "";
+      planStatusEl.innerHTML = `<span class="estado-msg loading">⏳ Iniciando pago. Esperando confirmación...</span>`;
+      pollPaymentStatus(res.id, plan, email); // Iniciar polling con el preference_id
     } else {
       console.error("Error MP:", res);
       planStatusEl.innerHTML = `<span class="estado-msg error">❌ No se pudo generar el botón de pago. Revisa la consola.</span>`;
