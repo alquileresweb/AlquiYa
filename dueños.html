@@ -222,7 +222,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
 const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
 const GEOCODE_KEY = "AIzaSyAisqYSTfpQ_rqqutAomzitD2v_dtKYtLE";
-const MP_BEARER = "APP_USR-595288641172928-010710-d915bce4137b3ee26e0c6e04873f1ac1-695835795";
+const MP_BEARER = "APP_USR-3201395671266724-090211-f1480967257e9dfd0557cb72e22eae81-2213255576";
 let imagenesBase64 = [];
 let planActual = null;
 let limiteDeptos = 0;
@@ -306,7 +306,7 @@ window.onload = function() {
 }
 
 // === VERIFICAR ESTADO DE PAGO DESPUÉS DE REDIRECCIÓN ===
-function checkPaymentStatus() {
+async function checkPaymentStatus() {
   const urlParams = new URLSearchParams(window.location.search);
   const status = urlParams.get("status");
   const paymentId = urlParams.get("payment_id");
@@ -316,12 +316,16 @@ function checkPaymentStatus() {
 
   if (status && paymentId && plan && email) {
     planStatusEl.innerHTML = `<span class="estado-msg loading">Verificando pago ⏳</span>`;
-    // Use JSONP to handle the response
-    const script = document.createElement("script");
-    script.src = `${API_URL}?action=updatePlan&email=${encodeURIComponent(email)}&plan=${encodeURIComponent(plan)}&payment_id=${paymentId}&callback=planActualizado`;
-    document.body.appendChild(script);
-    // Clean URL after processing
-    window.history.replaceState({}, document.title, window.location.pathname);
+    try {
+      const response = await fetch(`${API_URL}?action=updatePlan&email=${encodeURIComponent(email)}&plan=${encodeURIComponent(plan)}&payment_id=${paymentId}&callback=planActualizado`);
+      const res = await response.json();
+      planActualizado(res);
+      // Clean URL after processing
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } catch (err) {
+      planStatusEl.innerHTML = `<span class="estado-msg error">❌ Error al verificar el pago: ${err.message || "Error de conexión"}</span>`;
+      setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
+    }
   }
 }
 
