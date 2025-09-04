@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -219,7 +218,7 @@ cursor: pointer;
 
 <script>
 // === CONSTANTES Y VARIABLES ===
-const API_URL = "https://your-proxy.vercel.app/proxy"; // Replace with your actual proxy URL
+const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
 const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
 const GEOCODE_KEY = "AIzaSyAisqYSTfpQ_rqqutAomzitD2v_dtKYtLE";
@@ -317,16 +316,7 @@ async function checkPaymentStatus() {
   if (status && paymentId && plan && email) {
     planStatusEl.innerHTML = `<span class="estado-msg loading">Verificando pago ⏳</span>`;
     try {
-      const response = await fetch(`${API_URL}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "updatePlan",
-          email: email,
-          plan: plan,
-          payment_id: paymentId
-        })
-      });
+      const response = await fetch(`${API_URL}?action=updatePlan&email=${encodeURIComponent(email)}&plan=${encodeURIComponent(plan)}&payment_id=${paymentId}&callback=planActualizado`);
       const res = await response.json();
       planActualizado(res);
       // Clean URL after processing
@@ -406,7 +396,6 @@ async function seleccionarPlan(plan) {
   const planStatusEl = document.getElementById("planStatus");
   planStatusEl.innerHTML = `<span class="estado-msg loading">Procesando pago ⏳</span>`;
   const preferenceData = {
-    action: "createPreference",
     items: [{ title: `Plan ${plan}`, quantity: 1, unit_price: parseFloat(precio), currency_id: "ARS" }],
     payer: { email: email },
     external_reference: email + "_" + plan,
@@ -416,18 +405,25 @@ async function seleccionarPlan(plan) {
       pending: `${window.location.href}?status=pending&plan=${plan}&payment_id={payment_id}`
     },
     auto_return: "approved",
-    notification_url: `${API_URL}`
+    notification_url: `${API_URL}?action=updatePlan`
   };
   try {
+    const params = new URLSearchParams();
+    params.append("action", "createPreference");
+    params.append("preferenceData", JSON.stringify(preferenceData));
     const response = await fetch(API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(preferenceData)
+      body: params
     });
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+    // Log the raw response text for debugging if JSON parsing fails
+    const responseText = await response.text();
+    let res;
+    try {
+      res = JSON.parse(responseText);
+    } catch (jsonError) {
+      console.error("Error parsing JSON response:", jsonError, "Raw response:", responseText);
+      throw new Error("Respuesta del servidor no es JSON válido");
     }
-    const res = await response.json();
     if (res.success && res.sandbox_init_point) {
       const mpContainer = document.getElementById("mpBtn" + plan);
       mpContainer.innerHTML = `<iframe src="${res.sandbox_init_point}" width="100%" height="650" frameborder="0" allowtransparency="true"></iframe>`;
@@ -438,8 +434,8 @@ async function seleccionarPlan(plan) {
       setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
     }
   } catch (err) {
-    console.error("Error MP:", err);
-    planStatusEl.innerHTML = `<span class="estado-msg error">❌ Error al procesar el pago: ${err.message || "Error de conexión"}. Por favor, intenta de nuevo.</span>`;
+    console.error("Error MP:", err, "Raw response (if available):", err.responseText || "No response text");
+    planStatusEl.innerHTML = `<span class="estado-msg error">❌ Error al procesar el pago: ${err.message || "Error desconocido"}. Por favor, intenta de nuevo.</span>`;
     setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
   }
 }
@@ -773,4 +769,3 @@ async function editarCuenta() {
 </script>
 </body>
 </html>
-```
