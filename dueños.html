@@ -409,24 +409,24 @@ async function seleccionarPlan(plan) {
     notification_url: `${API_URL}?action=updatePlan`
   };
   try {
-    const response = await fetch("https://sandbox.mercadopago.com.ar/checkout/preferences", {
+    const response = await fetch(`${API_URL}?action=createPreference&plan=${encodeURIComponent(plan)}&email=${encodeURIComponent(email)}&precio=${encodeURIComponent(precio)}`, {
       method: "POST",
-      headers: { "Authorization": "Bearer " + MP_BEARER, "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(preferenceData)
     });
     const res = await response.json();
-    if (res.sandbox_init_point) {
+    if (res.success && res.sandbox_init_point) {
       const mpContainer = document.getElementById("mpBtn" + plan);
       mpContainer.innerHTML = `<iframe src="${res.sandbox_init_point}" width="100%" height="650" frameborder="0" allowtransparency="true"></iframe>`;
       planStatusEl.innerHTML = "";
     } else {
       console.error("Error MP:", res);
-      planStatusEl.innerHTML = `<span class="estado-msg error">❌ No se pudo generar el botón de pago. Revisa la consola.</span>`;
+      planStatusEl.innerHTML = `<span class="estado-msg error">❌ No se pudo generar el botón de pago: ${res.error || "Error desconocido"}.</span>`;
       setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
     }
   } catch (err) {
     console.error("Error MP:", err);
-    planStatusEl.innerHTML = `<span class="estado-msg error">❌ Error al procesar el pago. Por favor, intenta de nuevo.</span>`;
+    planStatusEl.innerHTML = `<span class="estado-msg error">❌ Error al procesar el pago: ${err.message || "Error de conexión"}.</span>`;
     setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
   }
 }
