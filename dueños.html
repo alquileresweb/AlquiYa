@@ -306,7 +306,7 @@ window.onload = function() {
 }
 
 // === VERIFICAR ESTADO DE PAGO DESPUÉS DE REDIRECCIÓN ===
-async function checkPaymentStatus() {
+function checkPaymentStatus() {
   const urlParams = new URLSearchParams(window.location.search);
   const status = urlParams.get("status");
   const paymentId = urlParams.get("payment_id");
@@ -316,16 +316,12 @@ async function checkPaymentStatus() {
 
   if (status && paymentId && plan && email) {
     planStatusEl.innerHTML = `<span class="estado-msg loading">Verificando pago ⏳</span>`;
-    try {
-      const response = await fetch(`${API_URL}?action=updatePlan&email=${encodeURIComponent(email)}&plan=${encodeURIComponent(plan)}&payment_id=${paymentId}&callback=planActualizado`);
-      const res = await response.json();
-      planActualizado(res);
-      // Clean URL after processing
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } catch (err) {
-      planStatusEl.innerHTML = `<span class="estado-msg error">❌ Error al verificar el pago: ${err.message || "Error de conexión"}</span>`;
-      setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
-    }
+    // Use JSONP to handle the response
+    const script = document.createElement("script");
+    script.src = `${API_URL}?action=updatePlan&email=${encodeURIComponent(email)}&plan=${encodeURIComponent(plan)}&payment_id=${paymentId}&callback=planActualizado`;
+    document.body.appendChild(script);
+    // Clean URL after processing
+    window.history.replaceState({}, document.title, window.location.pathname);
   }
 }
 
