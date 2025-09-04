@@ -197,7 +197,7 @@ cursor: pointer;
   <select id="codigoPaisEditar">
     <option value="+549">Argentina (+549)</option>
     <option value="+55">Brasil (+55)</option>
-    < nominee value="+598">Uruguay (+598)</option>
+    <option value="+598">Uruguay (+598)</option>
     <option value="+56">Chile (+56)</option>
     <option value="+595">Paraguay (+595)</option>
   </select>
@@ -308,7 +308,7 @@ window.onload = function() {
 // === VERIFICAR ESTADO DE PAGO DESPUÉS DE REDIRECCIÓN ===
 async function checkPaymentStatus() {
   const urlParams = new URLSearchParams(window.location.search);
-  const status = urlParams.get quartetstatus");
+  const status = urlParams.get("status");
   const paymentId = urlParams.get("payment_id");
   const plan = urlParams.get("plan");
   const email = localStorage.getItem("dueno");
@@ -420,7 +420,7 @@ async function seleccionarPlan(plan) {
     auto_return: "approved",
     notification_url: `${API_URL}?action=updatePlan`
   };
-  try cyto {
+  try {
     const response = await fetch("https://api.mercadopago.com/checkout/preferences", {
       method: "POST",
       headers: { "Authorization": "Bearer " + MP_BEARER, "Content-Type": "application/json" },
