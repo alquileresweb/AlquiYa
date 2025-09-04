@@ -222,7 +222,6 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
 const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
 const GEOCODE_KEY = "AIzaSyAisqYSTfpQ_rqqutAomzitD2v_dtKYtLE";
-const MP_BEARER = "APP_USR-3201395671266724-090211-f1480967257e9dfd0557cb72e22eae81-2213255576";
 let imagenesBase64 = [];
 let planActual = null;
 let limiteDeptos = 0;
@@ -409,7 +408,7 @@ async function seleccionarPlan(plan) {
     notification_url: `${API_URL}?action=updatePlan`
   };
   try {
-    const response = await fetch(`${API_URL}?action=createPreference&plan=${encodeURIComponent(plan)}&email=${encodeURIComponent(email)}&precio=${encodeURIComponent(precio)}`, {
+    const response = await fetch(`${API_URL}?action=createPreference`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(preferenceData)
@@ -420,13 +419,13 @@ async function seleccionarPlan(plan) {
       mpContainer.innerHTML = `<iframe src="${res.sandbox_init_point}" width="100%" height="650" frameborder="0" allowtransparency="true"></iframe>`;
       planStatusEl.innerHTML = "";
     } else {
-      console.error("Error MP:", res);
-      planStatusEl.innerHTML = `<span class="estado-msg error">❌ No se pudo generar el botón de pago: ${res.error || "Error desconocido"}.</span>`;
+      console.error("Error MP:", res.error || "No se recibió sandbox_init_point");
+      planStatusEl.innerHTML = `<span class="estado-msg error">❌ No se pudo generar el botón de pago. Revisa la consola.</span>`;
       setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
     }
   } catch (err) {
     console.error("Error MP:", err);
-    planStatusEl.innerHTML = `<span class="estado-msg error">❌ Error al procesar el pago: ${err.message || "Error de conexión"}.</span>`;
+    planStatusEl.innerHTML = `<span class="estado-msg error">❌ Error al procesar el pago. Por favor, intenta de nuevo.</span>`;
     setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
   }
 }
