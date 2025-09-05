@@ -519,11 +519,11 @@ function registrarDueno(){
   formData.append("password", password);
   formData.append("contacto", codigoPais + contacto);
 
-  // Use thingproxy.freeboard.io proxy to bypass CORS restriction
-  const proxyUrl = "https://thingproxy.freeboard.io/fetch/";
+  // Use corsproxy.io to bypass CORS restriction
+  const proxyUrl = "https://corsproxy.io/?";
   const targetUrl = webAppURL;
 
-  fetch(proxyUrl + targetUrl, { 
+  fetch(proxyUrl + encodeURIComponent(targetUrl), { 
     method: "POST", 
     body: formData,
     headers: {
