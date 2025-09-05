@@ -6,11 +6,11 @@
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-SSJ5DG33JK"></script>
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
 
-  gtag('config', 'G-SSJ5DG33JK');
+gtag('config', 'G-SSJ5DG33JK');
 </script>
 <link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
@@ -335,163 +335,151 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
 /* =========================
-   CONFIG
+CONFIG
 ========================= */
 const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 const cloudinaryURL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
 const cloudinaryUploadPreset = "preset_alquileres";
 
 /* =========================
-   MAPA
+MAPA
 ========================= */
 let map = L.map('map').setView([-28.5503, -56.0406],14);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
 let markersLayer = L.layerGroup().addTo(map);
 
 /* =========================
-   UTILS
+UTILS
 ========================= */
 function getField(obj, keys){
-  for (const k of keys){
-    if (Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null && obj[k] !== "") return obj[k];
-  }
-  return "";
+for (const k of keys){
+if (Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null && obj[k] !== "") return obj[k];
+}
+return "";
 }
 function toNumber(val){
-  if (typeof val === "number") return val;
-  if (!val) return 0;
-  const clean = String(val).replace(/[^\d.,-]/g,"").replace(/\./g,"").replace(",",".");
-  const num = parseFloat(clean);
-  return isNaN(num) ? 0 : num;
+if (typeof val === "number") return val;
+if (!val) return 0;
+const clean = String(val).replace(/[^\d.,-]/g,"").replace(/\./g,"").replace(",",".");
+const num = parseFloat(clean);
+return isNaN(num) ? 0 : num;
 }
 function toInt(val, def=0){
-  const n = parseInt(val,10);
-  return isNaN(n) ? def : n;
+const n = parseInt(val,10);
+return isNaN(n) ? def : n;
 }
 
 /* =========================
-   FORMATO MONEDA
+FORMATO MONEDA
 ========================= */
 function formatCurrency(el){
-  let selectionStart = el.selectionStart;
-  let raw = String(el.value || "");
-  let digits = raw.replace(/\D/g,'');
-  if(digits === '') { el.value = ''; return; }
-  let n = parseInt(digits, 10);
-  if(isNaN(n)) { el.value = ''; return; }
-  let formatted = n.toLocaleString('es-AR');
-  el.value = '$' + formatted;
-  try { el.setSelectionRange(el.value.length, el.value.length); } catch(e){}
+let selectionStart = el.selectionStart;
+let raw = String(el.value || "");
+let digits = raw.replace(/\D/g,'');
+if(digits === '') { el.value = ''; return; }
+let n = parseInt(digits, 10);
+if(isNaN(n)) { el.value = ''; return; }
+let formatted = n.toLocaleString('es-AR');
+el.value = '$' + formatted;
+try { el.setSelectionRange(el.value.length, el.value.length); } catch(e){}
 }
 function parseCurrency(str){
-  if(!str) return 0;
-  let cleaned = String(str).replace(/[^\d]/g,'');
-  if(cleaned === '') return 0;
-  let num = parseInt(cleaned,10);
-  return isNaN(num) ? 0 : num;
+if(!str) return 0;
+let cleaned = String(str).replace(/[^\d]/g,'');
+if(cleaned === '') return 0;
+let num = parseInt(cleaned,10);
+return isNaN(num) ? 0 : num;
 }
 
 /* =========================
-   UI NAV
+UI NAV
 ========================= */
 function toggleFiltros(){
-  const f = document.getElementById("filtros");
-  f.style.display = (f.style.display==="none"||f.style.display==="") ? "flex":"none";
+const f = document.getElementById("filtros");
+f.style.display = (f.style.display==="none"||f.style.display==="") ? "flex":"none";
 }
 function mostrarMapa(){
-  document.getElementById("map").style.display="block";
-  document.getElementById("login").style.display="none";
-  document.getElementById("panel-dueno").style.display="none";
-  document.getElementById("registro").style.display="none";
-  document.getElementById("alquiler-detalle").style.display="none";
-  document.getElementById("boton-filtros-container").style.display = "block";
-  document.getElementById("loading-msg").style.display = "none";
-  document.getElementById("rapiclean-img-container").style.display = "block";
-  map.invalidateSize();
-  cargarAlquileres();
+document.getElementById("map").style.display="block";
+document.getElementById("login").style.display="none";
+document.getElementById("panel-dueno").style.display="none";
+document.getElementById("registro").style.display="none";
+document.getElementById("alquiler-detalle").style.display="none";
+document.getElementById("boton-filtros-container").style.display = "block";
+document.getElementById("loading-msg").style.display = "none";
+document.getElementById("rapiclean-img-container").style.display = "block";
+map.invalidateSize();
+cargarAlquileres();
 }
 function mostrarLogin(){
-  document.getElementById("map").style.display="none";
-  document.getElementById("filtros").style.display="none";
-  document.getElementById("login").style.display="block";
-  document.getElementById("panel-dueno").style.display="none";
-  document.getElementById("registro").style.display="none";
-  document.getElementById("alquiler-detalle").style.display="none";
-  document.getElementById("boton-filtros-container").style.display = "none";
-  document.getElementById("loading-msg").style.display = "none";
-  document.getElementById("rapiclean-img-container").style.display = "none";
+document.getElementById("map").style.display="none";
+document.getElementById("filtros").style.display="none";
+document.getElementById("login").style.display="block";
+document.getElementById("panel-dueno").style.display="none";
+document.getElementById("registro").style.display="none";
+document.getElementById("alquiler-detalle").style.display="none";
+document.getElementById("boton-filtros-container").style.display = "none";
+document.getElementById("loading-msg").style.display = "none";
+document.getElementById("rapiclean-img-container").style.display = "none";
 }
 function mostrarRegistro(){
-  document.getElementById("login").style.display="none";
-  document.getElementById("registro").style.display="block";
-  document.getElementById("map").style.display="none";
-  document.getElementById("filtros").style.display="none";
-  document.getElementById("panel-dueno").style.display="none";
-  document.getElementById("alquiler-detalle").style.display="none";
-  document.getElementById("boton-filtros-container").style.display = "none";
-  document.getElementById("loading-msg").style.display = "none";
-  document.getElementById("rapiclean-img-container").style.display = "none";
+document.getElementById("login").style.display="none";
+document.getElementById("registro").style.display="block";
+document.getElementById("map").style.display="none";
+document.getElementById("filtros").style.display="none";
+document.getElementById("panel-dueno").style.display="none";
+document.getElementById("alquiler-detalle").style.display="none";
+document.getElementById("boton-filtros-container").style.display = "none";
+document.getElementById("loading-msg").style.display = "none";
+document.getElementById("rapiclean-img-container").style.display = "none";
 }
 
 /* =========================
-   TÉRMINOS Y CONDICIONES
+TÉRMINOS Y CONDICIONES
 ========================= */
 function mostrarTerminos() {
-  const terminosAceptados = localStorage.getItem("terminosAceptados");
-  if (!terminosAceptados) {
-    document.getElementById("modal-terminos").style.display = "flex";
-  }
+const terminosAceptados = localStorage.getItem("terminosAceptados");
+if (!terminosAceptados) {
+document.getElementById("modal-terminos").style.display = "flex";
+}
 }
 function aceptarTerminos() {
-  localStorage.setItem("terminosAceptados", "true");
-  document.getElementById("modal-terminos").style.display = "none";
+localStorage.setItem("terminosAceptados", "true");
+document.getElementById("modal-terminos").style.display = "none";
 }
 
 /* =========================
-   AUTH
+AUTH
 ========================= */
 function login(){
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-  if(!email || !password){
-    document.getElementById("login-msg").textContent="Ingrese email y contraseña";
-    return;
-  }
-  fetch(webAppURL+"?action=verificarLogin&email="+encodeURIComponent(email)+"&password="+encodeURIComponent(password))
-  .then(r=>r.json())
-  .then(data=>{
-    if (data.success) {
-      localStorage.setItem("dueno", email);
-      localStorage.setItem("dueno_email", email);
-      window.location.href = "dueños.html";
-    } else {
-      if (data.error === "Usuario no registrado") {
-        document.getElementById("login-msg").textContent = "Usuario no registrado";
-      } else if (data.error === "Contraseña incorrecta") {
-        document.getElementById("login-msg").textContent = "Contraseña incorrecta";
-      } else {
-        document.getElementById("login-msg").textContent = "Error en el inicio de sesión";
-      }
-    }
-  })
-  .catch(()=>{document.getElementById("login-msg").textContent="Error de conexión";});
+const email = document.getElementById("email").value.trim();
+const password = document.getElementById("password").value.trim();
+if(!email || !password){
+document.getElementById("login-msg").textContent="Ingrese email y contraseña";
+return;
+}
+fetch(webAppURL+"?action=verificarLogin&email="+encodeURIComponent(email)+"&password="+encodeURIComponent(password))
+.then(r=>r.json())
+.then(data=>{
+if (data.success) {
+localStorage.setItem("dueno", email);
+localStorage.setItem("dueno_email", email);
+window.location.href = "dueños.html";
+} else {
+if (data.error === "Usuario no registrado") {
+document.getElementById("login-msg").textContent = "Usuario no registrado";
+} else if (data.error === "Contraseña incorrecta") {
+document.getElementById("login-msg").textContent = "Contraseña incorrecta";
+} else {
+document.getElementById("login-msg").textContent = "Error en el inicio de sesión";
+}
+}
+})
+.catch(()=>{document.getElementById("login-msg").textContent="Error de conexión";});
 }
 function logout(){
-  localStorage.removeItem("dueno");
-  localStorage.removeItem("dueno_email");
-  mostrarLogin();
-}
-function duenoRegistrado(res) { // Added callback function for JSONP
-  const msgEl = document.getElementById("registro-msg");
-  if (res.success) {
-    msgEl.style.color = "green";
-    msgEl.innerHTML = "Dueño registrado con éxito.<br><button onclick='mostrarLogin()'>Ir a Login</button>";
-    localStorage.setItem("dueno", document.getElementById("reg_email").value);
-    localStorage.setItem("dueno_email", document.getElementById("reg_email").value);
-  } else {
-    msgEl.style.color = "red";
-    msgEl.textContent = res.error || "Error al registrar el dueño";
-  }
+localStorage.removeItem("dueno");
+localStorage.removeItem("dueno_email");
+mostrarLogin();
 }
 function registrarDueno(){
   const email = document.getElementById("reg_email").value.trim();
@@ -524,24 +512,6 @@ function registrarDueno(){
     return;
   }
 
-  // Modified to use JSONP with <script> tag to bypass CORS
-  const msgEl = document.getElementById("registro-msg");
-  msgEl.style.color = "blue";
-  msgEl.textContent = "Registrando...";
-  const script = document.createElement("script");
-  script.src = `${webAppURL}?action=RegistrarDueño&email=${encodeURIComponent(email)}&nombre=${encodeURIComponent(nombre)}&password=${encodeURIComponent(password)}&contacto=${encodeURIComponent(codigoPais + contacto)}&callback=duenoRegistrado`;
-  document.body.appendChild(script);
-  // Remove the script after execution to prevent memory leaks
-  script.onerror = () => {
-    msgEl.style.color = "red";
-    msgEl.textContent = "Error de conexión al servidor. Por favor, intenta de nuevo.";
-    document.body.removeChild(script);
-  };
-  script.onload = () => {
-    document.body.removeChild(script);
-  };
-
-  /* Original fetch-based code (commented out but preserved)
   const formData = new FormData();
   formData.append("action", "registrarDueno");
   formData.append("email", email);
@@ -578,200 +548,199 @@ function registrarDueno(){
         ? "Error: Acción no reconocida por el servidor. Verifique la configuración del servidor."
         : "Error de conexión al servidor: " + error.message + ". Por favor, intenta de nuevo.";
     });
-  */
 }
 
 /* =========================
-   IMÁGENES
+IMÁGENES
 ========================= */
 async function subirImagenCloudinary(file){
-  const data = new FormData();
-  data.append("file", file);
-  data.append("upload_preset", cloudinaryUploadPreset);
-  try {
-    const res = await fetch(cloudinaryURL, {method:"POST", body:data});
-    const json = await res.json();
-    return json.secure_url;
-  } catch(err){
-    console.error("Error subiendo imagen a Cloudinary:", err);
-    return null;
-  }
+const data = new FormData();
+data.append("file", file);
+data.append("upload_preset", cloudinaryUploadPreset);
+try {
+const res = await fetch(cloudinaryURL, {method:"POST", body:data});
+const json = await res.json();
+return json.secure_url;
+} catch(err){
+console.error("Error subiendo imagen a Cloudinary:", err);
+return null;
+}
 }
 function driveUrlDirect(url){
-  let fileId = null;
-  if(url && url.includes("drive.google.com")){
-    let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-    if(match) fileId = match[1];
-    else {
-      match = url.match(/id=([a-zA-Z0-9_-]+)/);
-      if(match) fileId = match[1];
-    }
-  }
-  return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
+let fileId = null;
+if(url && url.includes("drive.google.com")){
+let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+if(match) fileId = match[1];
+else {
+match = url.match(/id=([a-zA-Z0-9_-]+)/);
+if(match) fileId = match[1];
+}
+}
+return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
 }
 function abrirModal(src){
-  const modal = document.getElementById("modal-img");
-  const img = document.getElementById("img-grande");
-  img.src = src;
-  modal.style.display = "flex";
+const modal = document.getElementById("modal-img");
+const img = document.getElementById("img-grande");
+img.src = src;
+modal.style.display = "flex";
 }
 function cerrarModal(){
-  document.getElementById("modal-img").style.display = "none";
+document.getElementById("modal-img").style.display = "none";
 }
 
 /* =========================
-   CARGA DE ALQUILERES
+CARGA DE ALQUILERES
 ========================= */
 function cargarAlquileres(){
-  const loadingEl = document.getElementById("loading-msg");
-  loadingEl.style.display="block";
-  markersLayer.clearLayers();
+const loadingEl = document.getElementById("loading-msg");
+loadingEl.style.display="block";
+markersLayer.clearLayers();
 
-  const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15]});
-  const hospIcon = L.divIcon({className:'marker-icon', html:'🏥', iconSize:[30,30], iconAnchor:[15,15]});
-  L.marker([-28.5509978,-56.0409727],{icon:uniIcon}).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
-  L.marker([-28.5551127,-56.0389282],{icon:hospIcon}).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
+const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15]});
+const hospIcon = L.divIcon({className:'marker-icon', html:'🏥', iconSize:[30,30], iconAnchor:[15,15]});
+L.marker([-28.5509978,-56.0409727],{icon:uniIcon}).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
+L.marker([-28.5551127,-56.0389282],{icon:hospIcon}).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
 
-  const filtroAmb = document.getElementById("filtroAmb").value;
-  const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
-  const filtroMax = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
+const filtroAmb = document.getElementById("filtroAmb").value;
+const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
+const filtroMax = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
 
-  fetch(webAppURL + "?action=getAlquileres")
-  .then(res => res.json())
-  .then(res => {
-    loadingEl.style.display="none";
-    if(!res.success || !Array.isArray(res.data)) {
-      console.error("Error al cargar alquileres:", res.error || "Respuesta inválida");
-      return;
-    }
+fetch(webAppURL + "?action=getAlquileres")
+.then(res => res.json())
+.then(res => {
+loadingEl.style.display="none";
+if(!res.success || !Array.isArray(res.data)) {
+console.error("Error al cargar alquileres:", res.error || "Respuesta inválida");
+return;
+}
 
-    let cont = 0;
+let cont = 0;
 
-    res.data.forEach(a=>{
-      const lat = parseFloat(getField(a, ["Latitud","lat","LAT","Lat"]));
-      const lng = parseFloat(getField(a, ["Longitud","lng","LNG","Long"]));
-      if(isNaN(lat) || isNaN(lng)) return;
+res.data.forEach(a=>{
+const lat = parseFloat(getField(a, ["Latitud","lat","LAT","Lat"]));
+const lng = parseFloat(getField(a, ["Longitud","lng","LNG","Long"]));
+if(isNaN(lat) || isNaN(lng)) return;
 
-      const ambVal = getField(a, ["Nro Ambientes","Ambientes","Nro de Ambientes","Nro"]);
-      const nroAmb = toInt(ambVal, 0);
+const ambVal = getField(a, ["Nro Ambientes","Ambientes","Nro de Ambientes","Nro"]);
+const nroAmb = toInt(ambVal, 0);
 
-      const precioVal = getField(a, ["Precio","precio","$"]);
-      const precio = toNumber(precioVal);
+const precioVal = getField(a, ["Precio","precio","$"]);
+const precio = toNumber(precioVal);
 
-      if(filtroAmb && nroAmb !== toInt(filtroAmb)) return;
-      if(precio < filtroMin || precio > filtroMax) return;
+if(filtroAmb && nroAmb !== toInt(filtroAmb)) return;
+if(precio < filtroMin || precio > filtroMax) return;
 
-      const direccion = getField(a, ["Direccion","Dirección","Domicilio"]);
-      const infoIngreso = getField(a, ["Informacion ingreso","Información ingreso","InformacionIngreso","InfoIngreso","Informacion de ingreso"]);
-      const detalles = getField(a, ["Detalles","Detalle","Descripcion","Descripción"]);
-      const mascotas = getField(a, ["Mascotas"]);
-      const contacto = getField(a, ["Contacto","Whatsapp","WhatsApp","Tel","Telefono","Teléfono"]);
+const direccion = getField(a, ["Direccion","Dirección","Domicilio"]);
+const infoIngreso = getField(a, ["Informacion ingreso","Información ingreso","InformacionIngreso","InfoIngreso","Informacion de ingreso"]);
+const detalles = getField(a, ["Detalles","Detalle","Descripcion","Descripción"]);
+const mascotas = getField(a, ["Mascotas"]);
+const contacto = getField(a, ["Contacto","Whatsapp","WhatsApp","Tel","Telefono","Teléfono"]);
 
-      const icon = L.divIcon({
-        className:'marker-icon',
-        html:'🏠<span style="font-size:12px;margin-left:2px;">'+(nroAmb||"-")+'</span>',
-        iconSize:[30,30],
-        iconAnchor:[15,15]
-      });
-      const marker = L.marker([lat,lng], {icon: icon}).addTo(markersLayer);
+const icon = L.divIcon({
+className:'marker-icon',
+html:'🏠<span style="font-size:12px;margin-left:2px;">'+(nroAmb||"-")+'</span>',
+iconSize:[30,30],
+iconAnchor:[15,15]
+});
+const marker = L.marker([lat,lng], {icon: icon}).addTo(markersLayer);
 
-      const popupDiv = document.createElement('div');
-      popupDiv.innerHTML = `<b>Dirección:</b> ${direccion||""}<br><b>Ambientes:</b> ${nroAmb||""}<br><b>Precio:</b> ${precioVal||""}`;
+const popupDiv = document.createElement('div');
+popupDiv.innerHTML = `<b>Dirección:</b> ${direccion||""}<br><b>Ambientes:</b> ${nroAmb||""}<br><b>Precio:</b> ${precioVal||""}`;
 
-      const verBtn = document.createElement('button');
-      verBtn.className = 'popup-button';
-      verBtn.textContent = 'Ver Alquiler';
-      verBtn.onclick = () => {
-        const detalle = document.getElementById('alquiler-detalle');
-        detalle.innerHTML = `<h2>Alquiler: ${direccion||''}</h2>`;
+const verBtn = document.createElement('button');
+verBtn.className = 'popup-button';
+verBtn.textContent = 'Ver Alquiler';
+verBtn.onclick = () => {
+const detalle = document.getElementById('alquiler-detalle');
+detalle.innerHTML = `<h2>Alquiler: ${direccion||''}</h2>`;
 
-        const rows = [
-          ['Ambientes', nroAmb||''],
-          ['Precio', precioVal||''],
-          ['Información de ingreso', infoIngreso||''],
-          ['Detalles', detalles||''],
-          ['Mascotas', mascotas||'']
-        ];
-        rows.forEach(([label,val])=>{
-          const p=document.createElement('p');
-          p.innerHTML=`<b>${label}:</b> ${val}`;
-          detalle.appendChild(p);
-        });
+const rows = [
+['Ambientes', nroAmb||''],
+['Precio', precioVal||''],
+['Información de ingreso', infoIngreso||''],
+['Detalles', detalles||''],
+['Mascotas', mascotas||'']
+];
+rows.forEach(([label,val])=>{
+const p=document.createElement('p');
+p.innerHTML=`<b>${label}:</b> ${val}`;
+detalle.appendChild(p);
+});
 
-        const imgContainer = document.createElement('div');
-        imgContainer.id = 'imagenes-container';
+const imgContainer = document.createElement('div');
+imgContainer.id = 'imagenes-container';
 
-        const fotos = getField(a, ["Fotos","Imagenes","Imágenes","images"]);
-        if(fotos){
-          fotos.split(',').forEach(f=>{
-            const url = driveUrlDirect(f.trim());
-            if(url){
-              const img = document.createElement('img');
-              img.src = url;
-              img.alt = "Imagen del alquiler";
-              img.referrerPolicy = "no-referrer";
-              img.onclick = ()=>abrirModal(img.src);
-              imgContainer.appendChild(img);
-            }
-          });
-        }
-        detalle.appendChild(imgContainer);
+const fotos = getField(a, ["Fotos","Imagenes","Imágenes","images"]);
+if(fotos){
+fotos.split(',').forEach(f=>{
+const url = driveUrlDirect(f.trim());
+if(url){
+const img = document.createElement('img');
+img.src = url;
+img.alt = "Imagen del alquiler";
+img.referrerPolicy = "no-referrer";
+img.onclick = ()=>abrirModal(img.src);
+imgContainer.appendChild(img);
+}
+});
+}
+detalle.appendChild(imgContainer);
 
-        if(contacto){
-          const waBtn = document.createElement('button');
-          waBtn.textContent = 'Contactar por WhatsApp';
-          waBtn.style.background = '#25D366';
-          waBtn.style.color = 'white';
-          waBtn.style.marginTop = '10px';
-          waBtn.onclick = ()=>{
-            const mensaje = `Hola, quiero consultar por el alquiler de ${direccion}`;
-            window.open(`https://wa.me/${contacto}?text=${encodeURIComponent(mensaje)}`,'_blank');
-          };
-          detalle.appendChild(waBtn);
-        }
+if(contacto){
+const waBtn = document.createElement('button');
+waBtn.textContent = 'Contactar por WhatsApp';
+waBtn.style.background = '#25D366';
+waBtn.style.color = 'white';
+waBtn.style.marginTop = '10px';
+waBtn.onclick = ()=>{
+const mensaje = `Hola, quiero consultar por el alquiler de ${direccion}`;
+window.open(`https://wa.me/${contacto}?text=${encodeURIComponent(mensaje)}`,'_blank');
+};
+detalle.appendChild(waBtn);
+}
 
-        detalle.style.display='block';
-        detalle.classList.add("highlight");
-        detalle.scrollIntoView({behavior:"smooth", block:"start"});
-        setTimeout(()=>detalle.classList.remove("highlight"),1200);
-        map.invalidateSize();
-      };
-      popupDiv.appendChild(verBtn);
-      marker.bindPopup(popupDiv);
-      cont++;
-    });
+detalle.style.display='block';
+detalle.classList.add("highlight");
+detalle.scrollIntoView({behavior:"smooth", block:"start"});
+setTimeout(()=>detalle.classList.remove("highlight"),1200);
+map.invalidateSize();
+};
+popupDiv.appendChild(verBtn);
+marker.bindPopup(popupDiv);
+cont++;
+});
 
-    if (cont === 0){
-      console.warn("No se encontraron alquileres para los filtros actuales.");
-    }
-  })
-  .catch(err=>{
-    document.getElementById("loading-msg").style.display="none";
-    console.error("Error al conectar con WebApp:",err)
-  });
+if (cont === 0){
+console.warn("No se encontraron alquileres para los filtros actuales.");
+}
+})
+.catch(err=>{
+document.getElementById("loading-msg").style.display="none";
+console.error("Error al conectar con WebApp:",err)
+});
 }
 
 /* =========================
-   PASSWORD VISIBILITY TOGGLE
+PASSWORD VISIBILITY TOGGLE
 ========================= */
 function togglePassword(inputId) {
-  const input = document.getElementById(inputId);
-  const eyeIcon = input.nextElementSibling;
-  if (input.type === "password") {
-    input.type = "text";
-    eyeIcon.style.backgroundImage = "url('https://img.icons8.com/ios/50/000000/invisible.png')";
-  } else {
-    input.type = "password";
-    eyeIcon.style.backgroundImage = "url('https://img.icons8.com/ios/50/000000/visible.png')";
-  }
+const input = document.getElementById(inputId);
+const eyeIcon = input.nextElementSibling;
+if (input.type === "password") {
+input.type = "text";
+eyeIcon.style.backgroundImage = "url('https://img.icons8.com/ios/50/000000/invisible.png')";
+} else {
+input.type = "password";
+eyeIcon.style.backgroundImage = "url('https://img.icons8.com/ios/50/000000/visible.png')";
+}
 }
 
 /* =========================
-   INIT
+INIT
 ========================= */
 window.onload = ()=>{
-  mostrarTerminos();
-  mostrarMapa();
+mostrarTerminos();
+mostrarMapa();
 };
 </script>
 </body>
