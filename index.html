@@ -481,6 +481,18 @@ function logout(){
   localStorage.removeItem("dueno_email");
   mostrarLogin();
 }
+function duenoRegistrado(res) { // Added callback function for JSONP
+  const msgEl = document.getElementById("registro-msg");
+  if (res.success) {
+    msgEl.style.color = "green";
+    msgEl.innerHTML = "Dueño registrado con éxito.<br><button onclick='mostrarLogin()'>Ir a Login</button>";
+    localStorage.setItem("dueno", document.getElementById("reg_email").value);
+    localStorage.setItem("dueno_email", document.getElementById("reg_email").value);
+  } else {
+    msgEl.style.color = "red";
+    msgEl.textContent = res.error || "Error al registrar el dueño";
+  }
+}
 function registrarDueno(){
   const email = document.getElementById("reg_email").value.trim();
   const nombre = document.getElementById("reg_nombre").value.trim();
@@ -512,6 +524,24 @@ function registrarDueno(){
     return;
   }
 
+  // Modified to use JSONP with <script> tag to bypass CORS
+  const msgEl = document.getElementById("registro-msg");
+  msgEl.style.color = "blue";
+  msgEl.textContent = "Registrando...";
+  const script = document.createElement("script");
+  script.src = `${webAppURL}?action=RegistrarDueño&email=${encodeURIComponent(email)}&nombre=${encodeURIComponent(nombre)}&password=${encodeURIComponent(password)}&contacto=${encodeURIComponent(codigoPais + contacto)}&callback=duenoRegistrado`;
+  document.body.appendChild(script);
+  // Remove the script after execution to prevent memory leaks
+  script.onerror = () => {
+    msgEl.style.color = "red";
+    msgEl.textContent = "Error de conexión al servidor. Por favor, intenta de nuevo.";
+    document.body.removeChild(script);
+  };
+  script.onload = () => {
+    document.body.removeChild(script);
+  };
+
+  /* Original fetch-based code (commented out but preserved)
   const formData = new FormData();
   formData.append("action", "registrarDueno");
   formData.append("email", email);
@@ -548,6 +578,7 @@ function registrarDueno(){
         ? "Error: Acción no reconocida por el servidor. Verifique la configuración del servidor."
         : "Error de conexión al servidor: " + error.message + ". Por favor, intenta de nuevo.";
     });
+  */
 }
 
 /* =========================
