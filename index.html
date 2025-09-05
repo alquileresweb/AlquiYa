@@ -519,11 +519,11 @@ function registrarDueno(){
   formData.append("password", password);
   formData.append("contacto", codigoPais + contacto);
 
-  // Use allorigins.win proxy to bypass CORS restriction
-  const proxyUrl = "https://api.allorigins.win/raw?url=";
+  // Use thingproxy.freeboard.io proxy to bypass CORS restriction
+  const proxyUrl = "https://thingproxy.freeboard.io/fetch/";
   const targetUrl = webAppURL;
 
-  fetch(proxyUrl + encodeURIComponent(targetUrl), { 
+  fetch(proxyUrl + targetUrl, { 
     method: "POST", 
     body: formData,
     headers: {
@@ -533,6 +533,12 @@ function registrarDueno(){
     .then(response => {
       if (!response.ok) {
         throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
+      }
+      const contentType = response.headers.get("Content-Type") || "";
+      if (!contentType.includes("application/json")) {
+        return response.text().then(text => {
+          throw new Error(`Respuesta no es JSON: ${text.slice(0, 50)}...`);
+        });
       }
       return response.json();
     })
