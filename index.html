@@ -519,7 +519,11 @@ function registrarDueno(){
   formData.append("password", password);
   formData.append("contacto", codigoPais + contacto);
 
-  fetch(webAppURL, { 
+  // Use CORS proxy to bypass CORS restriction
+  const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+  const targetUrl = webAppURL;
+
+  fetch(proxyUrl + targetUrl, { 
     method: "POST", 
     body: formData,
     headers: {
