@@ -17,7 +17,7 @@ nav a:hover{color:#3483fa}
 #filtros input{flex:1;min-width:120px;padding:8px;border-radius:6px;border:1px solid #ccc}
 #filtros button{padding:8px 15px;border-radius:6px;background:#3483fa;color:white;border:none;cursor:pointer}
 #filtros button:hover{background:#2565c0}
- उन#boton-filtros-container button{width:auto;padding:8px 20px}
+#boton-filtros-container button{width:auto;padding:8px 20px}
 #login,#panel-dueno,#registro{display:none;max-width:500px;margin:20px auto;padding:20px}
 #alquiler-detalle{display:none;max-width:700px;margin:20px auto;padding:15px;border:2px solid #3483fa;border-radius:8px;background:#f9f9f9;box-shadow:0 0 10px rgba(0,0,0,0.1);}
 #alquiler-detalle.highlight{animation: resaltar 1s ease}
@@ -153,6 +153,8 @@ border-radius: 8px;
 box-shadow: 0 0 10px rgba(0,0,0,0.3);
 text-align: left;
 }
+#modaljustice: left;
+}
 #modal-terminos-content h2 {
 margin-top: 0;
 }
@@ -244,9 +246,11 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 <div id="loading-msg">Cargando alquileres disponibles...</div>
 
 <div id="map"></div>
+<div id="rapiclean-img-container">
 <a href="https://wa.me/5493756617167?text=Hola" target="_blank">
 <img src="https://i.postimg.cc/NMMZQ3YG/M-s-de-40-estudiantes-ya-confiaron-en-Rapiclean-1.png" alt="Más de 40 estudiantes confiaron en Rapiclean" style="max-width:100%;margin:10px auto;display:block;">
 </a>
+</div>
 <div id="alquiler-detalle"></div>
 
 <div id="login">
@@ -370,6 +374,7 @@ function mostrarMapa(){
   document.getElementById("alquiler-detalle").style.display="none";
   document.getElementById("boton-filtros-container").style.display = "block";
   document.getElementById("loading-msg").style.display = "none";
+  document.getElementById("rapiclean-img-container").style.display = "block";
   map.invalidateSize();
   cargarAlquileres();
 }
@@ -382,6 +387,7 @@ function mostrarLogin(){
   document.getElementById("alquiler-detalle").style.display="none";
   document.getElementById("boton-filtros-container").style.display = "none";
   document.getElementById("loading-msg").style.display = "none";
+  document.getElementById("rapiclean-img-container").style.display = "none";
 }
 function mostrarRegistro(){
   document.getElementById("login").style.display="none";
@@ -392,6 +398,7 @@ function mostrarRegistro(){
   document.getElementById("alquiler-detalle").style.display="none";
   document.getElementById("boton-filtros-container").style.display = "none";
   document.getElementById("loading-msg").style.display = "none";
+  document.getElementById("rapiclean-img-container").style.display = "none";
 }
 
 /* =========================
