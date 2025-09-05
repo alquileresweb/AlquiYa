@@ -519,11 +519,11 @@ function registrarDueno(){
   formData.append("password", password);
   formData.append("contacto", codigoPais + contacto);
 
-  // Use CORS proxy to bypass CORS restriction
-  const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+  // Use allorigins.win proxy to bypass CORS restriction
+  const proxyUrl = "https://api.allorigins.win/raw?url=";
   const targetUrl = webAppURL;
 
-  fetch(proxyUrl + targetUrl, { 
+  fetch(proxyUrl + encodeURIComponent(targetUrl), { 
     method: "POST", 
     body: formData,
     headers: {
