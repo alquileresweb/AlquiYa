@@ -2,14 +2,13 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Alquileres Santo Tomé</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 body{margin:0;font-family:Arial,sans-serif}
 header{background:white;color:white;padding:15px;text-align:center}
 header .title-container{background:#3483fa;padding:10px;border-radius:0;width:100%;box-sizing:border-box}
-header h1 {font-size:1.5em;} /* Added to make "Alquileres Santo Tomé" smaller */
+header h1 {font-size:1.5em;}
 nav{display:flex;justify-content:center;gap:20px;background:#f4f4f4;padding:10px}
 nav a{text-decoration:none;font-weight:bold;color:#333}
 nav a:hover{color:#3483fa}
@@ -56,7 +55,6 @@ cursor:pointer;
 50% {transform:scale(1.02);box-shadow:0 0 20px #2565c0;}
 100% {transform:scale(1);box-shadow:0 0 10px rgba(0,0,0,0.1);}
 }
-/* Modal para imagen grande */
 #modal-img{
 display:none;
 position:fixed;
@@ -73,7 +71,6 @@ border-radius:8px;
 box-shadow:0 0 15px #000;
 cursor:pointer;
 }
-/* --- NUEVO: mensaje cargando alquileres --- */
 #loading-msg {
 display:none;
 text-align:center;
@@ -81,7 +78,6 @@ font-weight:bold;
 margin:10px;
 color:#3483fa;
 }
-/* Estilos para el contenedor de login y registro centrado en móviles */
 #login, #registro {
 max-width:90%;
 padding:20px;
@@ -135,7 +131,6 @@ width: 70%;
 #registro input#reg_email, #registro input#reg_nombre {
 display: block;
 }
-/* Estilos para el modal de términos y condiciones */
 #modal-terminos {
 display: none;
 position: fixed;
@@ -163,7 +158,7 @@ margin-top: 0;
 }
 #modal-terminos-content button {
 width: auto;
-padding: 10px 20px;
+padding: 10px repeat(20px);
 margin-top: 20px;
 }
 </style>
@@ -173,16 +168,14 @@ margin-top: 20px;
 <header>
 <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya" style="max-width:250px;margin-bottom:10px;">
 <div class="title-container">
-<h1>Alquileres Santo Tomé</h1>
-<p>Encuentra tu próximo departamento fácilmente</p>
+<p style="font-size:1.8em;">Encuentra tu próximo departamento en Santo Tomé</p>
 </div>
 </header>
 
-<!-- Modal de Términos y Condiciones -->
 <div id="modal-terminos">
 <div id="modal-terminos-content">
 <h2>Términos y Condiciones de Uso</h2>
-<p><strong>Última actualización: 02/09/2025</strong></p>
+<p><saf-repeat><strong>Última actualización: 02/09/2025</strong></saf-repeat></p>
 <p>Bienvenido/a a AlquiYa (en adelante, “la Plataforma”).<br>
 Al acceder o utilizar la Plataforma, usted acepta estos Términos y Condiciones. Si no está de acuerdo, debe abstenerse de usarla.</p>
 <h3>1. Naturaleza del Servicio – Exclusión de Intermediación Inmobiliaria</h3>
@@ -243,16 +236,15 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 
 <div id="filtros">
 <input type="number" id="filtroAmb" placeholder="Nro de Ambientes">
-<!-- switch a input text para formateo, pero mantenemos el id original -->
 <input type="text" id="filtroMin" placeholder="Precio Mínimo" oninput="formatCurrency(this)">
 <input type="text" id="filtroMax" placeholder="Precio Máximo" oninput="formatCurrency(this)">
 <button onclick="cargarAlquileres()">Filtrar</button>
 </div>
 
-<!-- NUEVO: Mensaje de carga -->
 <div id="loading-msg">Cargando alquileres disponibles...</div>
 
 <div id="map"></div>
+<img src="https://i.postimg.cc/NMMZQ3YG/M-s-de-40-estudiantes-ya-confiaron-en-Rapiclean-1.png" alt="Más de 40 estudiantes confiaron en Rapiclean" style="max-width:100%;margin:10px auto;display:block;">
 <div id="alquiler-detalle"></div>
 
 <div id="login">
@@ -298,7 +290,6 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 <button onclick="logout()">Cerrar Sesión</button>
 </div>
 
-<!-- Modal para imagen grande -->
 <div id="modal-img">
 <img id="img-grande" onclick="cerrarModal()">
 </div>
@@ -322,14 +313,12 @@ let markersLayer = L.layerGroup().addTo(map);
 /* =========================
    UTILS
 ========================= */
-// Lee un campo de varias formas posibles (por si cambian encabezados)
 function getField(obj, keys){
   for (const k of keys){
     if (Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null && obj[k] !== "") return obj[k];
   }
   return "";
 }
-// Convierte precio string como "$200,000.00" o "150000" a número
 function toNumber(val){
   if (typeof val === "number") return val;
   if (!val) return 0;
@@ -337,16 +326,13 @@ function toNumber(val){
   const num = parseFloat(clean);
   return isNaN(num) ? 0 : num;
 }
-// parsea int seguro
 function toInt(val, def=0){
   const n = parseInt(val,10);
   return isNaN(n) ? def : n;
 }
 
 /* =========================
-   FORMATO MONEDA (inputs visibles)
-   - formatCurrency(): muestra $100.000 mientras se escribe
-   - parseCurrency(): convierte la cadena formateada a número usable
+   FORMATO MONEDA
 ========================= */
 function formatCurrency(el){
   let selectionStart = el.selectionStart;
