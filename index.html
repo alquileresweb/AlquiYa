@@ -81,7 +81,7 @@ border-radius:8px;
 box-shadow:0 0 15px #000;
 cursor:pointer;
 }
-分成#loading-msg {
+#loading-msg {
 display:none;
 text-align:center;
 font-weight:bold;
@@ -336,21 +336,21 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 <script>
 /* =========================
 CONFIG
-#ERROR!
+*/
 const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 const cloudinaryURL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
 const cloudinaryUploadPreset = "preset_alquileres";
 
 /* =========================
 MAPA
-#ERROR!
+*/
 let map = L.map('map').setView([-28.5503, -56.0406],14);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
 let markersLayer = L.layerGroup().addTo(map);
 
 /* =========================
 UTILS
-#ERROR!
+*/
 function getField(obj, keys){
 for (const k of keys){
 if (Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null && obj[k] !== "") return obj[k];
@@ -371,7 +371,7 @@ return isNaN(n) ? def : n;
 
 /* =========================
 FORMATO MONEDA
-#ERROR!
+*/
 function formatCurrency(el){
 let selectionStart = el.selectionStart;
 let raw = String(el.value || "");
@@ -393,7 +393,7 @@ return isNaN(num) ? 0 : num;
 
 /* =========================
 UI NAV
-#ERROR!
+*/
 function toggleFiltros(){
 const f = document.getElementById("filtros");
 f.style.display = (f.style.display==="none"||f.style.display==="") ? "flex":"none";
@@ -435,7 +435,7 @@ document.getElementById("rapiclean-img-container").style.display = "none";
 
 /* =========================
 TÉRMINOS Y CONDICIONES
-#ERROR!
+*/
 function mostrarTerminos() {
 const terminosAceptados = localStorage.getItem("terminosAceptados");
 if (!terminosAceptados) {
@@ -449,7 +449,7 @@ document.getElementById("modal-terminos").style.display = "none";
 
 /* =========================
 AUTH
-#ERROR!
+*/
 function login(){
 const email = document.getElementById("email").value.trim();
 const password = document.getElementById("password").value.trim();
@@ -552,7 +552,7 @@ document.getElementById("registro-msg").textContent = error.message.includes("Ac
 
 /* =========================
 IMÁGENES
-#ERROR!
+*/
 async function subirImagenCloudinary(file){
 const data = new FormData();
 data.append("file", file);
@@ -590,7 +590,7 @@ document.getElementById("modal-img").style.display = "none";
 
 /* =========================
 CARGA DE ALQUILERES
-#ERROR!
+*/
 function cargarAlquileres(){
 const loadingEl = document.getElementById("loading-msg");
 loadingEl.style.display="block";
@@ -722,7 +722,7 @@ console.error("Error al conectar con WebApp:",err)
 
 /* =========================
 PASSWORD VISIBILITY TOGGLE
-#ERROR!
+*/
 function togglePassword(inputId) {
 const input = document.getElementById(inputId);
 const eyeIcon = input.nextElementSibling;
@@ -737,7 +737,7 @@ eyeIcon.style.backgroundImage = "url('https://img.icons8.com/ios/50/000000/visib
 
 /* =========================
 INIT
-#ERROR!
+*/
 window.onload = ()=>{
 mostrarTerminos();
 mostrarMapa();
