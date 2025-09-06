@@ -337,7 +337,7 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 /* =========================
 CONFIG
 */
-const webAppURL = "YOUR_ACTUAL_WEB_APP_URL"; // Replace with your Google Apps Script Web App URL
+const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 const cloudinaryURL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
 const cloudinaryUploadPreset = "preset_alquileres";
 
@@ -562,7 +562,9 @@ document.getElementById("registro-msg").style.color = "green";
 document.getElementById("registro-msg").innerHTML = "Dueño registrado con éxito.<br><button onclick='mostrarLogin()'>Ir a Login</button>";
 } else {
 document.getElementById("registro-msg").style.color = "red";
-document.getElementById("registro-msg").textContent = data.error || "Error al registrar el dueño";
+document.getElementById("registro-msg").textContent = data.error === "Acción no reconocida" 
+? "Error: Acción no reconocida. El servidor no está configurado correctamente."
+: data.error || "Error al registrar el dueño";
 }
 } catch (error) {
 console.error("❌ Error en registro:", error);
@@ -571,7 +573,7 @@ let errorMessage = "Error de conexión al servidor: " + error.message + ". Por f
 if (error.message.includes("Failed to fetch")) {
 errorMessage = "Error: No se pudo conectar con el servidor. Verifique la URL o la conexión de red.";
 } else if (error.message.includes("Acción no reconocida")) {
-errorMessage = "Error: Acción no reconocida por el servidor. Verifique la configuración del servidor.";
+errorMessage = "Error: Acción no reconocida. El servidor no está configurado correctamente.";
 }
 document.getElementById("registro-msg").textContent = errorMessage;
 }
@@ -643,8 +645,10 @@ throw new Error(`Error HTTP: ${res.status} ${res.statusText}`);
 }
 if(!data.success || !Array.isArray(data.data)) {
 console.error("Error al cargar alquileres:", data.error || "Respuesta inválida");
-document.getElementById("loading-msg").style.display="none";
-document.getElementById("loading-msg").textContent = data.error || "Error al cargar alquileres";
+document.getElementById("loading-msg").style.display="block";
+document.getElementById("loading-msg").textContent = data.error === "Acción no reconocida" 
+? "Error: Acción no reconocida. El servidor no está configurado correctamente."
+: data.error || "Error al cargar alquileres";
 return;
 }
 
