@@ -481,72 +481,72 @@ function logout(){
   localStorage.removeItem("dueno_email");
   mostrarLogin();
 }
-function registrarDueno(){
-    const email = document.getElementById("reg_email").value.trim();
-    const nombre = document.getElementById("reg_nombre").value.trim();
-    const password = document.getElementById("reg_password").value.trim();
-    const codigoPais = document.getElementById("reg_codigo_pais").value;
-    const contacto = document.getElementById("reg_contacto").value.trim();
+function registrarDueno() {
+  const email = document.getElementById("reg_email").value.trim();
+  const nombre = document.getElementById("reg_nombre").value.trim();
+  const password = document.getElementById("reg_password").value.trim();
+  const codigoPais = document.getElementById("reg_codigo_pais").value;
+  const contacto = document.getElementById("reg_contacto").value.trim();
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const contactoRegex = /^\d{9,10}$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const contactoRegex = /^\d{9,10}$/;
 
-    if (!email || !nombre || !password || !contacto) {
-        document.getElementById("registro-msg").style.color = "red";
-        document.getElementById("registro-msg").textContent = "Complete todos los campos";
-        return;
-    }
-    if (!emailRegex.test(email)) {
-        document.getElementById("registro-msg").style.color = "red";
-        document.getElementById("registro-msg").textContent = "Ingrese un email válido";
-        return;
-    }
-    if (!contactoRegex.test(contacto)) {
-        document.getElementById("registro-msg").style.color = "red";
-        document.getElementById("registro-msg").textContent = "Ingrese un número de WhatsApp válido (9-10 dígitos)";
-        return;
-    }
-    if (password.length < 6) {
-        document.getElementById("registro-msg").style.color = "red";
-        document.getElementById("registro-msg").textContent = "La contraseña debe tener al menos 6 caracteres";
-        return;
-    }
+  if (!email || !nombre || !password || !contacto) {
+    document.getElementById("registro-msg").style.color = "red";
+    document.getElementById("registro-msg").textContent = "Complete todos los campos";
+    return;
+  }
+  if (!emailRegex.test(email)) {
+    document.getElementById("registro-msg").style.color = "red";
+    document.getElementById("registro-msg").textContent = "Ingrese un email válido";
+    return;
+  }
+  if (!contactoRegex.test(contacto)) {
+    document.getElementById("registro-msg").style.color = "red";
+    document.getElementById("registro-msg").textContent = "Ingrese un número de WhatsApp válido (9-10 dígitos)";
+    return;
+  }
+  if (password.length < 6) {
+    document.getElementById("registro-msg").style.color = "red";
+    document.getElementById("registro-msg").textContent = "La contraseña debe tener al menos 6 caracteres";
+    return;
+  }
 
-    const formData = new FormData();
-    formData.append("action", "registrarDueno");
-    formData.append("email", email);
-    formData.append("nombre", nombre);
-    formData.append("password", password);
-    formData.append("contacto", codigoPais + contacto);
+  const formData = new FormData();
+  formData.append("action", "registrarDueno");
+  formData.append("email", email);
+  formData.append("nombre", nombre);
+  formData.append("password", password);
+  formData.append("contacto", codigoPais + contacto);
 
-    fetch(webAppURL, {
-        method: "POST",
-        body: formData,
-        headers: {
-            Accept: "application/json"
-        }
-    })
+  fetch(webAppURL, {
+    method: "POST",
+    body: formData,
+    headers: {
+      Accept: "application/json"
+    }
+  })
     .then(response => {
-        if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
-        }
-        return response.json();
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
+      }
+      return response.json();
     })
     .then(data => {
-        if (data.success) {
-            document.getElementById("registro-msg").style.color = "green";
-            document.getElementById("registro-msg").innerHTML = "Dueño registrado con éxito.<br><button onclick='mostrarLogin()'>Ir a Login</button>";
-        } else {
-            document.getElementById("registro-msg").style.color = "red";
-            document.getElementById("registro-msg").textContent = data.error || "Error al registrar el dueño";
-        }
+      if (data.success) {
+        document.getElementById("registro-msg").style.color = "green";
+        document.getElementById("registro-msg").innerHTML = "Dueño registrado con éxito.<br><button onclick='mostrarLogin()'>Ir a Login</button>";
+      } else {
+        document.getElementById("registro-msg").style.color = "red";
+        document.getElementById("registro-msg").textContent = data.error || "Error al registrar el dueño";
+      }
     })
     .catch(error => {
-        console.error("Error en registro:", error);
-        document.getElementById("registro-msg").style.color = "red";
-        document.getElementById("registro-msg").textContent = error.message.includes("Acción no reconocida")
-            ? "Error: Acción no reconocida por el servidor. Verifique la configuración del servidor."
-            : "Error de conexión al servidor: " + error.message + ". Por favor, intenta de nuevo.";
+      console.error("Error en registro:", error);
+      document.getElementById("registro-msg").style.color = "red";
+      document.getElementById("registro-msg").textContent = error.message.includes("Acción no reconocida")
+        ? "Error: Acción no reconocida por el servidor. Verifique la configuración del servidor."
+        : "Error de conexión al servidor: " + error.message + ". Por favor, intenta de nuevo.";
     });
 }
 
