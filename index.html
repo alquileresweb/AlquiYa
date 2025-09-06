@@ -81,7 +81,7 @@ border-radius:8px;
 box-shadow:0 0 15px #000;
 cursor:pointer;
 }
-#loading-msg {
+分成#loading-msg {
 display:none;
 text-align:center;
 font-weight:bold;
@@ -336,21 +336,21 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 <script>
 /* =========================
 CONFIG
-*/
+#ERROR!
 const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 const cloudinaryURL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
 const cloudinaryUploadPreset = "preset_alquileres";
 
 /* =========================
 MAPA
-*/
+#ERROR!
 let map = L.map('map').setView([-28.5503, -56.0406],14);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
 let markersLayer = L.layerGroup().addTo(map);
 
 /* =========================
 UTILS
-*/
+#ERROR!
 function getField(obj, keys){
 for (const k of keys){
 if (Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null && obj[k] !== "") return obj[k];
@@ -371,7 +371,7 @@ return isNaN(n) ? def : n;
 
 /* =========================
 FORMATO MONEDA
-*/
+#ERROR!
 function formatCurrency(el){
 let selectionStart = el.selectionStart;
 let raw = String(el.value || "");
@@ -393,7 +393,7 @@ return isNaN(num) ? 0 : num;
 
 /* =========================
 UI NAV
-*/
+#ERROR!
 function toggleFiltros(){
 const f = document.getElementById("filtros");
 f.style.display = (f.style.display==="none"||f.style.display==="") ? "flex":"none";
@@ -435,7 +435,7 @@ document.getElementById("rapiclean-img-container").style.display = "none";
 
 /* =========================
 TÉRMINOS Y CONDICIONES
-*/
+#ERROR!
 function mostrarTerminos() {
 const terminosAceptados = localStorage.getItem("terminosAceptados");
 if (!terminosAceptados) {
@@ -449,24 +449,7 @@ document.getElementById("modal-terminos").style.display = "none";
 
 /* =========================
 AUTH
-*/
-async function fetchWithRetry(url, options, retries = 3, delay = 1000) {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const response = await fetch(url, options);
-      console.log(`📥 Respuesta recibida (intento ${i + 1}):`, response.status, response.statusText);
-      return response;
-    } catch (error) {
-      if (i < retries - 1) {
-        console.warn(`⚠️ Reintentando solicitud (${i + 1}/${retries})...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-        continue;
-      }
-      throw error;
-    }
-  }
-}
-
+#ERROR!
 function login(){
 const email = document.getElementById("email").value.trim();
 const password = document.getElementById("password").value.trim();
@@ -474,11 +457,9 @@ if(!email || !password){
 document.getElementById("login-msg").textContent="Ingrese email y contraseña";
 return;
 }
-console.log("📡 Enviando solicitud GET a:", webAppURL + "?action=verificarLogin&email=" + encodeURIComponent(email));
-fetchWithRetry(webAppURL + "?action=verificarLogin&email=" + encodeURIComponent(email) + "&password=" + encodeURIComponent(password), {})
-.then(r => r.json())
-.then(data => {
-console.log("📋 Datos recibidos:", data);
+fetch(webAppURL+"?action=verificarLogin&email="+encodeURIComponent(email)+"&password="+encodeURIComponent(password))
+.then(r=>r.json())
+.then(data=>{
 if (data.success) {
 localStorage.setItem("dueno", email);
 localStorage.setItem("dueno_email", email);
@@ -489,21 +470,18 @@ document.getElementById("login-msg").textContent = "Usuario no registrado";
 } else if (data.error === "Contraseña incorrecta") {
 document.getElementById("login-msg").textContent = "Contraseña incorrecta";
 } else {
-document.getElementById("login-msg").textContent = data.error || "Error en el inicio de sesión";
+document.getElementById("login-msg").textContent = "Error en el inicio de sesión";
 }
 }
 })
-.catch(err => {
-console.error("❌ Error en login:", err);
-document.getElementById("login-msg").textContent = "Error de conexión al servidor: " + err.message + ". Por favor, intenta de nuevo.";
-});
+.catch(()=>{document.getElementById("login-msg").textContent="Error de conexión";});
 }
 function logout(){
 localStorage.removeItem("dueno");
 localStorage.removeItem("dueno_email");
 mostrarLogin();
 }
-async function registrarDueno(){
+function registrarDueno(){
 const email = document.getElementById("reg_email").value.trim();
 const nombre = document.getElementById("reg_nombre").value.trim();
 const password = document.getElementById("reg_password").value.trim();
@@ -541,47 +519,40 @@ formData.append("nombre", nombre);
 formData.append("password", password);
 formData.append("contacto", codigoPais + contacto);
 
-console.log("📡 Enviando solicitud POST a:", webAppURL);
-console.log("📋 FormData:", { email, nombre, password, contacto: codigoPais + contacto });
-
-try {
-const response = await fetchWithRetry(webAppURL, {
+fetch(webAppURL, {
 method: "POST",
 body: formData,
 headers: {
 Accept: "application/json"
 }
-}, 3, 1000);
+})
+.then(response => {
 if (!response.ok) {
 throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
 }
-const data = await response.json();
-console.log("📋 Datos recibidos:", data);
+return response.json();
+})
+.then(data => {
 if (data.success) {
 document.getElementById("registro-msg").style.color = "green";
 document.getElementById("registro-msg").innerHTML = "Dueño registrado con éxito.<br><button onclick='mostrarLogin()'>Ir a Login</button>";
 } else {
 document.getElementById("registro-msg").style.color = "red";
-document.getElementById("registro-msg").textContent = data.error === "Acción no reconocida" 
-? "Error: Acción no reconocida. El servidor no está configurado correctamente."
-: data.error || "Error al registrar el dueño";
+document.getElementById("registro-msg").textContent = data.error || "Error al registrar el dueño";
 }
-} catch (error) {
-console.error("❌ Error en registro:", error);
+})
+.catch(error => {
+console.error("Error en registro:", error);
 document.getElementById("registro-msg").style.color = "red";
-let errorMessage = "Error de conexión al servidor: " + error.message + ". Por favor, intenta de nuevo.";
-if (error.message.includes("Failed to fetch")) {
-errorMessage = "Error: No se pudo conectar con el servidor. Verifique la URL o la conexión de red.";
-} else if (error.message.includes("Acción no reconocida")) {
-errorMessage = "Error: Acción no reconocida. El servidor no está configurado correctamente.";
-}
-document.getElementById("registro-msg").textContent = errorMessage;
-}
+document.getElementById("registro-msg").textContent = error.message.includes("Acción no reconocida")
+? "Error: Acción no reconocida por el servidor. Verifique la configuración del servidor."
+: "Error de conexión al servidor: " + error.message + ". Por favor, intenta de nuevo.";
+});
 }
 
 /* =========================
 IMÁGENES
-*/
+#ERROR!
 async function subirImagenCloudinary(file){
 const data = new FormData();
 data.append("file", file);
@@ -619,8 +590,8 @@ document.getElementById("modal-img").style.display = "none";
 
 /* =========================
 CARGA DE ALQUILERES
-*/
-async function cargarAlquileres(){
+#ERROR!
+function cargarAlquileres(){
 const loadingEl = document.getElementById("loading-msg");
 loadingEl.style.display="block";
 markersLayer.clearLayers();
@@ -634,27 +605,18 @@ const filtroAmb = document.getElementById("filtroAmb").value;
 const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
 const filtroMax = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
 
-console.log("📡 Enviando solicitud GET a:", webAppURL + "?action=getAlquileres");
-try {
-const res = await fetchWithRetry(webAppURL + "?action=getAlquileres", {}, 3, 1000);
-const data = await res.json();
-console.log("📋 Datos recibidos:", data);
+fetch(webAppURL + "?action=getAlquileres")
+.then(res => res.json())
+.then(res => {
 loadingEl.style.display="none";
-if(!res.ok) {
-throw new Error(`Error HTTP: ${res.status} ${res.statusText}`);
-}
-if(!data.success || !Array.isArray(data.data)) {
-console.error("Error al cargar alquileres:", data.error || "Respuesta inválida");
-document.getElementById("loading-msg").style.display="block";
-document.getElementById("loading-msg").textContent = data.error === "Acción no reconocida" 
-? "Error: Acción no reconocida. El servidor no está configurado correctamente."
-: data.error || "Error al cargar alquileres";
+if(!res.success || !Array.isArray(res.data)) {
+console.error("Error al cargar alquileres:", res.error || "Respuesta inválida");
 return;
 }
 
 let cont = 0;
 
-data.data.forEach(a=>{
+res.data.forEach(a=>{
 const lat = parseFloat(getField(a, ["Latitud","lat","LAT","Lat"]));
 const lng = parseFloat(getField(a, ["Longitud","lng","LNG","Long"]));
 if(isNaN(lat) || isNaN(lng)) return;
@@ -750,23 +712,17 @@ cont++;
 
 if (cont === 0){
 console.warn("No se encontraron alquileres para los filtros actuales.");
-document.getElementById("loading-msg").style.display="block";
-document.getElementById("loading-msg").textContent = "No se encontraron alquileres para los filtros actuales.";
 }
-} catch(err){
-console.error("❌ Error al conectar con WebApp:", err);
-document.getElementById("loading-msg").style.display="block";
-let errorMessage = "Error de conexión al servidor: " + err.message + ". Por favor, intenta de nuevo.";
-if (err.message.includes("Failed to fetch")) {
-errorMessage = "Error: No se pudo conectar con el servidor. Verifique la URL o la conexión de red.";
-}
-document.getElementById("loading-msg").textContent = errorMessage;
-}
+})
+.catch(err=>{
+document.getElementById("loading-msg").style.display="none";
+console.error("Error al conectar con WebApp:",err)
+});
 }
 
 /* =========================
 PASSWORD VISIBILITY TOGGLE
-*/
+#ERROR!
 function togglePassword(inputId) {
 const input = document.getElementById(inputId);
 const eyeIcon = input.nextElementSibling;
@@ -781,7 +737,7 @@ eyeIcon.style.backgroundImage = "url('https://img.icons8.com/ios/50/000000/visib
 
 /* =========================
 INIT
-*/
+#ERROR!
 window.onload = ()=>{
 mostrarTerminos();
 mostrarMapa();
