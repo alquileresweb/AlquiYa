@@ -512,25 +512,20 @@ function registrarDueno(){
     return;
   }
 
-  const formData = new FormData();
-  formData.append("action", "registrarDueno");
-  formData.append("email", email);
-  formData.append("nombre", nombre);
-  formData.append("password", password);
-  formData.append("contacto", codigoPais + contacto);
+  const params = new URLSearchParams();
+  params.append("action", "registrarDueno");
+  params.append("email", email);
+  params.append("nombre", nombre);
+  params.append("password", password);
+  params.append("contacto", codigoPais + contacto);
 
-  console.log("Enviando FormData:", {
-    action: "registrarDueno",
-    email: email,
-    nombre: nombre,
-    password: password,
-    contacto: codigoPais + contacto
-  });
+  console.log("Enviando URLSearchParams:", params.toString());
 
   fetch(webAppURL, {
     method: "POST",
-    body: formData,
+    body: params,
     headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
       "Accept": "application/json"
     },
     redirect: "follow"
