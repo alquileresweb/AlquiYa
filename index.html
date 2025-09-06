@@ -481,7 +481,7 @@ localStorage.removeItem("dueno");
 localStorage.removeItem("dueno_email");
 mostrarLogin();
 }
-function registrarDueno(){
+function registrarDueno() {
   const email = document.getElementById("reg_email").value.trim();
   const nombre = document.getElementById("reg_nombre").value.trim();
   const password = document.getElementById("reg_password").value.trim();
@@ -525,16 +525,10 @@ function registrarDueno(){
     method: "POST",
     body: params,
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "Accept": "application/json"
-    },
-    redirect: "follow"
+      "Content-Type": "application/x-www-form-urlencoded"
+    }
   })
   .then(response => {
-    console.log("Respuesta del servidor:", {
-      status: response.status,
-      headers: [...response.headers.entries()]
-    });
     if (!response.ok) {
       throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
     }
