@@ -474,50 +474,50 @@ document.getElementById("modal-terminos").style.display = "none";
 NOTIFICACIONES
 */
 function suscribirNotificaciones() {
-const email = document.getElementById("notif_email").value.trim();
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const email = document.getElementById("notif_email").value.trim();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-if (!email) {
-document.getElementById("notif-msg").style.color = "red";
-document.getElementById("notif-msg").textContent = "Ingrese un email";
-return;
-}
-if (!emailRegex.test(email)) {
-document.getElementById("notif-msg").style.color = "red";
-document.getElementById("notif-msg").textContent = "Ingrese un email válido";
-return;
-}
+  const msgEl = document.getElementById("notif-msg");
 
-const params = new URLSearchParams();
-params.append("action", "suscribirNotificaciones");
-params.append("email", email);
+  if (!email) {
+    msgEl.style.color = "red";
+    msgEl.textContent = "Ingrese un email";
+    return;
+  }
+  if (!emailRegex.test(email)) {
+    msgEl.style.color = "red";
+    msgEl.textContent = "Ingrese un email válido";
+    return;
+  }
 
-fetch(webAppURL, {
-method: "POST",
-body: params,
-headers: {
-"Content-Type": "application/x-www-form-urlencoded"
-}
-})
-.then(response => {
-if (!response.ok) {
-throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
-}
-return response.json();
-})
-.then(data => {
-if (data.success) {
-document.getElementById("notif-msg").style.color = "green";
-document.getElementById("notif-msg").innerHTML = "Suscripción exitosa.<br><button onclick='mostrarMapa()'>Volver al Mapa</button>";
-} else {
-document.getElementById("notif-msg").style.color = "red";
-document.getElementById("notif-msg").textContent = data.error || "Error al suscribirse";
-}
-})
-.catch(error => {
-document.getElementById("notif-msg").style.color = "red";
-document.getElementById("notif-msg").textContent = `Error: ${error.message}`;
-});
+  // Usamos FormData en vez de URLSearchParams
+  const formData = new FormData();
+  formData.append("action", "suscribirNotificaciones");
+  formData.append("email", email);
+
+  fetch(webAppURL, {
+    method: "POST",
+    body: formData
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    if (data.success) {
+      msgEl.style.color = "green";
+      msgEl.innerHTML = `Suscripción exitosa.<br><button onclick="mostrarMapa()">Volver al Mapa</button>`;
+    } else {
+      msgEl.style.color = "red";
+      msgEl.textContent = data.error || "Error al suscribirse";
+    }
+  })
+  .catch(error => {
+    msgEl.style.color = "red";
+    msgEl.textContent = `Error: ${error.message}`;
+  });
 }
 
 /* =========================
