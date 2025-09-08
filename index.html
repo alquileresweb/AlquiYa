@@ -27,10 +27,8 @@ nav a:hover{color:#3483fa}
 #filtros input{flex:1;min-width:120px;padding:8px;border-radius:6px;border:1px solid #ccc}
 #filtros button{padding:8px 15px;border-radius:6px;background:#3483fa;color:white;border:none;cursor:pointer}
 #filtros button:hover{background:#2565c0}
-#boton-filtros-container{display:flex;justify-content:center;gap:10px;margin:10px;}
 #boton-filtros-container button{width:auto;padding:8px 20px}
 #login,#panel-dueno,#registro{display:none;max-width:500px;margin:20px auto;padding:20px}
-#login,#panel-dueno,#registro,#panel-notificaciones{display:none;max-width:500px;margin:20px auto;padding:20px}
 #alquiler-detalle{display:none;max-width:700px;margin:20px auto;padding:15px;border:2px solid #3483fa;border-radius:8px;background:#f9f9f9;box-shadow:0 0 10px rgba(0,0,0,0.1);}
 #alquiler-detalle.highlight{animation: resaltar 1s ease}
 #imagenes-container{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
@@ -91,18 +89,15 @@ margin:10px;
 color:#3483fa;
 }
 #login, #registro {
-#login, #registro, #panel-notificaciones {
 max-width:90%;
 padding:20px;
 box-sizing:border-box;
 text-align:center;
 }
 #login h2, #registro h2 {
-#login h2, #registro h2, #panel-notificaciones h2 {
 margin-bottom:20px;
 }
 #login input, #registro input, #login button, #registro button, #login select, #registro select {
-#login input, #registro input, #login button, #registro button, #login select, #registro select, #panel-notificaciones input, #panel-notificaciones button {
 max-width:300px;
 margin-left:auto;
 margin-right:auto;
@@ -202,7 +197,6 @@ color: #333;
 <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya" style="max-width:250px;margin-bottom:10px;">
 <div class="title-container">
 <p style="font-size:1.8em;">Encuentra tu próximo departamento en Santo Tomé</p>
-<p style="font-size:1.5em;">Encuentra tu próximo departamento en Santo Tomé</p>
 </div>
 </header>
 
@@ -265,9 +259,7 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 </nav>
 
 <div id="boton-filtros-container" style="text-align:center;margin:10px;">
-<div id="boton-filtros-container">
 <button onclick="toggleFiltros()">Añadir Filtros</button>
-<button onclick="mostrarNotificaciones()">Recibir Avisos</button>
 </div>
 
 <div id="filtros">
@@ -328,14 +320,6 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 <button onclick="registrarDueno()">Registrar</button>
 <button onclick="mostrarLogin()">Cancelar</button>
 <p id="registro-msg" style="color:green"></p>
-</div>
-
-<div id="panel-notificaciones">
-<h2>Recibir Notificaciones</h2>
-<input type="text" id="notif_email" placeholder="Email para notificaciones">
-<button onclick="suscribirNotificaciones()">Suscribirme</button>
-<button onclick="mostrarMapa()">Cancelar</button>
-<p id="notif-msg" style="color:green"></p>
 </div>
 
 <div id="panel-dueno">
@@ -419,10 +403,8 @@ document.getElementById("map").style.display="block";
 document.getElementById("login").style.display="none";
 document.getElementById("panel-dueno").style.display="none";
 document.getElementById("registro").style.display="none";
-document.getElementById("panel-notificaciones").style.display="none";
 document.getElementById("alquiler-detalle").style.display="none";
 document.getElementById("boton-filtros-container").style.display = "block";
-document.getElementById("boton-filtros-container").style.display = "flex";
 document.getElementById("loading-msg").style.display = "none";
 document.getElementById("rapiclean-img-container").style.display = "block";
 map.invalidateSize();
@@ -434,7 +416,6 @@ document.getElementById("filtros").style.display="none";
 document.getElementById("login").style.display="block";
 document.getElementById("panel-dueno").style.display="none";
 document.getElementById("registro").style.display="none";
-document.getElementById("panel-notificaciones").style.display="none";
 document.getElementById("alquiler-detalle").style.display="none";
 document.getElementById("boton-filtros-container").style.display = "none";
 document.getElementById("loading-msg").style.display = "none";
@@ -446,19 +427,6 @@ document.getElementById("registro").style.display="block";
 document.getElementById("map").style.display="none";
 document.getElementById("filtros").style.display="none";
 document.getElementById("panel-dueno").style.display="none";
-document.getElementById("panel-notificaciones").style.display="none";
-document.getElementById("alquiler-detalle").style.display="none";
-document.getElementById("boton-filtros-container").style.display = "none";
-document.getElementById("loading-msg").style.display = "none";
-document.getElementById("rapiclean-img-container").style.display = "none";
-}
-function mostrarNotificaciones(){
-document.getElementById("map").style.display="none";
-document.getElementById("filtros").style.display="none";
-document.getElementById("login").style.display="none";
-document.getElementById("panel-dueno").style.display="none";
-document.getElementById("registro").style.display="none";
-document.getElementById("panel-notificaciones").style.display="block";
 document.getElementById("alquiler-detalle").style.display="none";
 document.getElementById("boton-filtros-container").style.display = "none";
 document.getElementById("loading-msg").style.display = "none";
@@ -477,56 +445,6 @@ document.getElementById("modal-terminos").style.display = "flex";
 function aceptarTerminos() {
 localStorage.setItem("terminosAceptados", "true");
 document.getElementById("modal-terminos").style.display = "none";
-}
-
-/* =========================
-NOTIFICACIONES
-*/
-function suscribirNotificaciones() {
-const email = document.getElementById("notif_email").value.trim();
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-if (!email) {
-document.getElementById("notif-msg").style.color = "red";
-document.getElementById("notif-msg").textContent = "Ingrese un email";
-return;
-}
-if (!emailRegex.test(email)) {
-document.getElementById("notif-msg").style.color = "red";
-document.getElementById("notif-msg").textContent = "Ingrese un email válido";
-return;
-}
-
-const params = new URLSearchParams();
-params.append("action", "suscribirNotificaciones");
-params.append("email", email);
-
-fetch(webAppURL, {
-method: "POST",
-body: params,
-headers: {
-"Content-Type": "application/x-www-form-urlencoded"
-}
-})
-.then(response => {
-if (!response.ok) {
-throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
-}
-return response.json();
-})
-.then(data => {
-if (data.success) {
-document.getElementById("notif-msg").style.color = "green";
-document.getElementById("notif-msg").innerHTML = "Suscripción exitosa.<br><button onclick='mostrarMapa()'>Volver al Mapa</button>";
-} else {
-document.getElementById("notif-msg").style.color = "red";
-document.getElementById("notif-msg").textContent = data.error || "Error al suscribirse";
-}
-})
-.catch(error => {
-document.getElementById("notif-msg").style.color = "red";
-document.getElementById("notif-msg").textContent = `Error: ${error.message}`;
-});
 }
 
 /* =========================
@@ -631,73 +549,6 @@ function registrarDueno() {
     document.getElementById("registro-msg").style.color = "red";
     document.getElementById("registro-msg").textContent = `Error: ${error.message}`;
   });
-const email = document.getElementById("reg_email").value.trim();
-const nombre = document.getElementById("reg_nombre").value.trim();
-const password = document.getElementById("reg_password").value.trim();
-const codigoPais = document.getElementById("reg_codigo_pais").value;
-const contacto = document.getElementById("reg_contacto").value.trim();
-
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const contactoRegex = /^\d{9,10}$/;
-
-if (!email || !nombre || !password || !contacto) {
-document.getElementById("registro-msg").style.color = "red";
-document.getElementById("registro-msg").textContent = "Complete todos los campos";
-return;
-}
-if (!emailRegex.test(email)) {
-document.getElementById("registro-msg").style.color = "red";
-document.getElementById("registro-msg").textContent = "Ingrese un email válido";
-return;
-}
-if (!contactoRegex.test(contacto)) {
-document.getElementById("registro-msg").style.color = "red";
-document.getElementById("registro-msg").textContent = "Ingrese un número de WhatsApp válido (9-10 dígitos)";
-return;
-}
-if (password.length < 6) {
-document.getElementById("registro-msg").style.color = "red";
-document.getElementById("registro-msg").textContent = "La contraseña debe tener al menos 6 caracteres";
-return;
-}
-
-const params = new URLSearchParams();
-params.append("action", "registrarDueno");
-params.append("email", email);
-params.append("nombre", nombre);
-params.append("password", password);
-params.append("contacto", codigoPais + contacto);
-
-console.log("Enviando URLSearchParams:", params.toString());
-
-fetch(webAppURL, {
-method: "POST",
-body: params,
-headers: {
-"Content-Type": "application/x-www-form-urlencoded"
-}
-})
-.then(response => {
-if (!response.ok) {
-throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
-}
-return response.json();
-})
-.then(data => {
-console.log("Datos recibidos:", data);
-if (data.success) {
-document.getElementById("registro-msg").style.color = "green";
-document.getElementById("registro-msg").innerHTML = "Dueño registrado con éxito.<br><button onclick='mostrarLogin()'>Ir a Login</button>";
-} else {
-document.getElementById("registro-msg").style.color = "red";
-document.getElementById("registro-msg").textContent = data.error || "Error al registrar el dueño";
-}
-})
-.catch(error => {
-console.error("Error en registro:", error);
-document.getElementById("registro-msg").style.color = "red";
-document.getElementById("registro-msg").textContent = `Error: ${error.message}`;
-});
 }
 
 /* =========================
