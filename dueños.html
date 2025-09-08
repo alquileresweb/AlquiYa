@@ -9,7 +9,6 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-SSJ5DG33JK');
 </script>
 <link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
@@ -102,7 +101,7 @@ cursor: pointer;
   #formulario, #formularioRegistro { font-size: 1.5em; padding: 24px; }
   input, select, textarea { font-size: 1.4em; padding: 16px; }
   .contacto-container select { width: 80px; }
-  .contacto-container input { distill-none: 150px; }
+  .contacto-container input { min-width: 150px; }
   .password-container .toggle-password { padding: 12px; font-size: 1.5em; }
   .preview-img { max-width: 160px; }
   #planStatus { font-size: 1.6em; }
@@ -417,10 +416,21 @@ function mostrarEstadoPlan(res) {
   }
   const login = res.data[0];
   planActual = login.Plan || null;
-  limiteDeptos = planActual === "Basico" ? 3 : planActual === "Plus" ? 5 : planActual === "Full" ? 10 : 0;
+  limiteDeptos = planActual === "Prueba" ? Infinity : planActual === "Basico" ? 3 : planActual === "Plus" ? 5 : planActual === "Full" ? 10 : 0;
   const estadoPago = login.EstadoPago || "No registrado";
   const vencimiento = login.Vencimiento || "N/D";
   let planStatusHTML = `Plan: <b>${planActual || "Sin plan"}</b> | Estado de Pago: ${estadoPago} | Vencimiento: ${vencimiento}`;
+  
+  // Calcular días restantes para el plan Prueba
+  if (planActual === "Prueba" && vencimiento !== "N/D") {
+    const vencimientoDate = new Date(vencimiento.split("/").reverse().join("-"));
+    const today = new Date();
+    const diffTime = vencimientoDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays >= 0) {
+      planStatusHTML += `<br><span style="color:white">Te quedan ${diffDays} días GRATIS del Plan Prueba</span>`;
+    }
+  }
   
   // Verificar si la fecha de vencimiento está pasada
   if (vencimiento !== "N/D") {
@@ -432,7 +442,7 @@ function mostrarEstadoPlan(res) {
   }
   
   planStatusEl.innerHTML = planStatusHTML;
-  document.getElementById("limiteAlquileres").textContent = `${deptosActivos}/${limiteDeptos} alquileres activos`;
+  document.getElementById("limiteAlquileres").textContent = planActual === "Prueba" ? `${deptosActivos} alquileres activos (sin límite)` : `${deptosActivos}/${limiteDeptos} alquileres activos`;
   document.getElementById("btnPlan").textContent = planActual ? "💳 Mejorar Plan" : "💳 Elegir Plan";
 }
 
@@ -527,7 +537,7 @@ function mostrarAlquileres(res) {
   div.innerHTML = "";
   if (!res.success || !res.data || res.data.length === 0) { div.innerHTML = "No tienes alquileres aún."; return; }
   deptosActivos = res.data.filter(a => a.Estado === "Activo").length;
-  document.getElementById("limiteAlquileres").textContent = `${deptosActivos}/${limiteDeptos} alquileres activos`;
+  document.getElementById("limiteAlquileres").textContent = planActual === "Prueba" ? `${deptosActivos} alquileres activos (sin límite)` : `${deptosActivos}/${limiteDeptos} alquileres activos`;
   res.data.forEach(alq => {
     let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
     let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Cambiar Estado</button>`;
@@ -591,7 +601,7 @@ async function agregarAlquiler() {
     const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
     const callback = action === "editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
     let estado = "Activo";
-    if (action === "editAlquiler" && deptosActivos >= limiteDeptos) {
+    if (action === "editAlquiler" && planActual !== "Prueba" && deptosActivos >= limiteDeptos) {
       estado = "Inactivo";
     }
     const script = document.createElement("script");
@@ -636,7 +646,7 @@ function resetForm() {
 
 async function cambiarEstado(row, estadoActual) {
   const msgEl = document.getElementById(`estadoMsg-${row}`);
-  if (estadoActual === "Inactivo" && deptosActivos >= limiteDeptos) {
+  if (estadoActual === "Inactivo" && planActual !== "Prueba" && deptosActivos >= limiteDeptos) {
     msgEl.className = "estado-msg error";
     msgEl.textContent = `No puedes activar más alquileres. Tu plan (${planActual}) permite hasta ${limiteDeptos} deptos activos. ❌`;
     setTimeout(() => { msgEl.textContent = ""; }, 5000);
