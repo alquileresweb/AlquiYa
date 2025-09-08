@@ -596,6 +596,8 @@ function registrarEmailAvisos() {
   params.append("action", "suscribirNotificaciones");
   params.append("email", email);
 
+  console.log("Enviando solicitud:", webAppURL, params.toString());
+
   fetch(webAppURL, {
     method: "POST",
     body: params,
@@ -604,12 +606,14 @@ function registrarEmailAvisos() {
     }
   })
   .then(response => {
+    console.log("Respuesta recibida:", response.status, response.statusText);
     if (!response.ok) {
       throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
     }
     return response.json();
   })
   .then(data => {
+    console.log("Datos recibidos:", data);
     if (data.success) {
       document.getElementById("avisos-msg").style.color = "green";
       document.getElementById("avisos-msg").textContent = "Email registrado con éxito para recibir notificaciones.";
@@ -621,6 +625,7 @@ function registrarEmailAvisos() {
     }
   })
   .catch(error => {
+    console.error("Error en la solicitud:", error);
     document.getElementById("avisos-msg").style.color = "red";
     document.getElementById("avisos-msg").textContent = `Error: ${error.message}`;
   });
