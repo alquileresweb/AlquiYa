@@ -196,7 +196,7 @@ color: #333;
 <header>
 <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya" style="max-width:250px;margin-bottom:10px;">
 <div class="title-container">
-<p style="font-size:1.8em;">Encuentra tu próximo departamento en Santo Tomé</p>
+<p style="font-size:1.5em;">Encuentra tu próximo departamento en Santo Tomé</p>
 </div>
 </header>
 
@@ -599,8 +599,10 @@ markersLayer.clearLayers();
 
 const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15]});
 const hospIcon = L.divIcon({className:'marker-icon', html:'🏥', iconSize:[30,30], iconAnchor:[15,15]});
+const alquiladoIcon = L.divIcon({className:'marker-icon', html:'🏠<span style="font-size:12px;margin-left:2px;">2</span>', iconSize:[30,30], iconAnchor:[15,15], popupAnchor:[0,-15]});
 L.marker([-28.5509978,-56.0409727],{icon:uniIcon}).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
 L.marker([-28.5551127,-56.0389282],{icon:hospIcon}).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
+L.marker([-28.5493672,-56.0450674],{icon:alquiladoIcon}).addTo(markersLayer).bindPopup("<b>Alquilado recientemente</b><br>Depto. de 2 ambientes");
 
 const filtroAmb = document.getElementById("filtroAmb").value;
 const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
