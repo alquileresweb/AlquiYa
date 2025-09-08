@@ -27,8 +27,9 @@ nav a:hover{color:#3483fa}
 #filtros input{flex:1;min-width:120px;padding:8px;border-radius:6px;border:1px solid #ccc}
 #filtros button{padding:8px 15px;border-radius:6px;background:#3483fa;color:white;border:none;cursor:pointer}
 #filtros button:hover{background:#2565c0}
+#boton-filtros-container{display: flex; justify-content: center; gap: 10px; margin: 10px;}
 #boton-filtros-container button{width:auto;padding:8px 20px}
-#login,#panel-dueno,#registro{display:none;max-width:500px;margin:20px auto;padding:20px}
+#login,#panel-dueno,#registro,#avisos-panel{display:none;max-width:500px;margin:20px auto;padding:20px}
 #alquiler-detalle{display:none;max-width:700px;margin:20px auto;padding:15px;border:2px solid #3483fa;border-radius:8px;background:#f9f9f9;box-shadow:0 0 10px rgba(0,0,0,0.1);}
 #alquiler-detalle.highlight{animation: resaltar 1s ease}
 #imagenes-container{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
@@ -88,16 +89,16 @@ font-weight:bold;
 margin:10px;
 color:#3483fa;
 }
-#login, #registro {
+#login, #registro, #avisos-panel {
 max-width:90%;
 padding:20px;
 box-sizing:border-box;
 text-align:center;
 }
-#login h2, #registro h2 {
+#login h2, #registro h2, #avisos-panel h2 {
 margin-bottom:20px;
 }
-#login input, #registro input, #login button, #registro button, #login select, #registro select {
+#login input, #registro input, #avisos-panel input, #login button, #registro button, #avisos-panel button, #login select, #registro select {
 max-width:300px;
 margin-left:auto;
 margin-right:auto;
@@ -162,8 +163,6 @@ padding: 20px;
 border-radius: 8px;
 box-shadow: 0 0 10px rgba(0,0,0,0.3);
 text-align: left;
-}
-#modaljustice: left;
 }
 #modal-terminos-content h2 {
 margin-top: 0;
@@ -258,8 +257,9 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 <a href="#" onclick="mostrarLogin()">Soy Dueño</a>
 </nav>
 
-<div id="boton-filtros-container" style="text-align:center;margin:10px;">
+<div id="boton-filtros-container">
 <button onclick="toggleFiltros()">Añadir Filtros</button>
+<button onclick="mostrarAvisos()">Recibir Avisos</button>
 </div>
 
 <div id="filtros">
@@ -267,6 +267,14 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 <input type="text" id="filtroMin" placeholder="Precio Mínimo" oninput="formatCurrency(this)">
 <input type="text" id="filtroMax" placeholder="Precio Máximo" oninput="formatCurrency(this)">
 <button onclick="cargarAlquileres()">Filtrar</button>
+</div>
+
+<div id="avisos-panel">
+<h2>Recibir Notificaciones</h2>
+<input type="text" id="avisos_email" placeholder="Email">
+<button onclick="registrarEmailAvisos()">Suscribirse</button>
+<button onclick="mostrarMapa()">Cancelar</button>
+<p id="avisos-msg" style="color:green"></p>
 </div>
 
 <div id="loading-msg">Cargando alquileres disponibles...</div>
@@ -403,8 +411,9 @@ document.getElementById("map").style.display="block";
 document.getElementById("login").style.display="none";
 document.getElementById("panel-dueno").style.display="none";
 document.getElementById("registro").style.display="none";
+document.getElementById("avisos-panel").style.display="none";
 document.getElementById("alquiler-detalle").style.display="none";
-document.getElementById("boton-filtros-container").style.display = "block";
+document.getElementById("boton-filtros-container").style.display = "flex";
 document.getElementById("loading-msg").style.display = "none";
 document.getElementById("rapiclean-img-container").style.display = "block";
 map.invalidateSize();
@@ -416,6 +425,7 @@ document.getElementById("filtros").style.display="none";
 document.getElementById("login").style.display="block";
 document.getElementById("panel-dueno").style.display="none";
 document.getElementById("registro").style.display="none";
+document.getElementById("avisos-panel").style.display="none";
 document.getElementById("alquiler-detalle").style.display="none";
 document.getElementById("boton-filtros-container").style.display = "none";
 document.getElementById("loading-msg").style.display = "none";
@@ -427,6 +437,19 @@ document.getElementById("registro").style.display="block";
 document.getElementById("map").style.display="none";
 document.getElementById("filtros").style.display="none";
 document.getElementById("panel-dueno").style.display="none";
+document.getElementById("avisos-panel").style.display="none";
+document.getElementById("alquiler-detalle").style.display="none";
+document.getElementById("boton-filtros-container").style.display = "none";
+document.getElementById("loading-msg").style.display = "none";
+document.getElementById("rapiclean-img-container").style.display = "none";
+}
+function mostrarAvisos(){
+document.getElementById("map").style.display="none";
+document.getElementById("filtros").style.display="none";
+document.getElementById("login").style.display="none";
+document.getElementById("panel-dueno").style.display="none";
+document.getElementById("registro").style.display="none";
+document.getElementById("avisos-panel").style.display="block";
 document.getElementById("alquiler-detalle").style.display="none";
 document.getElementById("boton-filtros-container").style.display = "none";
 document.getElementById("loading-msg").style.display = "none";
@@ -548,6 +571,58 @@ function registrarDueno() {
     console.error("Error en registro:", error);
     document.getElementById("registro-msg").style.color = "red";
     document.getElementById("registro-msg").textContent = `Error: ${error.message}`;
+  });
+}
+
+/* =========================
+REGISTRO DE EMAILS PARA AVISOS
+*/
+function registrarEmailAvisos() {
+  const email = document.getElementById("avisos_email").value.trim();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!email) {
+    document.getElementById("avisos-msg").style.color = "red";
+    document.getElementById("avisos-msg").textContent = "Ingrese un email";
+    return;
+  }
+  if (!emailRegex.test(email)) {
+    document.getElementById("avisos-msg").style.color = "red";
+    document.getElementById("avisos-msg").textContent = "Ingrese un email válido";
+    return;
+  }
+
+  const params = new URLSearchParams();
+  params.append("action", "suscribirNotificaciones");
+  params.append("email", email);
+
+  fetch(webAppURL, {
+    method: "POST",
+    body: params,
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    }
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    if (data.success) {
+      document.getElementById("avisos-msg").style.color = "green";
+      document.getElementById("avisos-msg").textContent = "Email registrado con éxito para recibir notificaciones.";
+      document.getElementById("avisos_email").value = "";
+      setTimeout(() => mostrarMapa(), 2000);
+    } else {
+      document.getElementById("avisos-msg").style.color = "red";
+      document.getElementById("avisos-msg").textContent = data.error || "Error al registrar el email";
+    }
+  })
+  .catch(error => {
+    document.getElementById("avisos-msg").style.color = "red";
+    document.getElementById("avisos-msg").textContent = `Error: ${error.message}`;
   });
 }
 
