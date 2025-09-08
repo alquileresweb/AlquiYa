@@ -18,6 +18,7 @@ body{margin:0;font-family:Arial,sans-serif}
 header{background:white;color:white;padding:15px;text-align:center}
 header .title-container{background:#3483fa;padding:10px;border-radius:0;width:100%;box-sizing:border-box}
 header h1 {font-size:1.5em;}
+header .title-container p {font-size:1.2em;} /* Smaller title size */
 nav{display:flex;justify-content:center;gap:20px;background:#f4f4f4;padding:10px}
 nav a{text-decoration:none;font-weight:bold;color:#333}
 nav a:hover{color:#3483fa}
@@ -194,7 +195,7 @@ color: #333;
 <header>
 <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya" style="max-width:250px;margin-bottom:10px;">
 <div class="title-container">
-<p style="font-size:1.5em;">Encuentra tu próximo departamento en Santo Tomé</p>
+<p>Encuentra tu próximo departamento en Santo Tomé</p>
 </div>
 </header>
 
@@ -396,6 +397,12 @@ let cleaned = String(str).replace(/[^\d]/g,'');
 if(cleaned === '') return 0;
 let num = parseInt(cleaned,10);
 return isNaN(num) ? 0 : num;
+}
+function formatPrice(num) {
+if (!num) return "";
+const clean = String(num).replace(/[^\d]/g, "");
+const formatted = parseInt(clean, 10).toLocaleString('es-AR');
+return "$" + formatted.replace(/,/g, ".");
 }
 
 /* =========================
@@ -686,6 +693,7 @@ const nroAmb = toInt(ambVal, 0);
 
 const precioVal = getField(a, ["Precio","precio","$"]);
 const precio = toNumber(precioVal);
+const formattedPrecio = formatPrice(precioVal);
 
 if(filtroAmb && nroAmb !== toInt(filtroAmb)) return;
 if(precio < filtroMin || precio > filtroMax) return;
@@ -705,7 +713,7 @@ iconAnchor:[15,15]
 const marker = L.marker([lat,lng], {icon: icon}).addTo(markersLayer);
 
 const popupDiv = document.createElement('div');
-popupDiv.innerHTML = `<b>Dirección:</b> ${direccion||""}<br><b>Ambientes:</b> ${nroAmb||""}<br><b>Precio:</b> ${precioVal||""}`;
+popupDiv.innerHTML = `<b>Dirección:</b> ${direccion||""}<br><b>Ambientes:</b> ${nroAmb||""}<br><b>Precio:</b> ${formattedPrecio||""}`;
 
 const verBtn = document.createElement('button');
 verBtn.className = 'popup-button';
@@ -716,7 +724,7 @@ detalle.innerHTML = `<h2>Alquiler: ${direccion||''}</h2>`;
 
 const rows = [
 ['Ambientes', nroAmb||''],
-['Precio', precioVal||''],
+['Precio', formattedPrecio||''],
 ['Información de ingreso', infoIngreso||''],
 ['Detalles', detalles||''],
 ['Mascotas', mascotas||'']
