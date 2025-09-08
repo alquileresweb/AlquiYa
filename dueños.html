@@ -118,7 +118,8 @@ input, select, textarea { font-size: 1.4em; padding: 16px; }
 background: white;
 border: 1px solid #ccc;
 border-radius: 8px;
-padding: 20px;
+padd
+ing: 20px;
 margin: 10px auto;
 max-width: 700px;
 text-align: center;
@@ -147,7 +148,6 @@ color: #333;
 <div id="planStatus"></div>
 <span id="limiteAlquileres"></span>
 <button id="btnPlan" onclick="abrirModalPlan()">💳 Mejorar Plan</button>
-<button id="btnRenovar" onclick="abrirModalPlan()" style="background:#fff;">Renovar Ahora</button>
 </div>
 
 <h3>📋 Mis Alquileres</h3>
@@ -200,12 +200,6 @@ color: #333;
 <div id="modalPlan" class="modal">
 <div class="modal-content">
 <h3>Elige tu plan</h3>
-<div class="plan-option">
-<b>Prueba</b> - Alquileres activos ilimitados
-<p id="precioPrueba">$0 / mes</p>
-<button onclick="seleccionarPlan('Prueba')">Elegir Prueba</button>
-<div id="mpBtnPrueba"></div>
-</div>
 <div class="plan-option">
 <b>Básico</b> - Hasta 3 deptos activos
 <p id="precioBasico">$0 / mes</p>
@@ -271,7 +265,7 @@ let imagenesBase64 = [];
 let planActual = null;
 let limiteDeptos = 0;
 let deptosActivos = 0;
-let preciosPlanes = {Prueba: 0, Basico: 0, Plus: 0, Full: 0};
+let preciosPlanes = {Basico: 0, Plus: 0, Full: 0};
 
 // === FORMATO DE PRECIO ===
 function formatoPrecio(valor) {
@@ -396,7 +390,6 @@ if (res.success && res.data && res.data.length) {
 res.data.forEach(plan => {
 preciosPlanes[plan.nombre] = parseFloat(plan.precio) || 0;
 });
-document.getElementById("precioPrueba").textContent = formatoPrecio(preciosPlanes.Prueba) + " / mes";
 document.getElementById("precioBasico").textContent = formatoPrecio(preciosPlanes.Basico) + " / mes";
 document.getElementById("precioPlus").textContent = formatoPrecio(preciosPlanes.Plus) + " / mes";
 document.getElementById("precioFull").textContent = formatoPrecio(preciosPlanes.Full) + " / mes";
@@ -428,12 +421,20 @@ planActual = login.Plan || null;
 limiteDeptos = planActual === "Prueba" ? Infinity : planActual === "Basico" ? 3 : planActual === "Plus" ? 5 : planActual === "Full" ? 10 : 0;
 const estadoPago = login.EstadoPago || "No registrado";
 const vencimiento = login.Vencimiento || "N/D";
-let planStatusHTML = planActual === "Prueba" 
-    ? `Te quedan ${calcularDiasRestantes(vencimiento)} días para mostrar tus departamentos GRATIS con el plan Prueba`
-    : `Plan: <b>${planActual || "Sin plan"}</b> | Estado de Pago: ${estadoPago} | Vencimiento: ${vencimiento}`;
+let planStatusHTML = `Plan: <b>${planActual || "Sin plan"}</b> | Estado de Pago: ${estadoPago} | Vencimiento: ${vencimiento}`;
 
-// Verificar si la fecha de vencimiento está pasada
-if (vencimiento !== "N/D") {
+// Agregar mensaje para el plan Prueba
+if (planActual === "Prueba" && vencimiento !== "N/D") {
+const vencimientoDate = new Date(vencimiento.split("/").reverse().join("-"));
+const today = new Date();
+const diffTime = vencimientoDate - today;
+const diasRestantes = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+if (diasRestantes > 0) {
+planStatusHTML += `<br><span style="color:white">Te quedan ${diasRestantes} días para mostrar tus departamentos GRATIS con el plan Prueba</span>`;
+} else {
+planStatusHTML += `<br><span style="color:red">Plan Prueba vencido, tus alquileres no se mostrarán en el mapa</span>`;
+}
+} else if (vencimiento !== "N/D") {
 const vencimientoDate = new Date(vencimiento.split("/").reverse().join("-"));
 const today = new Date();
 if (vencimientoDate < today) {
@@ -442,25 +443,14 @@ planStatusHTML += `<br><span style="color:red">Plan vencido, tus alquileres no s
 }
 
 planStatusEl.innerHTML = planStatusHTML;
-document.getElementById("limiteAlquileres").textContent = planActual === "Prueba" ? "Alquileres activos ilimitados" : `${deptosActivos}/${limiteDeptos} alquileres activos`;
+document.getElementById("limiteAlquileres").textContent = planActual === "Prueba" ? `${deptosActivos} alquileres activos` : `${deptosActivos}/${limiteDeptos} alquileres activos`;
 document.getElementById("btnPlan").textContent = planActual ? "💳 Mejorar Plan" : "💳 Elegir Plan";
-}
-
-// === CALCULAR DÍAS RESTANTES ===
-function calcularDiasRestantes(vencimiento) {
-if (vencimiento === "N/D") return "N/D";
-const vencimientoDate = new Date(vencimiento.split("/").reverse().join("-"));
-const today = new Date();
-const diffTime = vencimientoDate - today;
-const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-return diffDays >= 0 ? diffDays : 0;
 }
 
 // === MODAL PLAN ===
 function abrirModalPlan() { document.getElementById("modalPlan").style.display = "block"; }
 function cerrarModalPlan() {
 document.getElementById("modalPlan").style.display = "none";
-document.getElementById("mpBtnPrueba").innerHTML = "";
 document.getElementById("mpBtnBasico").innerHTML = "";
 document.getElementById("mpBtnPlus").innerHTML = "";
 document.getElementById("mpBtnFull").innerHTML = "";
@@ -545,7 +535,7 @@ const div = document.getElementById("listaAlquileres");
 div.innerHTML = "";
 if (!res.success || !res.data || res.data.length === 0) { div.innerHTML = "No tienes alquileres aún."; return; }
 deptosActivos = res.data.filter(a => a.Estado === "Activo").length;
-document.getElementById("limiteAlquileres").textContent = planActual === "Prueba" ? "Alquileres activos ilimitados" : `${deptosActivos}/${limiteDeptos} alquileres activos`;
+document.getElementById("limiteAlquileres").textContent = planActual === "Prueba" ? `${deptosActivos} alquileres activos` : `${deptosActivos}/${limiteDeptos} alquileres activos`;
 res.data.forEach(alq => {
 let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
 let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Cambiar Estado</button>`;
