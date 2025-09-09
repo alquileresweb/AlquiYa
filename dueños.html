@@ -92,6 +92,23 @@ background: none;
 cursor: pointer;
 }
 #menu button:hover { background: #f0f0f0; }
+/* Estilo para la flecha de volver atrás */
+#back-arrow {
+position: fixed;
+top: 20px;
+left: 20px;
+font-size: 30px;
+cursor: pointer;
+z-index: 1001;
+background: none;
+border: none;
+color: #333;
+padding: 10px;
+}
+#back-arrow:hover {
+background: #f0f0f0;
+border-radius: 50%;
+}
 /* Mobile-specific styles */
 @media screen and (max-width: 600px) {
 body { font-size: 24px; margin-top: 140px; }
@@ -113,13 +130,13 @@ input, select, textarea { font-size: 1.4em; padding: 16px; }
 #menu-toggle { font-size: 34px; top: 24px; right: 24px; }
 #menu { top: 70px; right: 24px; }
 #menu button { font-size: 1.5em; padding: 16px 22px; }
+#back-arrow { font-size: 34px; top: 24px; left: 24px; }
 }
 #publicidad-container {
 background: white;
 border: 1px solid #ccc;
 border-radius: 8px;
-padd
-ing: 20px;
+padding: 20px;
 margin: 10px auto;
 max-width: 700px;
 text-align: center;
@@ -135,6 +152,7 @@ color: #333;
 </head>
 <body>
 <header style="position: static; top: 0; left: 0; width: 100%; background: white; z-index: 1000; text-align: center; padding: 15px; box-sizing: border-box;">
+<button id="back-arrow" onclick="window.location.href='index.html'">←</button>
 <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya" style="max-width: 350px; margin-bottom: 10px;">
 <button id="menu-toggle" onclick="toggleMenu()">☰</button>
 <div id="menu">
