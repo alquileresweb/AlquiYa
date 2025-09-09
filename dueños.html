@@ -197,8 +197,8 @@ color: #333;
 
 <label>Mascotas Permitidas</label>
 <select id="mascotas">
- OPTION value="Sí">Sí</option>
-<option value="No">No</option>
+ <option value="Sí">Sí</option>
+ <option value="No">No</option>
 </select>
 
 <label>Imágenes del Alquiler (PNG/JPG, múltiples)</label>
@@ -286,7 +286,7 @@ let limiteDeptos = 0;
 let deptosActivos = 0;
 let preciosPlanes = {Basico: 0, Plus: 0, Full: 0};
 
-// === FORMATO DE PRECIO ===
+// === FORMATO DE PRECIO PARA ALQUILERES ===
 function formatoPrecio(valor) {
 if (!valor) return "";
 valor = valor.toString().replace(/\D/g, "");
@@ -298,6 +298,17 @@ const valorSinSimbolo = this.value.replace(/\D/g, '');
 this.value = formatoPrecio(valorSinSimbolo);
 this.selectionEnd = cursorPos;
 });
+
+// === FORMATO DE PRECIO PARA PLANES ($X.XXX,XX) ===
+function formatoPrecioPlan(valor) {
+if (!valor) return "$0,00";
+const numero = parseFloat(valor);
+if (isNaN(numero)) return "$0,00";
+const entero = Math.floor(numero);
+const decimal = Math.round((numero - entero) * 100).toString().padStart(2, "0");
+const enteroFormateado = entero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+return `$${enteroFormateado},${decimal}`;
+}
 
 // === PREVIEW IMÁGENES ===
 function actualizarPreview() {
@@ -409,9 +420,9 @@ if (res.success && res.data && res.data.length) {
 res.data.forEach(plan => {
 preciosPlanes[plan.nombre] = parseFloat(plan.precio) || 0;
 });
-document.getElementById("precioBasico").textContent = formatoPrecio(preciosPlanes.Basico) + " / mes";
-document.getElementById("precioPlus").textContent = formatoPrecio(preciosPlanes.Plus) + " / mes";
-document.getElementById("precioFull").textContent = formatoPrecio(preciosPlanes.Full) + " / mes";
+document.getElementById("precioBasico").textContent = formatoPrecioPlan(preciosPlanes.Basico) + " / mes";
+document.getElementById("precioPlus").textContent = formatoPrecioPlan(preciosPlanes.Plus) + " / mes";
+document.getElementById("precioFull").textContent = formatoPrecioPlan(preciosPlanes.Full) + " / mes";
 } else {
 console.error("Error al cargar precios de planes:", res);
 }
