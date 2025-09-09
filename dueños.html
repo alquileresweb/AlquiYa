@@ -310,6 +310,15 @@ const enteroFormateado = entero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
 return `$${enteroFormateado},${decimal}`;
 }
 
+// === FORMATO DE FECHA (DD/M/AAAA) ===
+function formatoFecha(fecha) {
+if (fecha === "N/D") return fecha;
+const partes = fecha.split("/");
+if (partes.length !== 3) return fecha;
+const [dia, mes, anio] = partes;
+return `${parseInt(dia, 10)}/${parseInt(mes, 10)}/${anio}`;
+}
+
 // === PREVIEW IMÁGENES ===
 function actualizarPreview() {
 const previewContainer = document.getElementById("previewContainer");
@@ -450,7 +459,7 @@ const login = res.data[0];
 planActual = login.Plan || null;
 limiteDeptos = planActual === "Prueba" ? Infinity : planActual === "Basico" ? 3 : planActual === "Plus" ? 5 : planActual === "Full" ? 10 : 0;
 const estadoPago = login.EstadoPago || "No registrado";
-const vencimiento = login.Vencimiento || "N/D";
+const vencimiento = formatoFecha(login.Vencimiento || "N/D");
 let planStatusHTML = `Plan: <b>${planActual || "Sin plan"}</b> | Estado de Pago: ${estadoPago} | Vencimiento: ${vencimiento}`;
 
 // Agregar mensaje para el plan Prueba
@@ -460,7 +469,7 @@ const today = new Date();
 const diffTime = vencimientoDate - today;
 const diasRestantes = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 if (diasRestantes > 0) {
-planStatusHTML += `<br><span style="color:white">Te quedan ${diasRestantes} días para mostrar tus departamentos GRATIS con el plan Prueba</span>`;
+planStatusHTML += `<br><span style="color:#00FF00">Te quedan ${diasRestantes} días para mostrar tus departamentos GRATIS con el plan Prueba</span>`;
 } else {
 planStatusHTML += `<br><span style="color:red">Plan Prueba vencido, tus alquileres no se mostrarán en el mapa</span>`;
 }
