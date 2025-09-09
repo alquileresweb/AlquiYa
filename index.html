@@ -18,7 +18,7 @@ body{margin:0;font-family:Arial,sans-serif}
 header{background:white;color:white;padding:15px;text-align:center}
 header .title-container{background:#3483fa;padding:10px;border-radius:0;width:100%;box-sizing:border-box}
 header h1 {font-size:1.5em;}
-header .title-container p {font-size:1.2em;} /* Smaller title size */
+header .title-container p {font-size:1.2em;}
 nav{display:flex;justify-content:center;gap:20px;background:#f4f4f4;padding:10px}
 nav a{text-decoration:none;font-weight:bold;color:#333}
 nav a:hover{color:#3483fa}
@@ -82,7 +82,50 @@ border-radius:8px;
 box-shadow:0 0 15px #000;
 cursor:pointer;
 }
+#modal-img .close-btn {
+position:absolute;
+top:10px;
+right:10px;
+background:red;
+color:white;
+border:none;
+border-radius:50%;
+width:30px;
+height:30px;
+font-size:20px;
+font-weight:bold;
+cursor:pointer;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+#modal-img .nav-btn {
+position:absolute;
+top:50%;
+transform:translateY(-50%);
+background:#3483fa;
+color:white;
+border:none;
+border-radius:50%;
+width:40px;
+height:40px;
+font-size:24px;
+font-weight:bold;
+cursor:pointer;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+#modal-img .prev-btn {left:10px;}
+#modal-img .next-btn {right:10px;}
 #loading-msg {
+display:none;
+text-align:center;
+font-weight:bold;
+margin:10px;
+color:#3483fa;
+}
+#login-loading {
 display:none;
 text-align:center;
 font-weight:bold;
@@ -301,6 +344,7 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 <div class="eye-icon" onclick="togglePassword('password')"></div>
 </div>
 <button onclick="login()">Ingresar</button>
+<p id="login-loading" style="color:#3483fa">Iniciando sesión...</p>
 <p>¿No tienes cuenta?</p>
 <p><button onclick="mostrarRegistro()">Registrarme</button></p>
 <p id="login-msg" style="color:red"></p>
@@ -337,7 +381,10 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 </div>
 
 <div id="modal-img">
-<img id="img-grande" onclick="cerrarModal()">
+<img id="img-grande">
+<button class="close-btn" onclick="cerrarModal()">X</button>
+<button class="nav-btn prev-btn" onclick="cambiarImagen(-1)">&lt;</button>
+<button class="nav-btn next-btn" onclick="cambiarImagen(1)">&gt;</button>
 </div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -348,6 +395,8 @@ CONFIG
 const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 const cloudinaryURL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
 const cloudinaryUploadPreset = "preset_alquileres";
+let currentImages = [];
+let currentImageIndex = 0;
 
 /* =========================
 MAPA
@@ -436,6 +485,7 @@ document.getElementById("alquiler-detalle").style.display="none";
 document.getElementById("boton-filtros-container").style.display = "none";
 document.getElementById("loading-msg").style.display = "none";
 document.getElementById("rapiclean-img-container").style.display = "none";
+document.getElementById("login-loading").style.display = "none";
 }
 function mostrarRegistro(){
 document.getElementById("login").style.display="none";
@@ -484,11 +534,15 @@ const email = document.getElementById("email").value.trim();
 const password = document.getElementById("password").value.trim();
 if(!email || !password){
 document.getElementById("login-msg").textContent="Ingrese email y contraseña";
+document.getElementById("login-loading").style.display = "none";
 return;
 }
+document.getElementById("login-loading").style.display = "block";
+document.getElementById("login-msg").textContent = "";
 fetch(webAppURL+"?action=verificarLogin&email="+encodeURIComponent(email)+"&password="+encodeURIComponent(password))
 .then(r=>r.json())
 .then(data=>{
+document.getElementById("login-loading").style.display = "none";
 if (data.success) {
 localStorage.setItem("dueno", email);
 localStorage.setItem("dueno_email", email);
@@ -503,7 +557,10 @@ document.getElementById("login-msg").textContent = "Error en el inicio de sesió
 }
 }
 })
-.catch(()=>{document.getElementById("login-msg").textContent="Error de conexión";});
+.catch(()=>{
+document.getElementById("login-loading").style.display = "none";
+document.getElementById("login-msg").textContent="Error de conexión";
+});
 }
 function logout(){
 localStorage.removeItem("dueno");
@@ -643,14 +700,24 @@ if(match) fileId = match[1];
 }
 return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
 }
-function abrirModal(src){
+function abrirModal(src, images, index){
+currentImages = images;
+currentImageIndex = index;
 const modal = document.getElementById("modal-img");
 const img = document.getElementById("img-grande");
 img.src = src;
 modal.style.display = "flex";
+document.querySelector(".prev-btn").style.display = images.length > 1 ? "block" : "none";
+document.querySelector(".next-btn").style.display = images.length > 1 ? "block" : "none";
 }
 function cerrarModal(){
 document.getElementById("modal-img").style.display = "none";
+currentImages = [];
+currentImageIndex = 0;
+}
+function cambiarImagen(direction){
+currentImageIndex = (currentImageIndex + direction + currentImages.length) % currentImages.length;
+document.getElementById("img-grande").src = currentImages[currentImageIndex];
 }
 
 /* =========================
@@ -739,17 +806,16 @@ const imgContainer = document.createElement('div');
 imgContainer.id = 'imagenes-container';
 
 const fotos = getField(a, ["Fotos","Imagenes","Imágenes","images"]);
+let imageUrls = [];
 if(fotos){
-fotos.split(',').forEach(f=>{
-const url = driveUrlDirect(f.trim());
-if(url){
+imageUrls = fotos.split(',').map(f => driveUrlDirect(f.trim())).filter(url => url);
+imageUrls.forEach((url, index) => {
 const img = document.createElement('img');
 img.src = url;
 img.alt = "Imagen del alquiler";
 img.referrerPolicy = "no-referrer";
-img.onclick = ()=>abrirModal(img.src);
+img.onclick = () => abrirModal(url, imageUrls, index);
 imgContainer.appendChild(img);
-}
 });
 }
 detalle.appendChild(imgContainer);
