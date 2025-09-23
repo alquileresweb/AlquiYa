@@ -102,25 +102,27 @@ window.onload = () => {
       loadingEl.style.display = "none";
       if (data.success) {
         const alquiler = data.alquiler;
+        // Ensure Precio is a valid number, fallback to 0 if undefined or invalid
+        const precio = (alquiler.Precio && !isNaN(alquiler.Precio)) ? Number(alquiler.Precio).toLocaleString('es-AR') : 'No disponible';
         detalle.innerHTML = `
-          <h2 id="titulo">${alquiler.titulo || "Alquiler"}</h2>
-          <p><b>Precio:</b> <span id="precio">$${alquiler.precio.toLocaleString('es-AR')}</span></p>
-          <p><b>Descripción:</b> <span id="descripcion">${alquiler.descripcion || ""}</span></p>
+          <h2 id="titulo">${alquiler.Direccion || "Alquiler"}</h2>
+          <p><b>Precio:</b> <span id="precio">$${precio}</span></p>
+          <p><b>Descripción:</b> <span id="descripcion">${alquiler.Detalles || "Sin descripción"}</span></p>
         `;
-        if (alquiler.imagen) {
+        if (alquiler.Imagen) {
           const img = document.createElement("img");
           img.id = "imagen";
-          img.src = driveUrlDirect(alquiler.imagen);
+          img.src = driveUrlDirect(alquiler.Imagen);
           img.alt = "Imagen del alquiler";
           img.referrerPolicy = "no-referrer";
           detalle.appendChild(img);
         }
-        if (alquiler.contacto) {
+        if (alquiler.Contacto) {
           const waBtn = document.createElement("button");
           waBtn.textContent = "Contactar por WhatsApp";
           waBtn.onclick = () => {
-            const mensaje = `Hola, quiero consultar por el alquiler ${alquiler.titulo}`;
-            window.open(`https://wa.me/${alquiler.contacto}?text=${encodeURIComponent(mensaje)}`, "_blank");
+            const mensaje = `Hola, quiero consultar por el alquiler ${alquiler.Direccion || "sin dirección"}`;
+            window.open(`https://wa.me/${alquiler.Contacto}?text=${encodeURIComponent(mensaje)}`, "_blank");
           };
           detalle.appendChild(waBtn);
         }
