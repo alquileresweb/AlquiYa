@@ -228,6 +228,32 @@ font-size: 1.2em;
 font-weight: bold;
 color: #333;
 }
+#link-container {
+display: flex;
+align-items: center;
+gap: 10px;
+margin-top: 10px;
+}
+#link-container input {
+flex: 1;
+padding: 8px;
+border-radius: 6px;
+border: 1px solid #ccc;
+}
+#link-container span {
+font-size: 14px;
+color: #333;
+white-space: nowrap;
+}
+#copy-msg {
+display: none;
+text-align: center;
+margin-top: 10px;
+color: green;
+}
+#copy-msg.error {
+color: red;
+}
 </style>
 </head>
 <body>
@@ -769,6 +795,7 @@ const infoIngreso = getField(a, ["Informacion ingreso","Información ingreso","I
 const detalles = getField(a, ["Detalles","Detalle","Descripcion","Descripción"]);
 const mascotas = getField(a, ["Mascotas"]);
 const contacto = getField(a, ["Contacto","Whatsapp","WhatsApp","Tel","Telefono","Teléfono"]);
+const enlace = getField(a, ["Enlace"]);
 
 const icon = L.divIcon({
 className:'marker-icon',
@@ -831,6 +858,23 @@ window.open(`https://wa.me/${contacto}?text=${encodeURIComponent(mensaje)}`,'_bl
 };
 detalle.appendChild(waBtn);
 }
+
+if(enlace){
+const linkContainer = document.createElement('div');
+linkContainer.id = 'link-container';
+const linkInput = document.createElement('input');
+linkInput.type = 'text';
+linkInput.value = enlace;
+const copyText = document.createElement('span');
+copyText.textContent = 'Seleccioná y copiá para compartir';
+linkContainer.appendChild(linkInput);
+linkContainer.appendChild(copyText);
+detalle.appendChild(linkContainer);
+}
+
+const copyMsg = document.createElement('p');
+copyMsg.id = 'copy-msg';
+detalle.appendChild(copyMsg);
 
 detalle.style.display='block';
 detalle.classList.add("highlight");
