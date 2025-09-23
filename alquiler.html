@@ -234,15 +234,28 @@ window.onload = () => {
         imgContainer.id = "imagenes-container";
         let imageUrls = [];
         if (alquiler.Imagen) {
-          imageUrls = alquiler.Imagen.split(",").map(f => driveUrlDirect(f.trim())).filter(url => url);
+          console.log("Raw Imagen field:", alquiler.Imagen); // Debugging: Log raw Imagen value
+          imageUrls = alquiler.Imagen.split(",").map(url => {
+            const trimmedUrl = url.trim(); // Remove extra spaces or newlines
+            const processedUrl = driveUrlDirect(trimmedUrl);
+            console.log(`Processed URL: ${trimmedUrl} -> ${processedUrl}`); // Debugging: Log each URL
+            return processedUrl;
+          }).filter(url => url && url !== ""); // Filter out invalid or empty URLs
+          console.log("Final image URLs:", imageUrls); // Debugging: Log final URLs
+          if (imageUrls.length === 0) {
+            console.warn("No valid image URLs after processing");
+          }
           imageUrls.forEach((url, index) => {
             const img = document.createElement("img");
             img.src = url;
             img.alt = "Imagen del alquiler";
             img.referrerPolicy = "no-referrer";
+            img.onerror = () => console.error(`Failed to load image: ${url}`); // Debugging: Log image load errors
             img.onclick = () => abrirModal(url, imageUrls, index);
             imgContainer.appendChild(img);
           });
+        } else {
+          console.warn("No Imagen field found in alquiler data");
         }
         detalle.appendChild(imgContainer);
 
