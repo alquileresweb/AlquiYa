@@ -59,6 +59,79 @@ header {
   margin: 10px;
   color: #3483fa;
 }
+#imagenes-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+#imagenes-container img {
+  max-width: 120px;
+  height: 90px;
+  margin: 5px;
+  border-radius: 6px;
+  object-fit: cover;
+  cursor: pointer;
+}
+#modal-img {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+#modal-img img {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 8px;
+  box-shadow: 0 0 15px #000;
+  cursor: pointer;
+}
+#modal-img .close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: red;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#modal-img .nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #3483fa;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#modal-img .prev-btn {
+  left: 10px;
+}
+#modal-img .next-btn {
+  right: 10px;
+}
 </style>
 </head>
 <body>
@@ -67,8 +140,16 @@ header {
 </header>
 <div id="loading-msg">Cargando datos del alquiler...</div>
 <div id="alquiler-detalle"></div>
+<div id="modal-img">
+  <img id="img-grande">
+  <button class="close-btn" onclick="cerrarModal()">X</button>
+  <button class="nav-btn prev-btn" onclick="cambiarImagen(-1)">&lt;</button>
+  <button class="nav-btn next-btn" onclick="cambiarImagen(1)">&gt;</button>
+</div>
 <script>
 const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
+let currentImages = [];
+let currentImageIndex = 0;
 
 function driveUrlDirect(url) {
   let fileId = null;
@@ -81,6 +162,35 @@ function driveUrlDirect(url) {
     }
   }
   return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
+}
+
+function formatPrice(num) {
+  if (!num) return "";
+  const clean = String(num).replace(/[^\d]/g, "");
+  const formatted = parseInt(clean, 10).toLocaleString('es-AR');
+  return "$" + formatted.replace(/,/g, ".");
+}
+
+function abrirModal(src, images, index) {
+  currentImages = images;
+  currentImageIndex = index;
+  const modal = document.getElementById("modal-img");
+  const img = document.getElementById("img-grande");
+  img.src = src;
+  modal.style.display = "flex";
+  document.querySelector(".prev-btn").style.display = images.length > 1 ? "block" : "none";
+  document.querySelector(".next-btn").style.display = images.length > 1 ? "block" : "none";
+}
+
+function cerrarModal() {
+  document.getElementById("modal-img").style.display = "none";
+  currentImages = [];
+  currentImageIndex = 0;
+}
+
+function cambiarImagen(direction) {
+  currentImageIndex = (currentImageIndex + direction + currentImages.length) % currentImages.length;
+  document.getElementById("img-grande").src = currentImages[currentImageIndex];
 }
 
 window.onload = () => {
@@ -102,26 +212,47 @@ window.onload = () => {
       loadingEl.style.display = "none";
       if (data.success) {
         const alquiler = data.alquiler;
-        // Ensure Precio is a valid number, fallback to 0 if undefined or invalid
-        const precio = (alquiler.Precio && !isNaN(alquiler.Precio)) ? Number(alquiler.Precio).toLocaleString('es-AR') : 'No disponible';
+        const precio = (alquiler.Precio && !isNaN(alquiler.Precio)) ? formatPrice(alquiler.Precio) : "No disponible";
         detalle.innerHTML = `
-          <h2 id="titulo">${alquiler.Direccion || "Alquiler"}</h2>
-          <p><b>Precio:</b> <span id="precio">$${precio}</span></p>
-          <p><b>Descripción:</b> <span id="descripcion">${alquiler.Detalles || "Sin descripción"}</span></p>
+          <h2>Alquiler: ${alquiler.Direccion || "Sin dirección"}</h2>
         `;
+        const rows = [
+          ["Ambientes", alquiler.Ambientes || ""],
+          ["Precio", precio],
+          ["Información de ingreso", alquiler.InfoIngreso || ""],
+          ["Detalles", alquiler.Detalles || ""],
+          ["Mascotas", alquiler.Mascotas || ""]
+        ];
+        rows.forEach(([label, val]) => {
+          const p = document.createElement("p");
+          p.innerHTML = `<b>${label}:</b> ${val}`;
+          detalle.appendChild(p);
+        });
+
+        const imgContainer = document.createElement("div");
+        imgContainer.id = "imagenes-container";
+        let imageUrls = [];
         if (alquiler.Imagen) {
-          const img = document.createElement("img");
-          img.id = "imagen";
-          img.src = driveUrlDirect(alquiler.Imagen);
-          img.alt = "Imagen del alquiler";
-          img.referrerPolicy = "no-referrer";
-          detalle.appendChild(img);
+          imageUrls = alquiler.Imagen.split(",").map(f => driveUrlDirect(f.trim())).filter(url => url);
+          imageUrls.forEach((url, index) => {
+            const img = document.createElement("img");
+            img.src = url;
+            img.alt = "Imagen del alquiler";
+            img.referrerPolicy = "no-referrer";
+            img.onclick = () => abrirModal(url, imageUrls, index);
+            imgContainer.appendChild(img);
+          });
         }
+        detalle.appendChild(imgContainer);
+
         if (alquiler.Contacto) {
           const waBtn = document.createElement("button");
           waBtn.textContent = "Contactar por WhatsApp";
+          waBtn.style.background = "#25D366";
+          waBtn.style.color = "white";
+          waBtn.style.marginTop = "10px";
           waBtn.onclick = () => {
-            const mensaje = `Hola, quiero consultar por el alquiler ${alquiler.Direccion || "sin dirección"}`;
+            const mensaje = `Hola, quiero consultar por el alquiler de ${alquiler.Direccion || "sin dirección"}`;
             window.open(`https://wa.me/${alquiler.Contacto}?text=${encodeURIComponent(mensaje)}`, "_blank");
           };
           detalle.appendChild(waBtn);
