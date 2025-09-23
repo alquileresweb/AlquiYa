@@ -152,6 +152,13 @@ const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISS
 let currentImages = [];
 let currentImageIndex = 0;
 
+function getField(obj, keys) {
+  for (const k of keys) {
+    if (Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null && obj[k] !== "") return obj[k];
+  }
+  return "";
+}
+
 function driveUrlDirect(url) {
   let fileId = null;
   if (url && url.includes("drive.google.com")) {
@@ -215,14 +222,14 @@ window.onload = () => {
         const alquiler = data.alquiler;
         const precio = (alquiler.Precio && !isNaN(alquiler.Precio)) ? formatPrice(alquiler.Precio) : "No disponible";
         detalle.innerHTML = `
-          <h2>Alquiler: ${alquiler.Direccion || "Sin dirección"}</h2>
+          <h2>Alquiler: ${getField(alquiler, ["Direccion", "Dirección", "Domicilio"]) || "Sin dirección"}</h2>
         `;
         const rows = [
-          ["Ambientes", alquiler.Ambientes || ""],
+          ["Ambientes", getField(alquiler, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]) || ""],
           ["Precio", precio],
-          ["Información de ingreso", alquiler.InfoIngreso || ""],
-          ["Detalles", alquiler.Detalles || ""],
-          ["Mascotas", alquiler.Mascotas || ""]
+          ["Información de ingreso", getField(alquiler, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso", "Informacion de ingreso"]) || ""],
+          ["Detalles", getField(alquiler, ["Detalles", "Detalle", "Descripcion", "Descripción"]) || ""],
+          ["Mascotas", getField(alquiler, ["Mascotas"]) || ""]
         ];
         rows.forEach(([label, val]) => {
           const p = document.createElement("p");
@@ -233,29 +240,20 @@ window.onload = () => {
         const imgContainer = document.createElement("div");
         imgContainer.id = "imagenes-container";
         let imageUrls = [];
-        if (alquiler.Imagen) {
-          console.log("Raw Imagen field:", alquiler.Imagen); // Debugging: Log raw Imagen value
-          imageUrls = alquiler.Imagen.split(",").map(url => {
-            const trimmedUrl = url.trim(); // Remove extra spaces or newlines
-            const processedUrl = driveUrlDirect(trimmedUrl);
-            console.log(`Processed URL: ${trimmedUrl} -> ${processedUrl}`); // Debugging: Log each URL
-            return processedUrl;
-          }).filter(url => url && url !== ""); // Filter out invalid or empty URLs
-          console.log("Final image URLs:", imageUrls); // Debugging: Log final URLs
-          if (imageUrls.length === 0) {
-            console.warn("No valid image URLs after processing");
-          }
+        const fotos = getField(alquiler, ["Fotos", "Imagenes", "Imágenes", "images"]);
+        if (fotos) {
+          imageUrls = fotos.split(",").map(f => {
+            const url = f.trim();
+            return url.includes("drive.google.com") ? driveUrlDirect(url) : url;
+          }).filter(url => url);
           imageUrls.forEach((url, index) => {
             const img = document.createElement("img");
             img.src = url;
             img.alt = "Imagen del alquiler";
             img.referrerPolicy = "no-referrer";
-            img.onerror = () => console.error(`Failed to load image: ${url}`); // Debugging: Log image load errors
             img.onclick = () => abrirModal(url, imageUrls, index);
             imgContainer.appendChild(img);
           });
-        } else {
-          console.warn("No Imagen field found in alquiler data");
         }
         detalle.appendChild(imgContainer);
 
@@ -266,7 +264,7 @@ window.onload = () => {
           waBtn.style.color = "white";
           waBtn.style.marginTop = "10px";
           waBtn.onclick = () => {
-            const mensaje = `Hola, quiero consultar por el alquiler de ${alquiler.Direccion || "sin dirección"}`;
+            const mensaje = `Hola, quiero consultar por el alquiler de ${getField(alquiler, ["Direccion", "Dirección", "Domicilio"]) || "sin dirección"}`;
             window.open(`https://wa.me/${alquiler.Contacto}?text=${encodeURIComponent(mensaje)}`, "_blank");
           };
           detalle.appendChild(waBtn);
