@@ -154,7 +154,9 @@ let currentImageIndex = 0;
 
 function getField(obj, keys) {
   for (const k of keys) {
-    if (Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null && obj[k] !== "") return obj[k];
+    if (Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null && obj[k] !== "") {
+      return obj[k];
+    }
   }
   return "";
 }
@@ -209,6 +211,7 @@ window.onload = () => {
 
   if (!alquilerId) {
     detalle.innerHTML = "<h2>Error: No se proporcionó un ID de alquiler</h2>";
+    loadingEl.style.display = "none";
     return;
   }
 
@@ -218,7 +221,8 @@ window.onload = () => {
     .then(res => res.json())
     .then(data => {
       loadingEl.style.display = "none";
-      if (data.success) {
+      console.log("Backend response:", data); // Debug: Log the full response
+      if (data.success && data.alquiler) {
         const alquiler = data.alquiler;
         const precio = (alquiler.Precio && !isNaN(alquiler.Precio)) ? formatPrice(alquiler.Precio) : "No disponible";
         detalle.innerHTML = `
@@ -240,20 +244,25 @@ window.onload = () => {
         const imgContainer = document.createElement("div");
         imgContainer.id = "imagenes-container";
         let imageUrls = [];
-        const fotos = getField(alquiler, ["Fotos", "Imagenes", "Imágenes", "images"]);
+        const fotos = getField(alquiler, ["Fotos", "Imagenes", "Imágenes", "images", "Imagen", "fotos", "FOTOS"]);
+        console.log("Fotos field:", fotos); // Debug: Log the Fotos field
         if (fotos) {
           imageUrls = fotos.split(",").map(f => {
             const url = f.trim();
             return url.includes("drive.google.com") ? driveUrlDirect(url) : url;
-          }).filter(url => url);
+          }).filter(url => url && url.startsWith("http"));
+          console.log("Processed image URLs:", imageUrls); // Debug: Log the processed URLs
           imageUrls.forEach((url, index) => {
             const img = document.createElement("img");
             img.src = url;
             img.alt = "Imagen del alquiler";
             img.referrerPolicy = "no-referrer";
+            img.onerror = () => console.error(`Failed to load image: ${url}`); // Debug: Log image load errors
             img.onclick = () => abrirModal(url, imageUrls, index);
             imgContainer.appendChild(img);
           });
+        } else {
+          console.warn("No images found in Fotos field for alquiler:", alquilerId);
         }
         detalle.appendChild(imgContainer);
 
@@ -281,12 +290,13 @@ window.onload = () => {
         detalle.appendChild(mapBtn);
       } else {
         detalle.innerHTML = "<h2>Este alquiler no existe o fue dado de baja</h2>";
+        console.warn("No data or invalid rental:", data);
       }
     })
     .catch(err => {
       loadingEl.style.display = "none";
       detalle.innerHTML = "<h2>Error al cargar los datos del alquiler</h2>";
-      console.error("Error:", err);
+      console.error("Fetch error:", err);
     });
 };
 </script>
