@@ -221,7 +221,7 @@ window.onload = () => {
     .then(res => res.json())
     .then(data => {
       loadingEl.style.display = "none";
-      console.log("Backend response:", data); // Debug: Log the full response
+      console.log("Backend response:", data);
       if (data.success && data.alquiler) {
         const alquiler = data.alquiler;
         const precio = (alquiler.Precio && !isNaN(alquiler.Precio)) ? formatPrice(alquiler.Precio) : "No disponible";
@@ -245,24 +245,29 @@ window.onload = () => {
         imgContainer.id = "imagenes-container";
         let imageUrls = [];
         const fotos = getField(alquiler, ["Fotos", "Imagenes", "Imágenes", "images", "Imagen", "fotos", "FOTOS"]);
-        console.log("Fotos field:", fotos); // Debug: Log the Fotos field
+        console.log("Raw Fotos field:", fotos);
         if (fotos) {
-          imageUrls = fotos.split(",").map(f => {
-            const url = f.trim();
-            return url.includes("drive.google.com") ? driveUrlDirect(url) : url;
-          }).filter(url => url && url.startsWith("http"));
-          console.log("Processed image URLs:", imageUrls); // Debug: Log the processed URLs
+          const rawUrls = fotos.split(",").map(url => url.trim()).filter(url => url);
+          console.log("Split URLs:", rawUrls);
+          imageUrls = rawUrls.map(url => url.includes("drive.google.com") ? driveUrlDirect(url) : url)
+                            .filter(url => url && (url.startsWith("http") || url.startsWith("https")));
+          console.log("Processed image URLs:", imageUrls);
           imageUrls.forEach((url, index) => {
+            console.log(`Creating image element for URL ${index + 1}:`, url);
             const img = document.createElement("img");
             img.src = url;
-            img.alt = "Imagen del alquiler";
+            img.alt = `Imagen del alquiler ${index + 1}`;
             img.referrerPolicy = "no-referrer";
-            img.onerror = () => console.error(`Failed to load image: ${url}`); // Debug: Log image load errors
+            img.onerror = () => console.error(`Failed to load image ${index + 1}: ${url}`);
+            img.onload = () => console.log(`Image ${index + 1} loaded successfully: ${url}`);
             img.onclick = () => abrirModal(url, imageUrls, index);
             imgContainer.appendChild(img);
           });
         } else {
           console.warn("No images found in Fotos field for alquiler:", alquilerId);
+          const p = document.createElement("p");
+          p.textContent = "No hay imágenes disponibles.";
+          imgContainer.appendChild(p);
         }
         detalle.appendChild(imgContainer);
 
