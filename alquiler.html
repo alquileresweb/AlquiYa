@@ -48,6 +48,7 @@ header {
   border-radius: 6px;
   cursor: pointer;
   margin-top: 10px;
+  margin-right: 10px;
 }
 #alquiler-detalle button:hover {
   background: #1ebe57;
@@ -257,6 +258,16 @@ window.onload = () => {
           };
           detalle.appendChild(waBtn);
         }
+
+        const mapBtn = document.createElement("button");
+        mapBtn.textContent = "Ir al Mapa";
+        mapBtn.style.background = "#25D366";
+        mapBtn.style.color = "white";
+        mapBtn.style.marginTop = "10px";
+        mapBtn.onclick = () => {
+          window.location.href = "index.html";
+        };
+        detalle.appendChild(mapBtn);
       } else {
         detalle.innerHTML = "<h2>Este alquiler no existe o fue dado de baja</h2>";
       }
