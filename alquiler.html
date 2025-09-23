@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SSJ5DG33JK"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-SSJ5DG33JK');
+</script>
+<link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+header {
+  background: white;
+  color: white;
+  padding: 15px;
+  text-align: center;
+}
+#alquiler-detalle {
+  max-width: 700px;
+  margin: 20px auto;
+  padding: 15px;
+  border: 2px solid #3483fa;
+  border-radius: 8px;
+  background: #f9f9f9;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+#alquiler-detalle img {
+  max-width: 100%;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+#alquiler-detalle p {
+  margin: 10px 0;
+}
+#alquiler-detalle button {
+  background: #25D366;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+#alquiler-detalle button:hover {
+  background: #1ebe57;
+}
+#loading-msg {
+  display: none;
+  text-align: center;
+  font-weight: bold;
+  margin: 10px;
+  color: #3483fa;
+}
+</style>
+</head>
+<body>
+<header>
+  <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya" style="max-width:250px;margin-bottom:10px;">
+</header>
+<div id="loading-msg">Cargando datos del alquiler...</div>
+<div id="alquiler-detalle"></div>
+<script>
+const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
+
+function driveUrlDirect(url) {
+  let fileId = null;
+  if (url && url.includes("drive.google.com")) {
+    let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (match) fileId = match[1];
+    else {
+      match = url.match(/id=([a-zA-Z0-9_-]+)/);
+      if (match) fileId = match[1];
+    }
+  }
+  return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
+}
+
+window.onload = () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const alquilerId = urlParams.get("id");
+  const loadingEl = document.getElementById("loading-msg");
+  const detalle = document.getElementById("alquiler-detalle");
+
+  if (!alquilerId) {
+    detalle.innerHTML = "<h2>Error: No se proporcionó un ID de alquiler</h2>";
+    return;
+  }
+
+  loadingEl.style.display = "block";
+
+  fetch(`${webAppURL}?action=getAlquiler&id=${encodeURIComponent(alquilerId)}`)
+    .then(res => res.json())
+    .then(data => {
+      loadingEl.style.display = "none";
+      if (data.success) {
+        const alquiler = data.alquiler;
+        detalle.innerHTML = `
+          <h2 id="titulo">${alquiler.titulo || "Alquiler"}</h2>
+          <p><b>Precio:</b> <span id="precio">$${alquiler.precio.toLocaleString('es-AR')}</span></p>
+          <p><b>Descripción:</b> <span id="descripcion">${alquiler.descripcion || ""}</span></p>
+        `;
+        if (alquiler.imagen) {
+          const img = document.createElement("img");
+          img.id = "imagen";
+          img.src = driveUrlDirect(alquiler.imagen);
+          img.alt = "Imagen del alquiler";
+          img.referrerPolicy = "no-referrer";
+          detalle.appendChild(img);
+        }
+        if (alquiler.contacto) {
+          const waBtn = document.createElement("button");
+          waBtn.textContent = "Contactar por WhatsApp";
+          waBtn.onclick = () => {
+            const mensaje = `Hola, quiero consultar por el alquiler ${alquiler.titulo}`;
+            window.open(`https://wa.me/${alquiler.contacto}?text=${encodeURIComponent(mensaje)}`, "_blank");
+          };
+          detalle.appendChild(waBtn);
+        }
+      } else {
+        detalle.innerHTML = "<h2>Este alquiler no existe o fue dado de baja</h2>";
+      }
+    })
+    .catch(err => {
+      loadingEl.style.display = "none";
+      detalle.innerHTML = "<h2>Error al cargar los datos del alquiler</h2>";
+      console.error("Error:", err);
+    });
+};
+</script>
+</body>
+</html>
