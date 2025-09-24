@@ -142,6 +142,19 @@ header {
 #modal-img .next-btn {
   right: 10px;
 }
+.marker-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #3483fa;
+  color: white;
+  font-weight: bold;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  border: 2px solid white;
+  box-shadow: 0 0 2px #000;
+}
 </style>
 </head>
 <body>
@@ -170,6 +183,11 @@ function getField(obj, keys) {
     }
   }
   return "";
+}
+
+function toInt(val, def=0) {
+  const n = parseInt(val, 10);
+  return isNaN(n) ? def : n;
 }
 
 function driveUrlDirect(url) {
@@ -214,8 +232,8 @@ function cambiarImagen(direction) {
   document.getElementById("img-grande").src = currentImages[currentImageIndex];
 }
 
-function initMap(lat, lng, direccion) {
-  console.log(`Initializing map with lat: ${lat}, lng: ${lng}, address: ${direccion}`);
+function initMap(lat, lng, direccion, nroAmb) {
+  console.log(`Initializing map with lat: ${lat}, lng: ${lng}, address: ${direccion}, rooms: ${nroAmb}`);
   const mapContainer = document.getElementById("map");
   if (!mapContainer) {
     console.error("Map container not found");
@@ -231,10 +249,43 @@ function initMap(lat, lng, direccion) {
     maxZoom: 19
   }).addTo(map);
   
-  // Add marker with popup
-  L.marker([lat, lng]).addTo(map)
-    .bindPopup(`<b>${direccion}</b>`)
+  // Create layer group for markers
+  const markersLayer = L.layerGroup().addTo(map);
+  
+  // Rental marker
+  const rentalIcon = L.divIcon({
+    className: 'marker-icon',
+    html: `🏠<span style="font-size:12px;margin-left:2px;">${nroAmb || "-"}</span>`,
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+    popupAnchor: [0, -15]
+  });
+  L.marker([lat, lng], { icon: rentalIcon })
+    .addTo(markersLayer)
+    .bindPopup(`<b>Alquiler: ${direccion}</b>`)
     .openPopup();
+  
+  // Facultad Fundación Barceló marker
+  const uniIcon = L.divIcon({
+    className: 'marker-icon',
+    html: '🎓',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15]
+  });
+  L.marker([-28.5509978, -56.0409727], { icon: uniIcon })
+    .addTo(markersLayer)
+    .bindPopup("<b>Facultad Fundación Barceló</b>");
+  
+  // Hospital Universitario San Juan Bautista marker
+  const hospIcon = L.divIcon({
+    className: 'marker-icon',
+    html: '🏥',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15]
+  });
+  L.marker([-28.5551127, -56.0389282], { icon: hospIcon })
+    .addTo(markersLayer)
+    .bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
   
   console.log("Map initialized successfully");
 }
@@ -311,11 +362,12 @@ window.onload = () => {
         const lat = parseFloat(getField(alquiler, ["Lat", "Latitude", "Latitud"]));
         const lng = parseFloat(getField(alquiler, ["Lng", "Longitude", "Longitud"]));
         const direccion = getField(alquiler, ["Direccion", "Dirección", "Domicilio"]) || "Sin dirección";
+        const nroAmb = toInt(getField(alquiler, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]), "-");
         if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
           const mapDiv = document.createElement("div");
           mapDiv.id = "map";
           detalle.appendChild(mapDiv);
-          initMap(lat, lng, direccion);
+          initMap(lat, lng, direccion, nroAmb);
         } else {
           console.warn("Invalid or missing coordinates for map:", { lat, lng });
           const p = document.createElement("p");
