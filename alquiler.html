@@ -382,7 +382,7 @@ window.onload = () => {
           waBtn.style.color = "white";
           waBtn.style.marginTop = "10px";
           waBtn.onclick = () => {
-            const mensaje = `Hola, quiero consultar por el alquiler de ${getField(alquiler, ["Direccion", "Dirección", "Domicilio"]) || "sin dirección"}`;
+            const mensaje = `Hola, vengo desde AlquiYa y quiero consultar por el alquiler de ${getField(alquiler, ["Direccion", "Dirección", "Domicilio"]) || "sin dirección"}`;
             window.open(`https://wa.me/${alquiler.Contacto}?text=${encodeURIComponent(mensaje)}`, "_blank");
           };
           detalle.appendChild(waBtn);
