@@ -11,6 +11,8 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-SSJ5DG33JK');
 </script>
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
 <style>
 body {
@@ -73,6 +75,13 @@ header {
   border-radius: 6px;
   object-fit: cover;
   cursor: pointer;
+}
+#map {
+  height: 400px;
+  width: 100%;
+  margin-top: 20px;
+  border-radius: 6px;
+  border: 1px solid #3483fa;
 }
 #modal-img {
   display: none;
@@ -147,6 +156,8 @@ header {
   <button class="nav-btn prev-btn" onclick="cambiarImagen(-1)">&lt;</button>
   <button class="nav-btn next-btn" onclick="cambiarImagen(1)">&gt;</button>
 </div>
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
 const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 let currentImages = [];
@@ -201,6 +212,31 @@ function cerrarModal() {
 function cambiarImagen(direction) {
   currentImageIndex = (currentImageIndex + direction + currentImages.length) % currentImages.length;
   document.getElementById("img-grande").src = currentImages[currentImageIndex];
+}
+
+function initMap(lat, lng, direccion) {
+  console.log(`Initializing map with lat: ${lat}, lng: ${lng}, address: ${direccion}`);
+  const mapContainer = document.getElementById("map");
+  if (!mapContainer) {
+    console.error("Map container not found");
+    return;
+  }
+  
+  // Initialize Leaflet map
+  const map = L.map(mapContainer).setView([lat, lng], 15);
+  
+  // Add OpenStreetMap tiles
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19
+  }).addTo(map);
+  
+  // Add marker with popup
+  L.marker([lat, lng]).addTo(map)
+    .bindPopup(`<b>${direccion}</b>`)
+    .openPopup();
+  
+  console.log("Map initialized successfully");
 }
 
 window.onload = () => {
@@ -270,6 +306,22 @@ window.onload = () => {
           imgContainer.appendChild(p);
         }
         detalle.appendChild(imgContainer);
+
+        // Initialize map if valid coordinates are available
+        const lat = parseFloat(getField(alquiler, ["Lat", "Latitude", "Latitud"]));
+        const lng = parseFloat(getField(alquiler, ["Lng", "Longitude", "Longitud"]));
+        const direccion = getField(alquiler, ["Direccion", "Dirección", "Domicilio"]) || "Sin dirección";
+        if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+          const mapDiv = document.createElement("div");
+          mapDiv.id = "map";
+          detalle.appendChild(mapDiv);
+          initMap(lat, lng, direccion);
+        } else {
+          console.warn("Invalid or missing coordinates for map:", { lat, lng });
+          const p = document.createElement("p");
+          p.innerHTML = "<b>Ubicación:</b> No disponible";
+          detalle.appendChild(p);
+        }
 
         if (alquiler.Contacto) {
           const waBtn = document.createElement("button");
