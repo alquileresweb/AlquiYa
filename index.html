@@ -335,6 +335,7 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 <input type="number" id="filtroAmb" placeholder="Nro de Ambientes">
 <input type="text" id="filtroMin" placeholder="Precio Mínimo" oninput="formatCurrency(this)">
 <input type="text" id="filtroMax" placeholder="Precio Máximo" oninput="formatCurrency(this)">
+<input type="checkbox" id="filtroMascotas"> Solo deptos que permiten mascotas
 <button onclick="cargarAlquileres()">Filtrar</button>
 </div>
 
@@ -762,6 +763,7 @@ L.marker([-28.5551127,-56.0389282],{icon:hospIcon}).addTo(markersLayer).bindPopu
 const filtroAmb = document.getElementById("filtroAmb").value;
 const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
 const filtroMax = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
+const filtroMascotas = document.getElementById("filtroMascotas").checked;
 
 fetch(webAppURL + "?action=getAlquileres")
 .then(res => res.json())
@@ -788,11 +790,12 @@ const formattedPrecio = formatPrice(precioVal);
 
 if(filtroAmb && nroAmb !== toInt(filtroAmb)) return;
 if(precio < filtroMin || precio > filtroMax) return;
+const mascotas = getField(a, ["Mascotas"]);
+if(filtroMascotas && mascotas !== "Si") return;
 
 const direccion = getField(a, ["Direccion","Dirección","Domicilio"]);
 const infoIngreso = getField(a, ["Informacion ingreso","Información ingreso","InformacionIngreso","InfoIngreso","Informacion de ingreso"]);
 const detalles = getField(a, ["Detalles","Detalle","Descripcion","Descripción"]);
-const mascotas = getField(a, ["Mascotas"]);
 const contacto = getField(a, ["Contacto","Whatsapp","WhatsApp","Tel","Telefono","Teléfono"]);
 const enlace = getField(a, ["Enlace"]);
 
