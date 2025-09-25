@@ -24,6 +24,8 @@ nav a:hover{color:#3483fa}
 #filtros input{flex:1;min-width:120px;padding:8px;border-radius:6px;border:1px solid #ccc}
 #filtros button{padding:8px 15px;border-radius:6px;background:#3483fa;color:white;border:none;cursor:pointer}
 #filtros button:hover{background:#2565c0}
+#filtros label{display:flex;align-items:center;gap:5px;}
+#filtros input[type="checkbox"]{width:auto;min-width:auto;}
 #boton-filtros-container{display:flex;justify-content:center;gap:10px;margin:10px;}
 #boton-filtros-container button{width:auto;padding:8px 20px}
 #login,#panel-dueno,#registro,#avisos-panel{display:none;max-width:500px;margin:20px auto;padding:20px}
@@ -254,18 +256,6 @@ color: green;
 #copy-msg.error {
 color: red;
 }
-#filtroMascotasLabel {
-display: flex;
-align-items: center;
-gap: 5px;
-min-width: 150px;
-}
-#filtroMascotasLabel input[type="checkbox"] {
-flex: none;
-width: auto;
-min-width: auto;
-margin: 0;
-}
 </style>
 </head>
 <body>
@@ -347,7 +337,7 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 <input type="number" id="filtroAmb" placeholder="Nro de Ambientes">
 <input type="text" id="filtroMin" placeholder="Precio Mínimo" oninput="formatCurrency(this)">
 <input type="text" id="filtroMax" placeholder="Precio Máximo" oninput="formatCurrency(this)">
-<label id="filtroMascotasLabel" for="filtroMascotas"><input type="checkbox" id="filtroMascotas"> Permite Mascotas</label>
+<label><input type="checkbox" id="filtroMascotas"> Mascotas Permitidas</label>
 <button onclick="cargarAlquileres()">Filtrar</button>
 </div>
 
@@ -739,7 +729,7 @@ if(match) fileId = match[1];
 return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
 }
 function abrirModal(src, images, index){
-currentImages = imagesq
+currentImages = images;
 currentImageIndex = index;
 const modal = document.getElementById("modal-img");
 const img = document.getElementById("img-grande");
@@ -769,7 +759,7 @@ markersLayer.clearLayers();
 const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15]});
 const hospIcon = L.divIcon({className:'marker-icon', html:'🏥', iconSize:[30,30], iconAnchor:[15,15]});
 
-L.marker([-28.5509978,-56.0409727],{icon:uniIcon}).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
+L.marker([-28.5509978,-56.0409727],{icon:uniIcon}).addTo(markersLayer).bindPopup("<b>Facultad Fundaciónദ Foundation Barceló</b>");
 L.marker([-28.5551127,-56.0389282],{icon:hospIcon}).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
 
 const filtroAmb = document.getElementById("filtroAmb").value;
@@ -802,12 +792,12 @@ const formattedPrecio = formatPrice(precioVal);
 
 if(filtroAmb && nroAmb !== toInt(filtroAmb)) return;
 if(precio < filtroMin || precio > filtroMax) return;
-if(filtroMascotas && getField(a, ["Mascotas"]) !== "Si") return;
+const mascotas = getField(a, ["Mascotas"]);
+if(filtroMascotas && (!mascotas || mascotas.toLowerCase() !== "sí")) return;
 
 const direccion = getField(a, ["Direccion","Dirección","Domicilio"]);
 const infoIngreso = getField(a, ["Informacion ingreso","Información ingreso","InformacionIngreso","InfoIngreso","Informacion de ingreso"]);
 const detalles = getField(a, ["Detalles","Detalle","Descripcion","Descripción"]);
-const mascotas = getField(a, ["Mascotas"]);
 const contacto = getField(a, ["Contacto","Whatsapp","WhatsApp","Tel","Telefono","Teléfono"]);
 const enlace = getField(a, ["Enlace"]);
 
