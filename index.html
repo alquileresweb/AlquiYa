@@ -254,6 +254,18 @@ color: green;
 #copy-msg.error {
 color: red;
 }
+#filtroMascotasLabel {
+display: flex;
+align-items: center;
+gap: 5px;
+min-width: 150px;
+}
+#filtroMascotasLabel input[type="checkbox"] {
+flex: none;
+width: auto;
+min-width: auto;
+margin: 0;
+}
 </style>
 </head>
 <body>
@@ -335,7 +347,7 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 <input type="number" id="filtroAmb" placeholder="Nro de Ambientes">
 <input type="text" id="filtroMin" placeholder="Precio Mínimo" oninput="formatCurrency(this)">
 <input type="text" id="filtroMax" placeholder="Precio Máximo" oninput="formatCurrency(this)">
-<input type="checkbox" id="filtroMascotas"> Solo deptos que permiten mascotas
+<label id="filtroMascotasLabel" for="filtroMascotas"><input type="checkbox" id="filtroMascotas"> Permite Mascotas</label>
 <button onclick="cargarAlquileres()">Filtrar</button>
 </div>
 
@@ -727,7 +739,7 @@ if(match) fileId = match[1];
 return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
 }
 function abrirModal(src, images, index){
-currentImages = images;
+currentImages = imagesq
 currentImageIndex = index;
 const modal = document.getElementById("modal-img");
 const img = document.getElementById("img-grande");
@@ -790,12 +802,12 @@ const formattedPrecio = formatPrice(precioVal);
 
 if(filtroAmb && nroAmb !== toInt(filtroAmb)) return;
 if(precio < filtroMin || precio > filtroMax) return;
-const mascotas = getField(a, ["Mascotas"]);
-if(filtroMascotas && mascotas !== "Si") return;
+if(filtroMascotas && getField(a, ["Mascotas"]) !== "Si") return;
 
 const direccion = getField(a, ["Direccion","Dirección","Domicilio"]);
 const infoIngreso = getField(a, ["Informacion ingreso","Información ingreso","InformacionIngreso","InfoIngreso","Informacion de ingreso"]);
 const detalles = getField(a, ["Detalles","Detalle","Descripcion","Descripción"]);
+const mascotas = getField(a, ["Mascotas"]);
 const contacto = getField(a, ["Contacto","Whatsapp","WhatsApp","Tel","Telefono","Teléfono"]);
 const enlace = getField(a, ["Enlace"]);
 
