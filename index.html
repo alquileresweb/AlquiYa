@@ -641,7 +641,8 @@ method: "POST",
 body: params,
 headers: {
 "Content-Type": "application/x-www-form-urlencoded"
-}
+},
+mode: "no-cors"
 })
 .then(() => {
 document.getElementById("registro-msg").style.color = "green";
@@ -651,7 +652,7 @@ setTimeout(() => mostrarLogin(), 2000);
 .catch(error => {
 console.error("Error en registro:", error);
 document.getElementById("registro-msg").style.color = "red";
-document.getElementById("registro-msg").textContent = `Error: ${error.message}`;
+document.getElementById("registro-msg").textContent = "Error al conectar con el servidor. Por favor, intenta de nuevo.";
 });
 }
 
@@ -758,7 +759,7 @@ markersLayer.clearLayers();
 
 const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15]});
 const hospIcon = L.divIcon({className:'marker-icon', html:'🏥', iconSize:[30,30], iconAnchor:[15,15]});
-const superIcon = L.divIcon({className:'marker-icon', html:'🛒', iconSize:[30,30], iconAnchor:[15,15]});
+const superIcon = L.divIcon({className:'marker-icon', html:'🛍️', iconSize:[30,30], iconAnchor:[15,15]});
 const busIcon = L.divIcon({className:'marker-icon', html:'🚌', iconSize:[30,30], iconAnchor:[15,15]});
 const policeIcon = L.divIcon({className:'marker-icon', html:'👮', iconSize:[30,30], iconAnchor:[15,15]});
 
@@ -766,8 +767,9 @@ L.marker([-28.5509978,-56.0409727],{icon:uniIcon}).addTo(markersLayer).bindPopup
 L.marker([-28.5551127,-56.0389282],{icon:hospIcon}).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
 L.marker([-28.5519443,-56.0401962],{icon:superIcon}).addTo(markersLayer).bindPopup("<b>Supermercado La Bomba</b>");
 L.marker([-28.5472635,-56.0438082],{icon:superIcon}).addTo(markersLayer).bindPopup("<b>Supermercado El Super</b>");
-L.marker([-28.5468697,-56.0432862],{icon:busIcon}).addTo(markersLayer).bindPopup("<b>Terminal de Ómnibus</b>");
-L.marker([-28.5491383,-56.0383375],{icon:policeIcon}).addTo(markersLayer).bindPopup("<b>Unidad Regional V - Policía</b>");
+L.marker([-28.5462903,-56.0440365],{icon:superIcon}).addTo(markersLayer).bindPopup("<b>Supermercado La Economía</b>");
+L.marker([-28.5468697,-56.0432862],{icon:busIcon}).addTo(markersLayer).bindPopup("<b>Terminal de Omnibus</b>");
+L.marker([-28.5487787,-56.0396171],{icon:policeIcon}).addTo(markersLayer).bindPopup("<b>Policía</b>");
 
 const filtroAmb = document.getElementById("filtroAmb").value;
 const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
