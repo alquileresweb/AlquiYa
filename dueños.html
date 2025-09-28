@@ -624,7 +624,7 @@ const mascotas = document.getElementById("mascotas").value;
 const infoIngreso = document.getElementById("infoIngreso").value;
 const detalles = document.getElementById("detalles").value;
 let row = document.getElementById("editRow").value || new Date().getTime();
-const enlaceCompartir = document.getElementById("editRow").value ? document.getElementById("enlaceCompartir").value : "";
+const enlaceCompartir = document.getElementById("editRow").value ? document.getElementById("enlaceCompartir").value : `www.alquiya.com.ar/${row}`;
 const email = localStorage.getItem("dueno");
 if (!direccion || !ambientes || !precio) { 
 msgEl.className = "estado-msg error";
@@ -674,9 +674,8 @@ document.getElementById("btnAgregarAlquiler").textContent = "➖ Cerrar Formular
 document.getElementById("formulario").classList.add("active");
 document.getElementById("btnGuardar").textContent = "Guardar Cambios";
 document.getElementById("editRow").value = row;
-// Preservar el enlace completo, incluyendo "www.alquiya.com.ar/"
-document.getElementById("enlaceCompartir").value = datos["Enlace para compartir"] ? datos["Enlace para compartir"] : "";
-document.getElementById("direccion").value = datos.Direccion ? datos.Direccion.replace(", Santo Tomé Corrientes", "") : "";
+document.getElementById("enlaceCompartir").value = datos["Enlace para compartir"] || `www.alquiya.com.ar/${row}`;
+document.getElementById("direccion").value = datos.Direccion || "";
 document.getElementById("ambientes").value = datos["Nro Ambientes"] || "";
 document.getElementById("precio").value = formatoPrecio(datos.Precio);
 document.getElementById("mascotas").value = datos.Mascotas || "No";
