@@ -624,7 +624,7 @@ const mascotas = document.getElementById("mascotas").value;
 const infoIngreso = document.getElementById("infoIngreso").value;
 const detalles = document.getElementById("detalles").value;
 let row = document.getElementById("editRow").value || new Date().getTime();
-const enlaceCompartir = document.getElementById("editRow").value ? document.getElementById("enlaceCompartir").value : `www.alquiya.com.ar/${row}`;
+const enlaceCompartir = document.getElementById("editRow").value ? document.getElementById("enlaceCompartir").value : "";
 const email = localStorage.getItem("dueno");
 if (!direccion || !ambientes || !precio) { 
 msgEl.className = "estado-msg error";
@@ -661,6 +661,7 @@ estado = "Inactivo";
 }
 const script = document.createElement("script");
 let query = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&contacto=auto&estado=${estado}`;
+// Aseguramos que el enlaceCompartir (columna N) se mantenga intacto al editar
 if (enlaceCompartir) query += `&enlaceCompartir=${encodeURIComponent(enlaceCompartir)}`;
 query += `&callback=${callback}`;
 script.src = query;
@@ -670,11 +671,12 @@ document.body.appendChild(script);
 
 // === FUNCIONES RESTANTES ===
 function editarAlquiler(row, datos) {
+// Preservamos el valor del campo "Enlace para compartir" (columna N) al editar
 document.getElementById("btnAgregarAlquiler").textContent = "➖ Cerrar Formulario";
 document.getElementById("formulario").classList.add("active");
 document.getElementById("btnGuardar").textContent = "Guardar Cambios";
 document.getElementById("editRow").value = row;
-document.getElementById("enlaceCompartir").value = datos["Enlace para compartir"] || `www.alquiya.com.ar/${row}`;
+document.getElementById("enlaceCompartir").value = datos["Enlace para compartir"] || "";
 document.getElementById("direccion").value = datos.Direccion || "";
 document.getElementById("ambientes").value = datos["Nro Ambientes"] || "";
 document.getElementById("precio").value = formatoPrecio(datos.Precio);
