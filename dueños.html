@@ -674,7 +674,8 @@ document.getElementById("btnAgregarAlquiler").textContent = "➖ Cerrar Formular
 document.getElementById("formulario").classList.add("active");
 document.getElementById("btnGuardar").textContent = "Guardar Cambios";
 document.getElementById("editRow").value = row;
-document.getElementById("enlaceCompartir").value = datos["Enlace para compartir"] ? datos["Enlace para compartir"].replace(/^https?:\/\//, '') : "";
+// Preservar el enlace completo, incluyendo "www.alquiya.com.ar/"
+document.getElementById("enlaceCompartir").value = datos["Enlace para compartir"] ? datos["Enlace para compartir"] : "";
 document.getElementById("direccion").value = datos.Direccion ? datos.Direccion.replace(", Santo Tomé Corrientes", "") : "";
 document.getElementById("ambientes").value = datos["Nro Ambientes"] || "";
 document.getElementById("precio").value = formatoPrecio(datos.Precio);
