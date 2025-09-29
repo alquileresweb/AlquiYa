@@ -206,6 +206,10 @@ color: #333;
 <input type="file" id="imagenFile" accept="image/png, image/jpeg" multiple>
 <div id="previewContainer"></div>
 
+<label>Videos del Alquiler (MP4, múltiples)</label>
+<input type="file" id="videoFile" accept="video/*" multiple>
+<input type="hidden" id="videosExistentes" value="">
+
 <label>Información de ingreso</label>
 <textarea id="infoIngreso" rows="2"></textarea>
 
@@ -281,6 +285,9 @@ const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
 const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
 const GEOCODE_KEY = "AIzaSyAisqYSTfpQ_rqqutAomzitD2v_dtKYtLE";
 const MP_BEARER = "APP_USR-595288641172928-010710-d915bce4137b3ee26e0c6e04873f1ac1-695835795";
+const MUX_API = "https://api.mux.com/video/v1";
+const MUX_ACCESS_TOKEN = "1a8d879e-b605-4b88-a956-d15074a41329";
+const MUX_SECRET = "mIh08wEDvQkUY0vzdClsNJmCvm1S0WtuS8SXSiNcE8qRtErPIpWzh91f3m5GW94XTdLq/jURrGN";
 let imagenesBase64 = [];
 let planActual = null;
 let limiteDeptos = 0;
@@ -370,6 +377,69 @@ return json.secure_url;
 console.error("Error subiendo imagen a Cloudinary:", err);
 return null;
 }
+}
+
+// === SUBIR VIDEOS A MUX ===
+async function subirVideoMux(file) {
+  const auth = btoa(`${MUX_ACCESS_TOKEN}:${MUX_SECRET}`);
+  try {
+    // Crear upload directo
+    const uploadRes = await fetch(`${MUX_API}/uploads`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        cors_origin: "*",
+        new_asset_settings: {
+          playback_policy: ["public"]
+        }
+      })
+    });
+    if (!uploadRes.ok) throw new Error(`HTTP error! status: ${uploadRes.status}`);
+    const uploadData = await uploadRes.json();
+    const uploadUrl = uploadData.data.url;
+    const uploadId = uploadData.data.id;
+
+    // Subir el archivo al URL proporcionado
+    const putRes = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': file.type || 'video/mp4'
+      },
+      body: file
+    });
+    if (!putRes.ok) throw new Error(`Upload failed: ${putRes.status}`);
+
+    // Polling para verificar si el asset está listo
+    let tries = 0;
+    const maxTries = 30; // Máximo 150 segundos
+    let assetId;
+    while (tries < maxTries) {
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      tries++;
+      const statusRes = await fetch(`${MUX_API}/uploads/${uploadId}`, {
+        headers: { 'Authorization': `Basic ${auth}` }
+      });
+      const statusData = await statusRes.json();
+      assetId = statusData.data.asset_id;
+      if (assetId) {
+        const assetRes = await fetch(`${MUX_API}/assets/${assetId}`, {
+          headers: { 'Authorization': `Basic ${auth}` }
+        });
+        const assetData = await assetRes.json();
+        if (assetData.data.status === 'ready') {
+          const playbackId = assetData.data.playback_ids.find(p => p.policy === 'public').id;
+          return `https://stream.mux.com/${playbackId}.m3u8`;
+        }
+      }
+    }
+    throw new Error('Asset not ready in time');
+  } catch (err) {
+    console.error('Error uploading to Mux:', err);
+    return null;
+  }
 }
 
 // === MENÚ HAMBURGUESA ===
@@ -639,6 +709,18 @@ for (let i = 0; i < files.length; i++) {
 const url = await subirImagenCloudinary(files[i]);
 if (url) uploadedURLs.push(url);
 }
+const oldImages = imagenesBase64.filter(src => src.startsWith('https://'));
+const fotosConcatenadas = [...oldImages, ...uploadedURLs].join(",");
+const videoFiles = document.getElementById("videoFile").files;
+let uploadedVideoURLs = [];
+for (let i = 0; i < videoFiles.length; i++) {
+const url = await subirVideoMux(videoFiles[i]);
+if (url) uploadedVideoURLs.push(url);
+}
+let videosConcatenados = uploadedVideoURLs.join(",");
+if (document.getElementById("editRow").value && uploadedVideoURLs.length === 0) {
+  videosConcatenados = document.getElementById("videosExistentes").value;
+}
 fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(direccion)}&key=${GEOCODE_KEY}`)
 .then(r => r.json()).then(data => {
 let lat = "", lng = "";
@@ -646,13 +728,13 @@ if (data.results && data.results[0]) {
 lat = data.results[0].geometry.location.lat;
 lng = data.results[0].geometry.location.lng;
 }
-enviarAlquiler(uploadedURLs.join(","), lat, lng, enlaceCompartir);
+enviarAlquiler(fotosConcatenadas, lat, lng, enlaceCompartir, videosConcatenados);
 }).catch(err => {
 msgEl.className = "estado-msg error";
 msgEl.textContent = "Error al obtener coordenadas: " + (err.message || "Error de conexión");
 setTimeout(() => { msgEl.textContent = ""; }, 5000);
 });
-function enviarAlquiler(fotosConcatenadas, lat, lng, enlaceCompartir) {
+function enviarAlquiler(fotosConcatenadas, lat, lng, enlaceCompartir, videosConcatenados) {
 const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
 const callback = action === "editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
 let estado = "Activo";
@@ -660,7 +742,7 @@ if (action === "editAlquiler" && deptosActivos >= limiteDeptos && planActual !==
 estado = "Inactivo";
 }
 const script = document.createElement("script");
-let query = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&contacto=auto&estado=${estado}`;
+let query = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&contacto=auto&estado=${estado}&videos=${encodeURIComponent(videosConcatenados)}`;
 // Aseguramos que el enlaceCompartir (columna N) se mantenga intacto al editar
 if (enlaceCompartir) query += `&enlaceCompartir=${encodeURIComponent(enlaceCompartir)}`;
 query += `&callback=${callback}`;
@@ -685,6 +767,7 @@ document.getElementById("infoIngreso").value = datos.InfoIngreso || "";
 document.getElementById("detalles").value = datos.Detalles || "";
 imagenesBase64 = datos.Fotos ? datos.Fotos.split(",") : [];
 actualizarPreview();
+document.getElementById("videosExistentes").value = datos.Videos || "";
 window.scrollTo(0, document.getElementById("formulario").offsetTop);
 }
 
@@ -701,8 +784,10 @@ document.getElementById("mascotas").value = "Sí";
 document.getElementById("infoIngreso").value = "";
 document.getElementById("detalles").value = "";
 document.getElementById("imagenFile").value = "";
+document.getElementById("videoFile").value = "";
 imagenesBase64 = [];
 actualizarPreview();
+document.getElementById("videosExistentes").value = "";
 document.getElementById("msg").textContent = "";
 }
 
