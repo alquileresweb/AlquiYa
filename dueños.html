@@ -123,7 +123,7 @@ button { font-size: 1.5em; padding: 16px 22px; }
 #formulario, #formularioRegistro { font-size: 1.5em; padding: 24px; }
 input, select, textarea { font-size: 1.4em; padding: 16px; }
 .contacto-container select { width: 80px; }
-.contacto-container input { distill-none: 150px; }
+.contacto-container input { min-width: 150px; }
 .password-container .toggle-password { padding: 12px; font-size: 1.5em; }
 .preview-img { max-width: 160px; }
 .preview-video { max-width: 160px; }
@@ -416,25 +416,27 @@ return null;
 
 // === SUBIR VIDEO A MUX ===
 async function subirVideoMux(file, row) {
-  try {
-    const response = await fetch(`${API_URL}?action=uploadVideoMux`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ action: "uploadVideoMux", video: await fileToBase64(file), row: row || "" })
-    });
-    const json = await response.json();
-    if (json.success && json.videoUrl) {
-      return json.videoUrl;
-    } else {
-      console.error("Error en la respuesta de Mux:", json.error || "Sin URL de video");
-      return null;
-    }
-  } catch (err) {
-    console.error("Error subiendo video a Mux:", err);
-    return null;
-  }
+try {
+const response = await fetch(`${API_URL}?action=uploadVideoMux`, {
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify({
+action: "uploadVideoMux",
+video: await fileToBase64(file),
+row: row || ""
+})
+});
+const json = await response.json();
+if (json.success && json.videoUrl) {
+return json.videoUrl;
+} else {
+console.error("Error en la respuesta de Mux:", json.error || "Sin URL de video");
+return null;
+}
+} catch (err) {
+console.error("Error subiendo video a Mux:", err);
+return null;
+}
 }
 
 // === CONVERTIR ARCHIVO A BASE64 ===
