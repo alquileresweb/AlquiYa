@@ -416,25 +416,25 @@ return null;
 
 // === SUBIR VIDEO A MUX ===
 async function subirVideoMux(file, row) {
-const formData = new FormData();
-formData.append("video", file);
-if (row) formData.append("row", row);
-try {
-const response = await fetch(`${API_URL}?action=uploadVideoMux`, {
-method: "POST",
-body: JSON.stringify({ action: "uploadVideoMux", video: await fileToBase64(file), row: row || "" })
-});
-const json = await response.json();
-if (json.success && json.videoUrl) {
-return json.videoUrl;
-} else {
-console.error("Error en la respuesta de Mux:", json.error || "Sin URL de video");
-return null;
-}
-} catch (err) {
-console.error("Error subiendo video a Mux:", err);
-return null;
-}
+  try {
+    const response = await fetch(`${API_URL}?action=uploadVideoMux`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ action: "uploadVideoMux", video: await fileToBase64(file), row: row || "" })
+    });
+    const json = await response.json();
+    if (json.success && json.videoUrl) {
+      return json.videoUrl;
+    } else {
+      console.error("Error en la respuesta de Mux:", json.error || "Sin URL de video");
+      return null;
+    }
+  } catch (err) {
+    console.error("Error subiendo video a Mux:", err);
+    return null;
+  }
 }
 
 // === CONVERTIR ARCHIVO A BASE64 ===
