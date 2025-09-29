@@ -206,9 +206,9 @@ color: #333;
 <input type="file" id="imagenFile" accept="image/png, image/jpeg" multiple>
 <div id="previewContainer"></div>
 
-<label>Videos del Alquiler (MP4, múltiples)</label>
-<input type="file" id="videoFile" accept="video/*" multiple>
-<input type="hidden" id="videosExistentes" value="">
+<label>Video del Alquiler (MP4, opcional)</label>
+<input type="file" id="videoFile" accept="video/mp4">
+<div id="videoPreviewContainer"></div>
 
 <label>Información de ingreso</label>
 <textarea id="infoIngreso" rows="2"></textarea>
@@ -285,10 +285,8 @@ const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
 const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
 const GEOCODE_KEY = "AIzaSyAisqYSTfpQ_rqqutAomzitD2v_dtKYtLE";
 const MP_BEARER = "APP_USR-595288641172928-010710-d915bce4137b3ee26e0c6e04873f1ac1-695835795";
-const MUX_API = "https://api.mux.com/video/v1";
-const MUX_ACCESS_TOKEN = "1a8d879e-b605-4b88-a956-d15074a41329";
-const MUX_SECRET = "mIh08wEDvQkUY0vzdClsNJmCvm1S0WtuS8SXSiNcE8qRtErPIpWzh91f3m5GW94XTdLq/jURrGN";
 let imagenesBase64 = [];
+let videoBase64 = null;
 let planActual = null;
 let limiteDeptos = 0;
 let deptosActivos = 0;
@@ -364,6 +362,43 @@ reader.readAsDataURL(file);
 });
 });
 
+// === PREVIEW VIDEO ===
+function actualizarVideoPreview() {
+const videoPreviewContainer = document.getElementById("videoPreviewContainer");
+videoPreviewContainer.innerHTML = "";
+if (videoBase64) {
+const video = document.createElement("video");
+video.src = videoBase64;
+video.controls = true;
+video.style.maxWidth = "200px";
+video.style.borderRadius = "6px";
+const container = document.createElement("div");
+container.className = "preview-img-container";
+const btnDel = document.createElement("button");
+btnDel.className = "delete-img";
+btnDel.textContent = "x";
+btnDel.onclick = () => {
+videoBase64 = null;
+document.getElementById("videoFile").value = "";
+actualizarVideoPreview();
+};
+container.appendChild(video);
+container.appendChild(btnDel);
+videoPreviewContainer.appendChild(container);
+}
+}
+document.getElementById("videoFile").addEventListener("change", function() {
+const file = this.files[0];
+if (file) {
+const reader = new FileReader();
+reader.onload = function(e) {
+videoBase64 = e.target.result;
+actualizarVideoPreview();
+};
+reader.readAsDataURL(file);
+}
+});
+
 // === SUBIR IMÁGENES ===
 async function subirImagenCloudinary(file) {
 const formData = new FormData();
@@ -379,67 +414,28 @@ return null;
 }
 }
 
-// === SUBIR VIDEOS A MUX ===
-async function subirVideoMux(file) {
-  const auth = btoa(`${MUX_ACCESS_TOKEN}:${MUX_SECRET}`);
-  try {
-    // Crear upload directo
-    const uploadRes = await fetch(`${MUX_API}/uploads`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${auth}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        cors_origin: "*",
-        new_asset_settings: {
-          playback_policy: ["public"]
-        }
-      })
-    });
-    if (!uploadRes.ok) throw new Error(`HTTP error! status: ${uploadRes.status}`);
-    const uploadData = await uploadRes.json();
-    const uploadUrl = uploadData.data.url;
-    const uploadId = uploadData.data.id;
-
-    // Subir el archivo al URL proporcionado
-    const putRes = await fetch(uploadUrl, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': file.type || 'video/mp4'
-      },
-      body: file
-    });
-    if (!putRes.ok) throw new Error(`Upload failed: ${putRes.status}`);
-
-    // Polling para verificar si el asset está listo
-    let tries = 0;
-    const maxTries = 30; // Máximo 150 segundos
-    let assetId;
-    while (tries < maxTries) {
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      tries++;
-      const statusRes = await fetch(`${MUX_API}/uploads/${uploadId}`, {
-        headers: { 'Authorization': `Basic ${auth}` }
-      });
-      const statusData = await statusRes.json();
-      assetId = statusData.data.asset_id;
-      if (assetId) {
-        const assetRes = await fetch(`${MUX_API}/assets/${assetId}`, {
-          headers: { 'Authorization': `Basic ${auth}` }
-        });
-        const assetData = await assetRes.json();
-        if (assetData.data.status === 'ready') {
-          const playbackId = assetData.data.playback_ids.find(p => p.policy === 'public').id;
-          return `https://stream.mux.com/${playbackId}.m3u8`;
-        }
-      }
-    }
-    throw new Error('Asset not ready in time');
-  } catch (err) {
-    console.error('Error uploading to Mux:', err);
-    return null;
-  }
+// === SUBIR VIDEO ===
+async function subirVideoMux(videoBase64, row) {
+try {
+const response = await fetch(API_URL, {
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify({
+action: "uploadVideoMux",
+video: videoBase64,
+row: row
+})
+});
+const result = await response.json();
+if (result.success) {
+return result.viewLink;
+} else {
+throw new Error(result.error || "Error uploading video to Mux");
+}
+} catch (err) {
+console.error("Error subiendo video a Mux:", err);
+throw err;
+}
 }
 
 // === MENÚ HAMBURGUESA ===
@@ -658,9 +654,10 @@ let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Ca
 let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
 let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
 let precioFormateado = formatoPrecio(alq.Precio);
+let videoLink = alq.Video ? `<br>Video: <a href="${alq.Video}" target="_blank">Ver video</a>` : "";
 div.innerHTML += `<div class="alquiler">
 <b>${alq.Direccion}</b> - ${alq['Nro Ambientes']} amb - ${precioFormateado} - Mascotas: ${alq.Mascotas || "N/D"}<br>
-Estado: ${estado}<br>
+Estado: ${estado}${videoLink}<br>
 ${btnEstado} ${btnEditar} ${btnEliminar}
 <span id="estadoMsg-${alq.row}" class="estado-msg"></span>
 </div>`;
@@ -709,17 +706,17 @@ for (let i = 0; i < files.length; i++) {
 const url = await subirImagenCloudinary(files[i]);
 if (url) uploadedURLs.push(url);
 }
-const oldImages = imagenesBase64.filter(src => src.startsWith('https://'));
-const fotosConcatenadas = [...oldImages, ...uploadedURLs].join(",");
-const videoFiles = document.getElementById("videoFile").files;
-let uploadedVideoURLs = [];
-for (let i = 0; i < videoFiles.length; i++) {
-const url = await subirVideoMux(videoFiles[i]);
-if (url) uploadedVideoURLs.push(url);
+let videoLink = "";
+const videoFile = document.getElementById("videoFile").files[0];
+if (videoFile) {
+try {
+videoLink = await subirVideoMux(videoBase64, row);
+} catch (err) {
+msgEl.className = "estado-msg error";
+msgEl.textContent = "Error al subir el video: " + (err.message || "Error de conexión");
+setTimeout(() => { msgEl.textContent = ""; }, 5000);
+return;
 }
-let videosConcatenados = uploadedVideoURLs.join(",");
-if (document.getElementById("editRow").value && uploadedVideoURLs.length === 0) {
-  videosConcatenados = document.getElementById("videosExistentes").value;
 }
 fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(direccion)}&key=${GEOCODE_KEY}`)
 .then(r => r.json()).then(data => {
@@ -728,13 +725,13 @@ if (data.results && data.results[0]) {
 lat = data.results[0].geometry.location.lat;
 lng = data.results[0].geometry.location.lng;
 }
-enviarAlquiler(fotosConcatenadas, lat, lng, enlaceCompartir, videosConcatenados);
+enviarAlquiler(uploadedURLs.join(","), lat, lng, enlaceCompartir, videoLink);
 }).catch(err => {
 msgEl.className = "estado-msg error";
 msgEl.textContent = "Error al obtener coordenadas: " + (err.message || "Error de conexión");
 setTimeout(() => { msgEl.textContent = ""; }, 5000);
 });
-function enviarAlquiler(fotosConcatenadas, lat, lng, enlaceCompartir, videosConcatenados) {
+function enviarAlquiler(fotosConcatenadas, lat, lng, enlaceCompartir, videoLink) {
 const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
 const callback = action === "editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
 let estado = "Activo";
@@ -742,10 +739,10 @@ if (action === "editAlquiler" && deptosActivos >= limiteDeptos && planActual !==
 estado = "Inactivo";
 }
 const script = document.createElement("script");
-let query = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&contacto=auto&estado=${estado}&videos=${encodeURIComponent(videosConcatenados)}`;
+let query = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&contacto=auto&estado=${estado}`;
 // Aseguramos que el enlaceCompartir (columna N) se mantenga intacto al editar
 if (enlaceCompartir) query += `&enlaceCompartir=${encodeURIComponent(enlaceCompartir)}`;
-query += `&callback=${callback}`;
+if (videoLink) query += `&video=${encodeURIComponent(videoLink)}`;
 script.src = query;
 document.body.appendChild(script);
 }
@@ -766,8 +763,9 @@ document.getElementById("mascotas").value = datos.Mascotas || "No";
 document.getElementById("infoIngreso").value = datos.InfoIngreso || "";
 document.getElementById("detalles").value = datos.Detalles || "";
 imagenesBase64 = datos.Fotos ? datos.Fotos.split(",") : [];
+videoBase64 = datos.Video || null;
 actualizarPreview();
-document.getElementById("videosExistentes").value = datos.Videos || "";
+actualizarVideoPreview();
 window.scrollTo(0, document.getElementById("formulario").offsetTop);
 }
 
@@ -786,8 +784,9 @@ document.getElementById("detalles").value = "";
 document.getElementById("imagenFile").value = "";
 document.getElementById("videoFile").value = "";
 imagenesBase64 = [];
+videoBase64 = null;
 actualizarPreview();
-document.getElementById("videosExistentes").value = "";
+actualizarVideoPreview();
 document.getElementById("msg").textContent = "";
 }
 
