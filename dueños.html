@@ -187,6 +187,7 @@ color: #333;
 <div id="formulario">
 <input type="hidden" id="editRow" value="">
 <input type="hidden" id="enlaceCompartir" value="">
+<input type="hidden" id="existingVideos" value="">
 <label>Dirección</label>
 <input type="text" id="direccion">
 
@@ -206,8 +207,8 @@ color: #333;
 <input type="file" id="imagenFile" accept="image/png, image/jpeg" multiple>
 <div id="previewContainer"></div>
 
-<label>Video del Alquiler (opcional)</label>
-<input type="file" id="videoFile" accept="video/*">
+<label>Videos del Alquiler (MP4, múltiples)</label>
+<input type="file" id="videoFile" accept="video/*" multiple>
 
 <label>Información de ingreso</label>
 <textarea id="infoIngreso" rows="2"></textarea>
@@ -284,6 +285,8 @@ const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
 const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
 const GEOCODE_KEY = "AIzaSyAisqYSTfpQ_rqqutAomzitD2v_dtKYtLE";
 const MP_BEARER = "APP_USR-595288641172928-010710-d915bce4137b3ee26e0c6e04873f1ac1-695835795";
+const MUX_TOKEN = "1a8d879e-b605-4b88-a956-d15074a41329";
+const MUX_SECRET = "mIh08wEDvQkUY0vzdClsNJmCvm1S0WtuS8SXSiNcE8qRtErPIpWzh91f3m5GW94XTdLq/jURrGN";
 let imagenesBase64 = [];
 let planActual = null;
 let limiteDeptos = 0;
@@ -375,6 +378,72 @@ return null;
 }
 }
 
+// === SUBIR VIDEO A MUX ===
+async function subirVideoMux(file) {
+const auth = btoa(`${MUX_TOKEN}:${MUX_SECRET}`);
+try {
+  // Crear direct upload
+  const uploadRes = await fetch('https://api.mux.com/video/v1/uploads', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${auth}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      cors_origin: '*',
+      new_asset_settings: {
+        playback_policy: ['public']
+      }
+    })
+  });
+  const uploadData = await uploadRes.json();
+  if (!uploadData.data || !uploadData.data.url) {
+    throw new Error('No se pudo crear la URL de subida');
+  }
+  const uploadUrl = uploadData.data.url;
+  const uploadId = uploadData.data.id;
+
+  // Subir el archivo
+  const uploadFileRes = await fetch(uploadUrl, {
+    method: 'PUT',
+    body: file
+  });
+  if (!uploadFileRes.ok) {
+    throw new Error('Error al subir el video');
+  }
+
+  // Polling para el estado del asset
+  let assetId;
+  while (true) {
+    const statusRes = await fetch(`https://api.mux.com/video/v1/uploads/${uploadId}`, {
+      headers: { 'Authorization': `Basic ${auth}` }
+    });
+    const statusData = await statusRes.json();
+    if (statusData.data.status === 'asset_created') {
+      assetId = statusData.data.asset_id;
+      break;
+    } else if (statusData.data.status === 'errored' || statusData.data.status === 'cancelled') {
+      throw new Error('Error en el procesamiento del video');
+    }
+    await new Promise(resolve => setTimeout(resolve, 2000));
+  }
+
+  // Obtener detalles del asset
+  const assetRes = await fetch(`https://api.mux.com/video/v1/assets/${assetId}`, {
+    headers: { 'Authorization': `Basic ${auth}` }
+  });
+  const assetData = await assetRes.json();
+  if (!assetData.data || !assetData.data.playback_ids || !assetData.data.playback_ids[0]) {
+    throw new Error('No se pudo obtener el playback ID');
+  }
+  const playbackId = assetData.data.playback_ids[0].id;
+  return `https://stream.mux.com/${playbackId}.m3u8`;
+} catch (err) {
+  console.error("Error subiendo video a Mux:", err);
+  return null;
+}
+}
+
 // === MENÚ HAMBURGUESA ===
 function toggleMenu() {
 const menu = document.getElementById("menu");
@@ -423,6 +492,7 @@ console.error("Error verificando pago:", err);
 planStatusEl.innerHTML = `<span class="estado-msg error">❌ Error al verificar el pago. Por favor, intenta de nuevo.</span>`;
 setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
 }
+
 window.history.replaceState({}, document.title, window.location.pathname);
 }
 }
@@ -625,7 +695,7 @@ let precio = document.getElementById("precio").value.replace(/\D/g, "");
 const mascotas = document.getElementById("mascotas").value;
 const infoIngreso = document.getElementById("infoIngreso").value;
 const detalles = document.getElementById("detalles").value;
-let row = document.getElementById("editRow").value || String(new Date().getTime());
+let row = document.getElementById("editRow").value || new Date().getTime();
 const enlaceCompartir = document.getElementById("editRow").value ? document.getElementById("enlaceCompartir").value : "";
 const email = localStorage.getItem("dueno");
 if (!direccion || !ambientes || !precio) { 
@@ -641,69 +711,17 @@ for (let i = 0; i < files.length; i++) {
 const url = await subirImagenCloudinary(files[i]);
 if (url) uploadedURLs.push(url);
 }
-const videoFile = document.getElementById("videoFile").files[0];
-let videoUrl = "";
-if (videoFile) {
-msgEl.textContent = "Subiendo video...";
-try {
-if (videoFile.size > 100 * 1024 * 1024) {
-msgEl.className = "estado-msg error";
-msgEl.textContent = "El video es demasiado grande (máximo 100MB).";
-setTimeout(() => { msgEl.textContent = ""; }, 5000);
-return;
-}
-const reader = new FileReader();
-const base64Promise = new Promise((resolve, reject) => {
-reader.onload = () => resolve(reader.result);
-reader.onerror = reject;
-reader.readAsDataURL(videoFile);
-});
-const base64 = await base64Promise;
-const controller = new AbortController();
-const timeoutId = setTimeout(() => controller.abort(), 30000); // 30-second timeout
-try {
-const res = await fetch(API_URL, {
-method: "POST",
-headers: {
-"Content-Type": "application/json",
-"Accept": "application/json"
-},
-body: JSON.stringify({ action: "uploadVideoMux", video: base64, row: row }),
-signal: controller.signal
-});
-clearTimeout(timeoutId);
-if (!res.ok) {
-if (res.status === 0) {
-console.warn("Video upload failed with status 0 (possible CORS issue). Proceeding without video URL.");
-videoUrl = "";
-} else {
-throw new Error(`Error en la solicitud: ${res.status} ${res.statusText}`);
-}
-} else {
-const json = await res.json();
-if (json.success) {
-videoUrl = json.videoUrl;
-} else {
-throw new Error(json.error || "Error al subir el video");
-}
-}
-} catch (err) {
-if (err.name === "AbortError") {
-throw new Error("La solicitud de subida de video ha superado el tiempo límite (30 segundos)");
-}
-if (err.message.includes("status 0")) {
-// Already handled above
-} else {
-throw err;
-}
-}
-} catch (err) {
-console.error("Error subiendo video:", err);
-msgEl.className = "estado-msg error";
-msgEl.textContent = `Error subiendo video: ${err.message || "desconocido"}`;
-setTimeout(() => { msgEl.textContent = ""; }, 5000);
-return;
-}
+const videoFiles = document.getElementById("videoFile").files;
+let videos = "";
+if (videoFiles.length > 0) {
+  let videoURLs = [];
+  for (let i = 0; i < videoFiles.length; i++) {
+    const url = await subirVideoMux(videoFiles[i]);
+    if (url) videoURLs.push(url);
+  }
+  videos = videoURLs.join(",");
+} else if (document.getElementById("editRow").value) {
+  videos = document.getElementById("existingVideos").value;
 }
 fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(direccion)}&key=${GEOCODE_KEY}`)
 .then(r => r.json()).then(data => {
@@ -712,13 +730,13 @@ if (data.results && data.results[0]) {
 lat = data.results[0].geometry.location.lat;
 lng = data.results[0].geometry.location.lng;
 }
-enviarAlquiler(uploadedURLs.join(","), lat, lng, enlaceCompartir, videoUrl);
+enviarAlquiler(uploadedURLs.join(","), lat, lng, enlaceCompartir, videos);
 }).catch(err => {
 msgEl.className = "estado-msg error";
 msgEl.textContent = "Error al obtener coordenadas: " + (err.message || "Error de conexión");
 setTimeout(() => { msgEl.textContent = ""; }, 5000);
 });
-function enviarAlquiler(fotosConcatenadas, lat, lng, enlaceCompartir, videoUrl) {
+function enviarAlquiler(fotosConcatenadas, lat, lng, enlaceCompartir, videos) {
 const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
 const callback = action === "editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
 let estado = "Activo";
@@ -726,7 +744,7 @@ if (action === "editAlquiler" && deptosActivos >= limiteDeptos && planActual !==
 estado = "Inactivo";
 }
 const script = document.createElement("script");
-let query = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&contacto=auto&estado=${estado}&video=${encodeURIComponent(videoUrl)}`;
+let query = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&contacto=auto&estado=${estado}&videos=${encodeURIComponent(videos)}`;
 // Aseguramos que el enlaceCompartir (columna N) se mantenga intacto al editar
 if (enlaceCompartir) query += `&enlaceCompartir=${encodeURIComponent(enlaceCompartir)}`;
 query += `&callback=${callback}`;
@@ -743,6 +761,7 @@ document.getElementById("formulario").classList.add("active");
 document.getElementById("btnGuardar").textContent = "Guardar Cambios";
 document.getElementById("editRow").value = row;
 document.getElementById("enlaceCompartir").value = datos["Enlace para compartir"] || "";
+document.getElementById("existingVideos").value = datos.Videos || "";
 document.getElementById("direccion").value = datos.Direccion || "";
 document.getElementById("ambientes").value = datos["Nro Ambientes"] || "";
 document.getElementById("precio").value = formatoPrecio(datos.Precio);
@@ -760,6 +779,7 @@ document.getElementById("formulario").classList.remove("active");
 document.getElementById("btnGuardar").textContent = "Agregar";
 document.getElementById("editRow").value = "";
 document.getElementById("enlaceCompartir").value = "";
+document.getElementById("existingVideos").value = "";
 document.getElementById("direccion").value = "";
 document.getElementById("ambientes").value = "";
 document.getElementById("precio").value = "";
@@ -885,16 +905,14 @@ const login = res.data[0];
 document.getElementById("emailEditar").value = login.Email || "";
 document.getElementById("nombreEditar").value = login.Nombre || "";
 document.getElementById("passwordEditar").value = login.Password || "";
-const contacto = String(login.Contacto || "");
+const contacto = login.Contacto || "";
 let codigoPais = "+549"; // Default to Argentina
 let numero = contacto;
-if (typeof contacto === 'string') {
 for (const code of countryCodes) {
 if (contacto.startsWith(code)) {
 codigoPais = code;
 numero = contacto.slice(code.length);
 break;
-}
 }
 }
 document.getElementById("codigoPaisEditar").value = codigoPais;
