@@ -36,6 +36,9 @@ input, select, textarea { width:100%; padding:14px; margin-bottom:16px; font-siz
 .preview-img { max-width: 140px; margin-top: 6px; display:inline-block; position:relative; border-radius:6px; }
 .preview-img-container { display:inline-block; margin-right:6px; position:relative; }
 .delete-img { position:absolute; top:0; right:0; background:red; color:white; border:none; border-radius:50%; cursor:pointer; font-weight:bold; padding:3px 8px; }
+.preview-video { max-width: 140px; margin-top: 6px; display:inline-block; position:relative; border-radius:6px; }
+.preview-video-container { display:inline-block; margin-right:6px; position:relative; }
+.delete-video { position:absolute; top:0; right:0; background:red; color:white; border:none; border-radius:50%; cursor:pointer; font-weight:bold; padding:3px 8px; }
 #planStatus { margin:14px 0; font-weight:bold; font-size:1.4em; text-align:center; padding:12px; border-radius:6px; }
 progress { width: 100%; height:24px; }
 .modal {
@@ -123,6 +126,7 @@ input, select, textarea { font-size: 1.4em; padding: 16px; }
 .contacto-container input { distill-none: 150px; }
 .password-container .toggle-password { padding: 12px; font-size: 1.5em; }
 .preview-img { max-width: 160px; }
+.preview-video { max-width: 160px; }
 #planStatus { font-size: 1.6em; }
 .modal-content { width: 98%; max-width: 98%; font-size: 1.3em; padding: 28px; }
 .plan-option { font-size: 1.5em; padding: 14px; }
@@ -209,6 +213,7 @@ color: #333;
 
 <label>Videos del Alquiler (MP4, múltiples)</label>
 <input type="file" id="videoFile" accept="video/*" multiple>
+<div id="videoPreviewContainer"></div>
 
 <label>Información de ingreso</label>
 <textarea id="infoIngreso" rows="2"></textarea>
@@ -285,9 +290,8 @@ const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
 const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
 const GEOCODE_KEY = "AIzaSyAisqYSTfpQ_rqqutAomzitD2v_dtKYtLE";
 const MP_BEARER = "APP_USR-595288641172928-010710-d915bce4137b3ee26e0c6e04873f1ac1-695835795";
-const MUX_TOKEN = "1a8d879e-b605-4b88-a956-d15074a41329";
-const MUX_SECRET = "mIh08wEDvQkUY0vzdClsNJmCvm1S0WtuS8SXSiNcE8qRtErPIpWzh91f3m5GW94XTdLq/jURrGN";
 let imagenesBase64 = [];
+let videosBase64 = [];
 let planActual = null;
 let limiteDeptos = 0;
 let deptosActivos = 0;
@@ -363,6 +367,38 @@ reader.readAsDataURL(file);
 });
 });
 
+// === PREVIEW VIDEOS ===
+function actualizarVideoPreview() {
+const videoPreviewContainer = document.getElementById("videoPreviewContainer");
+videoPreviewContainer.innerHTML = "";
+videosBase64.forEach((videoBase64, index) => {
+const container = document.createElement("div");
+container.className = "preview-video-container";
+const video = document.createElement("video");
+video.src = videoBase64;
+video.className = "preview-video";
+video.controls = true;
+const btnDel = document.createElement("button");
+btnDel.className = "delete-video";
+btnDel.textContent = "x";
+btnDel.onclick = () => { videosBase64.splice(index, 1); actualizarVideoPreview(); };
+container.appendChild(video);
+container.appendChild(btnDel);
+videoPreviewContainer.appendChild(container);
+});
+}
+document.getElementById("videoFile").addEventListener("change", function() {
+const files = Array.from(this.files);
+files.forEach(file => {
+const reader = new FileReader();
+reader.onload = function(e) {
+videosBase64.push(e.target.result);
+actualizarVideoPreview();
+}
+reader.readAsDataURL(file);
+});
+});
+
 // === SUBIR IMÁGENES ===
 async function subirImagenCloudinary(file) {
 const formData = new FormData();
@@ -379,69 +415,36 @@ return null;
 }
 
 // === SUBIR VIDEO A MUX ===
-async function subirVideoMux(file) {
-const auth = btoa(`${MUX_TOKEN}:${MUX_SECRET}`);
+async function subirVideoMux(file, row) {
+const formData = new FormData();
+formData.append("video", file);
+if (row) formData.append("row", row);
 try {
-  // Crear direct upload
-  const uploadRes = await fetch('https://api.mux.com/video/v1/uploads', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Basic ${auth}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      cors_origin: '*',
-      new_asset_settings: {
-        playback_policy: ['public']
-      }
-    })
-  });
-  const uploadData = await uploadRes.json();
-  if (!uploadData.data || !uploadData.data.url) {
-    throw new Error('No se pudo crear la URL de subida');
-  }
-  const uploadUrl = uploadData.data.url;
-  const uploadId = uploadData.data.id;
-
-  // Subir el archivo
-  const uploadFileRes = await fetch(uploadUrl, {
-    method: 'PUT',
-    body: file
-  });
-  if (!uploadFileRes.ok) {
-    throw new Error('Error al subir el video');
-  }
-
-  // Polling para el estado del asset
-  let assetId;
-  while (true) {
-    const statusRes = await fetch(`https://api.mux.com/video/v1/uploads/${uploadId}`, {
-      headers: { 'Authorization': `Basic ${auth}` }
-    });
-    const statusData = await statusRes.json();
-    if (statusData.data.status === 'asset_created') {
-      assetId = statusData.data.asset_id;
-      break;
-    } else if (statusData.data.status === 'errored' || statusData.data.status === 'cancelled') {
-      throw new Error('Error en el procesamiento del video');
-    }
-    await new Promise(resolve => setTimeout(resolve, 2000));
-  }
-
-  // Obtener detalles del asset
-  const assetRes = await fetch(`https://api.mux.com/video/v1/assets/${assetId}`, {
-    headers: { 'Authorization': `Basic ${auth}` }
-  });
-  const assetData = await assetRes.json();
-  if (!assetData.data || !assetData.data.playback_ids || !assetData.data.playback_ids[0]) {
-    throw new Error('No se pudo obtener el playback ID');
-  }
-  const playbackId = assetData.data.playback_ids[0].id;
-  return `https://stream.mux.com/${playbackId}.m3u8`;
-} catch (err) {
-  console.error("Error subiendo video a Mux:", err);
-  return null;
+const response = await fetch(`${API_URL}?action=uploadVideoMux`, {
+method: "POST",
+body: JSON.stringify({ action: "uploadVideoMux", video: await fileToBase64(file), row: row || "" })
+});
+const json = await response.json();
+if (json.success && json.videoUrl) {
+return json.videoUrl;
+} else {
+console.error("Error en la respuesta de Mux:", json.error || "Sin URL de video");
+return null;
 }
+} catch (err) {
+console.error("Error subiendo video a Mux:", err);
+return null;
+}
+}
+
+// === CONVERTIR ARCHIVO A BASE64 ===
+async function fileToBase64(file) {
+return new Promise((resolve, reject) => {
+const reader = new FileReader();
+reader.onload = () => resolve(reader.result);
+reader.onerror = reject;
+reader.readAsDataURL(file);
+});
 }
 
 // === MENÚ HAMBURGUESA ===
@@ -714,14 +717,14 @@ if (url) uploadedURLs.push(url);
 const videoFiles = document.getElementById("videoFile").files;
 let videos = "";
 if (videoFiles.length > 0) {
-  let videoURLs = [];
-  for (let i = 0; i < videoFiles.length; i++) {
-    const url = await subirVideoMux(videoFiles[i]);
-    if (url) videoURLs.push(url);
-  }
-  videos = videoURLs.join(",");
+let videoURLs = [];
+for (let i = 0; i < videoFiles.length; i++) {
+const url = await subirVideoMux(videoFiles[i], row);
+if (url) videoURLs.push(url);
+}
+videos = videoURLs.join(",");
 } else if (document.getElementById("editRow").value) {
-  videos = document.getElementById("existingVideos").value;
+videos = document.getElementById("existingVideos").value;
 }
 fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(direccion)}&key=${GEOCODE_KEY}`)
 .then(r => r.json()).then(data => {
@@ -769,7 +772,9 @@ document.getElementById("mascotas").value = datos.Mascotas || "No";
 document.getElementById("infoIngreso").value = datos.InfoIngreso || "";
 document.getElementById("detalles").value = datos.Detalles || "";
 imagenesBase64 = datos.Fotos ? datos.Fotos.split(",") : [];
+videosBase64 = datos.Videos ? datos.Videos.split(",") : [];
 actualizarPreview();
+actualizarVideoPreview();
 window.scrollTo(0, document.getElementById("formulario").offsetTop);
 }
 
@@ -789,7 +794,9 @@ document.getElementById("detalles").value = "";
 document.getElementById("imagenFile").value = "";
 document.getElementById("videoFile").value = "";
 imagenesBase64 = [];
+videosBase64 = [];
 actualizarPreview();
+actualizarVideoPreview();
 document.getElementById("msg").textContent = "";
 }
 
