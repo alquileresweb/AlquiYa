@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -187,6 +188,7 @@ color: #333;
 <div id="formulario">
 <input type="hidden" id="editRow" value="">
 <input type="hidden" id="enlaceCompartir" value="">
+<input type="hidden" id="existingVideo" value="">
 <label>Dirección</label>
 <input type="text" id="direccion">
 
@@ -205,6 +207,9 @@ color: #333;
 <label>Imágenes del Alquiler (PNG/JPG, múltiples)</label>
 <input type="file" id="imagenFile" accept="image/png, image/jpeg" multiple>
 <div id="previewContainer"></div>
+
+<label>Video del Alquiler (opcional)</label>
+<input type="file" id="videoFile" accept="video/*">
 
 <label>Información de ingreso</label>
 <textarea id="infoIngreso" rows="2"></textarea>
@@ -281,6 +286,8 @@ const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
 const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
 const GEOCODE_KEY = "AIzaSyAisqYSTfpQ_rqqutAomzitD2v_dtKYtLE";
 const MP_BEARER = "APP_USR-595288641172928-010710-d915bce4137b3ee26e0c6e04873f1ac1-695835795";
+const MUX_TOKEN_ID = "1a8d879e-b605-4b88-a956-d15074a41329";
+const MUX_TOKEN_SECRET = "mIh08wEDvQkUY0vzdClsNJmCvm1S0WtuS8SXSiNcE8qRtErPIpWzh91f3m5GW94XTdLq/jURrGN";
 let imagenesBase64 = [];
 let planActual = null;
 let limiteDeptos = 0;
@@ -588,8 +595,10 @@ let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Ca
 let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
 let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
 let precioFormateado = formatoPrecio(alq.Precio);
+let videoLink = alq.Video ? `<a href="${alq.Video}" target="_blank">Ver</a>` : "N/D";
 div.innerHTML += `<div class="alquiler">
 <b>${alq.Direccion}</b> - ${alq['Nro Ambientes']} amb - ${precioFormateado} - Mascotas: ${alq.Mascotas || "N/D"}<br>
+Video: ${videoLink}<br>
 Estado: ${estado}<br>
 ${btnEstado} ${btnEditar} ${btnEliminar}
 <span id="estadoMsg-${alq.row}" class="estado-msg"></span>
@@ -625,6 +634,7 @@ const infoIngreso = document.getElementById("infoIngreso").value;
 const detalles = document.getElementById("detalles").value;
 let row = document.getElementById("editRow").value || new Date().getTime();
 const enlaceCompartir = document.getElementById("editRow").value ? document.getElementById("enlaceCompartir").value : "";
+const existingVideo = document.getElementById("existingVideo").value;
 const email = localStorage.getItem("dueno");
 if (!direccion || !ambientes || !precio) { 
 msgEl.className = "estado-msg error";
@@ -639,6 +649,66 @@ for (let i = 0; i < files.length; i++) {
 const url = await subirImagenCloudinary(files[i]);
 if (url) uploadedURLs.push(url);
 }
+const videoFile = document.getElementById("videoFile").files[0];
+let videoUrl = existingVideo;
+if (videoFile) {
+msgEl.textContent = "Subiendo video...";
+try {
+const uploadRes = await fetch('https://api.mux.com/video/v1/uploads', {
+method: 'POST',
+headers: {
+'Authorization': `Basic ${btoa(`${MUX_TOKEN_ID}:${MUX_TOKEN_SECRET}`)}`,
+'Content-Type': 'application/json'
+},
+body: JSON.stringify({
+cors_origin: '*',
+new_asset_settings: {
+playback_policy: ['public'],
+mp4_support: 'standard'
+}
+})
+});
+const uploadData = await uploadRes.json();
+if (!uploadRes.ok) throw new Error(uploadData.error || 'Error creating upload');
+const uploadUrl = uploadData.data.url;
+const uploadId = uploadData.data.id;
+const putRes = await fetch(uploadUrl, {
+method: 'PUT',
+body: videoFile
+});
+if (!putRes.ok) throw new Error('Video upload failed');
+let assetId;
+let attempts = 0;
+const maxAttempts = 60;
+while (!assetId && attempts < maxAttempts) {
+await new Promise(resolve => setTimeout(resolve, 5000));
+const statusRes = await fetch(`https://api.mux.com/video/v1/uploads/${uploadId}`, {
+headers: {
+'Authorization': `Basic ${btoa(`${MUX_TOKEN_ID}:${MUX_TOKEN_SECRET}`)}`
+}
+});
+const statusData = await statusRes.json();
+if (statusData.data.status === 'asset_created') {
+assetId = statusData.data.asset_id;
+}
+attempts++;
+}
+if (!assetId) throw new Error('Asset not created in time');
+const assetRes = await fetch(`https://api.mux.com/video/v1/assets/${assetId}`, {
+headers: {
+'Authorization': `Basic ${btoa(`${MUX_TOKEN_ID}:${MUX_TOKEN_SECRET}`)}`
+}
+});
+const assetData = await assetRes.json();
+const playbackId = assetData.data.playback_ids[0].id;
+videoUrl = `https://stream.mux.com/${playbackId}.m3u8`;
+} catch (err) {
+msgEl.className = "estado-msg error";
+msgEl.textContent = "Error subiendo video: " + (err.message || "desconocido");
+setTimeout(() => { msgEl.textContent = ""; }, 5000);
+return;
+}
+}
 fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(direccion)}&key=${GEOCODE_KEY}`)
 .then(r => r.json()).then(data => {
 let lat = "", lng = "";
@@ -646,13 +716,13 @@ if (data.results && data.results[0]) {
 lat = data.results[0].geometry.location.lat;
 lng = data.results[0].geometry.location.lng;
 }
-enviarAlquiler(uploadedURLs.join(","), lat, lng, enlaceCompartir);
+enviarAlquiler(uploadedURLs.join(","), lat, lng, enlaceCompartir, videoUrl);
 }).catch(err => {
 msgEl.className = "estado-msg error";
 msgEl.textContent = "Error al obtener coordenadas: " + (err.message || "Error de conexión");
 setTimeout(() => { msgEl.textContent = ""; }, 5000);
 });
-function enviarAlquiler(fotosConcatenadas, lat, lng, enlaceCompartir) {
+function enviarAlquiler(fotosConcatenadas, lat, lng, enlaceCompartir, videoUrl) {
 const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
 const callback = action === "editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
 let estado = "Activo";
@@ -660,7 +730,7 @@ if (action === "editAlquiler" && deptosActivos >= limiteDeptos && planActual !==
 estado = "Inactivo";
 }
 const script = document.createElement("script");
-let query = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&contacto=auto&estado=${estado}`;
+let query = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&contacto=auto&estado=${estado}&video=${encodeURIComponent(videoUrl)}`;
 // Aseguramos que el enlaceCompartir (columna N) se mantenga intacto al editar
 if (enlaceCompartir) query += `&enlaceCompartir=${encodeURIComponent(enlaceCompartir)}`;
 query += `&callback=${callback}`;
@@ -677,6 +747,7 @@ document.getElementById("formulario").classList.add("active");
 document.getElementById("btnGuardar").textContent = "Guardar Cambios";
 document.getElementById("editRow").value = row;
 document.getElementById("enlaceCompartir").value = datos["Enlace para compartir"] || "";
+document.getElementById("existingVideo").value = datos.Video || "";
 document.getElementById("direccion").value = datos.Direccion || "";
 document.getElementById("ambientes").value = datos["Nro Ambientes"] || "";
 document.getElementById("precio").value = formatoPrecio(datos.Precio);
@@ -694,6 +765,7 @@ document.getElementById("formulario").classList.remove("active");
 document.getElementById("btnGuardar").textContent = "Agregar";
 document.getElementById("editRow").value = "";
 document.getElementById("enlaceCompartir").value = "";
+document.getElementById("existingVideo").value = "";
 document.getElementById("direccion").value = "";
 document.getElementById("ambientes").value = "";
 document.getElementById("precio").value = "";
@@ -701,6 +773,7 @@ document.getElementById("mascotas").value = "Sí";
 document.getElementById("infoIngreso").value = "";
 document.getElementById("detalles").value = "";
 document.getElementById("imagenFile").value = "";
+document.getElementById("videoFile").value = "";
 imagenesBase64 = [];
 actualizarPreview();
 document.getElementById("msg").textContent = "";
@@ -907,3 +980,4 @@ console.error("Error en edición de cuenta:", err);
 </script>
 </body>
 </html>
+```
