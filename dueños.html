@@ -423,7 +423,6 @@ console.error("Error verificando pago:", err);
 planStatusEl.innerHTML = `<span class="estado-msg error">❌ Error al verificar el pago. Por favor, intenta de nuevo.</span>`;
 setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
 }
-
 window.history.replaceState({}, document.title, window.location.pathname);
 }
 }
@@ -657,8 +656,11 @@ const base64 = await base64Promise;
 const res = await fetch(API_URL, {
 method: "POST",
 headers: { "Content-Type": "application/json" },
-body: JSON.stringify({ action: "uploadVideoMux", video: base64 })
+body: JSON.stringify({ action: "uploadVideoMux", video: base64, row: row })
 });
+if (!res.ok) {
+throw new Error(`Error en la solicitud: ${res.status} ${res.statusText}`);
+}
 const json = await res.json();
 if (json.success) {
 videoUrl = json.videoUrl;
@@ -666,8 +668,9 @@ videoUrl = json.videoUrl;
 throw new Error(json.error || "Error uploading video");
 }
 } catch (err) {
+console.error("Error subiendo video:", err);
 msgEl.className = "estado-msg error";
-msgEl.textContent = "Error subiendo video: " + (err.message || "desconocido");
+msgEl.textContent = `Error subiendo video: ${err.message || "desconocido"}`;
 setTimeout(() => { msgEl.textContent = ""; }, 5000);
 return;
 }
