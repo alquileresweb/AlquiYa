@@ -198,13 +198,16 @@ color: #333;
 
 <label>Mascotas Permitidas</label>
 <select id="mascotas">
-<option value="Sí">Sí</option>
-<option value="No">No</option>
+ <option value="Sí">Sí</option>
+ <option value="No">No</option>
 </select>
 
 <label>Imágenes del Alquiler (PNG/JPG, múltiples)</label>
 <input type="file" id="imagenFile" accept="image/png, image/jpeg" multiple>
 <div id="previewContainer"></div>
+
+<label>Video del Alquiler (opcional)</label>
+<input type="file" id="videoFile" accept="video/*">
 
 <label>Información de ingreso</label>
 <textarea id="infoIngreso" rows="2"></textarea>
@@ -420,7 +423,6 @@ console.error("Error verificando pago:", err);
 planStatusEl.innerHTML = `<span class="estado-msg error">❌ Error al verificar el pago. Por favor, intenta de nuevo.</span>`;
 setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
 }
-
 window.history.replaceState({}, document.title, window.location.pathname);
 }
 }
@@ -626,11 +628,11 @@ const detalles = document.getElementById("detalles").value;
 let row = document.getElementById("editRow").value || new Date().getTime();
 const enlaceCompartir = document.getElementById("editRow").value ? document.getElementById("enlaceCompartir").value : "";
 const email = localStorage.getItem("dueno");
-if (!direccion || !ambientes || !precio) {
+if (!direccion || !ambientes || !precio) { 
 msgEl.className = "estado-msg error";
 msgEl.textContent = "Completa todos los campos obligatorios.";
 setTimeout(() => { msgEl.textContent = ""; }, 5000);
-return;
+return; 
 }
 direccion = direccion + ", Santo Tomé Corrientes";
 const files = document.getElementById("imagenFile").files;
@@ -639,6 +641,40 @@ for (let i = 0; i < files.length; i++) {
 const url = await subirImagenCloudinary(files[i]);
 if (url) uploadedURLs.push(url);
 }
+const videoFile = document.getElementById("videoFile").files[0];
+let videoUrl = "";
+if (videoFile) {
+msgEl.textContent = "Subiendo video...";
+try {
+const reader = new FileReader();
+const base64Promise = new Promise((resolve, reject) => {
+reader.onload = () => resolve(reader.result);
+reader.onerror = reject;
+reader.readAsDataURL(videoFile);
+});
+const base64 = await base64Promise;
+const res = await fetch(API_URL, {
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify({ action: "uploadVideoMux", video: base64, row: row })
+});
+if (!res.ok) {
+throw new Error(`Error en la solicitud: ${res.status} ${res.statusText}`);
+}
+const json = await res.json();
+if (json.success) {
+videoUrl = json.videoUrl;
+} else {
+throw new Error(json.error || "Error uploading video");
+}
+} catch (err) {
+console.error("Error subiendo video:", err);
+msgEl.className = "estado-msg error";
+msgEl.textContent = `Error subiendo video: ${err.message || "desconocido"}`;
+setTimeout(() => { msgEl.textContent = ""; }, 5000);
+return;
+}
+}
 fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(direccion)}&key=${GEOCODE_KEY}`)
 .then(r => r.json()).then(data => {
 let lat = "", lng = "";
@@ -646,13 +682,13 @@ if (data.results && data.results[0]) {
 lat = data.results[0].geometry.location.lat;
 lng = data.results[0].geometry.location.lng;
 }
-enviarAlquiler(uploadedURLs.join(","), lat, lng, enlaceCompartir);
+enviarAlquiler(uploadedURLs.join(","), lat, lng, enlaceCompartir, videoUrl);
 }).catch(err => {
 msgEl.className = "estado-msg error";
 msgEl.textContent = "Error al obtener coordenadas: " + (err.message || "Error de conexión");
 setTimeout(() => { msgEl.textContent = ""; }, 5000);
 });
-function enviarAlquiler(fotosConcatenadas, lat, lng, enlaceCompartir) {
+function enviarAlquiler(fotosConcatenadas, lat, lng, enlaceCompartir, videoUrl) {
 const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
 const callback = action === "editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
 let estado = "Activo";
@@ -660,7 +696,7 @@ if (action === "editAlquiler" && deptosActivos >= limiteDeptos && planActual !==
 estado = "Inactivo";
 }
 const script = document.createElement("script");
-let query = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&contacto=auto&estado=${estado}`;
+let query = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&contacto=auto&estado=${estado}&video=${encodeURIComponent(videoUrl)}`;
 // Aseguramos que el enlaceCompartir (columna N) se mantenga intacto al editar
 if (enlaceCompartir) query += `&enlaceCompartir=${encodeURIComponent(enlaceCompartir)}`;
 query += `&callback=${callback}`;
@@ -701,6 +737,7 @@ document.getElementById("mascotas").value = "Sí";
 document.getElementById("infoIngreso").value = "";
 document.getElementById("detalles").value = "";
 document.getElementById("imagenFile").value = "";
+document.getElementById("videoFile").value = "";
 imagenesBase64 = [];
 actualizarPreview();
 document.getElementById("msg").textContent = "";
@@ -818,14 +855,16 @@ const login = res.data[0];
 document.getElementById("emailEditar").value = login.Email || "";
 document.getElementById("nombreEditar").value = login.Nombre || "";
 document.getElementById("passwordEditar").value = login.Password || "";
-const contacto = login.Contacto || "";
+const contacto = String(login.Contacto || "");
 let codigoPais = "+549"; // Default to Argentina
 let numero = contacto;
+if (typeof contacto === 'string') {
 for (const code of countryCodes) {
 if (contacto.startsWith(code)) {
 codigoPais = code;
 numero = contacto.slice(code.length);
 break;
+}
 }
 }
 document.getElementById("codigoPaisEditar").value = codigoPais;
