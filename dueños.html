@@ -206,10 +206,6 @@ color: #333;
 <input type="file" id="imagenFile" accept="image/png, image/jpeg" multiple>
 <div id="previewContainer"></div>
 
-<label>Video del Alquiler (MP4, opcional)</label>
-<input type="file" id="videoFile" accept="video/mp4">
-<div id="videoPreviewContainer"></div>
-
 <label>Información de ingreso</label>
 <textarea id="infoIngreso" rows="2"></textarea>
 
@@ -286,7 +282,6 @@ const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
 const GEOCODE_KEY = "AIzaSyAisqYSTfpQ_rqqutAomzitD2v_dtKYtLE";
 const MP_BEARER = "APP_USR-595288641172928-010710-d915bce4137b3ee26e0c6e04873f1ac1-695835795";
 let imagenesBase64 = [];
-let videoBase64 = null;
 let planActual = null;
 let limiteDeptos = 0;
 let deptosActivos = 0;
@@ -362,43 +357,6 @@ reader.readAsDataURL(file);
 });
 });
 
-// === PREVIEW VIDEO ===
-function actualizarVideoPreview() {
-const videoPreviewContainer = document.getElementById("videoPreviewContainer");
-videoPreviewContainer.innerHTML = "";
-if (videoBase64) {
-const video = document.createElement("video");
-video.src = videoBase64;
-video.controls = true;
-video.style.maxWidth = "200px";
-video.style.borderRadius = "6px";
-const container = document.createElement("div");
-container.className = "preview-img-container";
-const btnDel = document.createElement("button");
-btnDel.className = "delete-img";
-btnDel.textContent = "x";
-btnDel.onclick = () => {
-videoBase64 = null;
-document.getElementById("videoFile").value = "";
-actualizarVideoPreview();
-};
-container.appendChild(video);
-container.appendChild(btnDel);
-videoPreviewContainer.appendChild(container);
-}
-}
-document.getElementById("videoFile").addEventListener("change", function() {
-const file = this.files[0];
-if (file) {
-const reader = new FileReader();
-reader.onload = function(e) {
-videoBase64 = e.target.result;
-actualizarVideoPreview();
-};
-reader.readAsDataURL(file);
-}
-});
-
 // === SUBIR IMÁGENES ===
 async function subirImagenCloudinary(file) {
 const formData = new FormData();
@@ -411,30 +369,6 @@ return json.secure_url;
 } catch (err) {
 console.error("Error subiendo imagen a Cloudinary:", err);
 return null;
-}
-}
-
-// === SUBIR VIDEO ===
-async function subirVideoMux(videoBase64, row) {
-try {
-const response = await fetch(API_URL, {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify({
-action: "uploadVideoMux",
-video: videoBase64,
-row: row
-})
-});
-const result = await response.json();
-if (result.success) {
-return result.viewLink;
-} else {
-throw new Error(result.error || "Error uploading video to Mux");
-}
-} catch (err) {
-console.error("Error subiendo video a Mux:", err);
-throw err;
 }
 }
 
@@ -654,10 +588,9 @@ let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Ca
 let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
 let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
 let precioFormateado = formatoPrecio(alq.Precio);
-let videoLink = alq.Video ? `<br>Video: <a href="${alq.Video}" target="_blank">Ver video</a>` : "";
 div.innerHTML += `<div class="alquiler">
 <b>${alq.Direccion}</b> - ${alq['Nro Ambientes']} amb - ${precioFormateado} - Mascotas: ${alq.Mascotas || "N/D"}<br>
-Estado: ${estado}${videoLink}<br>
+Estado: ${estado}<br>
 ${btnEstado} ${btnEditar} ${btnEliminar}
 <span id="estadoMsg-${alq.row}" class="estado-msg"></span>
 </div>`;
@@ -706,18 +639,6 @@ for (let i = 0; i < files.length; i++) {
 const url = await subirImagenCloudinary(files[i]);
 if (url) uploadedURLs.push(url);
 }
-let videoLink = "";
-const videoFile = document.getElementById("videoFile").files[0];
-if (videoFile) {
-try {
-videoLink = await subirVideoMux(videoBase64, row);
-} catch (err) {
-msgEl.className = "estado-msg error";
-msgEl.textContent = "Error al subir el video: " + (err.message || "Error de conexión");
-setTimeout(() => { msgEl.textContent = ""; }, 5000);
-return;
-}
-}
 fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(direccion)}&key=${GEOCODE_KEY}`)
 .then(r => r.json()).then(data => {
 let lat = "", lng = "";
@@ -725,13 +646,13 @@ if (data.results && data.results[0]) {
 lat = data.results[0].geometry.location.lat;
 lng = data.results[0].geometry.location.lng;
 }
-enviarAlquiler(uploadedURLs.join(","), lat, lng, enlaceCompartir, videoLink);
+enviarAlquiler(uploadedURLs.join(","), lat, lng, enlaceCompartir);
 }).catch(err => {
 msgEl.className = "estado-msg error";
 msgEl.textContent = "Error al obtener coordenadas: " + (err.message || "Error de conexión");
 setTimeout(() => { msgEl.textContent = ""; }, 5000);
 });
-function enviarAlquiler(fotosConcatenadas, lat, lng, enlaceCompartir, videoLink) {
+function enviarAlquiler(fotosConcatenadas, lat, lng, enlaceCompartir) {
 const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
 const callback = action === "editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
 let estado = "Activo";
@@ -742,7 +663,7 @@ const script = document.createElement("script");
 let query = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&contacto=auto&estado=${estado}`;
 // Aseguramos que el enlaceCompartir (columna N) se mantenga intacto al editar
 if (enlaceCompartir) query += `&enlaceCompartir=${encodeURIComponent(enlaceCompartir)}`;
-if (videoLink) query += `&video=${encodeURIComponent(videoLink)}`;
+query += `&callback=${callback}`;
 script.src = query;
 document.body.appendChild(script);
 }
@@ -763,9 +684,7 @@ document.getElementById("mascotas").value = datos.Mascotas || "No";
 document.getElementById("infoIngreso").value = datos.InfoIngreso || "";
 document.getElementById("detalles").value = datos.Detalles || "";
 imagenesBase64 = datos.Fotos ? datos.Fotos.split(",") : [];
-videoBase64 = datos.Video || null;
 actualizarPreview();
-actualizarVideoPreview();
 window.scrollTo(0, document.getElementById("formulario").offsetTop);
 }
 
@@ -782,11 +701,8 @@ document.getElementById("mascotas").value = "Sí";
 document.getElementById("infoIngreso").value = "";
 document.getElementById("detalles").value = "";
 document.getElementById("imagenFile").value = "";
-document.getElementById("videoFile").value = "";
 imagenesBase64 = [];
-videoBase64 = null;
 actualizarPreview();
-actualizarVideoPreview();
 document.getElementById("msg").textContent = "";
 }
 
