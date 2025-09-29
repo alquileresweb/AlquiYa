@@ -668,22 +668,34 @@ headers: {
 "Content-Type": "application/json",
 "Accept": "application/json"
 },
-mode: "no-cors",
 body: JSON.stringify({ action: "uploadVideoMux", video: base64, row: row }),
 signal: controller.signal
 });
 clearTimeout(timeoutId);
 if (!res.ok) {
+if (res.status === 0) {
+console.warn("Video upload failed with status 0 (possible CORS issue). Proceeding without video URL.");
+videoUrl = "";
+} else {
 throw new Error(`Error en la solicitud: ${res.status} ${res.statusText}`);
 }
-// Cannot parse response due to no-cors mode (opaque response)
-console.warn("Video upload attempted with no-cors mode. Response cannot be read, assuming success.");
-videoUrl = ""; // Set empty videoUrl as we cannot access response
+} else {
+const json = await res.json();
+if (json.success) {
+videoUrl = json.videoUrl;
+} else {
+throw new Error(json.error || "Error al subir el video");
+}
+}
 } catch (err) {
 if (err.name === "AbortError") {
 throw new Error("La solicitud de subida de video ha superado el tiempo límite (30 segundos)");
 }
+if (err.message.includes("status 0")) {
+// Already handled above
+} else {
 throw err;
+}
 }
 } catch (err) {
 console.error("Error subiendo video:", err);
