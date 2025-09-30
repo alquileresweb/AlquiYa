@@ -20,9 +20,11 @@ h2 { color:#333; font-size:2.2em; margin-bottom:18px; }
 h3 { color:#333; font-size:2em; margin-bottom:18px; }
 .alquiler { border:1px solid #ccc; padding:16px; margin:14px 0; background:#fff; font-size:1.4em; text-align:left; }
 button { margin: 6px; padding:14px 20px; font-size:1.3em; border-radius:6px; cursor:pointer; }
-#btnAgregarAlquiler { background:#3681f3; color:white; }
-#formulario { background:#fff; padding:20px; border:1px solid #ccc; margin-top:24px; border-radius:12px; font-size:1.3em; text-align:left; display:none; }
-#formulario.active { display:block; }
+#btnAgregarPropiedad { background:#3681f3; color:white; }
+#opcionesPropiedad { background:#fff; padding:20px; border:1px solid #ccc; margin-top:24px; border-radius:12px; font-size:1.3em; text-align:left; display:none; }
+#opcionesPropiedad.active { display:block; }
+#formularioDepartamento, #formularioLocal, #formularioTemporario { background:#fff; padding:20px; border:1px solid #ccc; margin-top:24px; border-radius:12px; font-size:1.3em; text-align:left; display:none; }
+#formularioDepartamento.active, #formularioLocal.active, #formularioTemporario.active { display:block; }
 #formularioRegistro { background:#fff; padding:20px; border:1px solid #ccc; margin-top:24px; border-radius:12px; font-size:1.3em; text-align:left; display:none; }
 #formularioRegistro.active { display:block; }
 label { display:block; margin:12px 0 8px; font-weight:bold; }
@@ -120,7 +122,7 @@ h2 { font-size: 2.6em; }
 h3 { font-size: 2.4em; }
 .alquiler { font-size: 1.6em; padding: 20px; }
 button { font-size: 1.5em; padding: 16px 22px; }
-#formulario, #formularioRegistro { font-size: 1.5em; padding: 24px; }
+#formularioDepartamento, #formularioLocal, #formularioTemporario, #formularioRegistro { font-size: 1.5em; padding: 24px; }
 input, select, textarea { font-size: 1.4em; padding: 16px; }
 .contacto-container select { width: 80px; }
 .contacto-container input { min-width: 150px; }
@@ -173,10 +175,16 @@ color: #333;
 <button id="btnPlan" onclick="abrirModalPlan()">💳 Mejorar Plan</button>
 </div>
 
-<h3>📋 Mis Alquileres</h3>
+<h3>📋 Mis Propiedades</h3>
 <div id="listaAlquileres">Cargando...</div>
 
-<button id="btnAgregarAlquiler" onclick="toggleFormulario()">➕ Agregar Alquiler</button>
+<button id="btnAgregarPropiedad" onclick="toggleOpcionesPropiedad()">➕ Agregar Propiedad</button>
+<div id="opcionesPropiedad">
+<button onclick="mostrarFormulario('Departamento')">Departamento</button>
+<button onclick="mostrarFormulario('Local')">Local Comercial</button>
+<button onclick="mostrarFormulario('Temporario')">Temporario</button>
+</div>
+
 <div id="rapiclean-img-duenos">
 <a href="https://wa.me/5493764391885?text=Hola,+%22podrian+darme+informacion+sobre+los+Planes+para+Due%C3%B1os%22&utm_source=chatgpt.com" target="_blank">
 <img src="https://i.postimg.cc/28HKjzTs/M-s-de-40-estudiantes-ya-confiaron-en-Rapiclean-2.png" alt="Más de 40 estudiantes confiaron en Rapiclean" style="max-width:100%;margin:10px auto;display:block;">
@@ -188,41 +196,74 @@ color: #333;
 </div>
 </a>
 </div>
-<div id="formulario">
-<input type="hidden" id="editRow" value="">
-<input type="hidden" id="enlaceCompartir" value="">
-<input type="hidden" id="existingVideos" value="">
+
+<div id="formularioDepartamento">
+<input type="hidden" id="editRowDepartamento" value="">
+<input type="hidden" id="enlaceCompartirDepartamento" value="">
+<input type="hidden" id="existingVideosDepartamento" value="">
 <label>Dirección</label>
-<input type="text" id="direccion">
-
+<input type="text" id="direccionDepartamento">
 <label>Ambientes</label>
-<input type="number" id="ambientes">
-
+<input type="number" id="ambientesDepartamento">
 <label>Precio</label>
-<input type="text" id="precio">
-
+<input type="text" id="precioDepartamento">
 <label>Mascotas Permitidas</label>
-<select id="mascotas">
+<select id="mascotasDepartamento">
  <option value="Sí">Sí</option>
  <option value="No">No</option>
 </select>
-
 <label>Imágenes del Alquiler (PNG/JPG, múltiples)</label>
-<input type="file" id="imagenFile" accept="image/png, image/jpeg" multiple>
-<div id="previewContainer"></div>
-
+<input type="file" id="imagenFileDepartamento" accept="image/png, image/jpeg" multiple>
+<div id="previewContainerDepartamento"></div>
 <label>Videos del Alquiler (MP4, múltiples)</label>
-<input type="file" id="videoFile" accept="video/*" multiple>
-<div id="videoPreviewContainer"></div>
-
+<input type="file" id="videoFileDepartamento" accept="video/*" multiple>
+<div id="videoPreviewContainerDepartamento"></div>
 <label>Información de ingreso</label>
-<textarea id="infoIngreso" rows="2"></textarea>
-
+<textarea id="infoIngresoDepartamento" rows="2"></textarea>
 <label>Detalles</label>
-<textarea id="detalles" rows="3"></textarea>
+<textarea id="detallesDepartamento" rows="3"></textarea>
+<button id="btnGuardarDepartamento" onclick="agregarAlquiler('Departamento')">Agregar</button>
+<p id="msgDepartamento" style="color:green"></p>
+</div>
 
-<button id="btnGuardar" onclick="agregarAlquiler()">Agregar</button>
-<p id="msg" style="color:green"></p>
+<div id="formularioLocal">
+<input type="hidden" id="editRowLocal" value="">
+<input type="hidden" id="enlaceCompartirLocal" value="">
+<input type="hidden" id="existingVideosLocal" value="">
+<label>Dirección</label>
+<input type="text" id="direccionLocal">
+<label>Imágenes del Alquiler (PNG/JPG, múltiples)</label>
+<input type="file" id="imagenFileLocal" accept="image/png, image/jpeg" multiple>
+<div id="previewContainerLocal"></div>
+<label>Videos del Alquiler (MP4, múltiples)</label>
+<input type="file" id="videoFileLocal" accept="video/*" multiple>
+<div id="videoPreviewContainerLocal"></div>
+<label>Información de ingreso</label>
+<textarea id="infoIngresoLocal" rows="2"></textarea>
+<label>Detalles</label>
+<textarea id="detallesLocal" rows="3"></textarea>
+<button id="btnGuardarLocal" onclick="agregarAlquiler('Local')">Agregar</button>
+<p id="msgLocal" style="color:green"></p>
+</div>
+
+<div id="formularioTemporario">
+<input type="hidden" id="editRowTemporario" value="">
+<input type="hidden" id="enlaceCompartirTemporario" value="">
+<input type="hidden" id="existingVideosTemporario" value="">
+<label>Dirección</label>
+<input type="text" id="direccionTemporario">
+<label>Imágenes del Alquiler (PNG/JPG, múltiples)</label>
+<input type="file" id="imagenFileTemporario" accept="image/png, image/jpeg" multiple>
+<div id="previewContainerTemporario"></div>
+<label>Videos del Alquiler (MP4, múltiples)</label>
+<input type="file" id="videoFileTemporario" accept="video/*" multiple>
+<div id="videoPreviewContainerTemporario"></div>
+<label>Información de ingreso</label>
+<textarea id="infoIngresoTemporario" rows="2"></textarea>
+<label>Detalles</label>
+<textarea id="detallesTemporario" rows="3"></textarea>
+<button id="btnGuardarTemporario" onclick="agregarAlquiler('Temporario')">Agregar</button>
+<p id="msgTemporario" style="color:green"></p>
 </div>
 
 <!-- Modal de Planes -->
@@ -290,8 +331,8 @@ const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
 const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
 const GEOCODE_KEY = "AIzaSyAisqYSTfpQ_rqqutAomzitD2v_dtKYtLE";
 const MP_BEARER = "APP_USR-595288641172928-010710-d915bce4137b3ee26e0c6e04873f1ac1-695835795";
-let imagenesBase64 = [];
-let videosBase64 = [];
+let imagenesBase64 = { Departamento: [], Local: [], Temporario: [] };
+let videosBase64 = { Departamento: [], Local: [], Temporario: [] };
 let planActual = null;
 let limiteDeptos = 0;
 let deptosActivos = 0;
@@ -303,18 +344,20 @@ if (!valor) return "";
 valor = valor.toString().replace(/\D/g, "");
 return "$" + valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
-document.getElementById("precio").addEventListener("input", function(e) {
+
+function inicializarFormatoPrecio(tipo) {
+document.getElementById(`precio${tipo}`).addEventListener("input", function(e) {
 const cursorPos = this.selectionStart;
 const valorSinSimbolo = this.value.replace(/\D/g, '');
 const formattedValue = formatoPrecio(valorSinSimbolo);
 const prevLength = this.value.length;
 this.value = formattedValue;
-// Ajustar la posición del cursor
 const newLength = formattedValue.length;
 const diff = newLength - prevLength;
 this.selectionStart = cursorPos + diff;
 this.selectionEnd = cursorPos + diff;
 });
+}
 
 // === FORMATO DE PRECIO PARA PLANES ($X.XXX,XX) ===
 function formatoPrecioPlan(valor) {
@@ -337,10 +380,10 @@ return `${parseInt(dia, 10)}/${parseInt(mes, 10)}/${anio}`;
 }
 
 // === PREVIEW IMÁGENES ===
-function actualizarPreview() {
-const previewContainer = document.getElementById("previewContainer");
+function actualizarPreview(tipo) {
+const previewContainer = document.getElementById(`previewContainer${tipo}`);
 previewContainer.innerHTML = "";
-imagenesBase64.forEach((imgBase64, index) => {
+imagenesBase64[tipo].forEach((imgBase64, index) => {
 const container = document.createElement("div");
 container.className = "preview-img-container";
 const img = document.createElement("img");
@@ -349,29 +392,32 @@ img.className = "preview-img";
 const btnDel = document.createElement("button");
 btnDel.className = "delete-img";
 btnDel.textContent = "x";
-btnDel.onclick = () => { imagenesBase64.splice(index, 1); actualizarPreview(); };
+btnDel.onclick = () => { imagenesBase64[tipo].splice(index, 1); actualizarPreview(tipo); };
 container.appendChild(img);
 container.appendChild(btnDel);
 previewContainer.appendChild(container);
 });
 }
-document.getElementById("imagenFile").addEventListener("change", function() {
+
+function inicializarPreviewImagenes(tipo) {
+document.getElementById(`imagenFile${tipo}`).addEventListener("change", function() {
 const files = Array.from(this.files);
 files.forEach(file => {
 const reader = new FileReader();
 reader.onload = function(e) {
-imagenesBase64.push(e.target.result);
-actualizarPreview();
+imagenesBase64[tipo].push(e.target.result);
+actualizarPreview(tipo);
 }
 reader.readAsDataURL(file);
 });
 });
+}
 
 // === PREVIEW VIDEOS ===
-function actualizarVideoPreview() {
-const videoPreviewContainer = document.getElementById("videoPreviewContainer");
+function actualizarVideoPreview(tipo) {
+const videoPreviewContainer = document.getElementById(`videoPreviewContainer${tipo}`);
 videoPreviewContainer.innerHTML = "";
-videosBase64.forEach((videoBase64, index) => {
+videosBase64[tipo].forEach((videoBase64, index) => {
 const container = document.createElement("div");
 container.className = "preview-video-container";
 const video = document.createElement("video");
@@ -381,23 +427,26 @@ video.controls = true;
 const btnDel = document.createElement("button");
 btnDel.className = "delete-video";
 btnDel.textContent = "x";
-btnDel.onclick = () => { videosBase64.splice(index, 1); actualizarVideoPreview(); };
+btnDel.onclick = () => { videosBase64[tipo].splice(index, 1); actualizarVideoPreview(tipo); };
 container.appendChild(video);
 container.appendChild(btnDel);
 videoPreviewContainer.appendChild(container);
 });
 }
-document.getElementById("videoFile").addEventListener("change", function() {
+
+function inicializarPreviewVideos(tipo) {
+document.getElementById(`videoFile${tipo}`).addEventListener("change", function() {
 const files = Array.from(this.files);
 files.forEach(file => {
 const reader = new FileReader();
 reader.onload = function(e) {
-videosBase64.push(e.target.result);
-actualizarVideoPreview();
+videosBase64[tipo].push(e.target.result);
+actualizarVideoPreview(tipo);
 }
 reader.readAsDataURL(file);
 });
 });
+}
 
 // === SUBIR IMÁGENES ===
 async function subirImagenCloudinary(file) {
@@ -417,10 +466,7 @@ return null;
 // === SUBIR VIDEO A MUX ===
 async function subirVideoMux(videoFile, row) {
   try {
-    // Convertir el archivo de video a base64
     const base64Video = await fileToBase64(videoFile);
-    
-    // Enviar solicitud POST al script de Google Apps Script
     const response = await fetch('https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec', {
       method: 'POST',
       headers: {
@@ -466,7 +512,35 @@ const menu = document.getElementById("menu");
 menu.classList.toggle("active");
 }
 
-// === INICIO ===
+// === TOGGLE OPCIONES PROPIEDAD ===
+function toggleOpcionesPropiedad() {
+const opciones = document.getElementById("opcionesPropiedad");
+const btn = document.getElementById("btnAgregarPropiedad");
+if (opciones.classList.contains("active")) {
+opciones.classList.remove("active");
+btn.textContent = "➕ Agregar Propiedad";
+resetAllForms();
+} else {
+opciones.classList.add("active");
+btn.textContent = "➖ Cerrar Opciones";
+window.scrollTo(0, document.getElementById("opcionesPropiedad").offsetTop);
+}
+}
+
+// === MOSTRAR FORMULARIO SEGÚN TIPO ===
+function mostrarFormulario(tipo) {
+const formularios = ['Departamento', 'Local', 'Temporario'];
+formularios.forEach(f => {
+const form = document.getElementById(`formulario${f}`);
+form.classList.remove("active");
+});
+const form = document.getElementById(`formulario${tipo}`);
+form.classList.add("active");
+document.getElementById("btnAgregarPropiedad").textContent = "➖ Cerrar Opciones";
+window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
+}
+
+// === INICIALIZAR EVENTOS ===
 window.onload = function() {
 const email = localStorage.getItem("dueno");
 if (!email) { window.location.href = "index.html"; return; }
@@ -475,6 +549,11 @@ cargarAlquileres();
 cargarPreciosPlanes();
 cargarDatosCuenta();
 checkPaymentOnReturn();
+['Departamento', 'Local', 'Temporario'].forEach(tipo => {
+inicializarPreviewImagenes(tipo);
+inicializarPreviewVideos(tipo);
+if (tipo === 'Departamento') inicializarFormatoPrecio(tipo);
+});
 }
 
 // === VERIFICAR PAGO AL REGRESAR ===
@@ -557,7 +636,6 @@ const estadoPago = login.EstadoPago || "No registrado";
 const vencimiento = formatoFecha(login.Vencimiento || "N/D");
 let planStatusHTML = `Plan: <b>${planActual || "Sin plan"}</b> | Estado de Pago: ${estadoPago} | Vencimiento: ${vencimiento}`;
 
-// Agregar mensaje para el plan Prueba
 if (planActual === "Prueba" && vencimiento !== "N/D") {
 const vencimientoDate = new Date(vencimiento.split("/").reverse().join("-"));
 const today = new Date();
@@ -577,7 +655,7 @@ planStatusHTML += `<br><span style="color:red">Plan vencido, tus alquileres no s
 }
 
 planStatusEl.innerHTML = planStatusHTML;
-document.getElementById("limiteAlquileres").textContent = planActual === "Prueba" ? `${deptosActivos} alquileres activos` : `${deptosActivos}/${limiteDeptos} alquileres activos`;
+document.getElementById("limiteAlquileres").textContent = planActual === "Prueba" ? `${deptosActivos} propiedades activas` : `${deptosActivos}/${limiteDeptos} propiedades activas`;
 document.getElementById("btnPlan").textContent = planActual ? "💳 Mejorar Plan" : "💳 Elegir Plan";
 }
 
@@ -667,17 +745,19 @@ document.body.appendChild(script);
 function mostrarAlquileres(res) {
 const div = document.getElementById("listaAlquileres");
 div.innerHTML = "";
-if (!res.success || !res.data || res.data.length === 0) { div.innerHTML = "No tienes alquileres aún."; return; }
+if (!res.success || !res.data || res.data.length === 0) { div.innerHTML = "No tienes propiedades aún."; return; }
 deptosActivos = res.data.filter(a => a.Estado === "Activo").length;
-document.getElementById("limiteAlquileres").textContent = planActual === "Prueba" ? `${deptosActivos} alquileres activos` : `${deptosActivos}/${limiteDeptos} alquileres activos`;
+document.getElementById("limiteAlquileres").textContent = planActual === "Prueba" ? `${deptosActivos} propiedades activas` : `${deptosActivos}/${limiteDeptos} propiedades activas`;
 res.data.forEach(alq => {
 let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
 let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Cambiar Estado</button>`;
 let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
 let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
-let precioFormateado = formatoPrecio(alq.Precio);
+let precioFormateado = alq.Tipo === "Departamento" ? formatoPrecio(alq.Precio) : "";
+let infoAmbientes = alq.Tipo === "Departamento" ? ` - ${alq['Nro Ambientes']} amb` : "";
+let infoMascotas = alq.Tipo === "Departamento" ? ` - Mascotas: ${alq.Mascotas || "N/D"}` : "";
 div.innerHTML += `<div class="alquiler">
-<b>${alq.Direccion}</b> - ${alq['Nro Ambientes']} amb - ${precioFormateado} - Mascotas: ${alq.Mascotas || "N/D"}<br>
+<b>${alq.Direccion}</b> (${alq.Tipo})${infoAmbientes}${precioFormateado}${infoMascotas}<br>
 Estado: ${estado}<br>
 ${btnEstado} ${btnEditar} ${btnEliminar}
 <span id="estadoMsg-${alq.row}" class="estado-msg"></span>
@@ -685,49 +765,34 @@ ${btnEstado} ${btnEditar} ${btnEliminar}
 });
 }
 
-// === TOGGLE FORMULARIO ===
-function toggleFormulario() {
-const form = document.getElementById("formulario");
-const btn = document.getElementById("btnAgregarAlquiler");
-if (form.classList.contains("active")) {
-form.classList.remove("active");
-btn.textContent = "➕ Agregar Alquiler";
-resetForm();
-} else {
-form.classList.add("active");
-btn.textContent = "➖ Cerrar Formulario";
-window.scrollTo(0, document.getElementById("formulario").offsetTop);
-}
-}
-
 // === AGREGAR / EDITAR ALQUILER ===
-async function agregarAlquiler() {
-const msgEl = document.getElementById("msg");
-msgEl.textContent = "Agregando alquiler...";
+async function agregarAlquiler(tipo) {
+const msgEl = document.getElementById(`msg${tipo}`);
+msgEl.textContent = "Agregando propiedad...";
 msgEl.className = "estado-msg loading";
-let direccion = document.getElementById("direccion").value;
-const ambientes = document.getElementById("ambientes").value;
-let precio = document.getElementById("precio").value.replace(/\D/g, "");
-const mascotas = document.getElementById("mascotas").value;
-const infoIngreso = document.getElementById("infoIngreso").value;
-const detalles = document.getElementById("detalles").value;
-let row = document.getElementById("editRow").value || new Date().getTime();
-const enlaceCompartir = document.getElementById("editRow").value ? document.getElementById("enlaceCompartir").value : "";
+let direccion = document.getElementById(`direccion${tipo}`).value;
+const ambientes = tipo === "Departamento" ? document.getElementById(`ambientes${tipo}`).value : "";
+let precio = tipo === "Departamento" ? document.getElementById(`precio${tipo}`).value.replace(/\D/g, "") : "";
+const mascotas = tipo === "Departamento" ? document.getElementById(`mascotas${tipo}`).value : "";
+const infoIngreso = document.getElementById(`infoIngreso${tipo}`).value;
+const detalles = document.getElementById(`detalles${tipo}`).value;
+let row = document.getElementById(`editRow${tipo}`).value || new Date().getTime();
+const enlaceCompartir = document.getElementById(`editRow${tipo}`).value ? document.getElementById(`enlaceCompartir${tipo}`).value : "";
 const email = localStorage.getItem("dueno");
-if (!direccion || !ambientes || !precio) { 
+if (!direccion || (tipo === "Departamento" && (!ambientes || !precio))) { 
 msgEl.className = "estado-msg error";
 msgEl.textContent = "Completa todos los campos obligatorios.";
 setTimeout(() => { msgEl.textContent = ""; }, 5000);
 return; 
 }
 direccion = direccion + ", Santo Tomé Corrientes";
-const files = document.getElementById("imagenFile").files;
+const files = document.getElementById(`imagenFile${tipo}`).files;
 let uploadedURLs = [];
 for (let i = 0; i < files.length; i++) {
 const url = await subirImagenCloudinary(files[i]);
 if (url) uploadedURLs.push(url);
 }
-const videoFiles = document.getElementById("videoFile").files;
+const videoFiles = document.getElementById(`videoFile${tipo}`).files;
 let videos = "";
 if (videoFiles.length > 0) {
 let videoURLs = [];
@@ -736,8 +801,8 @@ const url = await subirVideoMux(videoFiles[i], row);
 if (url) videoURLs.push(url);
 }
 videos = videoURLs.join(",");
-} else if (document.getElementById("editRow").value) {
-videos = document.getElementById("existingVideos").value;
+} else if (document.getElementById(`editRow${tipo}`).value) {
+videos = document.getElementById(`existingVideos${tipo}`).value;
 }
 fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(direccion)}&key=${GEOCODE_KEY}`)
 .then(r => r.json()).then(data => {
@@ -746,22 +811,21 @@ if (data.results && data.results[0]) {
 lat = data.results[0].geometry.location.lat;
 lng = data.results[0].geometry.location.lng;
 }
-enviarAlquiler(uploadedURLs.join(","), lat, lng, enlaceCompartir, videos);
+enviarAlquiler(tipo, uploadedURLs.join(","), lat, lng, enlaceCompartir, videos);
 }).catch(err => {
 msgEl.className = "estado-msg error";
 msgEl.textContent = "Error al obtener coordenadas: " + (err.message || "Error de conexión");
 setTimeout(() => { msgEl.textContent = ""; }, 5000);
 });
-function enviarAlquiler(fotosConcatenadas, lat, lng, enlaceCompartir, videos) {
-const action = document.getElementById("editRow").value ? "editAlquiler" : "addAlquiler";
+function enviarAlquiler(tipo, fotosConcatenadas, lat, lng, enlaceCompartir, videos) {
+const action = document.getElementById(`editRow${tipo}`).value ? "editAlquiler" : "addAlquiler";
 const callback = action === "editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
 let estado = "Activo";
 if (action === "editAlquiler" && deptosActivos >= limiteDeptos && planActual !== "Prueba") {
 estado = "Inactivo";
 }
 const script = document.createElement("script");
-let query = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&contacto=auto&estado=${estado}&videos=${encodeURIComponent(videos)}`;
-// Aseguramos que el enlaceCompartir (columna N) se mantenga intacto al editar
+let query = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&tipo=${encodeURIComponent(tipo)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&contacto=auto&estado=${estado}&videos=${encodeURIComponent(videos)}`;
 if (enlaceCompartir) query += `&enlaceCompartir=${encodeURIComponent(enlaceCompartir)}`;
 query += `&callback=${callback}`;
 script.src = query;
@@ -769,55 +833,64 @@ document.body.appendChild(script);
 }
 }
 
-// === FUNCIONES RESTANTES ===
+// === RESET FORMULARIOS ===
+function resetAllForms() {
+['Departamento', 'Local', 'Temporario'].forEach(tipo => {
+document.getElementById(`formulario${tipo}`).classList.remove("active");
+document.getElementById(`editRow${tipo}`).value = "";
+document.getElementById(`enlaceCompartir${tipo}`).value = "";
+document.getElementById(`existingVideos${tipo}`).value = "";
+document.getElementById(`direccion${tipo}`).value = "";
+if (tipo === "Departamento") {
+document.getElementById(`ambientes${tipo}`).value = "";
+document.getElementById(`precio${tipo}`).value = "";
+document.getElementById(`mascotas${tipo}`).value = "Sí";
+}
+document.getElementById(`infoIngreso${tipo}`).value = "";
+document.getElementById(`detalles${tipo}`).value = "";
+document.getElementById(`imagenFile${tipo}`).value = "";
+document.getElementById(`videoFile${tipo}`).value = "";
+imagenesBase64[tipo] = [];
+videosBase64[tipo] = [];
+actualizarPreview(tipo);
+actualizarVideoPreview(tipo);
+document.getElementById(`msg${tipo}`).textContent = "";
+document.getElementById(`btnGuardar${tipo}`).textContent = "Agregar";
+});
+document.getElementById("opcionesPropiedad").classList.remove("active");
+document.getElementById("btnAgregarPropiedad").textContent = "➕ Agregar Propiedad";
+}
+
+// === EDITAR ALQUILER ===
 function editarAlquiler(row, datos) {
-// Preservamos el valor del campo "Enlace para compartir" (columna N) al editar
-document.getElementById("btnAgregarAlquiler").textContent = "➖ Cerrar Formulario";
-document.getElementById("formulario").classList.add("active");
-document.getElementById("btnGuardar").textContent = "Guardar Cambios";
-document.getElementById("editRow").value = row;
-document.getElementById("enlaceCompartir").value = datos["Enlace para compartir"] || "";
-document.getElementById("existingVideos").value = datos.Videos || "";
-document.getElementById("direccion").value = datos.Direccion || "";
-document.getElementById("ambientes").value = datos["Nro Ambientes"] || "";
-document.getElementById("precio").value = formatoPrecio(datos.Precio);
-document.getElementById("mascotas").value = datos.Mascotas || "No";
-document.getElementById("infoIngreso").value = datos.InfoIngreso || "";
-document.getElementById("detalles").value = datos.Detalles || "";
-imagenesBase64 = datos.Fotos ? datos.Fotos.split(",") : [];
-videosBase64 = datos.Videos ? datos.Videos.split(",") : [];
-actualizarPreview();
-actualizarVideoPreview();
-window.scrollTo(0, document.getElementById("formulario").offsetTop);
+const tipo = datos.Tipo || "Departamento";
+document.getElementById("btnAgregarPropiedad").textContent = "➖ Cerrar Opciones";
+document.getElementById(`formulario${tipo}`).classList.add("active");
+document.getElementById(`btnGuardar${tipo}`).textContent = "Guardar Cambios";
+document.getElementById(`editRow${tipo}`).value = row;
+document.getElementById(`enlaceCompartir${tipo}`).value = datos["Enlace para compartir"] || "";
+document.getElementById(`existingVideos${tipo}`).value = datos.Videos || "";
+document.getElementById(`direccion${tipo}`).value = datos.Direccion || "";
+if (tipo === "Departamento") {
+document.getElementById(`ambientes${tipo}`).value = datos["Nro Ambientes"] || "";
+document.getElementById(`precio${tipo}`).value = formatoPrecio(datos.Precio);
+document.getElementById(`mascotas${tipo}`).value = datos.Mascotas || "No";
+}
+document.getElementById(`infoIngreso${tipo}`).value = datos.InfoIngreso || "";
+document.getElementById(`detalles${tipo}`).value = datos.Detalles || "";
+imagenesBase64[tipo] = datos.Fotos ? datos.Fotos.split(",") : [];
+videosBase64[tipo] = datos.Videos ? datos.Videos.split(",") : [];
+actualizarPreview(tipo);
+actualizarVideoPreview(tipo);
+window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
 }
 
-function resetForm() {
-document.getElementById("btnAgregarAlquiler").textContent = "➕ Agregar Alquiler";
-document.getElementById("formulario").classList.remove("active");
-document.getElementById("btnGuardar").textContent = "Agregar";
-document.getElementById("editRow").value = "";
-document.getElementById("enlaceCompartir").value = "";
-document.getElementById("existingVideos").value = "";
-document.getElementById("direccion").value = "";
-document.getElementById("ambientes").value = "";
-document.getElementById("precio").value = "";
-document.getElementById("mascotas").value = "Sí";
-document.getElementById("infoIngreso").value = "";
-document.getElementById("detalles").value = "";
-document.getElementById("imagenFile").value = "";
-document.getElementById("videoFile").value = "";
-imagenesBase64 = [];
-videosBase64 = [];
-actualizarPreview();
-actualizarVideoPreview();
-document.getElementById("msg").textContent = "";
-}
-
+// === FUNCIONES RESTANTES ===
 async function cambiarEstado(row, estadoActual) {
 const msgEl = document.getElementById(`estadoMsg-${row}`);
 if (estadoActual === "Inactivo" && deptosActivos >= limiteDeptos && planActual !== "Prueba") {
 msgEl.className = "estado-msg error";
-msgEl.textContent = `No puedes activar más alquileres. Tu plan (${planActual}) permite hasta ${limiteDeptos} deptos activos. ❌`;
+msgEl.textContent = `No puedes activar más propiedades. Tu plan (${planActual}) permite hasta ${limiteDeptos} propiedades activas. ❌`;
 setTimeout(() => { msgEl.textContent = ""; }, 5000);
 return;
 }
@@ -850,7 +923,7 @@ setTimeout(() => { msgEl.textContent = ""; }, 5000);
 }
 
 function eliminarAlquiler(row) {
-if (!confirm("¿Seguro que deseas eliminar este alquiler?")) return;
+if (!confirm("¿Seguro que deseas eliminar esta propiedad?")) return;
 const script = document.createElement("script");
 script.src = `${API_URL}?action=deleteAlquiler&row=${row}&callback=cargarAlquileres`;
 document.body.appendChild(script);
@@ -859,12 +932,14 @@ document.body.appendChild(script);
 function logout() { localStorage.removeItem("dueno"); window.location.href = "index.html"; }
 
 function alquilerAgregado(res) {
-const msgEl = document.getElementById("msg");
+const formularios = ['Departamento', 'Local', 'Temporario'];
+formularios.forEach(tipo => {
+const msgEl = document.getElementById(`msg${tipo}`);
 if (res.success) {
 msgEl.className = "estado-msg success";
-msgEl.textContent = "✅ Alquiler agregado con éxito";
+msgEl.textContent = "✅ Propiedad agregada con éxito";
 setTimeout(() => {
-resetForm();
+resetAllForms();
 cargarAlquileres();
 cargarEstadoPlan();
 }, 3000);
@@ -873,15 +948,18 @@ msgEl.className = "estado-msg error";
 msgEl.textContent = "❌ Error al agregar: " + (res.error || "desconocido");
 setTimeout(() => { msgEl.textContent = ""; }, 5000);
 }
+});
 }
 
 function alquilerEditado(res) {
-const msgEl = document.getElementById("msg");
+const formularios = ['Departamento', 'Local', 'Temporario'];
+formularios.forEach(tipo => {
+const msgEl = document.getElementById(`msg${tipo}`);
 if (res.success) {
 msgEl.className = "estado-msg success";
 msgEl.textContent = "✅ Cambios guardados correctamente";
 setTimeout(() => {
-resetForm();
+resetAllForms();
 cargarAlquileres();
 }, 3000);
 } else {
@@ -889,6 +967,7 @@ msgEl.className = "estado-msg error";
 msgEl.textContent = "❌ Error al editar: " + (res.error || "desconocido");
 setTimeout(() => { msgEl.textContent = ""; }, 5000);
 }
+});
 }
 
 // === EDITAR CUENTA ===
@@ -926,7 +1005,7 @@ document.getElementById("emailEditar").value = login.Email || "";
 document.getElementById("nombreEditar").value = login.Nombre || "";
 document.getElementById("passwordEditar").value = login.Password || "";
 const contacto = login.Contacto || "";
-let codigoPais = "+549"; // Default to Argentina
+let codigoPais = "+549";
 let numero = contacto;
 for (const code of countryCodes) {
 if (contacto.startsWith(code)) {
