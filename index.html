@@ -338,6 +338,7 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 <input type="text" id="filtroMin" placeholder="Precio Mínimo" oninput="formatCurrency(this)">
 <input type="text" id="filtroMax" placeholder="Precio Máximo" oninput="formatCurrency(this)">
 <label><input type="checkbox" id="filtroMascotas"> Mascotas Permitidas</label>
+<label><input type="checkbox" id="filtroAmoblado"> Amoblado</label>
 <button onclick="cargarAlquileres()">Filtrar</button>
 </div>
 
@@ -775,6 +776,7 @@ const filtroAmb = document.getElementById("filtroAmb").value;
 const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
 const filtroMax = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
 const filtroMascotas = document.getElementById("filtroMascotas").checked;
+const filtroAmoblado = document.getElementById("filtroAmoblado").checked;
 
 fetch(webAppURL + "?action=getAlquileres")
 .then(res => res.json())
@@ -803,6 +805,8 @@ if(filtroAmb && nroAmb !== toInt(filtroAmb)) return;
 if(precio < filtroMin || precio > filtroMax) return;
 const mascotas = getField(a, ["Mascotas"]);
 if(filtroMascotas && (!mascotas || mascotas.toLowerCase() !== "sí")) return;
+const amoblado = getField(a, ["Amoblado"]);
+if(filtroAmoblado && (!amoblado || amoblado.toLowerCase() !== "sí")) return;
 
 const direccion = getField(a, ["Direccion","Dirección","Domicilio"]);
 const infoIngreso = getField(a, ["Informacion ingreso","Información ingreso","InformacionIngreso","InfoIngreso","Informacion de ingreso"]);
@@ -833,7 +837,8 @@ const rows = [
 ['Precio', formattedPrecio||''],
 ['Información de ingreso', infoIngreso||''],
 ['Detalles', detalles||''],
-['Mascotas', mascotas||'']
+['Mascotas', mascotas||''],
+['Amoblado', amoblado||'']
 ];
 rows.forEach(([label,val])=>{
 const p=document.createElement('p');
