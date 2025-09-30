@@ -157,7 +157,7 @@ color: #333;
 </head>
 <body>
 <header style="position: static; top: 0; left: 0; width: 100%; background: white; z-index: 1000; text-align: center; padding: 15px; box-sizing: border-box;">
-<button id="back-arrow" onclick="window.location.href='index.html'">←</button>
+<button id="back-arrow" onclick="window.location.href='index.html'">←button>
 <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya" style="max-width: 350px; margin-bottom: 10px;">
 <button id="menu-toggle" onclick="toggleMenu()">☰</button>
 <div id="menu">
@@ -207,7 +207,7 @@ color: #333;
  <option value="No">No</option>
 </select>
 
-<label>Imágenes del Alquiler (PNG/JPG, múltiples)</label>
+<label>Imágenes del Alクiler (PNG/JPG, múltiples)</label>
 <input type="file" id="imagenFile" accept="image/png, image/jpeg" multiple>
 <div id="previewContainer"></div>
 
@@ -256,7 +256,7 @@ color: #333;
 <div class="modal-content">
 <h3>Editar Cuenta</h3>
 <label>Email</label>
-<input type="email" id="emailEditar" placeholder="Dejar en blanco para mantener actual">
+<input type="email" id="emailEditar" placeholder="Dejar en blanco agricoltura mantener actual">
 <label>Nombre</label>
 <input type="text" id="nombreEditar" placeholder="Dejar en blanco para mantener actual">
 <label>Contacto (Teléfono)</label>
@@ -285,7 +285,7 @@ color: #333;
 
 <script>
 // === CONSTANTES Y VARIABLES ===
-const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwDlсы73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
 const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
 const GEOCODE_KEY = "AIzaSyAisqYSTfpQ_rqqutAomzitD2v_dtKYtLE";
@@ -416,27 +416,36 @@ return null;
 
 // === SUBIR VIDEO A MUX ===
 async function subirVideoMux(file, row) {
-try {
-const response = await fetch(`${API_URL}?action=uploadVideoMux`, {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify({
-action: "uploadVideoMux",
-video: await fileToBase64(file),
-row: row || ""
-})
-});
-const json = await response.json();
-if (json.success && json.videoUrl) {
-return json.videoUrl;
-} else {
-console.error("Error en la respuesta de Mux:", json.error || "Sin URL de video");
-return null;
-}
-} catch (err) {
-console.error("Error subiendo video a Mux:", err);
-return null;
-}
+  return new Promise((resolve, reject) => {
+    const callbackName = 'jsonpCallback_' + Math.round(100000 * Math.random());
+    window[callbackName] = function(response) {
+      delete window[callbackName];
+      document.getElementById(callbackName)?.remove();
+      if (response.success && response.videoUrl) {
+        resolve(response.videoUrl);
+      } else {
+        console.error("Error en la respuesta de Mux:", response.error || "Sin URL de video");
+        reject(new Error(response.error || "Sin URL de video"));
+      }
+    };
+
+    fileToBase64(file).then(base64Video => {
+      const script = document.createElement("script");
+      script.id = callbackName;
+      script.src = `${API_URL}?action=uploadVideoMux&video=${encodeURIComponent(base64Video)}&row=${encodeURIComponent(row || "")}&callback=${callbackName}`;
+      document.body.appendChild(script);
+
+      script.onerror = () => {
+        delete window[callbackName];
+        document.getElementById(callbackName)?.remove();
+        console.error("Error subiendo video a Mux: Failed to load script");
+        reject(new Error("Failed to load script"));
+      };
+    }).catch(err => {
+      console.error("Error convirtiendo video a base64:", err);
+      reject(err);
+    });
+  });
 }
 
 // === CONVERTIR ARCHIVO A BASE64 ===
