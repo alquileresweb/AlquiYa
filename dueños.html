@@ -212,6 +212,11 @@ color: #333;
  <option value="Sí">Sí</option>
  <option value="No">No</option>
 </select>
+<label>Amoblado</label>
+<select id="amobladoDepartamento">
+ <option value="Sí">Sí</option>
+ <option value="No">No</option>
+</select>
 <label>Imágenes del Alquiler (PNG/JPG, múltiples)</label>
 <input type="file" id="imagenFileDepartamento" accept="image/png, image/jpeg" multiple>
 <div id="previewContainerDepartamento"></div>
@@ -756,8 +761,9 @@ let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</butt
 let precioFormateado = alq.Tipo === "Departamento" ? formatoPrecio(alq.Precio) : "";
 let infoAmbientes = alq.Tipo === "Departamento" ? ` - ${alq['Nro Ambientes']} amb` : "";
 let infoMascotas = alq.Tipo === "Departamento" ? ` - Mascotas: ${alq.Mascotas || "N/D"}` : "";
+let infoAmoblado = alq.Tipo === "Departamento" ? ` - Amoblado: ${alq.Amoblado || "N/D"}` : "";
 div.innerHTML += `<div class="alquiler">
-<b>${alq.Direccion}</b> (${alq.Tipo})${infoAmbientes}${precioFormateado}${infoMascotas}<br>
+<b>${alq.Direccion}</b> (${alq.Tipo})${infoAmbientes}${precioFormateado}${infoMascotas}${infoAmoblado}<br>
 Estado: ${estado}<br>
 ${btnEstado} ${btnEditar} ${btnEliminar}
 <span id="estadoMsg-${alq.row}" class="estado-msg"></span>
@@ -774,6 +780,8 @@ let direccion = document.getElementById(`direccion${tipo}`).value;
 const ambientes = tipo === "Departamento" ? document.getElementById(`ambientes${tipo}`).value : "";
 let precio = tipo === "Departamento" ? document.getElementById(`precio${tipo}`).value.replace(/\D/g, "") : "";
 const mascotas = tipo === "Departamento" ? document.getElementById(`mascotas${tipo}`).value : "";
+constև
+const amoblado = tipo === "Departamento" ? document.getElementById(`amoblado${tipo}`).value : "";
 const infoIngreso = document.getElementById(`infoIngreso${tipo}`).value;
 const detalles = document.getElementById(`detalles${tipo}`).value;
 let row = document.getElementById(`editRow${tipo}`).value || new Date().getTime();
@@ -825,7 +833,7 @@ if (action === "editAlquiler" && deptosActivos >= limiteDeptos && planActual !==
 estado = "Inactivo";
 }
 const script = document.createElement("script");
-let query = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&tipo=${encodeURIComponent(tipo)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&contacto=auto&estado=${estado}&videos=${encodeURIComponent(videos)}`;
+let query = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&tipo=${encodeURIComponent(tipo)}&ambientes=${encodeURIComponent(ambientes)}&precio=${encodeURIComponent(precio)}&mascotas=${encodeURIComponent(mascotas)}&amoblado=${encodeURIComponent(amoblado)}&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&contacto=auto&estado=${estado}&videos=${encodeURIComponent(videos)}`;
 if (enlaceCompartir) query += `&enlaceCompartir=${encodeURIComponent(enlaceCompartir)}`;
 query += `&callback=${callback}`;
 script.src = query;
@@ -845,6 +853,7 @@ if (tipo === "Departamento") {
 document.getElementById(`ambientes${tipo}`).value = "";
 document.getElementById(`precio${tipo}`).value = "";
 document.getElementById(`mascotas${tipo}`).value = "Sí";
+document.getElementById(`amoblado${tipo}`).value = "Sí";
 }
 document.getElementById(`infoIngreso${tipo}`).value = "";
 document.getElementById(`detalles${tipo}`).value = "";
@@ -875,6 +884,7 @@ if (tipo === "Departamento") {
 document.getElementById(`ambientes${tipo}`).value = datos["Nro Ambientes"] || "";
 document.getElementById(`precio${tipo}`).value = formatoPrecio(datos.Precio);
 document.getElementById(`mascotas${tipo}`).value = datos.Mascotas || "No";
+document.getElementById(`amoblado${tipo}`).value = datos.Amoblado || "No";
 }
 document.getElementById(`infoIngreso${tipo}`).value = datos.InfoIngreso || "";
 document.getElementById(`detalles${tipo}`).value = datos.Detalles || "";
