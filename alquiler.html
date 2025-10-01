@@ -232,8 +232,8 @@ function cambiarImagen(direction) {
   document.getElementById("img-grande").src = currentImages[currentImageIndex];
 }
 
-function initMap(lat, lng, direccion, nroAmb) {
-  console.log(`Initializing map with lat: ${lat}, lng: ${lng}, address: ${direccion}, rooms: ${nroAmb}`);
+function initMap(lat, lng, direccion, nroAmb, tipo) {
+  console.log(`Initializing map with lat: ${lat}, lng: ${lng}, address: ${direccion}, rooms: ${nroAmb}, tipo: ${tipo}`);
   const mapContainer = document.getElementById("map");
   if (!mapContainer) {
     console.error("Map container not found");
@@ -253,9 +253,17 @@ function initMap(lat, lng, direccion, nroAmb) {
   const markersLayer = L.layerGroup().addTo(map);
   
   // Rental marker
+  let iconHtml;
+  if (tipo === "Temporario") {
+    iconHtml = '⌛';
+  } else if (tipo === "Local") {
+    iconHtml = '🛍️';
+  } else {
+    iconHtml = `🏠<span style="font-size:12px;margin-left:2px;">${nroAmb || "-"}</span>`;
+  }
   const rentalIcon = L.divIcon({
     className: 'marker-icon',
-    html: `🏠<span style="font-size:12px;margin-left:2px;">${nroAmb || "-"}</span>`,
+    html: iconHtml,
     iconSize: [30, 30],
     iconAnchor: [15, 15],
     popupAnchor: [0, -15]
@@ -287,6 +295,23 @@ function initMap(lat, lng, direccion, nroAmb) {
     .addTo(markersLayer)
     .bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
   
+  // Supermarket markers with shopping cart emoji
+  const superIcon = L.divIcon({
+    className: 'marker-icon',
+    html: '🛒',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15]
+  });
+  L.marker([-28.5519443, -56.0401962], { icon: superIcon })
+    .addTo(markersLayer)
+    .bindPopup("<b>Supermercado La Bomba</b>");
+  L.marker([-28.5472635, -56.0438082], { icon: superIcon })
+    .addTo(markersLayer)
+    .bindPopup("<b>Supermercado El Super</b>");
+  L.marker([-28.5462903, -56.0440365], { icon: superIcon })
+    .addTo(markersLayer)
+    .bindPopup("<b>Supermercado La Economía</b>");
+  
   console.log("Map initialized successfully");
 }
 
@@ -311,11 +336,18 @@ window.onload = () => {
       console.log("Backend response:", data);
       if (data.success && data.alquiler) {
         const alquiler = data.alquiler;
+        const tipo = getField(alquiler, ["Tipo"]);
         const precio = (alquiler.Precio && !isNaN(alquiler.Precio)) ? formatPrice(alquiler.Precio) : "No disponible";
+        const direccion = getField(alquiler, ["Direccion", "Dirección", "Domicilio"]) || "Sin dirección";
         detalle.innerHTML = `
-          <h2>Alquiler: ${getField(alquiler, ["Direccion", "Dirección", "Domicilio"]) || "Sin dirección"}</h2>
+          <h2>Alquiler: ${direccion}</h2>
         `;
-        const rows = [
+        const rows = (tipo === "Temporario" || tipo === "Local") ? [
+          ["Dirección", direccion],
+          ["Información de ingreso", getField(alquiler, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso", "Informacion de ingreso"]) || ""],
+          ["Detalles", getField(alquiler, ["Detalles", "Detalle", "Descripcion", "Descripción"]) || ""]
+        ] : [
+          ["Dirección", direccion],
           ["Ambientes", getField(alquiler, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]) || ""],
           ["Precio", precio],
           ["Información de ingreso", getField(alquiler, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso", "Informacion de ingreso"]) || ""],
@@ -361,13 +393,12 @@ window.onload = () => {
         // Initialize map if valid coordinates are available
         const lat = parseFloat(getField(alquiler, ["Lat", "Latitude", "Latitud"]));
         const lng = parseFloat(getField(alquiler, ["Lng", "Longitude", "Longitud"]));
-        const direccion = getField(alquiler, ["Direccion", "Dirección", "Domicilio"]) || "Sin dirección";
         const nroAmb = toInt(getField(alquiler, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]), "-");
         if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
           const mapDiv = document.createElement("div");
           mapDiv.id = "map";
           detalle.appendChild(mapDiv);
-          initMap(lat, lng, direccion, nroAmb);
+          initMap(lat, lng, direccion, nroAmb, tipo);
         } else {
           console.warn("Invalid or missing coordinates for map:", { lat, lng });
           const p = document.createElement("p");
@@ -382,7 +413,7 @@ window.onload = () => {
           waBtn.style.color = "white";
           waBtn.style.marginTop = "10px";
           waBtn.onclick = () => {
-            const mensaje = `Hola, vengo desde AlquiYa y quiero consultar por el alquiler de ${getField(alquiler, ["Direccion", "Dirección", "Domicilio"]) || "sin dirección"}`;
+            const mensaje = `Hola, vengo desde AlquiYa y quiero consultar por el alquiler de ${direccion}`;
             window.open(`https://wa.me/${alquiler.Contacto}?text=${encodeURIComponent(mensaje)}`, "_blank");
           };
           detalle.appendChild(waBtn);
