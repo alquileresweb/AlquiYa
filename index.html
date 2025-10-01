@@ -760,7 +760,7 @@ markersLayer.clearLayers();
 
 const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15]});
 const hospIcon = L.divIcon({className:'marker-icon', html:'🏥', iconSize:[30,30], iconAnchor:[15,15]});
-const superIcon = L.divIcon({className:'marker-icon', html:'🛍️', iconSize:[30,30], iconAnchor:[15,15]});
+const superIcon = L.divIcon({className:'marker-icon', html:'🛒', iconSize:[30,30], iconAnchor:[15,15]});
 const busIcon = L.divIcon({className:'marker-icon', html:'🚌', iconSize:[30,30], iconAnchor:[15,15]});
 const policeIcon = L.divIcon({className:'marker-icon', html:'👮', iconSize:[30,30], iconAnchor:[15,15]});
 
@@ -794,6 +794,7 @@ const lat = parseFloat(getField(a, ["Latitud","lat","LAT","Lat"]));
 const lng = parseFloat(getField(a, ["Longitud","lng","LNG","Long"]));
 if(isNaN(lat) || isNaN(lng)) return;
 
+const tipo = getField(a, ["Tipo"]);
 const ambVal = getField(a, ["Nro Ambientes","Ambientes","Nro de Ambientes","Nro"]);
 const nroAmb = toInt(ambVal, 0);
 
@@ -812,18 +813,30 @@ const direccion = getField(a, ["Direccion","Dirección","Domicilio"]);
 const infoIngreso = getField(a, ["Informacion ingreso","Información ingreso","InformacionIngreso","InfoIngreso","Informacion de ingreso"]);
 const detalles = getField(a, ["Detalles","Detalle","Descripcion","Descripción"]);
 const contacto = getField(a, ["Contacto","Whatsapp","WhatsApp","Tel","Telefono","Teléfono"]);
-const enlace = getField(a, ["Enlace"]);
+const enlace = getField(a, ["Enlace para compartir"]);
+
+let iconHtml;
+if (tipo === "Temporario") {
+iconHtml = '⌛';
+} else if (tipo === "Local") {
+iconHtml = '🛍️';
+} else {
+iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">'+(nroAmb||"-")+'</span>';
+}
 
 const icon = L.divIcon({
 className:'marker-icon',
-html:'🏠<span style="font-size:12px;margin-left:2px;">'+(nroAmb||"-")+'</span>',
+html: iconHtml,
 iconSize:[30,30],
 iconAnchor:[15,15]
 });
 const marker = L.marker([lat,lng], {icon: icon}).addTo(markersLayer);
 
 const popupDiv = document.createElement('div');
-popupDiv.innerHTML = `<b>Dirección:</b> ${direccion||""}<br><b>Ambientes:</b> ${nroAmb||""}<br><b>Precio:</b> ${formattedPrecio||""}`;
+popupDiv.innerHTML = `<b>Dirección:</b> ${direccion||""}`;
+if (tipo !== "Temporario" && tipo !== "Local") {
+popupDiv.innerHTML += `<br><b>Ambientes:</b> ${nroAmb||""}<br><b>Precio:</b> ${formattedPrecio||""}`;
+}
 
 const verBtn = document.createElement('button');
 verBtn.className = 'popup-button';
@@ -832,7 +845,12 @@ verBtn.onclick = () => {
 const detalle = document.getElementById('alquiler-detalle');
 detalle.innerHTML = `<h2>Alquiler: ${direccion||''}</h2>`;
 
-const rows = [
+const rows = (tipo === "Temporario" || tipo === "Local") ? [
+['Dirección', direccion||''],
+['Información de ingreso', infoIngreso||''],
+['Detalles', detalles||'']
+] : [
+['Dirección', direccion||''],
 ['Ambientes', nroAmb||''],
 ['Precio', formattedPrecio||''],
 ['Información de ingreso', infoIngreso||''],
