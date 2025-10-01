@@ -270,7 +270,7 @@ function initMap(lat, lng, direccion, nroAmb, tipo) {
   });
   L.marker([lat, lng], { icon: rentalIcon })
     .addTo(markersLayer)
-    .bindPopup(`<b>Alquiler: ${direccion}</b>`)
+    .bindPopup(`<b>${tipo === "Temporario" ? "Alquiler Temporario" : tipo === "Local" ? "Local Comercial" : "Alquiler"}: ${direccion}</b>`)
     .openPopup();
   
   // Facultad Fundación Barceló marker
@@ -312,6 +312,28 @@ function initMap(lat, lng, direccion, nroAmb, tipo) {
     .addTo(markersLayer)
     .bindPopup("<b>Supermercado La Economía</b>");
   
+  // Terminal de Omnibus marker
+  const busIcon = L.divIcon({
+    className: 'marker-icon',
+    html: '🚌',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15]
+  });
+  L.marker([-28.5468697, -56.0432862], { icon: busIcon })
+    .addTo(markersLayer)
+    .bindPopup("<b>Terminal de Omnibus</b>");
+  
+  // Policía marker
+  const policeIcon = L.divIcon({
+    className: 'marker-icon',
+    html: '👮',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15]
+  });
+  L.marker([-28.5487787, -56.0396171], { icon: policeIcon })
+    .addTo(markersLayer)
+    .bindPopup("<b>Policía</b>");
+  
   console.log("Map initialized successfully");
 }
 
@@ -337,10 +359,10 @@ window.onload = () => {
       if (data.success && data.alquiler) {
         const alquiler = data.alquiler;
         const tipo = getField(alquiler, ["Tipo"]);
-        const precio = (alquiler.Precio && !isNaN(alquiler.Precio)) ? formatPrice(alquiler.Precio) : "No disponible";
         const direccion = getField(alquiler, ["Direccion", "Dirección", "Domicilio"]) || "Sin dirección";
+        const precio = (alquiler.Precio && !isNaN(alquiler.Precio)) ? formatPrice(alquiler.Precio) : "No disponible";
         detalle.innerHTML = `
-          <h2>Alquiler: ${direccion}</h2>
+          <h2>${tipo === "Temporario" ? "Alquiler Temporario" : tipo === "Local" ? "Local Comercial" : "Alquiler"}: ${direccion}</h2>
         `;
         const rows = (tipo === "Temporario" || tipo === "Local") ? [
           ["Dirección", direccion],
