@@ -21,7 +21,7 @@ nav a{text-decoration:none;font-weight:bold;color:#333}
 nav a:hover{color:#3483fa}
 #map{height:60vh;width:100%;margin-bottom:20px;}
 #filtros{max-width:700px;margin:10px auto;padding:10px;background:#f9f9f9;border:1px solid #ccc;border-radius:8px;display:none;flex-wrap:wrap;gap:10px}
-#filtros input{flex:1;min-width:120px;padding:8px;border-radius:6px;border:1px solid #ccc}
+#filtros input, #filtros select{flex:1;min-width:120px;padding:8px;border-radius:6px;border:1px solid #ccc}
 #filtros button{padding:8px 15px;border-radius:6px;background:#3483fa;color:white;border:none;cursor:pointer}
 #filtros button:hover{background:#2565c0}
 #filtros label{display:flex;align-items:center;gap:5px;}
@@ -337,6 +337,12 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 <input type="number" id="filtroAmb" placeholder="Nro de Ambientes">
 <input type="text" id="filtroMin" placeholder="Precio Mínimo" oninput="formatCurrency(this)">
 <input type="text" id="filtroMax" placeholder="Precio Máximo" oninput="formatCurrency(this)">
+<select id="filtroTipo">
+  <option value="">Todos</option>
+  <option value="Departamento">Departamento</option>
+  <option value="Alquiler Temporario">Alquiler Temporario</option>
+  <option value="Local Comercial">Local Comercial</option>
+</select>
 <label><input type="checkbox" id="filtroMascotas"> Mascotas Permitidas</label>
 <label><input type="checkbox" id="filtroAmoblado"> Amoblado</label>
 <button onclick="cargarAlquileres()">Filtrar</button>
@@ -777,6 +783,7 @@ const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0
 const filtroMax = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
 const filtroMascotas = document.getElementById("filtroMascotas").checked;
 const filtroAmoblado = document.getElementById("filtroAmoblado").checked;
+const filtroTipo = document.getElementById("filtroTipo").value;
 
 fetch(webAppURL + "?action=getAlquileres")
 .then(res => res.json())
@@ -808,6 +815,15 @@ const mascotas = getField(a, ["Mascotas"]);
 if(filtroMascotas && (!mascotas || mascotas.toLowerCase() !== "sí")) return;
 const amoblado = getField(a, ["Amoblado"]);
 if(filtroAmoblado && (!amoblado || amoblado.toLowerCase() !== "sí")) return;
+
+if (filtroTipo) {
+  const tipoMap = {
+    "Departamento": "alquiler",
+    "Alquiler Temporario": "Temporario",
+    "Local Comercial": "Local"
+  };
+  if (tipo !== tipoMap[filtroTipo]) return;
+}
 
 const direccion = getField(a, ["Direccion","Dirección","Domicilio"]);
 const infoIngreso = getField(a, ["Informacion ingreso","Información ingreso","InformacionIngreso","InfoIngreso","Informacion de ingreso"]);
