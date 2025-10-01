@@ -338,10 +338,10 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 <input type="text" id="filtroMin" placeholder="Precio Mínimo" oninput="formatCurrency(this)">
 <input type="text" id="filtroMax" placeholder="Precio Máximo" oninput="formatCurrency(this)">
 <select id="filtroTipo">
-  <option value="">Todos</option>
+  <option value="">Todos los tipos</option>
   <option value="Departamento">Departamento</option>
-  <option value="Alquiler Temporario">Alquiler Temporario</option>
-  <option value="Local Comercial">Local Comercial</option>
+  <option value="Temporario">Alquiler Temporario</option>
+  <option value="Local">Local Comercial</option>
 </select>
 <label><input type="checkbox" id="filtroMascotas"> Mascotas Permitidas</label>
 <label><input type="checkbox" id="filtroAmoblado"> Amoblado</label>
@@ -802,6 +802,8 @@ const lng = parseFloat(getField(a, ["Longitud","lng","LNG","Long"]));
 if(isNaN(lat) || isNaN(lng)) return;
 
 const tipo = getField(a, ["Tipo"]);
+if(filtroTipo && tipo !== filtroTipo) return;
+
 const ambVal = getField(a, ["Nro Ambientes","Ambientes","Nro de Ambientes","Nro"]);
 const nroAmb = toInt(ambVal, 0);
 
@@ -815,15 +817,6 @@ const mascotas = getField(a, ["Mascotas"]);
 if(filtroMascotas && (!mascotas || mascotas.toLowerCase() !== "sí")) return;
 const amoblado = getField(a, ["Amoblado"]);
 if(filtroAmoblado && (!amoblado || amoblado.toLowerCase() !== "sí")) return;
-
-if (filtroTipo) {
-  const tipoMap = {
-    "Departamento": "alquiler",
-    "Alquiler Temporario": "Temporario",
-    "Local Comercial": "Local"
-  };
-  if (tipo !== tipoMap[filtroTipo]) return;
-}
 
 const direccion = getField(a, ["Direccion","Dirección","Domicilio"]);
 const infoIngreso = getField(a, ["Informacion ingreso","Información ingreso","InformacionIngreso","InfoIngreso","Informacion de ingreso"]);
