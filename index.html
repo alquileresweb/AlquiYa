@@ -634,31 +634,23 @@ function registrarDueno() {
         return;
     }
 
-    const payload = {
-        action: "registrarDueno",
-        email: email,
-        nombre: nombre,
-        password: password,
-        contacto: codigoPais + contacto
-    };
+    const params = new URLSearchParams();
+    params.append("action", "registrarDueno");
+    params.append("email", email);
+    params.append("nombre", nombre);
+    params.append("password", password);
+    params.append("contacto", codigoPais + contacto);
 
-    console.log("Enviando solicitud de registro:", payload);
+    console.log("Enviando solicitud de registro:", params.toString());
 
     fetch(webAppURL, {
         method: "POST",
+        body: params,
         headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload),
-        mode: "cors",
-        credentials: "same-origin"
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            "Content-Type": "application/x-www-form-urlencoded"
         }
-        return response.json();
     })
+    .then(response => response.json())
     .then(data => {
         if (data.success) {
             document.getElementById("registro-msg").style.color = "green";
@@ -672,7 +664,7 @@ function registrarDueno() {
     .catch(error => {
         console.error("Error en registro:", error);
         document.getElementById("registro-msg").style.color = "red";
-        document.getElementById("registro-msg").textContent = `Error al conectar con el servidor: ${error.message}. Por favor, verifica tu conexión e intenta de nuevo.`;
+        document.getElementById("registro-msg").textContent = "Error al conectar con el servidor. Por favor, verifica tu conexión e intenta de nuevo.";
     });
 }
 
