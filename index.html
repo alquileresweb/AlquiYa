@@ -714,9 +714,10 @@ function registrarEmailAvisos() {
     body: params,
     headers: {
       "Content-Type": "application/x-www-form-urlencoded"
-    }
+    },
+    mode: "no-cors"
   })
-  .then(data => {
+  .then(() => {
     document.getElementById("avisos-msg").style.color = "green";
     document.getElementById("avisos-msg").textContent = "Email registrado con éxito para recibir notificaciones.";
     document.getElementById("avisos_email").value = "";
