@@ -641,8 +641,6 @@ function registrarDueno() {
     params.append("password", password);
     params.append("contacto", codigoPais + contacto);
 
-    console.log("Enviando solicitud de registro:", params.toString());
-
     fetch(webAppURL, {
         method: "POST",
         body: params,
