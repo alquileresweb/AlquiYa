@@ -665,27 +665,26 @@ function registrarDueno() {
   params.append("password", password);
   params.append("contacto", codigoPais + contacto);
 
+  console.log("Enviando URLSearchParams:", params.toString());
+
   makeRequest(webAppURL, {
     method: "POST",
     body: params,
     headers: {
       "Content-Type": "application/x-www-form-urlencoded"
-    }
+    },
+    mode: "no-cors"
   })
-  .then(data => {
-    if (data.success) {
+    .then(() => {
       document.getElementById("registro-msg").style.color = "green";
-      document.getElementById("registro-msg").innerHTML =
-        "Dueño registrado con éxito.<br><button onclick='mostrarLogin()'>Ir a Login</button>";
-    } else {
+      document.getElementById("registro-msg").innerHTML = "Dueño registrado con éxito.<br><button onclick='mostrarLogin()'>Ir a Login</button>";
+      setTimeout(() => mostrarLogin(), 2000);
+    })
+    .catch(error => {
+      console.error("Error en registro:", error);
       document.getElementById("registro-msg").style.color = "red";
-      document.getElementById("registro-msg").textContent = data.error;
-    }
-  })
-  .catch(error => {
-    document.getElementById("registro-msg").style.color = "red";
-    document.getElementById("registro-msg").textContent = error.message;
-  });
+      document.getElementById("registro-msg").textContent = `Error: ${error.message}`;
+    });
 }
 
 /* =========================
