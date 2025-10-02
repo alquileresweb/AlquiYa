@@ -646,23 +646,24 @@ function registrarDueno() {
         body: params,
         headers: {
             "Content-Type": "application/x-www-form-urlencoded"
-        }
+        },
+        mode: "cors"   // 👈 Esto habilita lectura de la respuesta
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
             document.getElementById("registro-msg").style.color = "green";
-            document.getElementById("registro-msg").innerHTML = "Dueño registrado con éxito.<br><button onclick='mostrarLogin()'>Ir a Login</button>";
-            setTimeout(() => mostrarLogin(), 2000);
+            document.getElementById("registro-msg").innerHTML =
+              "Dueño registrado con éxito.<br><button onclick='mostrarLogin()'>Ir a Login</button>";
         } else {
             document.getElementById("registro-msg").style.color = "red";
-            document.getElementById("registro-msg").textContent = data.error || "Error al registrar el dueño. Por favor, intenta de nuevo.";
+            document.getElementById("registro-msg").textContent = data.error;
         }
     })
     .catch(error => {
         console.error("Error en registro:", error);
         document.getElementById("registro-msg").style.color = "red";
-        document.getElementById("registro-msg").textContent = "Error al conectar con el servidor. Por favor, verifica tu conexión e intenta de nuevo.";
+        document.getElementById("registro-msg").textContent = "Error al conectar con el servidor.";
     });
 }
 
