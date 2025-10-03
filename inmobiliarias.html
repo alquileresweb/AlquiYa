@@ -162,19 +162,21 @@ function cargarPropiedades() {
 
   // Manejar URL malformada (e.g., ?=<email>)
   if (!inmobiliariaEmail) {
-    const rawQuery = window.location.search.replace(/^\?/, '');
+    const rawQuery = window.location.search.replace(/^\?/, '').replace(/^=/, '').trim();
     if (rawQuery && rawQuery.includes('@')) {
-      inmobiliariaEmail = rawQuery.trim();
+      inmobiliariaEmail = rawQuery;
       console.log("Extracted email from malformed URL:", inmobiliariaEmail);
     }
   }
 
   console.log("Parsed email:", inmobiliariaEmail); // Debug: Log extracted email
 
-  if (!inmobiliariaEmail || !inmobiliariaEmail.includes('@')) {
+  // Validar formato de email
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!inmobiliariaEmail || !emailRegex.test(inmobiliariaEmail)) {
     loadingEl.style.display = "none";
     inmobiliariaInfo.innerHTML = `<h2>Error</h2><p>No se proporcionó un email válido en la URL. Por favor, usa el formato: <code>inmobiliarias.html?email=tuemail@ejemplo.com</code></p>`;
-    console.error("Invalid or missing email in URL");
+    console.error("Invalid or missing email in URL:", inmobiliariaEmail);
     return;
   }
 
