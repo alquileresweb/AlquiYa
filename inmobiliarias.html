@@ -309,7 +309,7 @@ function cargarPropiedades() {
     }
 
     // Mostrar el nombre de la inmobiliaria
-    const nombreInmobiliaria = res.data?.Nombre || "Inmobiliaria no encontrada";
+    const nombreInmobiliaria = res.data.Nombre || "Inmobiliaria no encontrada";
     document.getElementById("inmobiliaria-nombre").querySelector("h2").textContent = nombreInmobiliaria;
 
     if (!Array.isArray(res.alquileres) || res.alquileres.length === 0) {
