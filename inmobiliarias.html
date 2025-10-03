@@ -138,6 +138,7 @@ function cargarPropiedades() {
   const loadingEl = document.getElementById("loading-msg");
   const inmobiliariaInfo = document.getElementById("inmobiliaria-info");
   loadingEl.style.display = "block";
+  inmobiliariaInfo.innerHTML = "";
   markersLayer.clearLayers();
 
   // Marcadores estáticos
@@ -155,41 +156,41 @@ function cargarPropiedades() {
   L.marker([-28.5468697, -56.0432862], { icon: busIcon }).addTo(markersLayer).bindPopup("<b>Terminal de Omnibus</b>");
   L.marker([-28.5487787, -56.0396171], { icon: policeIcon }).addTo(markersLayer).bindPopup("<b>Policía</b>");
 
-  // Obtener nombre de la inmobiliaria desde la URL
+  // Obtener email de la inmobiliaria desde la URL
   const urlParams = new URLSearchParams(window.location.search);
-  const inmobiliariaNombre = urlParams.get('nombre');
+  const inmobiliariaEmail = urlParams.get('email');
 
-  if (!inmobiliariaNombre) {
+  if (!inmobiliariaEmail) {
     loadingEl.style.display = "none";
-    inmobiliariaInfo.innerHTML = "<h2>Error</h2><p>No se proporcionó un nombre de inmobiliaria válido.</p>";
+    inmobiliariaInfo.innerHTML = "<h2>Error</h2><p>No se proporcionó un email de inmobiliaria válido.</p>";
     return;
   }
 
-  // Obtener datos de la inmobiliaria
-  makeRequest(`${webAppURL}?action=getInmobiliaria&nombre=${encodeURIComponent(inmobiliariaNombre)}`, {
+  // Obtener datos de la inmobiliaria y sus propiedades
+  makeRequest(`${webAppURL}?action=getInmobiliaria&email=${encodeURIComponent(inmobiliariaEmail)}`, {
     method: "GET",
     headers: { "Content-Type": "application/x-www-form-urlencoded" }
   })
-  .then(inmoData => {
-    if (!inmoData || !inmoData.success || !inmoData.data) {
-      throw new Error("No se encontró la inmobiliaria.");
-    }
-    const emailInmo = inmoData.email;
-    const nombreInmo = inmoData.nombre || inmobiliariaNombre;
-    inmobiliariaInfo.innerHTML = `<h2>${nombreInmo}</h2><p>Contactar: <a href="mailto:${emailInmo}">${emailInmo}</a></p>`;
-
-    // Usar datos de alquileres directamente desde la respuesta
-    const alquileres = inmoData.data;
+  .then(res => {
     loadingEl.style.display = "none";
+    if (!res || !res.success) {
+      console.error("Error al cargar datos de inmobiliaria:", res ? res.error : "Respuesta inválida");
+      inmobiliariaInfo.innerHTML = "<h2>Error</h2><p>No se encontró la inmobiliaria o no tiene propiedades activas.</p>";
+      return;
+    }
 
-    if (!Array.isArray(alquileres)) {
-      console.error("Error al cargar propiedades: Respuesta inválida");
-      inmobiliariaInfo.innerHTML += `<p>No se encontraron propiedades para esta inmobiliaria.</p>`;
+    const inmoData = res.data;
+    const nombreInmo = getField(inmoData, ["Nombre", "nombre"]);
+    inmobiliariaInfo.innerHTML = `<h2>${nombreInmo || 'Inmobiliaria'}</h2><p>Email: <a href="mailto:${inmobiliariaEmail}">${inmobiliariaEmail}</a></p>`;
+
+    if (!Array.isArray(res.alquileres)) {
+      console.error("No se encontraron propiedades para esta inmobiliaria.");
+      inmobiliariaInfo.innerHTML += `<p>No se encontraron propiedades activas para esta inmobiliaria.</p>`;
       return;
     }
 
     let cont = 0;
-    alquileres.forEach(a => {
+    res.alquileres.forEach(a => {
       const lat = parseFloat(getField(a, ["Latitud", "lat", "LAT", "Lat"]));
       const lng = parseFloat(getField(a, ["Longitud", "lng", "LNG", "Long"]));
       if (isNaN(lat) || isNaN(lng)) return;
@@ -231,7 +232,7 @@ function cargarPropiedades() {
       verBtn.className = 'popup-button';
       verBtn.textContent = 'Contactar';
       verBtn.onclick = () => {
-        window.location.href = `mailto:${emailInmo}?subject=Consulta por propiedad en ${direccion}`;
+        window.location.href = `mailto:${inmobiliariaEmail}?subject=Consulta por propiedad en ${direccion}`;
       };
       popupDiv.appendChild(verBtn);
       marker.bindPopup(popupDiv);
@@ -239,12 +240,12 @@ function cargarPropiedades() {
     });
 
     if (cont === 0) {
-      inmobiliariaInfo.innerHTML += `<p>No se encontraron propiedades para esta inmobiliaria.</p>`;
+      inmobiliariaInfo.innerHTML += `<p>No se encontraron propiedades activas para esta inmobiliaria.</p>`;
     }
   })
   .catch(err => {
     loadingEl.style.display = "none";
-    inmobiliariaInfo.innerHTML = `<h2>Error</h2><p>${err.message}</p>`;
+    inmobiliariaInfo.innerHTML = "<h2>Error</h2><p>Error al conectar con el servidor: " + err.message + "</p>";
     console.error("Error al conectar con WebApp:", err);
   });
 }
