@@ -19,6 +19,8 @@ header { background: white; color: white; padding: 15px; text-align: center; }
 nav { display: flex; justify-content: center; gap: 20px; background: #f4f4f4; padding: 10px; }
 nav a { text-decoration: none; font-weight: bold; color: #333; }
 nav a:hover { color: #3483fa; }
+#inmobiliaria-nombre { text-align: center; margin: 10px 0; }
+#inmobiliaria-nombre h2 { color: #333; font-size: 1.5em; }
 #map { height: 60vh; width: 100%; margin-bottom: 20px; }
 #loading-msg { display: none; text-align: center; font-weight: bold; margin: 10px; color: #3483fa; }
 #filtros { max-width: 700px; margin: 10px auto; padding: 10px; background: #f9f9f9; border: 1px solid #ccc; border-radius: 8px; display: none; flex-wrap: wrap; gap: 10px; }
@@ -82,6 +84,9 @@ nav a:hover { color: #3483fa; }
 <nav>
   <a href="index.html">Volver al Mapa Principal</a>
 </nav>
+<div id="inmobiliaria-nombre">
+  <h2></h2>
+</div>
 <div id="boton-filtros-container">
   <button onclick="toggleFiltros()">Añadir Filtros</button>
 </div>
@@ -239,6 +244,7 @@ function cargarPropiedades() {
   loadingEl.style.display = "block";
   markersLayer.clearLayers();
   document.getElementById("alquiler-detalle").style.display = "none";
+  document.getElementById("inmobiliaria-nombre").querySelector("h2").textContent = "Cargando nombre de inmobiliaria...";
 
   // Marcadores estáticos
   const uniIcon = L.divIcon({ className: 'marker-icon', html: '🎓', iconSize: [30, 30], iconAnchor: [15, 15] });
@@ -275,6 +281,7 @@ function cargarPropiedades() {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!inmobiliariaEmail || !emailRegex.test(inmobiliariaEmail)) {
     loadingEl.style.display = "none";
+    document.getElementById("inmobiliaria-nombre").querySelector("h2").textContent = "Inmobiliaria no encontrada";
     console.error("Invalid or missing email in URL:", inmobiliariaEmail);
     return;
   }
@@ -297,8 +304,13 @@ function cargarPropiedades() {
     console.log("Backend response:", res); // Debug: Log full response
     if (!res || !res.success) {
       console.error("Error fetching inmobiliaria data:", res?.error || "No response");
+      document.getElementById("inmobiliaria-nombre").querySelector("h2").textContent = "Inmobiliaria no encontrada";
       return;
     }
+
+    // Mostrar el nombre de la inmobiliaria
+    const nombreInmobiliaria = res.nombre || "Inmobiliaria no encontrada";
+    document.getElementById("inmobiliaria-nombre").querySelector("h2").textContent = nombreInmobiliaria;
 
     if (!Array.isArray(res.alquileres) || res.alquileres.length === 0) {
       console.warn("No properties found for email:", inmobiliariaEmail);
@@ -470,6 +482,7 @@ function cargarPropiedades() {
   })
   .catch(err => {
     loadingEl.style.display = "none";
+    document.getElementById("inmobiliaria-nombre").querySelector("h2").textContent = "Inmobiliaria no encontrada";
     console.error("Error fetching data:", err);
   });
 }
