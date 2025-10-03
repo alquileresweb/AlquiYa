@@ -193,7 +193,7 @@ function cargarPropiedades() {
       console.error("Error fetching inmobiliaria data:", res?.error || "No response");
       let errorMessage = res?.error || "No se pudo cargar la información de la inmobiliaria.";
       if (res?.error === "Inmobiliaria no encontrada") {
-        errorMessage = `No se encontró la inmobiliaria con el email "${inmobiliariaEmail}". Verifica que el email esté registrado en la base de datos.`;
+        errorMessage = `No se encontraron propiedades para el email "${inmobiliariaEmail}". Verifica que el email esté registrado en la hoja "Alquileres".`;
       }
       inmobiliariaInfo.innerHTML = `<h2>Error</h2><p>${errorMessage}</p>`;
       return;
@@ -205,8 +205,8 @@ function cargarPropiedades() {
     inmobiliariaInfo.innerHTML = `<h2>${nombreInmo || 'Inmobiliaria'}</h2><p>Email: <a href="mailto:${inmobiliariaEmail}">${inmobiliariaEmail}</a></p><p>Contacto: ${contactoInmo || 'No disponible'}</p>`;
 
     if (!Array.isArray(res.alquileres) || res.alquileres.length === 0) {
-      console.warn("No properties found for inmobiliaria:", inmobiliariaEmail);
-      inmobiliariaInfo.innerHTML += `<p>No se encontraron propiedades activas para esta inmobiliaria.</p>`;
+      console.warn("No properties found for email:", inmobiliariaEmail);
+      inmobiliariaInfo.innerHTML += `<p>No se encontraron propiedades activas para el email "${inmobiliariaEmail}".</p>`;
       return;
     }
 
@@ -284,7 +284,7 @@ function cargarPropiedades() {
 
     console.log("Properties added to map:", cont); // Debug: Log number of properties added
     if (cont === 0) {
-      inmobiliariaInfo.innerHTML += `<p>No se encontraron propiedades activas con coordenadas válidas para esta inmobiliaria.</p>`;
+      inmobiliariaInfo.innerHTML += `<p>No se encontraron propiedades activas con coordenadas válidas para el email "${inmobiliariaEmail}".</p>`;
     } else {
       // Ajustar el mapa para mostrar todos los marcadores
       const bounds = markersLayer.getBounds();
