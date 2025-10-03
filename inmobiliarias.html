@@ -158,12 +158,23 @@ function cargarPropiedades() {
 
   // Obtener email de la inmobiliaria desde la URL
   const urlParams = new URLSearchParams(window.location.search);
-  const inmobiliariaEmail = urlParams.get('email')?.trim();
+  let inmobiliariaEmail = urlParams.get('email')?.trim();
 
+  // Manejar URL malformada (e.g., ?=<email>)
   if (!inmobiliariaEmail) {
+    const rawQuery = window.location.search.replace(/^\?/, '');
+    if (rawQuery && rawQuery.includes('@')) {
+      inmobiliariaEmail = rawQuery.trim();
+      console.log("Extracted email from malformed URL:", inmobiliariaEmail);
+    }
+  }
+
+  console.log("Parsed email:", inmobiliariaEmail); // Debug: Log extracted email
+
+  if (!inmobiliariaEmail || !inmobiliariaEmail.includes('@')) {
     loadingEl.style.display = "none";
-    inmobiliariaInfo.innerHTML = "<h2>Error</h2><p>No se proporcionó un email de inmobiliaria válido en la URL.</p>";
-    console.error("No email provided in URL");
+    inmobiliariaInfo.innerHTML = `<h2>Error</h2><p>No se proporcionó un email válido en la URL. Por favor, usa el formato: <code>inmobiliarias.html?email=tuemail@ejemplo.com</code></p>`;
+    console.error("Invalid or missing email in URL");
     return;
   }
 
