@@ -170,6 +170,7 @@ function cargarPropiedades() {
   }
 
   console.log("Parsed email:", inmobiliariaEmail); // Debug: Log extracted email
+  console.log("Sending request with email:", encodeURIComponent(inmobiliariaEmail)); // Debug: Log encoded email
 
   // Validar formato de email
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -190,7 +191,11 @@ function cargarPropiedades() {
     console.log("Backend response:", res); // Debug: Log full response
     if (!res || !res.success) {
       console.error("Error fetching inmobiliaria data:", res?.error || "No response");
-      inmobiliariaInfo.innerHTML = `<h2>Error</h2><p>${res?.error || "No se pudo cargar la información de la inmobiliaria."}</p>`;
+      let errorMessage = res?.error || "No se pudo cargar la información de la inmobiliaria.";
+      if (res?.error === "Inmobiliaria no encontrada") {
+        errorMessage = `No se encontró la inmobiliaria con el email "${inmobiliariaEmail}". Verifica que el email esté registrado en la base de datos.`;
+      }
+      inmobiliariaInfo.innerHTML = `<h2>Error</h2><p>${errorMessage}</p>`;
       return;
     }
 
