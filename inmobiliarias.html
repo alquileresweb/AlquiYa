@@ -21,6 +21,8 @@ nav a { text-decoration: none; font-weight: bold; color: #333; }
 nav a:hover { color: #3483fa; }
 #map { height: 80vh; width: 100%; }
 #loading-msg { display: none; text-align: center; font-weight: bold; margin: 10px; color: #3483fa; }
+#inmobiliaria-info { max-width: 700px; margin: 20px auto; padding: 15px; border: 2px solid #3483fa; border-radius: 8px; background: #f9f9f9; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+#inmobiliaria-info h2 { margin-top: 0; }
 .marker-icon {
   display: flex;
   align-items: center;
@@ -55,6 +57,7 @@ nav a:hover { color: #3483fa; }
   <a href="index.html">Volver al Mapa Principal</a>
 </nav>
 <div id="loading-msg">Cargando propiedades...</div>
+<div id="inmobiliaria-info"></div>
 <div id="map"></div>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
@@ -133,6 +136,7 @@ CARGA DE PROPIEDADES
 */
 function cargarPropiedades() {
   const loadingEl = document.getElementById("loading-msg");
+  const inmobiliariaInfo = document.getElementById("inmobiliaria-info");
   loadingEl.style.display = "block";
   markersLayer.clearLayers();
 
@@ -157,110 +161,90 @@ function cargarPropiedades() {
 
   if (!inmobiliariaNombre) {
     loadingEl.style.display = "none";
+    inmobiliariaInfo.innerHTML = "<h2>Error</h2><p>No se proporcionó un nombre de inmobiliaria válido.</p>";
     return;
   }
 
   // Obtener datos de la inmobiliaria
-  makeRequest(`${webAppURL}?action=getInmobiliariaByNombre&nombre=${encodeURIComponent(inmobiliariaNombre)}`, {
+  makeRequest(`${webAppURL}?action=getInmobiliaria&nombre=${encodeURIComponent(inmobiliariaNombre)}`, {
     method: "GET",
     headers: { "Content-Type": "application/x-www-form-urlencoded" }
   })
   .then(inmoData => {
     if (!inmoData || !inmoData.success || !inmoData.data) {
-      loadingEl.style.display = "none";
-      return;
+      throw new Error("No se encontró la inmobiliaria.");
     }
-    const inmo = inmoData.data;
-    const emailInmo = getField(inmo, ["InmobiliariaEmail", "emailInmobiliaria"]);
+    const emailInmo = inmoData.email;
+    const nombreInmo = inmoData.nombre || inmobiliariaNombre;
+    inmobiliariaInfo.innerHTML = `<h2>${nombreInmo}</h2><p>Contactar: <a href="mailto:${emailInmo}">${emailInmo}</a></p>`;
 
-    // Cargar propiedades de la inmobiliaria
-    return makeRequest(`${webAppURL}?action=getAlquileres`, {
-      method: "GET",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" }
-    });
-  })
-  .then(res => {
+    // Usar datos de alquileres directamente desde la respuesta
+    const alquileres = inmoData.data;
     loadingEl.style.display = "none";
-    if (!res.success || !Array.isArray(res.data)) {
-      console.error("Error al cargar propiedades:", res.error || "Respuesta inválida");
+
+    if (!Array.isArray(alquileres)) {
+      console.error("Error al cargar propiedades: Respuesta inválida");
+      inmobiliariaInfo.innerHTML += `<p>No se encontraron propiedades para esta inmobiliaria.</p>`;
       return;
     }
 
     let cont = 0;
-    res.data.forEach(a => {
-      const inmoEmail = getField(a, ["Email", "email"]);
-      const inmoNombre = getField(a, ["Inmobiliaria", "inmobiliaria"]);
-      const urlParams = new URLSearchParams(window.location.search);
-      const inmobiliariaNombre = urlParams.get('nombre');
+    alquileres.forEach(a => {
+      const lat = parseFloat(getField(a, ["Latitud", "lat", "LAT", "Lat"]));
+      const lng = parseFloat(getField(a, ["Longitud", "lng", "LNG", "Long"]));
+      if (isNaN(lat) || isNaN(lng)) return;
 
-      // Obtener el email de la inmobiliaria desde la hoja Login usando el nombre
-      makeRequest(`${webAppURL}?action=getInmobiliariaByNombre&nombre=${encodeURIComponent(inmobiliariaNombre)}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" }
-      })
-      .then(inmoData => {
-        if (!inmoData || !inmoData.success || !inmoData.data) {
-          return;
-        }
-        const inmo = inmoData.data;
-        const emailInmo = getField(inmo, ["InmobiliariaEmail", "emailInmobiliaria"]);
+      const tipo = getField(a, ["Tipo"]);
+      const ambVal = getField(a, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]);
+      const nroAmb = toInt(ambVal, 0);
+      const precioVal = getField(a, ["Precio", "precio", "$"]);
+      const formattedPrecio = formatPrice(precioVal);
+      const direccion = getField(a, ["Direccion", "Dirección", "Domicilio"]);
+      const infoIngreso = getField(a, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso"]);
+      const detalles = getField(a, ["Detalles", "Detalle", "Descripcion", "Descripción"]);
+      const contacto = getField(a, ["Contacto", "Whatsapp", "WhatsApp", "Tel", "Telefono", "Teléfono"]);
 
-        if (inmoEmail !== emailInmo) return;
+      let iconHtml;
+      if (tipo === "Temporario") {
+        iconHtml = '⌛';
+      } else if (tipo === "Local") {
+        iconHtml = '🛍️';
+      } else {
+        iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-") + '</span>';
+      }
 
-        const lat = parseFloat(getField(a, ["Latitud", "lat", "LAT", "Lat"]));
-        const lng = parseFloat(getField(a, ["Longitud", "lng", "LNG", "Long"]));
-        if (isNaN(lat) || isNaN(lng)) return;
-
-        const tipo = getField(a, ["Tipo"]);
-        const ambVal = getField(a, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]);
-        const nroAmb = toInt(ambVal, 0);
-        const precioVal = getField(a, ["Precio", "precio", "$"]);
-        const formattedPrecio = formatPrice(precioVal);
-        const direccion = getField(a, ["Direccion", "Dirección", "Domicilio"]);
-        const infoIngreso = getField(a, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso"]);
-        const detalles = getField(a, ["Detalles", "Detalle", "Descripcion", "Descripción"]);
-        const contacto = getField(a, ["Contacto", "Whatsapp", "WhatsApp", "Tel", "Telefono", "Teléfono"]);
-
-        let iconHtml;
-        if (tipo === "Temporario") {
-          iconHtml = '⌛';
-        } else if (tipo === "Local") {
-          iconHtml = '🛍️';
-        } else {
-          iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-") + '</span>';
-        }
-
-        const icon = L.divIcon({
-          className: 'marker-icon',
-          html: iconHtml,
-          iconSize: [30, 30],
-          iconAnchor: [15, 15]
-        });
-        const marker = L.marker([lat, lng], { icon: icon }).addTo(markersLayer);
-
-        const popupDiv = document.createElement('div');
-        popupDiv.innerHTML = `<b>Dirección:</b> ${direccion || ""}`;
-        if (tipo !== "Temporario" && tipo !== "Local") {
-          popupDiv.innerHTML += `<br><b>Ambientes:</b> ${nroAmb || ""}<br><b>Precio:</b> ${formattedPrecio || ""}`;
-        }
-
-        const verBtn = document.createElement('button');
-        verBtn.className = 'popup-button';
-        verBtn.textContent = 'Contactar';
-        verBtn.onclick = () => {
-          window.location.href = `mailto:${emailInmo}?subject=Consulta por propiedad en ${direccion}`;
-        };
-        popupDiv.appendChild(verBtn);
-        marker.bindPopup(popupDiv);
-        cont++;
-      })
-      .catch(err => {
-        console.error("Error al obtener email de inmobiliaria:", err);
+      const icon = L.divIcon({
+        className: 'marker-icon',
+        html: iconHtml,
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
       });
+      const marker = L.marker([lat, lng], { icon: icon }).addTo(markersLayer);
+
+      const popupDiv = document.createElement('div');
+      popupDiv.innerHTML = `<b>Dirección:</b> ${direccion || ""}`;
+      if (tipo !== "Temporario" && tipo !== "Local") {
+        popupDiv.innerHTML += `<br><b>Ambientes:</b> ${nroAmb || ""}<br><b>Precio:</b> ${formattedPrecio || ""}`;
+      }
+
+      const verBtn = document.createElement('button');
+      verBtn.className = 'popup-button';
+      verBtn.textContent = 'Contactar';
+      verBtn.onclick = () => {
+        window.location.href = `mailto:${emailInmo}?subject=Consulta por propiedad en ${direccion}`;
+      };
+      popupDiv.appendChild(verBtn);
+      marker.bindPopup(popupDiv);
+      cont++;
     });
+
+    if (cont === 0) {
+      inmobiliariaInfo.innerHTML += `<p>No se encontraron propiedades para esta inmobiliaria.</p>`;
+    }
   })
   .catch(err => {
     loadingEl.style.display = "none";
+    inmobiliariaInfo.innerHTML = `<h2>Error</h2><p>${err.message}</p>`;
     console.error("Error al conectar con WebApp:", err);
   });
 }
