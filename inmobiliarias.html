@@ -171,7 +171,7 @@ function cargarPropiedades() {
       return;
     }
     const inmo = inmoData.data;
-    const emailInmo = getField(inmo, ["Email", "email"]);
+    const emailInmo = getField(inmo, ["InmobiliariaEmail", "emailInmobiliaria"]);
 
     // Cargar propiedades de la inmobiliaria
     return makeRequest(`${webAppURL}?action=getAlquileres`, {
@@ -188,55 +188,75 @@ function cargarPropiedades() {
 
     let cont = 0;
     res.data.forEach(a => {
+      const inmoEmail = getField(a, ["Email", "email"]);
       const inmoNombre = getField(a, ["Inmobiliaria", "inmobiliaria"]);
-      if (inmoNombre !== inmobiliariaNombre) return;
+      const urlParams = new URLSearchParams(window.location.search);
+      const inmobiliariaNombre = urlParams.get('nombre');
 
-      const lat = parseFloat(getField(a, ["Latitud", "lat", "LAT", "Lat"]));
-      const lng = parseFloat(getField(a, ["Longitud", "lng", "LNG", "Long"]));
-      if (isNaN(lat) || isNaN(lng)) return;
+      // Obtener el email de la inmobiliaria desde la hoja Login usando el nombre
+      makeRequest(`${webAppURL}?action=getInmobiliariaByNombre&nombre=${encodeURIComponent(inmobiliariaNombre)}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" }
+      })
+      .then(inmoData => {
+        if (!inmoData || !inmoData.success || !inmoData.data) {
+          return;
+        }
+        const inmo = inmoData.data;
+        const emailInmo = getField(inmo, ["InmobiliariaEmail", "emailInmobiliaria"]);
 
-      const tipo = getField(a, ["Tipo"]);
-      const ambVal = getField(a, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]);
-      const nroAmb = toInt(ambVal, 0);
-      const precioVal = getField(a, ["Precio", "precio", "$"]);
-      const formattedPrecio = formatPrice(precioVal);
-      const direccion = getField(a, ["Direccion", "Dirección", "Domicilio"]);
-      const infoIngreso = getField(a, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso"]);
-      const detalles = getField(a, ["Detalles", "Detalle", "Descripcion", "Descripción"]);
-      const contacto = getField(a, ["Contacto", "Whatsapp", "WhatsApp", "Tel", "Telefono", "Teléfono"]);
+        if (inmoEmail !== emailInmo) return;
 
-      let iconHtml;
-      if (tipo === "Temporario") {
-        iconHtml = '⌛';
-      } else if (tipo === "Local") {
-        iconHtml = '🛍️';
-      } else {
-        iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-") + '</span>';
-      }
+        const lat = parseFloat(getField(a, ["Latitud", "lat", "LAT", "Lat"]));
+        const lng = parseFloat(getField(a, ["Longitud", "lng", "LNG", "Long"]));
+        if (isNaN(lat) || isNaN(lng)) return;
 
-      const icon = L.divIcon({
-        className: 'marker-icon',
-        html: iconHtml,
-        iconSize: [30, 30],
-        iconAnchor: [15, 15]
+        const tipo = getField(a, ["Tipo"]);
+        const ambVal = getField(a, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]);
+        const nroAmb = toInt(ambVal, 0);
+        const precioVal = getField(a, ["Precio", "precio", "$"]);
+        const formattedPrecio = formatPrice(precioVal);
+        const direccion = getField(a, ["Direccion", "Dirección", "Domicilio"]);
+        const infoIngreso = getField(a, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso"]);
+        const detalles = getField(a, ["Detalles", "Detalle", "Descripcion", "Descripción"]);
+        const contacto = getField(a, ["Contacto", "Whatsapp", "WhatsApp", "Tel", "Telefono", "Teléfono"]);
+
+        let iconHtml;
+        if (tipo === "Temporario") {
+          iconHtml = '⌛';
+        } else if (tipo === "Local") {
+          iconHtml = '🛍️';
+        } else {
+          iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-") + '</span>';
+        }
+
+        const icon = L.divIcon({
+          className: 'marker-icon',
+          html: iconHtml,
+          iconSize: [30, 30],
+          iconAnchor: [15, 15]
+        });
+        const marker = L.marker([lat, lng], { icon: icon }).addTo(markersLayer);
+
+        const popupDiv = document.createElement('div');
+        popupDiv.innerHTML = `<b>Dirección:</b> ${direccion || ""}`;
+        if (tipo !== "Temporario" && tipo !== "Local") {
+          popupDiv.innerHTML += `<br><b>Ambientes:</b> ${nroAmb || ""}<br><b>Precio:</b> ${formattedPrecio || ""}`;
+        }
+
+        const verBtn = document.createElement('button');
+        verBtn.className = 'popup-button';
+        verBtn.textContent = 'Contactar';
+        verBtn.onclick = () => {
+          window.location.href = `mailto:${emailInmo}?subject=Consulta por propiedad en ${direccion}`;
+        };
+        popupDiv.appendChild(verBtn);
+        marker.bindPopup(popupDiv);
+        cont++;
+      })
+      .catch(err => {
+        console.error("Error al obtener email de inmobiliaria:", err);
       });
-      const marker = L.marker([lat, lng], { icon: icon }).addTo(markersLayer);
-
-      const popupDiv = document.createElement('div');
-      popupDiv.innerHTML = `<b>Dirección:</b> ${direccion || ""}`;
-      if (tipo !== "Temporario" && tipo !== "Local") {
-        popupDiv.innerHTML += `<br><b>Ambientes:</b> ${nroAmb || ""}<br><b>Precio:</b> ${formattedPrecio || ""}`;
-      }
-
-      const verBtn = document.createElement('button');
-      verBtn.className = 'popup-button';
-      verBtn.textContent = 'Contactar';
-      verBtn.onclick = () => {
-        window.location.href = `mailto:${getField(a, ["InmobiliariaEmail", "emailInmobiliaria"])}?subject=Consulta por propiedad en ${direccion}`;
-      };
-      popupDiv.appendChild(verBtn);
-      marker.bindPopup(popupDiv);
-      cont++;
     });
   })
   .catch(err => {
