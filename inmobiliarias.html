@@ -158,11 +158,12 @@ function cargarPropiedades() {
 
   // Obtener email de la inmobiliaria desde la URL
   const urlParams = new URLSearchParams(window.location.search);
-  const inmobiliariaEmail = urlParams.get('email');
+  const inmobiliariaEmail = urlParams.get('email')?.trim();
 
   if (!inmobiliariaEmail) {
     loadingEl.style.display = "none";
-    inmobiliariaInfo.innerHTML = "<h2>Error</h2><p>No se proporcionó un email de inmobiliaria válido.</p>";
+    inmobiliariaInfo.innerHTML = "<h2>Error</h2><p>No se proporcionó un email de inmobiliaria válido en la URL.</p>";
+    console.error("No email provided in URL");
     return;
   }
 
@@ -173,27 +174,33 @@ function cargarPropiedades() {
   })
   .then(res => {
     loadingEl.style.display = "none";
+    console.log("Backend response:", res); // Debug: Log full response
     if (!res || !res.success) {
-      console.error("Error al cargar datos de inmobiliaria:", res ? res.error : "Respuesta inválida");
-      inmobiliariaInfo.innerHTML = "<h2>Error</h2><p>No se encontró la inmobiliaria o no tiene propiedades activas.</p>";
+      console.error("Error fetching inmobiliaria data:", res?.error || "No response");
+      inmobiliariaInfo.innerHTML = `<h2>Error</h2><p>${res?.error || "No se pudo cargar la información de la inmobiliaria."}</p>`;
       return;
     }
 
     const inmoData = res.data;
     const nombreInmo = getField(inmoData, ["Nombre", "nombre"]);
-    inmobiliariaInfo.innerHTML = `<h2>${nombreInmo || 'Inmobiliaria'}</h2><p>Email: <a href="mailto:${inmobiliariaEmail}">${inmobiliariaEmail}</a></p>`;
+    const contactoInmo = getField(inmoData, ["Contacto", "contacto"]);
+    inmobiliariaInfo.innerHTML = `<h2>${nombreInmo || 'Inmobiliaria'}</h2><p>Email: <a href="mailto:${inmobiliariaEmail}">${inmobiliariaEmail}</a></p><p>Contacto: ${contactoInmo || 'No disponible'}</p>`;
 
-    if (!Array.isArray(res.alquileres)) {
-      console.error("No se encontraron propiedades para esta inmobiliaria.");
+    if (!Array.isArray(res.alquileres) || res.alquileres.length === 0) {
+      console.warn("No properties found for inmobiliaria:", inmobiliariaEmail);
       inmobiliariaInfo.innerHTML += `<p>No se encontraron propiedades activas para esta inmobiliaria.</p>`;
       return;
     }
 
+    console.log("Properties received:", res.alquileres); // Debug: Log properties
     let cont = 0;
     res.alquileres.forEach(a => {
-      const lat = parseFloat(getField(a, ["Latitud", "lat", "LAT", "Lat"]));
-      const lng = parseFloat(getField(a, ["Longitud", "lng", "LNG", "Long"]));
-      if (isNaN(lat) || isNaN(lng)) return;
+      const lat = parseFloat(getField(a, ["Lat", "lat", "LAT", "Latitud"]));
+      const lng = parseFloat(getField(a, ["Lng", "lng", "LNG", "Longitud"]));
+      if (isNaN(lat) || isNaN(lng)) {
+        console.warn("Invalid coordinates for property:", a);
+        return;
+      }
 
       const tipo = getField(a, ["Tipo"]);
       const ambVal = getField(a, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]);
@@ -204,6 +211,8 @@ function cargarPropiedades() {
       const infoIngreso = getField(a, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso"]);
       const detalles = getField(a, ["Detalles", "Detalle", "Descripcion", "Descripción"]);
       const contacto = getField(a, ["Contacto", "Whatsapp", "WhatsApp", "Tel", "Telefono", "Teléfono"]);
+      const id = getField(a, ["ID", "id"]);
+      const enlace = getField(a, ["Enlace para compartir", "enlace"]);
 
       let iconHtml;
       if (tipo === "Temporario") {
@@ -223,30 +232,53 @@ function cargarPropiedades() {
       const marker = L.marker([lat, lng], { icon: icon }).addTo(markersLayer);
 
       const popupDiv = document.createElement('div');
-      popupDiv.innerHTML = `<b>Dirección:</b> ${direccion || ""}`;
+      popupDiv.innerHTML = `<b>Dirección:</b> ${direccion || "No disponible"}`;
       if (tipo !== "Temporario" && tipo !== "Local") {
-        popupDiv.innerHTML += `<br><b>Ambientes:</b> ${nroAmb || ""}<br><b>Precio:</b> ${formattedPrecio || ""}`;
+        popupDiv.innerHTML += `<br><b>Ambientes:</b> ${nroAmb || "No disponible"}<br><b>Precio:</b> ${formattedPrecio || "No disponible"}`;
+      }
+      if (detalles) {
+        popupDiv.innerHTML += `<br><b>Detalles:</b> ${detalles}`;
+      }
+      if (infoIngreso) {
+        popupDiv.innerHTML += `<br><b>Info Ingreso:</b> ${infoIngreso}`;
       }
 
       const verBtn = document.createElement('button');
       verBtn.className = 'popup-button';
-      verBtn.textContent = 'Contactar';
+      verBtn.textContent = 'Ver Detalles';
       verBtn.onclick = () => {
-        window.location.href = `mailto:${inmobiliariaEmail}?subject=Consulta por propiedad en ${direccion}`;
+        window.location.href = enlace || `alquiler.html?id=${id}`;
       };
+
+      const contactarBtn = document.createElement('button');
+      contactarBtn.className = 'popup-button';
+      contactarBtn.textContent = 'Contactar';
+      contactarBtn.style.marginLeft = '10px';
+      contactarBtn.onclick = () => {
+        window.location.href = `mailto:${inmobiliariaEmail}?subject=Consulta por propiedad en ${direccion || 'ID ' + id}`;
+      };
+
       popupDiv.appendChild(verBtn);
+      popupDiv.appendChild(contactarBtn);
       marker.bindPopup(popupDiv);
       cont++;
     });
 
+    console.log("Properties added to map:", cont); // Debug: Log number of properties added
     if (cont === 0) {
-      inmobiliariaInfo.innerHTML += `<p>No se encontraron propiedades activas para esta inmobiliaria.</p>`;
+      inmobiliariaInfo.innerHTML += `<p>No se encontraron propiedades activas con coordenadas válidas para esta inmobiliaria.</p>`;
+    } else {
+      // Ajustar el mapa para mostrar todos los marcadores
+      const bounds = markersLayer.getBounds();
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, { padding: [50, 50] });
+      }
     }
   })
   .catch(err => {
     loadingEl.style.display = "none";
-    inmobiliariaInfo.innerHTML = "<h2>Error</h2><p>Error al conectar con el servidor: " + err.message + "</p>";
-    console.error("Error al conectar con WebApp:", err);
+    inmobiliariaInfo.innerHTML = `<h2>Error</h2><p>Error al conectar con el servidor: ${err.message}</p>`;
+    console.error("Error fetching data:", err);
   });
 }
 
