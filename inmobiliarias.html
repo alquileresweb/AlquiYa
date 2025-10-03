@@ -21,8 +21,6 @@ nav a { text-decoration: none; font-weight: bold; color: #333; }
 nav a:hover { color: #3483fa; }
 #map { height: 80vh; width: 100%; }
 #loading-msg { display: none; text-align: center; font-weight: bold; margin: 10px; color: #3483fa; }
-#inmobiliaria-info { max-width: 700px; margin: 20px auto; padding: 15px; border: 2px solid #3483fa; border-radius: 8px; background: #f9f9f9; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-#inmobiliaria-info h2 { margin-top: 0; }
 .marker-icon {
   display: flex;
   align-items: center;
@@ -57,7 +55,6 @@ nav a:hover { color: #3483fa; }
   <a href="index.html">Volver al Mapa Principal</a>
 </nav>
 <div id="loading-msg">Cargando propiedades...</div>
-<div id="inmobiliaria-info"></div>
 <div id="map"></div>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
@@ -136,9 +133,7 @@ CARGA DE PROPIEDADES
 */
 function cargarPropiedades() {
   const loadingEl = document.getElementById("loading-msg");
-  const inmobiliariaInfo = document.getElementById("inmobiliaria-info");
   loadingEl.style.display = "block";
-  inmobiliariaInfo.innerHTML = "";
   markersLayer.clearLayers();
 
   // Marcadores estáticos
@@ -176,7 +171,6 @@ function cargarPropiedades() {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!inmobiliariaEmail || !emailRegex.test(inmobiliariaEmail)) {
     loadingEl.style.display = "none";
-    inmobiliariaInfo.innerHTML = `<h2>Error</h2><p>No se proporcionó un email válido en la URL. Por favor, usa el formato: <code>inmobiliarias.html?email=tuemail@ejemplo.com</code></p>`;
     console.error("Invalid or missing email in URL:", inmobiliariaEmail);
     return;
   }
@@ -191,22 +185,11 @@ function cargarPropiedades() {
     console.log("Backend response:", res); // Debug: Log full response
     if (!res || !res.success) {
       console.error("Error fetching inmobiliaria data:", res?.error || "No response");
-      let errorMessage = res?.error || "No se pudo cargar la información de la inmobiliaria.";
-      if (res?.error === "Inmobiliaria no encontrada") {
-        errorMessage = `No se encontraron propiedades para el email "${inmobiliariaEmail}". Verifica que el email esté registrado en la hoja "Alquileres".`;
-      }
-      inmobiliariaInfo.innerHTML = `<h2>Error</h2><p>${errorMessage}</p>`;
       return;
     }
 
-    const inmoData = res.data;
-    const nombreInmo = getField(inmoData, ["Nombre", "nombre"]);
-    const contactoInmo = getField(inmoData, ["Contacto", "contacto"]);
-    inmobiliariaInfo.innerHTML = `<h2>${nombreInmo || 'Inmobiliaria'}</h2><p>Email: <a href="mailto:${inmobiliariaEmail}">${inmobiliariaEmail}</a></p><p>Contacto: ${contactoInmo || 'No disponible'}</p>`;
-
     if (!Array.isArray(res.alquileres) || res.alquileres.length === 0) {
       console.warn("No properties found for email:", inmobiliariaEmail);
-      inmobiliariaInfo.innerHTML += `<p>No se encontraron propiedades activas para el email "${inmobiliariaEmail}".</p>`;
       return;
     }
 
@@ -284,7 +267,7 @@ function cargarPropiedades() {
 
     console.log("Properties added to map:", cont); // Debug: Log number of properties added
     if (cont === 0) {
-      inmobiliariaInfo.innerHTML += `<p>No se encontraron propiedades activas con coordenadas válidas para el email "${inmobiliariaEmail}".</p>`;
+      console.warn("No properties with valid coordinates found for email:", inmobiliariaEmail);
     } else {
       // Ajustar el mapa para mostrar todos los marcadores
       const bounds = markersLayer.getBounds();
@@ -295,7 +278,6 @@ function cargarPropiedades() {
   })
   .catch(err => {
     loadingEl.style.display = "none";
-    inmobiliariaInfo.innerHTML = `<h2>Error</h2><p>Error al conectar con el servidor: ${err.message}</p>`;
     console.error("Error fetching data:", err);
   });
 }
