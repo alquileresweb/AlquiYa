@@ -21,7 +21,9 @@ nav a { text-decoration: none; font-weight: bold; color: #333; }
 nav a:hover { color: #3483fa; }
 #inmobiliaria-nombre { text-align: center; margin: 10px 0; }
 #inmobiliaria-nombre h2 { color: #333; font-size: 1.5em; }
-#map { height: 60vh; width: 100%; margin-bottom: 20px; }
+#map { height: 60vh; width: 100%; margin-bottom: 20px; position: relative; }
+#logo-overlay { position: absolute; top: 10px; right: 10px; z-index: 1000; }
+#logo-overlay img { max-width: 150px; }
 #loading-msg { display: none; text-align: center; font-weight: bold; margin: 10px; color: #3483fa; }
 #filtros { max-width: 700px; margin: 10px auto; padding: 10px; background: #f9f9f9; border: 1px solid #ccc; border-radius: 8px; display: none; flex-wrap: wrap; gap: 10px; }
 #filtros input, #filtros select { flex: 1; min-width: 120px; padding: 8px; border-radius: 6px; border: 1px solid #ccc; }
@@ -79,11 +81,10 @@ nav a:hover { color: #3483fa; }
 </head>
 <body>
 <header>
-  <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya" style="max-width:250px;margin-bottom:10px;">
 </header>
-<nav>
-  <a href="index.html">Volver al Mapa Principal</a>
-</nav>
+<div id="logo-overlay">
+  <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya">
+</div>
 <div id="inmobiliaria-nombre">
   <h2></h2>
 </div>
