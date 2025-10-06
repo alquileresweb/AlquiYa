@@ -311,6 +311,7 @@ function cargarPropiedades() {
 
     // Mostrar el nombre de la inmobiliaria con el formato solicitado
     const nombreInmobiliaria = res.data.Nombre || "Inmobiliaria no encontrada";
+    console.log("Nombre de la inmobiliaria:", nombreInmobiliaria); // Debug: Log nombre
     document.getElementById("inmobiliaria-nombre").querySelector("h2").textContent = `Inmobiliaria "${nombreInmobiliaria}"`;
 
     if (!Array.isArray(res.alquileres) || res.alquileres.length === 0) {
@@ -323,7 +324,7 @@ function cargarPropiedades() {
     res.alquileres.forEach(a => {
       const lat = parseFloat(getField(a, ["Lat", "lat", "LAT", "Latitud"]));
       const lng = parseFloat(getField(a, ["Lng", "lng", "LNG", "Longitud"]));
-      if (isNaN(lat) || isNaN(lng)) {
+      if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
         console.warn("Invalid coordinates for property:", a);
         return;
       }
@@ -474,10 +475,15 @@ function cargarPropiedades() {
     if (cont === 0) {
       console.warn("No properties with valid coordinates found for email:", inmobiliariaEmail);
     } else {
-      // Ajustar el mapa para mostrar todos los marcadores
-      const bounds = markersLayer.getBounds();
-      if (bounds.isValid()) {
-        map.fitBounds(bounds, { padding: [50, 50] });
+      try {
+        const bounds = markersLayer.getBounds();
+        if (bounds.isValid()) {
+          map.fitBounds(bounds, { padding: [50, 50] });
+        } else {
+          console.warn("No valid bounds for markersLayer");
+        }
+      } catch (err) {
+        console.error("Error getting bounds:", err);
       }
     }
   })
