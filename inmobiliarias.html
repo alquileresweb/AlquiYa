@@ -112,9 +112,11 @@ nav a:hover {
   gap: 10px; 
   margin: 10px; 
 }
-#boton-filtros-container button { 
+#boton-filtros-container button, #boton-filtros-container select { 
   width: auto; 
   padding: 8px 20px; 
+  border-radius: 6px; 
+  border: 1px solid #ccc; 
 }
 #alquiler-detalle { 
   display: none; 
@@ -127,7 +129,8 @@ nav a:hover {
   box-shadow: 0 0 10px rgba(0,0,0,0.1); 
 }
 #alquiler-detalle.highlight { 
-前的: resaltar 1s ease; }
+  animation: resaltar 1s ease; 
+}
 #imagenes-container { 
   display: flex; 
   flex-wrap: wrap; 
@@ -268,20 +271,35 @@ nav a:hover {
   <h2></h2>
 </div>
 <div id="boton-filtros-container">
+  <select id="filtroOperacion" onchange="updateFiltros()">
+    <option value="Alquilar">Alquilar</option>
+    <option value="Comprar">Comprar</option>
+  </select>
   <button onclick="toggleFiltros()">Añadir Filtros</button>
 </div>
 <div id="filtros">
-  <input type="number" id="filtroAmb" placeholder="Nro de Ambientes">
-  <input type="text" id="filtroMin" placeholder="Precio Mínimo" oninput="formatCurrency(this)">
-  <input type="text" id="filtroMax" placeholder="Precio Máximo" oninput="formatCurrency(this)">
-  <select id="filtroTipo">
-    <option value="">Todos los tipos</option>
-    <option value="Departamento">Departamento</option>
-    <option value="Temporario">Alquiler Temporario</option>
-    <option value="Local">Local Comercial</option>
-  </select>
-  <label><input type="checkbox" id="filtroMascotas"> Mascotas Permitidas</label>
-  <label><input type="checkbox" id="filtroAmoblado"> Amoblado</label>
+  <div id="filtros-alquilar">
+    <input type="number" id="filtroAmb" placeholder="Nro de Ambientes">
+    <input type="text" id="filtroMin" placeholder="Precio Mínimo" oninput="formatCurrency(this)">
+    <input type="text" id="filtroMax" placeholder="Precio Máximo" oninput="formatCurrency(this)">
+    <select id="filtroTipoAlquilar">
+      <option value="">Todos los tipos</option>
+      <option value="Departamento">Departamento</option>
+      <option value="Temporario">Alquiler Temporario</option>
+      <option value="Local">Local Comercial</option>
+    </select>
+    <label><input type="checkbox" id="filtroMascotas"> Mascotas Permitidas</label>
+    <label><input type="checkbox" id="filtroAmoblado"> Amoblado</label>
+  </div>
+  <div id="filtros-comprar" style="display: none;">
+    <select id="filtroTipoComprar">
+      <option value="">Todos los tipos</option>
+      <option value="Terreno">Terreno</option>
+      <option value="Departamento">Departamento</option>
+      <option value="Casa">Casa</option>
+      <option value="Local">Local Comercial</option>
+    </select>
+  </div>
   <button onclick="cargarPropiedades()">Filtrar</button>
 </div>
 <div id="loading-msg">Cargando propiedades...</div>
@@ -372,6 +390,26 @@ UI NAV
 function toggleFiltros() {
   const f = document.getElementById("filtros");
   f.style.display = (f.style.display === "none" || f.style.display === "") ? "flex" : "none";
+}
+
+function updateFiltros() {
+  const operacion = document.getElementById("filtroOperacion").value;
+  const filtrosAlquilar = document.getElementById("filtros-alquilar");
+  const filtrosComprar = document.getElementById("filtros-comprar");
+  filtrosAlquilar.style.display = operacion === "Alquilar" ? "flex" : "none";
+  filtrosComprar.style.display = operacion === "Comprar" ? "flex" : "none";
+  // Resetear filtros al cambiar de operación
+  if (operacion === "Alquilar") {
+    document.getElementById("filtroAmb").value = "";
+    document.getElementById("filtroMin").value = "";
+    document.getElementById("filtroMax").value = "";
+    document.getElementById("filtroTipoAlquilar").value = "";
+    document.getElementById("filtroMascotas").checked = false;
+    document.getElementById("filtroAmoblado").checked = false;
+  } else {
+    document.getElementById("filtroTipoComprar").value = "";
+  }
+  cargarPropiedades();
 }
 
 /* =========================
@@ -467,12 +505,14 @@ function cargarPropiedades() {
   }
 
   // Obtener filtros
+  const operacion = document.getElementById("filtroOperacion").value;
   const filtroAmb = document.getElementById("filtroAmb").value;
   const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
   const filtroMax = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
   const filtroMascotas = document.getElementById("filtroMascotas").checked;
   const filtroAmoblado = document.getElementById("filtroAmoblado").checked;
-  const filtroTipo = document.getElementById("filtroTipo").value;
+  const filtroTipoAlquilar = document.getElementById("filtroTipoAlquilar").value;
+  const filtroTipoComprar = document.getElementById("filtroTipoComprar").value;
 
   // Obtener datos de la inmobiliaria y sus propiedades
   makeRequest(`${webAppURL}?action=getInmobiliaria&email=${encodeURIComponent(inmobiliariaEmail)}`, {
@@ -508,23 +548,28 @@ function cargarPropiedades() {
         return;
       }
 
+      const operacionProp = getField(a, ["Operacion", "Operación"]);
+      if (operacion === "Comprar" && operacionProp !== "Vender") return;
+      if (operacion === "Alquilar" && operacionProp !== "Alquiler") return;
+
       const tipo = getField(a, ["Tipo"]);
-      if (filtroTipo && tipo !== filtroTipo) return;
+      if (operacion === "Alquilar" && filtroTipoAlquilar && tipo !== filtroTipoAlquilar) return;
+      if (operacion === "Comprar" && filtroTipoComprar && tipo !== filtroTipoComprar) return;
 
       const ambVal = getField(a, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]);
       const nroAmb = toInt(ambVal, 0);
-      if (filtroAmb && nroAmb !== toInt(filtroAmb)) return;
+      if (operacion === "Alquilar" && filtroAmb && nroAmb !== toInt(filtroAmb)) return;
 
       const precioVal = getField(a, ["Precio", "precio", "$"]);
       const precio = toNumber(precioVal);
       const formattedPrecio = formatPrice(precioVal);
-      if (precio < filtroMin || precio > filtroMax) return;
+      if (operacion === "Alquilar" && (precio < filtroMin || precio > filtroMax)) return;
 
       const mascotas = getField(a, ["Mascotas"]);
-      if (filtroMascotas && (!mascotas || mascotas.toLowerCase() !== "sí")) return;
+      if (operacion === "Alquilar" && filtroMascotas && (!mascotas || mascotas.toLowerCase() !== "sí")) return;
 
       const amoblado = getField(a, ["Amoblado"]);
-      if (filtroAmoblado && (!amoblado || amoblado.toLowerCase() !== "sí")) return;
+      if (operacion === "Alquilar" && filtroAmoblado && (!amoblado || amoblado.toLowerCase() !== "sí")) return;
 
       const direccion = getField(a, ["Direccion", "Dirección", "Domicilio"]);
       const infoIngreso = getField(a, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso"]);
@@ -539,6 +584,10 @@ function cargarPropiedades() {
         iconHtml = '⌛';
       } else if (tipo === "Local") {
         iconHtml = '🛍️';
+      } else if (tipo === "Terreno") {
+        iconHtml = '🌄';
+      } else if (tipo === "Casa") {
+        iconHtml = '🏡';
       } else {
         iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-") + '</span>';
       }
@@ -562,7 +611,7 @@ function cargarPropiedades() {
       verBtn.textContent = 'Ver Detalles';
       verBtn.onclick = () => {
         const detalle = document.getElementById('alquiler-detalle');
-        detalle.innerHTML = `<h2>Alquiler: ${direccion || ''}</h2>`;
+        detalle.innerHTML = `<h2>${operacion}: ${direccion || ''}</h2>`;
 
         const rows = (tipo === "Temporario" || tipo === "Local") ? [
           ['Dirección', direccion || ''],
@@ -591,7 +640,7 @@ function cargarPropiedades() {
           imageUrls.forEach((url, index) => {
             const img = document.createElement('img');
             img.src = url;
-            img.alt = "Imagen del alquiler";
+            img.alt = `Imagen de ${operacion.toLowerCase()}`;
             img.referrerPolicy = "no-referrer";
             img.onclick = () => abrirModal(url, imageUrls, index);
             imgContainer.appendChild(img);
@@ -606,7 +655,7 @@ function cargarPropiedades() {
           waBtn.style.color = 'white';
           waBtn.style.marginTop = '10px';
           waBtn.onclick = () => {
-            const mensaje = `Hola, vengo desde AlquiYa y quiero consultar por el alquiler de ${direccion}`;
+            const mensaje = `Hola, vengo desde AlquiYa y quiero consultar por ${operacion.toLowerCase()} de ${direccion}`;
             window.open(`https://wa.me/${contacto}?text=${encodeURIComponent(mensaje)}`, '_blank');
           };
           detalle.appendChild(waBtn);
@@ -641,7 +690,7 @@ function cargarPropiedades() {
       contactarBtn.textContent = 'Contactar';
       contactarBtn.style.marginLeft = '10px';
       contactarBtn.onclick = () => {
-        window.location.href = `mailto:${inmobiliariaEmail}?subject=Consulta por propiedad en ${direccion || 'ID ' + id}`;
+        window.location.href = `mailto:${inmobiliariaEmail}?subject=Consulta por ${operacion.toLowerCase()} en ${direccion || 'ID ' + id}`;
       };
 
       popupDiv.appendChild(verBtn);
