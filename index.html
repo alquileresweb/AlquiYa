@@ -461,6 +461,12 @@ function toInt(val, def=0){
 const n = parseInt(val,10);
 return isNaN(n) ? def : n;
 }
+function parseDate(dateStr) {
+if (!dateStr) return null;
+const [day, month, year] = dateStr.split('/').map(Number);
+if (!day || !month || !year) return null;
+return new Date(year, month - 1, day);
+}
 
 /* =========================
 FORMATO MONEDA
@@ -822,6 +828,17 @@ makeRequest(webAppURL + "?action=getAlquileres", {
   let cont = 0;
 
   res.data.forEach(a=>{
+    // Verificar plan y fecha de vencimiento
+    const plan = getField(a, ["Plan"]);
+    const fechaVencimientoStr = getField(a, ["Fecha de Vencimiento", "FechaVencimiento", "Vencimiento"]);
+    if (plan === "Prueba") {
+      const fechaVencimiento = parseDate(fechaVencimientoStr);
+      const fechaActual = new Date();
+      if (fechaVencimiento && fechaActual > fechaVencimiento) {
+        return; // Saltar si el plan es "Prueba" y está vencido
+      }
+    }
+
     const lat = parseFloat(getField(a, ["Latitud","lat","LAT","Lat"]));
     const lng = parseFloat(getField(a, ["Longitud","lng","LNG","Long"]));
     if(isNaN(lat) || isNaN(lng)) return;
