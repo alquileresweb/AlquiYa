@@ -15,39 +15,218 @@ gtag('config', 'G-SSJ5DG33JK');
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 body { margin: 0; font-family: Arial, sans-serif; }
-header { background: white; color: white; padding: 15px; text-align: center; }
-nav { display: flex; justify-content: center; gap: 20px; background: #f4f4f4; padding: 10px; }
-nav a { text-decoration: none; font-weight: bold; color: #333; }
-nav a:hover { color: #3483fa; }
-#inmobiliaria-nombre { text-align: center; margin: 10px 0; }
-#inmobiliaria-nombre h2 { color: #333; font-size: 1.5em; }
-#map { height: 60vh; width: 100%; margin-bottom: 20px; position: relative; }
-#logo-overlay { position: absolute; top: 10px; right: 10px; z-index: 1000; }
-#logo-overlay img { max-width: 150px; }
-#loading-msg { display: none; text-align: center; font-weight: bold; margin: 10px; color: #3483fa; }
-#filtros { max-width: 700px; margin: 10px auto; padding: 10px; background: #f9f9f9; border: 1px solid #ccc; border-radius: 8px; display: none; flex-wrap: wrap; gap: 10px; }
-#filtros input, #filtros select { flex: 1; min-width: 120px; padding: 8px; border-radius: 6px; border: 1px solid #ccc; }
-#filtros button { padding: 8px 15px; border-radius: 6px; background: #3483fa; color: white; border: none; cursor: pointer; }
-#filtros button:hover { background: #2565c0; }
-#filtros label { display: flex; align-items: center; gap: 5px; }
-#filtros input[type="checkbox"] { width: auto; min-width: auto; }
-#boton-filtros-container { display: flex; justify-content: center; gap: 10px; margin: 10px; }
-#boton-filtros-container button { width: auto; padding: 8px 20px; }
-#alquiler-detalle { display: none; max-width: 700px; margin: 20px auto; padding: 15px; border: 2px solid #3483fa; border-radius: 8px; background: #f9f9f9; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-#alquiler-detalle.highlight { animation: resaltar 1s ease; }
-#imagenes-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
-#imagenes-container img { max-width: 120px; height: 90px; margin: 5px; border-radius: 6px; object-fit: cover; cursor: pointer; }
-#modal-img { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 9999; }
-#modal-img img { max-width: 90%; max-height: 90%; border-radius: 8px; box-shadow: 0 0 15px #000; cursor: pointer; }
-#modal-img .close-btn { position: absolute; top: 10px; right: 10px; background: red; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 20px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-#modal-img .nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: #3483fa; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 24px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-#modal-img .prev-btn { left: 10px; }
-#modal-img .next-btn { right: 10px; }
-#link-container { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
-#link-container input { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #ccc; }
-#link-container span { font-size: 14px; color: #333; white-space: nowrap; }
-#copy-msg { display: none; text-align: center; margin-top: 10px; color: green; }
-#copy-msg.error { color: red; }
+header { 
+  background: white; 
+  color: white; 
+  padding: 15px; 
+  text-align: center; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+}
+#logo-overlay { 
+  max-width: 150px; 
+  margin-right: 20px; 
+}
+#logo-overlay img { 
+  max-width: 100%; 
+  height: auto; 
+}
+nav { 
+  display: flex; 
+  justify-content: center; 
+  gap: 20px; 
+  background: #f4f4f4; 
+  padding: 10px; 
+}
+nav a { 
+  text-decoration: none; 
+  font-weight: bold; 
+  color: #333; 
+}
+nav a:hover { 
+  color: #3483fa; 
+}
+#inmobiliaria-nombre { 
+  text-align: center; 
+  margin: 10px 0; 
+}
+#inmobiliaria-nombre h2 { 
+  color: #333; 
+  font-size: 1.5em; 
+}
+#map { 
+  height: 60vh; 
+  width: 100%; 
+  margin-bottom: 20px; 
+  position: relative; 
+}
+#loading-msg { 
+  display: none; 
+  text-align: center; 
+  font-weight: bold; 
+  margin: 10px; 
+  color: #3483fa; 
+}
+#filtros { 
+  max-width: 700px; 
+  margin: 10px auto; 
+  padding: 10px; 
+  background: #f9f9f9; 
+  border: 1px solid #ccc; 
+  border-radius: 8px; 
+  display: none; 
+  flex-wrap: wrap; 
+  gap: 10px; 
+}
+#filtros input, #filtros select { 
+  flex: 1; 
+  min-width: 120px; 
+  padding: 8px; 
+  border-radius: 6px; 
+  border: 1px solid #ccc; 
+}
+#filtros button { 
+  padding: 8px 15px; 
+  border-radius: 6px; 
+  background: #3483fa; 
+  color: white; 
+  border: none; 
+  cursor: pointer; 
+}
+#filtros button:hover { 
+  background: #2565c0; 
+}
+#filtros label { 
+  display: flex; 
+  align-items: center; 
+  gap: 5px; 
+}
+#filtros input[type="checkbox"] { 
+  width: auto; 
+  min-width: auto; 
+}
+#boton-filtros-container { 
+  display: flex; 
+  justify-content: center; 
+  gap: 10px; 
+  margin: 10px; 
+}
+#boton-filtros-container button { 
+  width: auto; 
+  padding: 8px 20px; 
+}
+#alquiler-detalle { 
+  display: none; 
+  max-width: 700px; 
+  margin: 20px auto; 
+  padding: 15px; 
+  border: 2px solid #3483fa; 
+  border-radius: 8px; 
+  background: #f9f9f9; 
+  box-shadow: 0 0 10px rgba(0,0,0,0.1); 
+}
+#alquiler-detalle.highlight { 
+前的: resaltar 1s ease; }
+#imagenes-container { 
+  display: flex; 
+  flex-wrap: wrap; 
+  gap: 10px; 
+  margin-top: 10px; 
+}
+#imagenes-container img { 
+  max-width: 120px; 
+  height: 90px; 
+  margin: 5px; 
+  border-radius: 6px; 
+  object-fit: cover; 
+  cursor: pointer; 
+}
+#modal-img { 
+  display: none; 
+  position: fixed; 
+  top: 0; 
+  left: 0; 
+  width: 100%; 
+  height: 100%; 
+  background: rgba(0,0,0,0.8); 
+  align-items: center; 
+  justify-content: center; 
+  z-index: 9999; 
+}
+#modal-img img { 
+  max-width: 90%; 
+  max-height: 90%; 
+  border-radius: 8px; 
+  box-shadow: 0 0 15px #000; 
+  cursor: pointer; 
+}
+#modal-img .close-btn { 
+  position: absolute; 
+  top: 10px; 
+  right: 10px; 
+  background: red; 
+  color: white; 
+  border: none; 
+  border-radius: 50%; 
+  width: 30px; 
+  height: 30px; 
+  font-size: 20px; 
+  font-weight: bold; 
+  cursor: pointer; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+}
+#modal-img .nav-btn { 
+  position: absolute; 
+  top: 50%; 
+  transform: translateY(-50%); 
+  background: #3483fa; 
+  color: white; 
+  border: none; 
+  border-radius: 50%; 
+  width: 40px; 
+  height: 40px; 
+  font-size: 24px; 
+  font-weight: bold; 
+  cursor: pointer; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+}
+#modal-img .prev-btn { 
+  left: 10px; 
+}
+#modal-img .next-btn { 
+  right: 10px; 
+}
+#link-container { 
+  display: flex; 
+  align-items: center; 
+  gap: 10px; 
+  margin-top: 10px; 
+}
+#link-container input { 
+  flex: 1; 
+  padding: 8px; 
+  border-radius: 6px; 
+  border: 1px solid #ccc; 
+}
+#link-container span { 
+  font-size: 14px; 
+  color: #333; 
+  white-space: nowrap; 
+}
+#copy-msg { 
+  display: none; 
+  text-align: center; 
+  margin-top: 10px; 
+  color: green; 
+}
+#copy-msg.error { 
+  color: red; 
+}
 .marker-icon {
   display: flex;
   align-items: center;
@@ -81,10 +260,10 @@ nav a:hover { color: #3483fa; }
 </head>
 <body>
 <header>
+  <div id="logo-overlay">
+    <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya">
+  </div>
 </header>
-<div id="logo-overlay">
-  <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya">
-</div>
 <div id="inmobiliaria-nombre">
   <h2></h2>
 </div>
