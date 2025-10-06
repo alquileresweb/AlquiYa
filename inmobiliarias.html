@@ -206,7 +206,7 @@ function abrirModal(src, images, index) {
   img.src = src;
   modal.style.display = "flex";
   document.querySelector(".prev-btn").style.display = images.length > 1 ? "block" : "none";
-  document.querySelector(".next-btn").style.display = images.length > 1 ? "block" : "none";
+  document.querySelector(".next-btn"). style.display = images.length > 1 ? "block" : "none";
 }
 function cerrarModal() {
   document.getElementById("modal-img").style.display = "none";
@@ -309,9 +309,9 @@ function cargarPropiedades() {
       return;
     }
 
-    // Mostrar el nombre de la inmobiliaria
-    const nombreInmobiliaria = res.data.Nombre || "Inmobiliaria no encontrada";
-    document.getElementById("inmobiliaria-nombre").querySelector("h2").textContent = nombreInmobiliaria;
+    // Mostrar el nombre de la inmobiliaria con el prefijo "Inmobiliaria"
+    const nombreInmobiliaria = res.data.Nombre || "no encontrada";
+    document.getElementById("inmobiliaria-nombre").querySelector("h2").textContent = `Inmobiliaria ${nombreInmobiliaria}`;
 
     if (!Array.isArray(res.alquileres) || res.alquileres.length === 0) {
       console.warn("No properties found for email:", inmobiliariaEmail);
