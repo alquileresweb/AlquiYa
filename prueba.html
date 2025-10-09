@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -34,7 +33,7 @@ input[type="text"]:focus, input[type="number"]:focus, textarea:focus, select:foc
   box-shadow: 0 0 0 2px rgba(9, 93, 189, 0.15);
 }
 
-/* Estilos para el grupo de botones de tipo de operación (Venta/Alquiler) */
+/* Estilos para el grupo de botones de tipo de operación (Venta/Alquiler) como toggle */
 .toggle-group {
   display: flex;
   gap: 8px;
@@ -50,10 +49,22 @@ input[type="text"]:focus, input[type="number"]:focus, textarea:focus, select:foc
   text-align: center;
   cursor: pointer;
   transition: background 0.2s;
+  border: none;
+  position: relative;
+  overflow: hidden;
 }
 .toggle-btn.active {
   background: #095dbd;
   color: #fff;
+}
+.toggle-btn input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  cursor: pointer;
 }
 
 /* Estilos para botones de tipo de propiedad */
@@ -185,8 +196,12 @@ button {
 <div id="opcionesPropiedad" class="form-container">
   <label>Tipo de Operación</label>
   <div class="toggle-group" id="tipoOperacionToggle">
-    <button class="toggle-btn active" onclick="seleccionarOperacion('Vender')">Vender</button>
-    <button class="toggle-btn" onclick="seleccionarOperacion('Alquilar')">Alquilar</button>
+    <label class="toggle-btn">
+      <input type="radio" name="operacion" value="Vender" checked onclick="seleccionarOperacion('Vender')">Vender
+    </label>
+    <label class="toggle-btn">
+      <input type="radio" name="operacion" value="Alquilar" onclick="seleccionarOperacion('Alquilar')">Alquilar
+    </label>
   </div>
   <div id="opcionesVenta" class="property-type">
     <button class="property-btn" onclick="mostrarFormulario('Terreno')">🏞️ Terreno</button>
@@ -517,8 +532,13 @@ function toggleOpcionesPropiedad() {
 // === SELECCIONAR TIPO DE OPERACIÓN ===
 function seleccionarOperacion(operacion) {
   const toggleButtons = document.querySelectorAll('#tipoOperacionToggle .toggle-btn');
-  toggleButtons.forEach(btn => btn.classList.remove('active'));
-  document.querySelector(`#tipoOperacionToggle .toggle-btn[onclick="seleccionarOperacion('${operacion}')"]`).classList.add('active');
+  toggleButtons.forEach(btn => {
+    btn.classList.remove('active');
+    const radio = btn.querySelector('input[type="radio"]');
+    if (radio && radio.value === operacion) {
+      btn.classList.add('active');
+    }
+  });
   const opcionesVenta = document.getElementById("opcionesVenta");
   const opcionesAlquiler = document.getElementById("opcionesAlquiler");
   if (operacion === "Vender") {
@@ -581,7 +601,9 @@ window.onload = function() {
     inicializarPreviewVideos(tipo);
     if (tipo === 'Departamento' || tipo === 'Terreno' || tipo === 'Casa') inicializarFormatoPrecio(tipo);
   });
-  seleccionarOperacion('Vender'); // Inicializar con "Vender" activo
+  // Asegurar que "Vender" esté seleccionado al inicio
+  document.querySelector('#tipoOperacionToggle input[value="Vender"]').checked = true;
+  seleccionarOperacion('Vender');
 }
 
 // === AGREGAR / EDITAR ALQUILER ===
@@ -598,7 +620,7 @@ async function agregarAlquiler(tipo) {
   const antiguedad = tipo === "Casa" ? document.getElementById(`antiguedad${tipo}`).value : "";
   const infoIngreso = document.getElementById(`infoIngreso${tipo}`).value;
   const detalles = document.getElementById(`detalles${tipo}`).value;
-  const operacion = document.querySelector('#tipoOperacionToggle .toggle-btn.active').textContent;
+  const operacion = document.querySelector('#tipoOperacionToggle input[type="radio"]:checked').value;
   let row = document.getElementById(`editRow${tipo}`).value || new Date().getTime();
   const enlaceCompartir = document.getElementById(`editRow${tipo}`).value ? document.getElementById(`enlaceCompartir${tipo}`).value : "";
   const email = localStorage.getItem("dueno");
@@ -714,6 +736,7 @@ function resetAllForms() {
   document.getElementById("opcionesVenta").style.display = "flex";
   document.getElementById("opcionesAlquiler").style.display = "none";
   document.getElementById("btnAgregarPropiedad").textContent = "➕ Agregar Propiedad";
+  document.querySelector('#tipoOperacionToggle input[value="Vender"]').checked = true;
   seleccionarOperacion("Vender");
 }
 
@@ -753,6 +776,7 @@ function editarAlquiler(row, datos) {
   }
   document.getElementById(`infoIngreso${tipo}`).value = datos.InfoIngreso || "";
   document.getElementById(`detalles${tipo}`).value = datos.Detalles || "";
+  document.querySelector(`#tipoOperacionToggle input[value="${datos.Operacion || "Vender"}"]`).checked = true;
   seleccionarOperacion(datos.Operacion || "Vender");
   imagenesBase64[tipo] = datos.Fotos ? datos.Fotos.split(",") : [];
   videosBase64[tipo] = datos.Videos ? datos.Videos.split(",") : [];
@@ -804,4 +828,3 @@ function alquilerEditado(res) {
 </script>
 </body>
 </html>
-```
