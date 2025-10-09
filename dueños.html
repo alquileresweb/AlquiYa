@@ -538,6 +538,7 @@ async function subirVideoMux(videoFile, row, tipo) {
     const base64Video = await fileToBase64(videoFile);
     const response = await fetch(API_URL, {
       method: 'POST',
+      mode: 'cors', // 👈 importante
       headers: {
         'Content-Type': 'application/json',
       },
