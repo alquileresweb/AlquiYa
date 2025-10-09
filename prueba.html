@@ -220,12 +220,12 @@ button {
   <div id="opcionesVenta" class="property-type">
     <button class="property-btn" onclick="mostrarFormulario('Terreno')">🏞️ Terreno</button>
     <button class="property-btn" onclick="mostrarFormulario('Casa')">🏠 Casa</button>
-    <button class="property-btn" onclick="mostrarFormulario('Departamento')">🏢 Departamento</button>
-    <button class="property-btn" onclick="mostrarFormulario('Local')">🏬 Local Comercial</button>
+    <button class="property-btn" onclick="mostrarFormulario('Departamento')">🏢 Depto</button>
+    <button class="property-btn" onclick="mostrarFormulario('Local')">🏬 Local</button>
   </div>
   <div id="opcionesAlquiler" class="property-type" style="display: none;">
-    <button class="property-btn" onclick="mostrarFormulario('Departamento')">🏢 Departamento</button>
-    <button class="property-btn" onclick="mostrarFormulario('Local')">🏬 Local Comercial</button>
+    <button class="property-btn" onclick="mostrarFormulario('Departamento')">🏢 Depto</button>
+    <button class="property-btn" onclick="mostrarFormulario('Local')">🏬 Local</button>
     <button class="property-btn" onclick="mostrarFormulario('Temporario')">🏖️ Temporario</button>
   </div>
 </div>
@@ -317,7 +317,7 @@ button {
   <div class="toggle-group yes-no" id="mascotasDepartamentoToggle">
     <button class="toggle-btn yes-no-btn active" onclick="seleccionarOpcion('mascotasDepartamento', 'Sí')">Sí</button>
     <button class="toggle-btn yes-no-btn" onclick="seleccionarOpcion('mascotasDepartamento', 'No')">No</button>
-  </div>
+  </div chronos-id="toggle-group-mascotasDepartamentoToggle">
   <label>Amoblado</label>
   <div class="toggle-group yes-no" id="amobladoDepartamentoToggle">
     <button class="toggle-btn yes-no-btn active" onclick="seleccionarOpcion('amobladoDepartamento', 'Sí')">Sí</button>
@@ -578,6 +578,8 @@ function seleccionarOperacion(operacion) {
     opcionesAlquiler.style.display = "flex";
     opcionesVenta.style.display = "none";
   }
+  const propertyButtons = document.querySelectorAll('.property-btn');
+  propertyButtons.forEach(btn => btn.classList.remove('active'));
   window.scrollTo(0, operacion === "Vender" ? opcionesVenta.offsetTop : opcionesAlquiler.offsetTop);
 }
 
