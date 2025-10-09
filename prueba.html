@@ -34,6 +34,9 @@ input[type="text"]:focus, input[type="number"]:focus, textarea:focus, select:foc
   border-color: #095dbd;
   box-shadow: 0 0 0 2px rgba(9, 93, 189, 0.15);
 }
+textarea {
+  resize: none; /* Evita que los textareas se expandan */
+}
 
 /* Estilos para el grupo de botones de tipo de operación (Venta/Alquiler) como toggle */
 .toggle-group {
@@ -102,6 +105,9 @@ input[type="text"]:focus, input[type="number"]:focus, textarea:focus, select:foc
   align-items: center;
   gap: 8px;
   margin-bottom: 16px;
+  background: #f2f2f2; /* Fondo gris */
+  padding: 4px;
+  border-radius: 6px;
 }
 .counter button {
   width: 28px;
@@ -111,6 +117,9 @@ input[type="text"]:focus, input[type="number"]:focus, textarea:focus, select:foc
   border: none;
   font-size: 18px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .counter span {
   min-width: 20px;
@@ -299,8 +308,18 @@ button {
     <input type="hidden" id="ambientesDepartamento" value="1">
     <button onclick="cambiarAmbientes('Departamento', 1)">+</button>
   </div>
-  <label>Precio (USD)</label>
+  <label>Precio (Pesos)</label>
   <input type="text" id="precioDepartamento">
+  <label>Mascotas</label>
+  <div class="toggle-group yes-no" id="mascotasDepartamentoToggle">
+    <button class="toggle-btn yes-no-btn active" onclick="seleccionarOpcion('mascotasDepartamento', 'Sí')">Sí</button>
+    <button class="toggle-btn yes-no-btn" onclick="seleccionarOpcion('mascotasDepartamento', 'No')">No</button>
+  </div>
+  <label>Amoblado</label>
+  <div class="toggle-group yes-no" id="amobladoDepartamentoToggle">
+    <button class="toggle-btn yes-no-btn active" onclick="seleccionarOpcion('amobladoDepartamento', 'Sí')">Sí</button>
+    <button class="toggle-btn yes-no-btn" onclick="seleccionarOpcion('amobladoDepartamento', 'No')">No</button>
+  </div>
   <label>Imágenes del Alquiler (PNG/JPG, múltiples)</label>
   <input type="file" id="imagenFileDepartamento" accept="image/png, image/jpeg" multiple>
   <div id="previewContainerDepartamento"></div>
@@ -370,17 +389,19 @@ let limiteDeptos = 0;
 let deptosActivos = 0;
 
 // === FORMATO DE PRECIO ===
-function formatoPrecio(valor) {
+function formatoPrecio(valor, operacion) {
   if (!valor) return "";
   valor = valor.toString().replace(/\D/g, "");
-  return "$" + valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  const simbolo = operacion === "Vender" ? "$" : "ARS $";
+  return simbolo + valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 
 function inicializarFormatoPrecio(tipo) {
   document.getElementById(`precio${tipo}`).addEventListener("input", function(e) {
+    const operacion = document.querySelector('#tipoOperacionToggle input[type="radio"]:checked').value;
     const cursorPos = this.selectionStart;
-    const valorSinSimbolo = this.value.replace(/\D/g, '');
-    const formattedValue = formatoPrecio(valorSinSimbolo);
+    const valorSinSimbolo = this.value.replace(/[$\s]/g, '').replace(/ARS/g, '').replace(/\D/g, '');
+    const formattedValue = formatoPrecio(valorSinSimbolo, operacion);
     const prevLength = this.value.length;
     this.value = formattedValue;
     const newLength = formattedValue.length;
@@ -615,7 +636,7 @@ async function agregarAlquiler(tipo) {
   msgEl.className = "estado-msg loading";
   let direccion = document.getElementById(`direccion${tipo}`).value;
   const ambientes = (tipo === "Departamento" || tipo === "Casa") ? document.getElementById(`ambientes${tipo}`).value : "";
-  let precio = (tipo === "Departamento" || tipo === "Terreno" || tipo === "Casa") ? document.getElementById(`precio${tipo}`).value.replace(/\D/g, "") : "";
+  let precio = (tipo === "Departamento" || tipo === "Terreno" || tipo === "Casa") ? document.getElementById(`precio${tipo}`).value.replace(/[$\s]/g, '').replace(/ARS/g, '').replace(/\D/g, "") : "";
   const superficie = tipo === "Terreno" ? document.getElementById(`superficie${tipo}`).value : "";
   const patio = tipo === "Casa" ? document.getElementById(`patioCasa`).value : "";
   const garage = tipo === "Casa" ? document.getElementById(`garageCasa`).value : "";
@@ -684,6 +705,10 @@ async function agregarAlquiler(tipo) {
       query += `&garage=${encodeURIComponent(garage)}`;
       query += `&antiguedad=${encodeURIComponent(antiguedad)}`;
     }
+    if (tipo === "Departamento") {
+      query += `&mascotas=${encodeURIComponent(document.getElementById('mascotasDepartamento').value)}`;
+      query += `&amoblado=${encodeURIComponent(document.getElementById('amobladoDepartamento').value)}`;
+    }
     query += `&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&contacto=auto&estado=${estado}&videos=${encodeURIComponent(videos)}&operacion=${encodeURIComponent(operacion)}`;
     if (enlaceCompartir) query += `&enlaceCompartir=${encodeURIComponent(enlaceCompartir)}`;
     query += `&callback=${callback}`;
@@ -714,6 +739,16 @@ function resetAllForms() {
         garageButtons.forEach(btn => btn.classList.remove('active'));
         document.querySelector('#patioCasaToggle .yes-no-btn[onclick="seleccionarOpcion(\'patioCasa\', \'Sí\')"]').classList.add('active');
         document.querySelector('#garageCasaToggle .yes-no-btn[onclick="seleccionarOpcion(\'garageCasa\', \'Sí\')"]').classList.add('active');
+      }
+      if (tipo === "Departamento") {
+        document.getElementById(`mascotasDepartamento`).value = "Sí";
+        document.getElementById(`amobladoDepartamento`).value = "Sí";
+        const mascotasButtons = document.querySelectorAll('#mascotasDepartamentoToggle .yes-no-btn');
+        const amobladoButtons = document.querySelectorAll('#amobladoDepartamentoToggle .yes-no-btn');
+        mascotasButtons.forEach(btn => btn.classList.remove('active'));
+        amobladoButtons.forEach(btn => btn.classList.remove('active'));
+        document.querySelector('#mascotasDepartamentoToggle .yes-no-btn[onclick="seleccionarOpcion(\'mascotasDepartamento\', \'Sí\')"]').classList.add('active');
+        document.querySelector('#amobladoDepartamentoToggle .yes-no-btn[onclick="seleccionarOpcion(\'amobladoDepartamento\', \'Sí\')"]').classList.add('active');
       }
       document.getElementById(`precio${tipo}`).value = "";
     }
@@ -757,11 +792,12 @@ function editarAlquiler(row, datos) {
     const ambientes = datos["Nro Ambientes"] || "1";
     document.getElementById(`ambientes${tipo}`).value = ambientes;
     document.getElementById(`ambientes${tipo}Display`).textContent = ambientes;
-    document.getElementById(`precio${tipo}`).value = formatoPrecio(datos.Precio);
+    const operacion = datos.Operacion || "Vender";
+    document.getElementById(`precio${tipo}`).value = formatoPrecio(datos.Precio, operacion);
   }
   if (tipo === "Terreno") {
     document.getElementById(`superficie${tipo}`).value = datos.Superficie || "";
-    document.getElementById(`precio${tipo}`).value = formatoPrecio(datos.Precio);
+    document.getElementById(`precio${tipo}`).value = formatoPrecio(datos.Precio, "Vender");
   }
   if (tipo === "Casa") {
     const patio = datos.Patio || "Sí";
@@ -775,6 +811,18 @@ function editarAlquiler(row, datos) {
     garageButtons.forEach(btn => btn.classList.remove('active'));
     document.querySelector(`#patioCasaToggle .yes-no-btn[onclick="seleccionarOpcion('patioCasa', '${patio}')"]`).classList.add('active');
     document.querySelector(`#garageCasaToggle .yes-no-btn[onclick="seleccionarOpcion('garageCasa', '${garage}')"]`).classList.add('active');
+  }
+  if (tipo === "Departamento") {
+    const mascotas = datos.Mascotas || "Sí";
+    const amoblado = datos.Amoblado || "Sí";
+    document.getElementById(`mascotasDepartamento`).value = mascotas;
+    document.getElementById(`amobladoDepartamento`).value = amoblado;
+    const mascotasButtons = document.querySelectorAll('#mascotasDepartamentoToggle .yes-no-btn');
+    const amobladoButtons = document.querySelectorAll('#amobladoDepartamentoToggle .yes-no-btn');
+    mascotasButtons.forEach(btn => btn.classList.remove('active'));
+    amobladoButtons.forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`#mascotasDepartamentoToggle .yes-no-btn[onclick="seleccionarOpcion('mascotasDepartamento', '${mascotas}')"]`).classList.add('active');
+    document.querySelector(`#amobladoDepartamentoToggle .yes-no-btn[onclick="seleccionarOpcion('amobladoDepartamento', '${amoblado}')"]`).classList.add('active');
   }
   document.getElementById(`infoIngreso${tipo}`).value = datos.InfoIngreso || "";
   document.getElementById(`detalles${tipo}`).value = datos.Detalles || "";
