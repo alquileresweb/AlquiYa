@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Panel de Dueños</title>
+<link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
+<style>
+/* Estilos existentes */
+body { font-family: 'Inter', sans-serif; margin: 10px; background: #f5f5f5; font-size: 20px; text-align: center; margin-top: 120px; }
+h2 { color: #333; font-size: 2.2em; margin-bottom: 18px; }
+h3 { color: #333; font-size: 2em; margin-bottom: 18px; }
+button { margin: 6px; padding: 14px 20px; font-size: 1.3em; border-radius: 6px; cursor: pointer; }
+#btnAgregarPropiedad { background: #2979ff; color: white; }
+
+/* Nuevos estilos visuales solicitados */
+.form-container {
+  max-width: 680px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+input[type="text"], input[type="number"], select, textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+}
+
+input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #2979ff;
+  box-shadow: 0 0 0 2px rgba(41, 121, 255, 0.15);
+}
+
+.toggle-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  background: #f2f2f2;
+  color: #333;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.toggle-btn.active {
+  background: #2979ff;
+  color: #fff;
+}
+
+.property-type {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.property-btn {
+  flex: 1;
+  padding: 14px;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  text-align: center;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.property-btn.active {
+  background: #2979ff;
+  color: #fff;
+  border-color: #2979ff;
+}
+
+.counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.counter button {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #f2f2f2;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.counter span {
+  min-width: 20px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.yes-no-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.yes-no-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  background: #f2f2f2;
+  color: #333;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.yes-no-btn.active {
+  background: #2979ff;
+  color: #fff;
+}
+
+/* Estilos existentes para otros elementos */
+#opcionesPropiedad, #opcionesVenta, #opcionesAlquiler { background: #fff; padding: 20px; border: 1px solid #dcdcdc; margin-top: 24px; border-radius: 12px; font-size: 1.3em; text-align: left; display: none; }
+#opcionesPropiedad.active, #opcionesVenta.active, #opcionesAlquiler.active { display: block; }
+#formularioDepartamento, #formularioLocal, #formularioTemporario, #formularioTerreno, #formularioCasa { display: none; }
+#formularioDepartamento.active, #formularioLocal.active, #formularioTemporario.active, #formularioTerreno.active, #formularioCasa.active { display: block; }
+label { display: block; margin: 12px 0 8px; font-weight: bold; }
+.preview-img { max-width: 140px; margin-top: 6px; display: inline-block; position: relative; border-radius: 6px; }
+.preview-img-container { display: inline-block; margin-right: 6px; position: relative; }
+.delete-img { position: absolute; top: 0; right: 0; background: red; color: white; border: none; border-radius: 50%; cursor: pointer; font-weight: bold; padding: 3px 8px; }
+.preview-video { max-width: 140px; margin-top: 6px; display: inline-block; position: relative; border-radius: 6px; }
+.preview-video-container { display: inline-block; margin-right: 6px; position: relative; }
+.delete-video { position: absolute; top: 0; right: 0; background: red; color: white; border: none; border-radius: 50%; cursor: pointer; font-weight: bold; padding: 3px 8px; }
+.estado-msg { font-size: 1.1em; margin-top: 6px; display: block; }
+.estado-msg.loading { color: blue; }
+.estado-msg.success { color: green; }
+.estado-msg.error { color: red; }
+
+/* Estilos responsivos */
+@media screen and (max-width: 600px) {
+  .form-container { max-width: 98%; padding: 16px; }
+  input[type="text"], input[type="number"], select, textarea { font-size: 16px; padding: 12px; }
+  .toggle-btn, .property-btn, .yes-no-btn { font-size: 1.2em; padding: 12px; }
+  .counter button { width: 32px; height: 32px; font-size: 20px; }
+}
+</style>
+</head>
+<body>
+<!-- Botón para agregar propiedad -->
+<button id="btnAgregarPropiedad" onclick="toggleOpcionesPropiedad()">➕ Agregar Propiedad</button>
+
+<!-- Sección de selección de tipo de operación -->
+<div id="opcionesPropiedad" class="form-container">
+  <label for="tipoOperacion">Tipo de Operación</label>
+  <div class="toggle-group">
+    <div class="toggle-btn" data-value="Vender" onclick="selectOperacion('Vender')">Vender</div>
+    <div class="toggle-btn" data-value="Alquilar" onclick="selectOperacion('Alquilar')">Alquilar</div>
+  </div>
+  <div id="opcionesVenta" class="property-type">
+    <div class="property-btn" onclick="mostrarFormulario('Terreno')">🏞️ Terreno</div>
+    <div class="property-btn" onclick="mostrarFormulario('Casa')">🏠 Casa</div>
+    <div class="property-btn" onclick="mostrarFormulario('Departamento')">🏢 Departamento</div>
+    <div class="property-btn" onclick="mostrarFormulario('Local')">🏬 Local Comercial</div>
+  </div>
+  <div id="opcionesAlquiler" class="property-type">
+    <div class="property-btn" onclick="mostrarFormulario('Departamento')">🏢 Departamento</div>
+    <div class="property-btn" onclick="mostrarFormulario('Local')">🏬 Local Comercial</div>
+    <div class="property-btn" onclick="mostrarFormulario('Temporario')">🏖️ Temporario</div>
+  </div>
+</div>
+
+<!-- Formulario de Departamento (ejemplo, los demás formularios tienen estructura similar) -->
+<div id="formularioDepartamento" class="form-container">
+  <input type="hidden" id="editRowDepartamento" value="">
+  <input type="hidden" id="enlaceCompartirDepartamento" value="">
+  <input type="hidden" id="existingVideosDepartamento" value="">
+  <label>Dirección</label>
+  <input type="text" id="direccionDepartamento">
+  <label>Ambientes</label>
+  <div class="counter">
+    <button onclick="updateCounter('ambientesDepartamento', -1)">–</button>
+    <span id="ambientesDepartamentoValue">1</span>
+    <button onclick="updateCounter('ambientesDepartamento', 1)">+</button>
+  </div>
+  <input type="hidden" id="ambientesDepartamento">
+  <label>Precio (USD)</label>
+  <input type="text" id="precioDepartamento">
+  <label>Imágenes del Alquiler (PNG/JPG, múltiples)</label>
+  <input type="file" id="imagenFileDepartamento" accept="image/png, image/jpeg" multiple>
+  <div id="previewContainerDepartamento"></div>
+  <label>Videos del Alquiler (MP4, múltiples)</label>
+  <input type="file" id="videoFileDepartamento" accept="video/*" multiple>
+  <div id="videoPreviewContainerDepartamento"></div>
+  <label>Información de pago</label>
+  <textarea id="infoIngresoDepartamento" rows="2"></textarea>
+  <label>Otros detalles</label>
+  <textarea id="detallesDepartamento" rows="3"></textarea>
+  <button id="btnGuardarDepartamento" onclick="agregarAlquiler('Departamento')">Agregar</button>
+  <p id="msgDepartamento" class="estado-msg"></p>
+</div>
+
+<!-- Formulario de Casa (con botones Sí/No para Patio y Garage) -->
+<div id="formularioCasa" class="form-container">
+  <input type="hidden" id="editRowCasa" value="">
+  <input type="hidden" id="enlaceCompartirCasa" value="">
+  <input type="hidden" id="existingVideosCasa" value="">
+  <label>Dirección</label>
+  <input type="text" id="direccionCasa">
+  <label>Ambientes</label>
+  <div class="counter">
+    <button onclick="updateCounter('ambientesCasa', -1)">–</button>
+    <span id="ambientesCasaValue">1</span>
+    <button onclick="updateCounter('ambientesCasa', 1)">+</button>
+  </div>
+  <input type="hidden" id="ambientesCasa">
+  <label>Precio (USD)</label>
+  <input type="text" id="precioCasa">
+  <label>Patio</label>
+  <div class="yes-no-group">
+    <div class="yes-no-btn" data-value="Sí" onclick="selectYesNo('patioCasa', 'Sí')">Sí</div>
+    <div class="yes-no-btn" data-value="No" onclick="selectYesNo('patioCasa', 'No')">No</div>
+  </div>
+  <input type="hidden" id="patioCasa">
+  <label>Garage</label>
+  <div class="yes-no-group">
+    <div class="yes-no-btn" data-value="Sí" onclick="selectYesNo('garageCasa', 'Sí')">Sí</div>
+    <div class="yes-no-btn" data-value="No" onclick="selectYesNo('garageCasa', 'No')">No</div>
+  </div>
+  <input type="hidden" id="garageCasa">
+  <label>Antigüedad (años)</label>
+  <input type="number" id="antiguedadCasa">
+  <label>Imágenes de la Casa (PNG/JPG, múltiples)</label>
+  <input type="file" id="imagenFileCasa" accept="image/png, image/jpeg" multiple>
+  <div id="previewContainerCasa"></div>
+  <label>Videos de la Casa (MP4, múltiples)</label>
+  <input type="file" id="videoFileCasa" accept="video/*" multiple>
+  <div id="videoPreviewContainerCasa"></div>
+  <label>Información de pago</label>
+  <textarea id="infoIngresoCasa" rows="2"></textarea>
+  <label>Otros detalles</label>
+  <textarea id="detallesCasa" rows="3"></textarea>
+  <button id="btnGuardarCasa" onclick="agregarAlquiler('Casa')">Agregar</button>
+  <p id="msgCasa" class="estado-msg"></p>
+</div>
+
+<!-- Otros formularios (Terreno, Local, Temporario) seguirían un patrón similar -->
+
+<script>
+// === CONSTANTES Y VARIABLES ===
+const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
+const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
+const GEOCODE_KEY = "AIzaSyAisqYSTfpQ_rqqutAomzitD2v_dtKYtLE";
+let imagenesBase64 = { Departamento: [], Local: [], Temporario: [], Terreno: [], Casa: [] };
+let videosBase64 = { Departamento: [], Local: [], Temporario: [], Terreno: [], Casa: [] };
+let planActual = null;
+let limiteDeptos = 0;
+let deptosActivos = 0;
+
+// === FORMATO DE PRECIO ===
+function formatoPrecio(valor) {
+  if (!valor) return "";
+  valor = valor.toString().replace(/\D/g, "");
+  return "$" + valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
+function inicializarFormatoPrecio(tipo) {
+  document.getElementById(`precio${tipo}`).addEventListener("input", function(e) {
+    const cursorPos = this.selectionStart;
+    const valorSinSimbolo = this.value.replace(/\D/g, '');
+    const formattedValue = formatoPrecio(valorSinSimbolo);
+    const prevLength = this.value.length;
+    this.value = formattedValue;
+    const newLength = formattedValue.length;
+    const diff = newLength - prevLength;
+    this.selectionStart = cursorPos + diff;
+    this.selectionEnd = cursorPos + diff;
+  });
+}
+
+// === PREVIEW IMÁGENES ===
+function actualizarPreview(tipo) {
+  const previewContainer = document.getElementById(`previewContainer${tipo}`);
+  previewContainer.innerHTML = "";
+  imagenesBase64[tipo].forEach((imgBase64, index) => {
+    const container = document.createElement("div");
+    container.className = "preview-img-container";
+    const img = document.createElement("img");
+    img.src = imgBase64;
+    img.className = "preview-img";
+    const btnDel = document.createElement("button");
+    btnDel.className = "delete-img";
+    btnDel.textContent = "x";
+    btnDel.onclick = () => { imagenesBase64[tipo].splice(index, 1); actualizarPreview(tipo); };
+    container.appendChild(img);
+    container.appendChild(btnDel);
+    previewContainer.appendChild(container);
+  });
+}
+
+function inicializarPreviewImagenes(tipo) {
+  document.getElementById(`imagenFile${tipo}`).addEventListener("change", function() {
+    const files = Array.from(this.files);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        imagenesBase64[tipo].push(e.target.result);
+        actualizarPreview(tipo);
+      }
+      reader.readAsDataURL(file);
+    });
+  });
+}
+
+// === PREVIEW VIDEOS ===
+function actualizarVideoPreview(tipo) {
+  const videoPreviewContainer = document.getElementById(`videoPreviewContainer${tipo}`);
+  videoPreviewContainer.innerHTML = "";
+  videosBase64[tipo].forEach((videoBase64, index) => {
+    const container = document.createElement("div");
+    container.className = "preview-video-container";
+    const video = document.createElement("video");
+    video.src = videoBase64;
+    video.className = "preview-video";
+    video.controls = true;
+    const btnDel = document.createElement("button");
+    btnDel.className = "delete-video";
+    btnDel.textContent = "x";
+    btnDel.onclick = () => { videosBase64[tipo].splice(index, 1); actualizarVideoPreview(tipo); };
+    container.appendChild(video);
+    container.appendChild(btnDel);
+    videoPreviewContainer.appendChild(container);
+  });
+}
+
+function inicializarPreviewVideos(tipo) {
+  document.getElementById(`videoFile${tipo}`).addEventListener("change", function() {
+    const files = Array.from(this.files);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        videosBase64[tipo].push(e.target.result);
+        actualizarVideoPreview(tipo);
+      }
+      reader.readAsDataURL(file);
+    });
+  });
+}
+
+// === SUBIR IMÁGENES ===
+async function subirImagenCloudinary(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+  try {
+    const res = await fetch(CLOUDINARY_URL, { method: "POST", body: formData });
+    const json = await res.json();
+    return json.secure_url;
+  } catch (err) {
+    console.error("Error subiendo imagen a Cloudinary:", err);
+    return null;
+  }
+}
+
+// === SUBIR VIDEO A MUX ===
+async function subirVideoMux(videoFile, row, tipo) {
+  const msgEl = document.getElementById(`msg${tipo}`);
+  try {
+    const base64Video = await fileToBase64(videoFile);
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      mode: 'cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'uploadVideoMux',
+        video: base64Video,
+        row: row
+      })
+    });
+    if (!response.ok) {
+      throw new Error(`Error HTTP! Estado: ${response.status}`);
+    }
+    const result = await response.json();
+    if (result.success) {
+      console.log('Video subido a Mux:', result.videoUrl);
+      return result.videoUrl;
+    } else {
+      throw new Error(result.error || 'Error desconocido al subir el video');
+    }
+  } catch (error) {
+    console.error('Error subiendo video a Mux:', error.message);
+    msgEl.className = "estado-msg error";
+    msgEl.textContent = `❌ Error al subir video: ${error.message}`;
+    setTimeout(() => { msgEl.textContent = ""; }, 5000);
+    throw error;
+  }
+}
+
+// === CONVERTIR ARCHIVO A BASE64 ===
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('Error al convertir el video a base64'));
+    reader.readAsDataURL(file);
+  });
+}
+
+// === TOGGLE OPCIONES PROPIEDAD ===
+function toggleOpcionesPropiedad() {
+  const opciones = document.getElementById("opcionesPropiedad");
+  const opcionesVenta = document.getElementById("opcionesVenta");
+  const opcionesAlquiler = document.getElementById("opcionesAlquiler");
+  const btn = document.getElementById("btnAgregarPropiedad");
+  if (opciones.classList.contains("active")) {
+    opciones.classList.remove("active");
+    opcionesVenta.classList.remove("active");
+    opcionesAlquiler.classList.remove("active");
+    btn.textContent = "➕ Agregar Propiedad";
+    resetAllForms();
+  } else {
+    opciones.classList.add("active");
+    btn.textContent = "➖ Cerrar Opciones";
+    window.scrollTo(0, document.getElementById("opcionesPropiedad").offsetTop);
+    updateToggleButtons();
+  }
+}
+
+// === SELECCIÓN DE TIPO DE OPERACIÓN ===
+function selectOperacion(value) {
+  document.getElementById("tipoOperacion").value = value;
+  mostrarOpcionesPorOperacion();
+  updateToggleButtons();
+}
+
+function updateToggleButtons() {
+  const toggleButtons = document.querySelectorAll('.toggle-btn');
+  const currentValue = document.getElementById("tipoOperacion").value;
+  toggleButtons.forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-value') === currentValue);
+  });
+}
+
+// === MOSTRAR OPCIONES SEGÚN TIPO DE OPERACIÓN ===
+function mostrarOpcionesPorOperacion() {
+  const tipoOperacion = document.getElementById("tipoOperacion").value;
+  const opcionesVenta = document.getElementById("opcionesVenta");
+  const opcionesAlquiler = document.getElementById("opcionesAlquiler");
+  if (tipoOperacion === "Vender") {
+    opcionesVenta.classList.add("active");
+    opcionesAlquiler.classList.remove("active");
+    window.scrollTo(0, document.getElementById("opcionesVenta").offsetTop);
+  } else {
+    opcionesAlquiler.classList.add("active");
+    opcionesVenta.classList.remove("active");
+    window.scrollTo(0, document.getElementById("opcionesAlquiler").offsetTop);
+  }
+  updatePropertyButtons();
+}
+
+function updatePropertyButtons() {
+  const propertyButtons = document.querySelectorAll('.property-btn');
+  propertyButtons.forEach(btn => {
+    btn.classList.remove('active');
+  });
+}
+
+// === MOSTRAR FORMULARIO SEGÚN TIPO ===
+function mostrarFormulario(tipo) {
+  const formularios = ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'];
+  formularios.forEach(f => {
+    const form = document.getElementById(`formulario${f}`);
+    form.classList.remove("active");
+  });
+  const form = document.getElementById(`formulario${tipo}`);
+  form.classList.add("active");
+  document.getElementById("btnAgregarPropiedad").textContent = "➖ Cerrar Opciones";
+  window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
+  updatePropertyButtons();
+  const clickedButton = document.querySelector(`.property-btn[onclick="mostrarFormulario('${tipo}')"]`);
+  if (clickedButton) clickedButton.classList.add("active");
+}
+
+// === CONTADOR PARA AMBIENTES ===
+function updateCounter(inputId, delta) {
+  const input = document.getElementById(inputId);
+  const span = document.getElementById(`${inputId}Value`);
+  let value = parseInt(span.textContent) || 1;
+  value = Math.max(1, value + delta);
+  span.textContent = value;
+  input.value = value;
+}
+
+// === BOTONES SÍ/NO ===
+function selectYesNo(inputId, value) {
+  const input = document.getElementById(inputId);
+  input.value = value;
+  const buttons = document.querySelectorAll(`.yes-no-btn[data-value][onclick*="selectYesNo('${inputId}'"]`);
+  buttons.forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-value') === value);
+  });
+}
+
+// === INICIALIZAR EVENTOS ===
+window.onload = function() {
+  const email = localStorage.getItem("dueno");
+  if (!email) { window.location.href = "index.html"; return; }
+  ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'].forEach(tipo => {
+    inicializarPreviewImagenes(tipo);
+    inicializarPreviewVideos(tipo);
+    if (tipo === 'Departamento' || tipo === 'Terreno' || tipo === 'Casa') inicializarFormatoPrecio(tipo);
+    if (tipo === 'Departamento' || tipo === 'Casa') {
+      updateCounter(`ambientes${tipo}`, 0); // Inicializar contador
+    }
+    if (tipo === 'Casa') {
+      selectYesNo('patioCasa', 'Sí'); // Inicializar Sí/No
+      selectYesNo('garageCasa', 'Sí');
+    }
+  });
+  document.getElementById("tipoOperacion").addEventListener("change", () => {
+    mostrarOpcionesPorOperacion();
+    updateToggleButtons();
+  });
+  updateToggleButtons();
+}
+
+// === AGREGAR / EDITAR ALQUILER ===
+async function agregarAlquiler(tipo) {
+  const msgEl = document.getElementById(`msg${tipo}`);
+  msgEl.textContent = "Agregando propiedad...";
+  msgEl.className = "estado-msg loading";
+  let direccion = document.getElementById(`direccion${tipo}`).value;
+  const ambientes = (tipo === "Departamento" || tipo === "Casa") ? document.getElementById(`ambientes${tipo}`).value : "";
+  let precio = (tipo === "Departamento" || tipo === "Terreno" || tipo === "Casa") ? document.getElementById(`precio${tipo}`).value.replace(/\D/g, "") : "";
+  const superficie = tipo === "Terreno" ? document.getElementById(`superficie${tipo}`).value : "";
+  const patio = tipo === "Casa" ? document.getElementById(`patio${tipo}`).value : "";
+  const garage = tipo === "Casa" ? document.getElementById(`garage${tipo}`).value : "";
+  const antiguedad = tipo === "Casa" ? document.getElementById(`antiguedad${tipo}`).value : "";
+  const infoIngreso = document.getElementById(`infoIngreso${tipo}`).value;
+  const detalles = document.getElementById(`detalles${tipo}`).value;
+  const operacion = document.getElementById("tipoOperacion").value;
+  let row = document.getElementById(`editRow${tipo}`).value || new Date().getTime();
+  const enlaceCompartir = document.getElementById(`editRow${tipo}`).value ? document.getElementById(`enlaceCompartir${tipo}`).value : "";
+  const email = localStorage.getItem("dueno");
+  if (!direccion || 
+      (tipo === "Departamento" && (!ambientes || !precio)) || 
+      (tipo === "Terreno" && (!superficie || !precio)) || 
+      (tipo === "Casa" && (!ambientes || !precio))) { 
+    msgEl.className = "estado-msg error";
+    msgEl.textContent = "Completa todos los campos obligatorios.";
+    setTimeout(() => { msgEl.textContent = ""; }, 5000);
+    return; 
+  }
+  direccion = direccion + ", Santo Tomé Corrientes";
+  const files = document.getElementById(`imagenFile${tipo}`).files;
+  let uploadedURLs = [];
+  for (let i = 0; i < files.length; i++) {
+    const url = await subirImagenCloudinary(files[i]);
+    if (url) uploadedURLs.push(url);
+  }
+  const videoFiles = document.getElementById(`videoFile${tipo}`).files;
+  let videos = "";
+  if (videoFiles.length > 0) {
+    let videoURLs = [];
+    for (let i = 0; i < videoFiles.length; i++) {
+      const url = await subirVideoMux(videoFiles[i], row, tipo);
+      if (url) videoURLs.push(url);
+    }
+    videos = videoURLs.join(",");
+  } else if (document.getElementById(`editRow${tipo}`).value) {
+    videos = document.getElementById(`existingVideos${tipo}`).value;
+  }
+  fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(direccion)}&key=${GEOCODE_KEY}`)
+    .then(r => r.json()).then(data => {
+      let lat = "", lng = "";
+      if (data.results && data.results[0]) {
+        lat = data.results[0].geometry.location.lat;
+        lng = data.results[0].geometry.location.lng;
+      }
+      enviarAlquiler(tipo, uploadedURLs.join(","), lat, lng, enlaceCompartir, videos, operacion);
+    }).catch(err => {
+      msgEl.className = "estado-msg error";
+      msgEl.textContent = "Error al obtener coordenadas: " + (err.message || "Error de conexión");
+      setTimeout(() => { msgEl.textContent = ""; }, 5000);
+    });
+  function enviarAlquiler(tipo, fotosConcatenadas, lat, lng, enlaceCompartir, videos, operacion) {
+    const action = document.getElementById(`editRow${tipo}`).value ? "editAlquiler" : "addAlquiler";
+    const callback = action === "editAlquiler" ? "alquilerEditado" : "alquilerAgregado";
+    let estado = "Activo";
+    if (action === "editAlquiler" && deptosActivos >= limiteDeptos && planActual !== "Prueba") {
+      estado = "Inactivo";
+    }
+    const script = document.createElement("script");
+    let query = `${API_URL}?action=${action}&row=${row}&dueno=${encodeURIComponent(email)}&direccion=${encodeURIComponent(direccion)}&tipo=${encodeURIComponent(tipo)}`;
+    if (tipo === "Departamento" || tipo === "Casa") query += `&ambientes=${encodeURIComponent(ambientes)}`;
+    if (tipo === "Departamento" || tipo === "Terreno" || tipo === "Casa") query += `&precio=${encodeURIComponent(precio)}`;
+    if (tipo === "Terreno") query += `&superficie=${encodeURIComponent(superficie)}`;
+    if (tipo === "Casa") {
+      query += `&patio=${encodeURIComponent(patio)}`;
+      query += `&garage=${encodeURIComponent(garage)}`;
+      query += `&antiguedad=${encodeURIComponent(antiguedad)}`;
+    }
+    query += `&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&contacto=auto&estado=${estado}&videos=${encodeURIComponent(videos)}&operacion=${encodeURIComponent(operacion)}`;
+    if (enlaceCompartir) query += `&enlaceCompartir=${encodeURIComponent(enlaceCompartir)}`;
+    query += `&callback=${callback}`;
+    script.src = query;
+    document.body.appendChild(script);
+  }
+}
+
+// === RESET FORMULARIOS ===
+function resetAllForms() {
+  ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'].forEach(tipo => {
+    document.getElementById(`formulario${tipo}`).classList.remove("active");
+    document.getElementById(`editRow${tipo}`).value = "";
+    document.getElementById(`enlaceCompartir${tipo}`).value = "";
+    document.getElementById(`existingVideos${tipo}`).value = "";
+    document.getElementById(`direccion${tipo}`).value = "";
+    if (tipo === "Departamento" || tipo === "Casa") {
+      document.getElementById(`ambientes${tipo}`).value = "";
+      document.getElementById(`ambientes${tipo}Value`).textContent = "1";
+      document.getElementById(`precio${tipo}`).value = "";
+    }
+    if (tipo === "Terreno") {
+      document.getElementById(`superficie${tipo}`).value = "";
+      document.getElementById(`precio${tipo}`).value = "";
+    }
+    if (tipo === "Casa") {
+      document.getElementById(`patio${tipo}`).value = "Sí";
+      document.getElementById(`garage${tipo}`).value = "Sí";
+      selectYesNo('patioCasa', 'Sí');
+      selectYesNo('garageCasa', 'Sí');
+      document.getElementById(`antiguedad${tipo}`).value = "";
+    }
+    document.getElementById(`infoIngreso${tipo}`).value = "";
+    document.getElementById(`detalles${tipo}`).value = "";
+    document.getElementById(`imagenFile${tipo}`).value = "";
+    document.getElementById(`videoFile${tipo}`).value = "";
+    imagenesBase64[tipo] = [];
+    videosBase64[tipo] = [];
+    actualizarPreview(tipo);
+    actualizarVideoPreview(tipo);
+    document.getElementById(`msg${tipo}`).textContent = "";
+    document.getElementById(`btnGuardar${tipo}`).textContent = "Agregar";
+  });
+  document.getElementById("opcionesPropiedad").classList.remove("active");
+  document.getElementById("opcionesVenta").classList.remove("active");
+  document.getElementById("opcionesAlquiler").classList.remove("active");
+  document.getElementById("btnAgregarPropiedad").textContent = "➕ Agregar Propiedad";
+  document.getElementById("tipoOperacion").value = "Vender";
+  mostrarOpcionesPorOperacion();
+  updateToggleButtons();
+}
+
+// === EDITAR ALQUILER ===
+function editarAlquiler(row, datos) {
+  const tipo = datos.Tipo || "Departamento";
+  document.getElementById("btnAgregarPropiedad").textContent = "➖ Cerrar Opciones";
+  document.getElementById(`formulario${tipo}`).classList.add("active");
+  document.getElementById(`btnGuardar${tipo}`).textContent = "Guardar Cambios";
+  document.getElementById(`editRow${tipo}`).value = row;
+  document.getElementById(`enlaceCompartir${tipo}`).value = datos["Enlace para compartir"] || "";
+  document.getElementById(`existingVideos${tipo}`).value = datos.Videos || "";
+  document.getElementById(`direccion${tipo}`).value = datos.Direccion || "";
+  if (tipo === "Departamento" || tipo === "Casa") {
+    document.getElementById(`ambientes${tipo}`).value = datos["Nro Ambientes"] || "";
+    document.getElementById(`ambientes${tipo}Value`).textContent = datos["Nro Ambientes"] || "1";
+    document.getElementById(`precio${tipo}`).value = formatoPrecio(datos.Precio);
+  }
+  if (tipo === "Terreno") {
+    document.getElementById(`superficie${tipo}`).value = datos.Superficie || "";
+    document.getElementById(`precio${tipo}`).value = formatoPrecio(datos.Precio);
+  }
+  if (tipo === "Casa") {
+    const patio = datos.Patio || "No";
+    const garage = datos.Garage || "No";
+    document.getElementById(`patio${tipo}`).value = patio;
+    document.getElementById(`garage${tipo}`).value = garage;
+    selectYesNo('patioCasa', patio);
+    selectYesNo('garageCasa', garage);
+    document.getElementById(`antiguedad${tipo}`).value = datos.Antiguedad || "";
+  }
+  document.getElementById(`infoIngreso${tipo}`).value = datos.InfoIngreso || "";
+  document.getElementById(`detalles${tipo}`).value = datos.Detalles || "";
+  document.getElementById("tipoOperacion").value = datos.Operacion || "Vender";
+  mostrarOpcionesPorOperacion();
+  imagenesBase64[tipo] = datos.Fotos ? datos.Fotos.split(",") : [];
+  videosBase64[tipo] = datos.Videos ? datos.Videos.split(",") : [];
+  actualizarPreview(tipo);
+  actualizarVideoPreview(tipo);
+  window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
+}
+
+// === CALLBACKS PARA AGREGAR Y EDITAR ===
+function alquilerAgregado(res) {
+  const formularios = ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'];
+  formularios.forEach(tipo => {
+    const msgEl = document.getElementById(`msg${tipo}`);
+    if (res.success) {
+      msgEl.className = "estado-msg success";
+      msgEl.textContent = "✅ Propiedad agregada con éxito";
+      setTimeout(() => {
+        resetAllForms();
+        cargarAlquileres();
+        cargarEstadoPlan();
+      }, 3000);
+    } else {
+      msgEl.className = "estado-msg error";
+      msgEl.textContent = "❌ Error al agregar: " + (res.error || "desconocido");
+      setTimeout(() => { msgEl.textContent = ""; }, 5000);
+    }
+  });
+}
+
+function alquilerEditado(res) {
+  const formularios = ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'];
+  formularios.forEach(tipo => {
+    const msgEl = document.getElementById(`msg${tipo}`);
+    if (res.success) {
+      msgEl.className = "estado-msg success";
+      msgEl.textContent = "✅ Cambios guardados correctamente";
+      setTimeout(() => {
+        resetAllForms();
+        cargarAlquileres();
+      }, 3000);
+    } else {
+      msgEl.className = "estado-msg error";
+      msgEl.textContent = "❌ Error al editar: " + (res.error || "desconocido");
+      setTimeout(() => { msgEl.textContent = ""; }, 5000);
+    }
+  });
+}
+</script>
+</body>
+</html>
