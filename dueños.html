@@ -532,10 +532,11 @@ return null;
 }
 
 // === SUBIR VIDEO A MUX ===
-async function subirVideoMux(videoFile, row) {
+async function subirVideoMux(videoFile, row, tipo) {
+  const msgEl = document.getElementById(`msg${tipo}`);
   try {
     const base64Video = await fileToBase64(videoFile);
-    const response = await fetch('https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec', {
+    const response = await fetch(API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -560,6 +561,9 @@ async function subirVideoMux(videoFile, row) {
     }
   } catch (error) {
     console.error('Error subiendo video a Mux:', error.message);
+    msgEl.className = "estado-msg error";
+    msgEl.textContent = `❌ Error al subir video: ${error.message}`;
+    setTimeout(() => { msgEl.textContent = ""; }, 5000);
     throw error;
   }
 }
@@ -897,7 +901,7 @@ let videos = "";
 if (videoFiles.length > 0) {
 let videoURLs = [];
 for (let i = 0; i < videoFiles.length; i++) {
-const url = await subirVideoMux(videoFiles[i], row);
+const url = await subirVideoMux(videoFiles[i], row, tipo);
 if (url) videoURLs.push(url);
 }
 videos = videoURLs.join(",");
