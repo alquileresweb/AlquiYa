@@ -1,29 +1,26 @@
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Panel de Dueños</title>
-<link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
+<title>Panel de Dueños - Agregar y Editar Propiedades</title>
 <style>
-/* Estilos existentes */
-body { font-family: 'Inter', sans-serif; margin: 10px; background: #f5f5f5; font-size: 20px; text-align: center; margin-top: 120px; }
-h2 { color: #333; font-size: 2.2em; margin-bottom: 18px; }
+/* Estilos generales */
+body { font-family: 'Inter', Arial, sans-serif; margin: 10px; background: #f5f5f5; font-size: 20px; text-align: center; margin-top: 120px; }
 h3 { color: #333; font-size: 2em; margin-bottom: 18px; }
-button { margin: 6px; padding: 14px 20px; font-size: 1.3em; border-radius: 6px; cursor: pointer; }
-#btnAgregarPropiedad { background: #2979ff; color: white; }
 
-/* Nuevos estilos visuales solicitados */
+/* Contenedor de formularios */
 .form-container {
   max-width: 680px;
-  margin: 0 auto;
+  margin: 0 auto 1rem;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   padding: 20px;
-  margin-bottom: 16px;
 }
 
-input[type="text"], input[type="number"], select, textarea {
+/* Campos de entrada */
+input[type="text"], input[type="number"], textarea, select {
   width: 100%;
   padding: 10px 14px;
   border: 1px solid #dcdcdc;
@@ -31,19 +28,18 @@ input[type="text"], input[type="number"], select, textarea {
   font-size: 14px;
   font-family: 'Inter', sans-serif;
 }
-
-input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
+input[type="text"]:focus, input[type="number"]:focus, textarea:focus, select:focus {
   outline: none;
-  border-color: #2979ff;
-  box-shadow: 0 0 0 2px rgba(41, 121, 255, 0.15);
+  border-color: #095dbd;
+  box-shadow: 0 0 0 2px rgba(9, 93, 189, 0.15);
 }
 
+/* Estilos para el grupo de botones de tipo de operación (Venta/Alquiler) */
 .toggle-group {
   display: flex;
   gap: 8px;
   margin-bottom: 16px;
 }
-
 .toggle-btn {
   flex: 1;
   padding: 10px;
@@ -55,18 +51,17 @@ input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:foc
   cursor: pointer;
   transition: background 0.2s;
 }
-
 .toggle-btn.active {
-  background: #2979ff;
+  background: #095dbd;
   color: #fff;
 }
 
+/* Estilos para botones de tipo de propiedad */
 .property-type {
   display: flex;
   gap: 10px;
-  margin-bottom: 16px;
+  flex-wrap: wrap;
 }
-
 .property-btn {
   flex: 1;
   padding: 14px;
@@ -76,21 +71,25 @@ input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:foc
   background: #fff;
   cursor: pointer;
   transition: all 0.2s;
+  font-size: 1.3em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
-
 .property-btn.active {
-  background: #2979ff;
+  background: #095dbd;
   color: #fff;
-  border-color: #2979ff;
+  border-color: #095dbd;
 }
 
+/* Contador para ambientes */
 .counter {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 16px;
 }
-
 .counter button {
   width: 28px;
   height: 28px;
@@ -100,20 +99,19 @@ input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:foc
   font-size: 18px;
   cursor: pointer;
 }
-
 .counter span {
   min-width: 20px;
   text-align: center;
   font-weight: 500;
 }
 
-.yes-no-group {
+/* Botones Sí/No para Patio y Garage */
+.toggle-group.yes-no {
   display: flex;
   gap: 8px;
   margin-bottom: 16px;
 }
-
-.yes-no-btn {
+.toggle-btn.yes-no-btn {
   flex: 1;
   padding: 10px;
   border-radius: 8px;
@@ -124,18 +122,42 @@ input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:foc
   cursor: pointer;
   transition: background 0.2s;
 }
-
-.yes-no-btn.active {
-  background: #2979ff;
+.toggle-btn.yes-no-btn.active {
+  background: #095dbd;
   color: #fff;
 }
 
-/* Estilos existentes para otros elementos */
-#opcionesPropiedad, #opcionesVenta, #opcionesAlquiler { background: #fff; padding: 20px; border: 1px solid #dcdcdc; margin-top: 24px; border-radius: 12px; font-size: 1.3em; text-align: left; display: none; }
-#opcionesPropiedad.active, #opcionesVenta.active, #opcionesAlquiler.active { display: block; }
-#formularioDepartamento, #formularioLocal, #formularioTemporario, #formularioTerreno, #formularioCasa { display: none; }
-#formularioDepartamento.active, #formularioLocal.active, #formularioTemporario.active, #formularioTerreno.active, #formularioCasa.active { display: block; }
-label { display: block; margin: 12px 0 8px; font-weight: bold; }
+/* Estilos para otros elementos */
+label {
+  display: block;
+  margin: 12px 0 8px;
+  font-weight: bold;
+  font-size: 1.3em;
+}
+button {
+  margin: 6px;
+  padding: 14px 20px;
+  font-size: 1.3em;
+  border-radius: 6px;
+  cursor: pointer;
+}
+#btnAgregarPropiedad {
+  background: #095dbd;
+  color: white;
+}
+#opcionesPropiedad {
+  background: #fff;
+  padding: 20px;
+  border: 1px solid #dcdcdc;
+  margin-top: 24px;
+  border-radius: 12px;
+  font-size: 1.3em;
+  text-align: left;
+  display: none;
+}
+#opcionesPropiedad.active {
+  display: block;
+}
 .preview-img { max-width: 140px; margin-top: 6px; display: inline-block; position: relative; border-radius: 6px; }
 .preview-img-container { display: inline-block; margin-right: 6px; position: relative; }
 .delete-img { position: absolute; top: 0; right: 0; background: red; color: white; border: none; border-radius: 50%; cursor: pointer; font-weight: bold; padding: 3px 8px; }
@@ -147,71 +169,65 @@ label { display: block; margin: 12px 0 8px; font-weight: bold; }
 .estado-msg.success { color: green; }
 .estado-msg.error { color: red; }
 
-/* Estilos responsivos */
+/* Media queries para mobile */
 @media screen and (max-width: 600px) {
-  .form-container { max-width: 98%; padding: 16px; }
-  input[type="text"], input[type="number"], select, textarea { font-size: 16px; padding: 12px; }
-  .toggle-btn, .property-btn, .yes-no-btn { font-size: 1.2em; padding: 12px; }
+  body { font-size: 24px; margin-top: 140px; }
+  .form-container { padding: 24px; }
+  input[type="text"], input[type="number"], textarea, select { font-size: 1.4em; padding: 16px; }
+  .property-btn { font-size: 1.5em; padding: 16px; }
+  .toggle-btn { font-size: 1.5em; padding: 12px; }
   .counter button { width: 32px; height: 32px; font-size: 20px; }
 }
 </style>
 </head>
 <body>
-<!-- Botón para agregar propiedad -->
 <button id="btnAgregarPropiedad" onclick="toggleOpcionesPropiedad()">➕ Agregar Propiedad</button>
-
-<!-- Sección de selección de tipo de operación -->
 <div id="opcionesPropiedad" class="form-container">
-  <label for="tipoOperacion">Tipo de Operación</label>
-  <div class="toggle-group">
-    <div class="toggle-btn" data-value="Vender" onclick="selectOperacion('Vender')">Vender</div>
-    <div class="toggle-btn" data-value="Alquilar" onclick="selectOperacion('Alquilar')">Alquilar</div>
+  <label>Tipo de Operación</label>
+  <div class="toggle-group" id="tipoOperacionToggle">
+    <button class="toggle-btn active" onclick="seleccionarOperacion('Vender')">Vender</button>
+    <button class="toggle-btn" onclick="seleccionarOperacion('Alquilar')">Alquilar</button>
   </div>
   <div id="opcionesVenta" class="property-type">
-    <div class="property-btn" onclick="mostrarFormulario('Terreno')">🏞️ Terreno</div>
-    <div class="property-btn" onclick="mostrarFormulario('Casa')">🏠 Casa</div>
-    <div class="property-btn" onclick="mostrarFormulario('Departamento')">🏢 Departamento</div>
-    <div class="property-btn" onclick="mostrarFormulario('Local')">🏬 Local Comercial</div>
+    <button class="property-btn" onclick="mostrarFormulario('Terreno')">🏞️ Terreno</button>
+    <button class="property-btn" onclick="mostrarFormulario('Casa')">🏠 Casa</button>
+    <button class="property-btn" onclick="mostrarFormulario('Departamento')">🏢 Departamento</button>
+    <button class="property-btn" onclick="mostrarFormulario('Local')">🏬 Local Comercial</button>
   </div>
-  <div id="opcionesAlquiler" class="property-type">
-    <div class="property-btn" onclick="mostrarFormulario('Departamento')">🏢 Departamento</div>
-    <div class="property-btn" onclick="mostrarFormulario('Local')">🏬 Local Comercial</div>
-    <div class="property-btn" onclick="mostrarFormulario('Temporario')">🏖️ Temporario</div>
+  <div id="opcionesAlquiler" class="property-type" style="display: none;">
+    <button class="property-btn" onclick="mostrarFormulario('Departamento')">🏢 Departamento</button>
+    <button class="property-btn" onclick="mostrarFormulario('Local')">🏬 Local Comercial</button>
+    <button class="property-btn" onclick="mostrarFormulario('Temporario')">🏖️ Temporario</button>
   </div>
 </div>
 
-<!-- Formulario de Departamento (ejemplo, los demás formularios tienen estructura similar) -->
-<div id="formularioDepartamento" class="form-container">
-  <input type="hidden" id="editRowDepartamento" value="">
-  <input type="hidden" id="enlaceCompartirDepartamento" value="">
-  <input type="hidden" id="existingVideosDepartamento" value="">
+<!-- Formulario Terreno -->
+<div id="formularioTerreno" class="form-container" style="display: none;">
+  <input type="hidden" id="editRowTerreno" value="">
+  <input type="hidden" id="enlaceCompartirTerreno" value="">
+  <input type="hidden" id="existingVideosTerreno" value="">
+  <label>Superficie total (m²)</label>
+  <input type="number" id="superficieTerreno">
   <label>Dirección</label>
-  <input type="text" id="direccionDepartamento">
-  <label>Ambientes</label>
-  <div class="counter">
-    <button onclick="updateCounter('ambientesDepartamento', -1)">–</button>
-    <span id="ambientesDepartamentoValue">1</span>
-    <button onclick="updateCounter('ambientesDepartamento', 1)">+</button>
-  </div>
-  <input type="hidden" id="ambientesDepartamento">
+  <input type="text" id="direccionTerreno">
   <label>Precio (USD)</label>
-  <input type="text" id="precioDepartamento">
-  <label>Imágenes del Alquiler (PNG/JPG, múltiples)</label>
-  <input type="file" id="imagenFileDepartamento" accept="image/png, image/jpeg" multiple>
-  <div id="previewContainerDepartamento"></div>
-  <label>Videos del Alquiler (MP4, múltiples)</label>
-  <input type="file" id="videoFileDepartamento" accept="video/*" multiple>
-  <div id="videoPreviewContainerDepartamento"></div>
+  <input type="text" id="precioTerreno">
+  <label>Imágenes del Terreno (PNG/JPG, múltiples)</label>
+  <input type="file" id="imagenFileTerreno" accept="image/png, image/jpeg" multiple>
+  <div id="previewContainerTerreno"></div>
+  <label>Videos del Terreno (MP4, múltiples)</label>
+  <input type="file" id="videoFileTerreno" accept="video/*" multiple>
+  <div id="videoPreviewContainerTerreno"></div>
   <label>Información de pago</label>
-  <textarea id="infoIngresoDepartamento" rows="2"></textarea>
-  <label>Otros detalles</label>
-  <textarea id="detallesDepartamento" rows="3"></textarea>
-  <button id="btnGuardarDepartamento" onclick="agregarAlquiler('Departamento')">Agregar</button>
-  <p id="msgDepartamento" class="estado-msg"></p>
+  <textarea id="infoIngresoTerreno" rows="2"></textarea>
+  <label>Detalles</label>
+  <textarea id="detallesTerreno" rows="3"></textarea>
+  <button id="btnGuardarTerreno" onclick="agregarAlquiler('Terreno')">Agregar</button>
+  <p id="msgTerreno" class="estado-msg"></p>
 </div>
 
-<!-- Formulario de Casa (con botones Sí/No para Patio y Garage) -->
-<div id="formularioCasa" class="form-container">
+<!-- Formulario Casa -->
+<div id="formularioCasa" class="form-container" style="display: none;">
   <input type="hidden" id="editRowCasa" value="">
   <input type="hidden" id="enlaceCompartirCasa" value="">
   <input type="hidden" id="existingVideosCasa" value="">
@@ -219,25 +235,23 @@ label { display: block; margin: 12px 0 8px; font-weight: bold; }
   <input type="text" id="direccionCasa">
   <label>Ambientes</label>
   <div class="counter">
-    <button onclick="updateCounter('ambientesCasa', -1)">–</button>
-    <span id="ambientesCasaValue">1</span>
-    <button onclick="updateCounter('ambientesCasa', 1)">+</button>
+    <button onclick="cambiarAmbientes('Casa', -1)">–</button>
+    <span id="ambientesCasaDisplay">1</span>
+    <input type="hidden" id="ambientesCasa" value="1">
+    <button onclick="cambiarAmbientes('Casa', 1)">+</button>
   </div>
-  <input type="hidden" id="ambientesCasa">
   <label>Precio (USD)</label>
   <input type="text" id="precioCasa">
   <label>Patio</label>
-  <div class="yes-no-group">
-    <div class="yes-no-btn" data-value="Sí" onclick="selectYesNo('patioCasa', 'Sí')">Sí</div>
-    <div class="yes-no-btn" data-value="No" onclick="selectYesNo('patioCasa', 'No')">No</div>
+  <div class="toggle-group yes-no" id="patioCasaToggle">
+    <button class="toggle-btn yes-no-btn active" onclick="seleccionarOpcion('patioCasa', 'Sí')">Sí</button>
+    <button class="toggle-btn yes-no-btn" onclick="seleccionarOpcion('patioCasa', 'No')">No</button>
   </div>
-  <input type="hidden" id="patioCasa">
   <label>Garage</label>
-  <div class="yes-no-group">
-    <div class="yes-no-btn" data-value="Sí" onclick="selectYesNo('garageCasa', 'Sí')">Sí</div>
-    <div class="yes-no-btn" data-value="No" onclick="selectYesNo('garageCasa', 'No')">No</div>
+  <div class="toggle-group yes-no" id="garageCasaToggle">
+    <button class="toggle-btn yes-no-btn active" onclick="seleccionarOpcion('garageCasa', 'Sí')">Sí</button>
+    <button class="toggle-btn yes-no-btn" onclick="seleccionarOpcion('garageCasa', 'No')">No</button>
   </div>
-  <input type="hidden" id="garageCasa">
   <label>Antigüedad (años)</label>
   <input type="number" id="antiguedadCasa">
   <label>Imágenes de la Casa (PNG/JPG, múltiples)</label>
@@ -254,7 +268,77 @@ label { display: block; margin: 12px 0 8px; font-weight: bold; }
   <p id="msgCasa" class="estado-msg"></p>
 </div>
 
-<!-- Otros formularios (Terreno, Local, Temporario) seguirían un patrón similar -->
+<!-- Formulario Departamento -->
+<div id="formularioDepartamento" class="form-container" style="display: none;">
+  <input type="hidden" id="editRowDepartamento" value="">
+  <input type="hidden" id="enlaceCompartirDepartamento" value="">
+  <input type="hidden" id="existingVideosDepartamento" value="">
+  <label>Dirección</label>
+  <input type="text" id="direccionDepartamento">
+  <label>Ambientes</label>
+  <div class="counter">
+    <button onclick="cambiarAmbientes('Departamento', -1)">–</button>
+    <span id="ambientesDepartamentoDisplay">1</span>
+    <input type="hidden" id="ambientesDepartamento" value="1">
+    <button onclick="cambiarAmbientes('Departamento', 1)">+</button>
+  </div>
+  <label>Precio (USD)</label>
+  <input type="text" id="precioDepartamento">
+  <label>Imágenes del Alquiler (PNG/JPG, múltiples)</label>
+  <input type="file" id="imagenFileDepartamento" accept="image/png, image/jpeg" multiple>
+  <div id="previewContainerDepartamento"></div>
+  <label>Videos del Alquiler (MP4, múltiples)</label>
+  <input type="file" id="videoFileDepartamento" accept="video/*" multiple>
+  <div id="videoPreviewContainerDepartamento"></div>
+  <label>Información de pago</label>
+  <textarea id="infoIngresoDepartamento" rows="2"></textarea>
+  <label>Otros detalles</label>
+  <textarea id="detallesDepartamento" rows="3"></textarea>
+  <button id="btnGuardarDepartamento" onclick="agregarAlquiler('Departamento')">Agregar</button>
+  <p id="msgDepartamento" class="estado-msg"></p>
+</div>
+
+<!-- Formulario Local -->
+<div id="formularioLocal" class="form-container" style="display: none;">
+  <input type="hidden" id="editRowLocal" value="">
+  <input type="hidden" id="enlaceCompartirLocal" value="">
+  <input type="hidden" id="existingVideosLocal" value="">
+  <label>Dirección</label>
+  <input type="text" id="direccionLocal">
+  <label>Imágenes del Alquiler (PNG/JPG, múltiples)</label>
+  <input type="file" id="imagenFileLocal" accept="image/png, image/jpeg" multiple>
+  <div id="previewContainerLocal"></div>
+  <label>Videos del Alquiler (MP4, múltiples)</label>
+  <input type="file" id="videoFileLocal" accept="video/*" multiple>
+  <div id="videoPreviewContainerLocal"></div>
+  <label>Información de ingreso</label>
+  <textarea id="infoIngresoLocal" rows="2"></textarea>
+  <label>Detalles</label>
+  <textarea id="detallesLocal" rows="3"></textarea>
+  <button id="btnGuardarLocal" onclick="agregarAlquiler('Local')">Agregar</button>
+  <p id="msgLocal" class="estado-msg"></p>
+</div>
+
+<!-- Formulario Temporario -->
+<div id="formularioTemporario" class="form-container" style="display: none;">
+  <input type="hidden" id="editRowTemporario" value="">
+  <input type="hidden" id="enlaceCompartirTemporario" value="">
+  <input type="hidden" id="existingVideosTemporario" value="">
+  <label>Dirección</label>
+  <input type="text" id="direccionTemporario">
+  <label>Imágenes del Alquiler (PNG/JPG, múltiples)</label>
+  <input type="file" id="imagenFileTemporario" accept="image/png, image/jpeg" multiple>
+  <div id="previewContainerTemporario"></div>
+  <label>Videos del Alquiler (MP4, múltiples)</label>
+  <input type="file" id="videoFileTemporario" accept="video/*" multiple>
+  <div id="videoPreviewContainerTemporario"></div>
+  <label>Información de ingreso</label>
+  <textarea id="infoIngresoTemporario" rows="2"></textarea>
+  <label>Detalles</label>
+  <textarea id="detallesTemporario" rows="3"></textarea>
+  <button id="btnGuardarTemporario" onclick="agregarAlquiler('Temporario')">Agregar</button>
+  <p id="msgTemporario" class="estado-msg"></p>
+</div>
 
 <script>
 // === CONSTANTES Y VARIABLES ===
@@ -382,15 +466,9 @@ async function subirVideoMux(videoFile, row, tipo) {
       method: 'POST',
       mode: 'cors',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'uploadVideoMux',
-        video: base64Video,
-        row: row
-      })
+      body: JSON.stringify({ action: 'uploadVideoMux', video: base64Video, row: row })
     });
-    if (!response.ok) {
-      throw new Error(`Error HTTP! Estado: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`Error HTTP! Estado: ${response.status}`);
     const result = await response.json();
     if (result.success) {
       console.log('Video subido a Mux:', result.videoUrl);
@@ -433,83 +511,65 @@ function toggleOpcionesPropiedad() {
     opciones.classList.add("active");
     btn.textContent = "➖ Cerrar Opciones";
     window.scrollTo(0, document.getElementById("opcionesPropiedad").offsetTop);
-    updateToggleButtons();
   }
 }
 
-// === SELECCIÓN DE TIPO DE OPERACIÓN ===
-function selectOperacion(value) {
-  document.getElementById("tipoOperacion").value = value;
-  mostrarOpcionesPorOperacion();
-  updateToggleButtons();
-}
-
-function updateToggleButtons() {
-  const toggleButtons = document.querySelectorAll('.toggle-btn');
-  const currentValue = document.getElementById("tipoOperacion").value;
-  toggleButtons.forEach(btn => {
-    btn.classList.toggle('active', btn.getAttribute('data-value') === currentValue);
-  });
-}
-
-// === MOSTRAR OPCIONES SEGÚN TIPO DE OPERACIÓN ===
-function mostrarOpcionesPorOperacion() {
-  const tipoOperacion = document.getElementById("tipoOperacion").value;
+// === SELECCIONAR TIPO DE OPERACIÓN ===
+function seleccionarOperacion(operacion) {
+  const toggleButtons = document.querySelectorAll('#tipoOperacionToggle .toggle-btn');
+  toggleButtons.forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`#tipoOperacionToggle .toggle-btn[onclick="seleccionarOperacion('${operacion}')"]`).classList.add('active');
   const opcionesVenta = document.getElementById("opcionesVenta");
   const opcionesAlquiler = document.getElementById("opcionesAlquiler");
-  if (tipoOperacion === "Vender") {
+  if (operacion === "Vender") {
     opcionesVenta.classList.add("active");
     opcionesAlquiler.classList.remove("active");
-    window.scrollTo(0, document.getElementById("opcionesVenta").offsetTop);
+    opcionesVenta.style.display = "flex";
+    opcionesAlquiler.style.display = "none";
   } else {
     opcionesAlquiler.classList.add("active");
     opcionesVenta.classList.remove("active");
-    window.scrollTo(0, document.getElementById("opcionesAlquiler").offsetTop);
+    opcionesAlquiler.style.display = "flex";
+    opcionesVenta.style.display = "none";
   }
-  updatePropertyButtons();
+  window.scrollTo(0, operacion === "Vender" ? opcionesVenta.offsetTop : opcionesAlquiler.offsetTop);
 }
 
-function updatePropertyButtons() {
-  const propertyButtons = document.querySelectorAll('.property-btn');
-  propertyButtons.forEach(btn => {
-    btn.classList.remove('active');
-  });
-}
-
-// === MOSTRAR FORMULARIO SEGÚN TIPO ===
+// === MOSTRAR FORMULARIO ===
 function mostrarFormulario(tipo) {
   const formularios = ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'];
   formularios.forEach(f => {
     const form = document.getElementById(`formulario${f}`);
     form.classList.remove("active");
+    form.style.display = "none";
   });
   const form = document.getElementById(`formulario${tipo}`);
   form.classList.add("active");
+  form.style.display = "block";
   document.getElementById("btnAgregarPropiedad").textContent = "➖ Cerrar Opciones";
-  window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
-  updatePropertyButtons();
-  const clickedButton = document.querySelector(`.property-btn[onclick="mostrarFormulario('${tipo}')"]`);
-  if (clickedButton) clickedButton.classList.add("active");
+  const propertyButtons = document.querySelectorAll('.property-btn');
+  propertyButtons.forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`.property-btn[onclick="mostrarFormulario('${tipo}')"]`).classList.add('active');
+  window.scrollTo(0, form.offsetTop);
 }
 
-// === CONTADOR PARA AMBIENTES ===
-function updateCounter(inputId, delta) {
-  const input = document.getElementById(inputId);
-  const span = document.getElementById(`${inputId}Value`);
-  let value = parseInt(span.textContent) || 1;
-  value = Math.max(1, value + delta);
-  span.textContent = value;
-  input.value = value;
+// === CONTADOR DE AMBIENTES ===
+function cambiarAmbientes(tipo, cambio) {
+  const input = document.getElementById(`ambientes${tipo}`);
+  const display = document.getElementById(`ambientes${tipo}Display`);
+  let valor = parseInt(input.value) + cambio;
+  if (valor < 1) valor = 1;
+  input.value = valor;
+  display.textContent = valor;
 }
 
-// === BOTONES SÍ/NO ===
-function selectYesNo(inputId, value) {
-  const input = document.getElementById(inputId);
-  input.value = value;
-  const buttons = document.querySelectorAll(`.yes-no-btn[data-value][onclick*="selectYesNo('${inputId}'"]`);
-  buttons.forEach(btn => {
-    btn.classList.toggle('active', btn.getAttribute('data-value') === value);
-  });
+// === SELECCIONAR SÍ/NO ===
+function seleccionarOpcion(campo, valor) {
+  const toggleGroup = document.getElementById(`${campo}Toggle`);
+  const buttons = toggleGroup.querySelectorAll('.yes-no-btn');
+  buttons.forEach(btn => btn.classList.remove('active'));
+  toggleGroup.querySelector(`.yes-no-btn[onclick="seleccionarOpcion('${campo}', '${valor}')"]`).classList.add('active');
+  document.getElementById(campo).value = valor;
 }
 
 // === INICIALIZAR EVENTOS ===
@@ -520,19 +580,8 @@ window.onload = function() {
     inicializarPreviewImagenes(tipo);
     inicializarPreviewVideos(tipo);
     if (tipo === 'Departamento' || tipo === 'Terreno' || tipo === 'Casa') inicializarFormatoPrecio(tipo);
-    if (tipo === 'Departamento' || tipo === 'Casa') {
-      updateCounter(`ambientes${tipo}`, 0); // Inicializar contador
-    }
-    if (tipo === 'Casa') {
-      selectYesNo('patioCasa', 'Sí'); // Inicializar Sí/No
-      selectYesNo('garageCasa', 'Sí');
-    }
   });
-  document.getElementById("tipoOperacion").addEventListener("change", () => {
-    mostrarOpcionesPorOperacion();
-    updateToggleButtons();
-  });
-  updateToggleButtons();
+  seleccionarOperacion('Vender'); // Inicializar con "Vender" activo
 }
 
 // === AGREGAR / EDITAR ALQUILER ===
@@ -544,12 +593,12 @@ async function agregarAlquiler(tipo) {
   const ambientes = (tipo === "Departamento" || tipo === "Casa") ? document.getElementById(`ambientes${tipo}`).value : "";
   let precio = (tipo === "Departamento" || tipo === "Terreno" || tipo === "Casa") ? document.getElementById(`precio${tipo}`).value.replace(/\D/g, "") : "";
   const superficie = tipo === "Terreno" ? document.getElementById(`superficie${tipo}`).value : "";
-  const patio = tipo === "Casa" ? document.getElementById(`patio${tipo}`).value : "";
-  const garage = tipo === "Casa" ? document.getElementById(`garage${tipo}`).value : "";
+  const patio = tipo === "Casa" ? document.getElementById(`patioCasa`).value : "";
+  const garage = tipo === "Casa" ? document.getElementById(`garageCasa`).value : "";
   const antiguedad = tipo === "Casa" ? document.getElementById(`antiguedad${tipo}`).value : "";
   const infoIngreso = document.getElementById(`infoIngreso${tipo}`).value;
   const detalles = document.getElementById(`detalles${tipo}`).value;
-  const operacion = document.getElementById("tipoOperacion").value;
+  const operacion = document.querySelector('#tipoOperacionToggle .toggle-btn.active').textContent;
   let row = document.getElementById(`editRow${tipo}`).value || new Date().getTime();
   const enlaceCompartir = document.getElementById(`editRow${tipo}`).value ? document.getElementById(`enlaceCompartir${tipo}`).value : "";
   const email = localStorage.getItem("dueno");
@@ -623,25 +672,30 @@ async function agregarAlquiler(tipo) {
 function resetAllForms() {
   ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'].forEach(tipo => {
     document.getElementById(`formulario${tipo}`).classList.remove("active");
+    document.getElementById(`formulario${tipo}`).style.display = "none";
     document.getElementById(`editRow${tipo}`).value = "";
     document.getElementById(`enlaceCompartir${tipo}`).value = "";
     document.getElementById(`existingVideos${tipo}`).value = "";
     document.getElementById(`direccion${tipo}`).value = "";
     if (tipo === "Departamento" || tipo === "Casa") {
-      document.getElementById(`ambientes${tipo}`).value = "";
-      document.getElementById(`ambientes${tipo}Value`).textContent = "1";
+      document.getElementById(`ambientes${tipo}`).value = "1";
+      document.getElementById(`ambientes${tipo}Display`).textContent = "1";
+      if (tipo === "Casa") {
+        document.getElementById(`patioCasa`).value = "Sí";
+        document.getElementById(`garageCasa`).value = "Sí";
+        document.getElementById(`antiguedad${tipo}`).value = "";
+        const patioButtons = document.querySelectorAll('#patioCasaToggle .yes-no-btn');
+        const garageButtons = document.querySelectorAll('#garageCasaToggle .yes-no-btn');
+        patioButtons.forEach(btn => btn.classList.remove('active'));
+        garageButtons.forEach(btn => btn.classList.remove('active'));
+        document.querySelector('#patioCasaToggle .yes-no-btn[onclick="seleccionarOpcion(\'patioCasa\', \'Sí\')"]').classList.add('active');
+        document.querySelector('#garageCasaToggle .yes-no-btn[onclick="seleccionarOpcion(\'garageCasa\', \'Sí\')"]').classList.add('active');
+      }
       document.getElementById(`precio${tipo}`).value = "";
     }
     if (tipo === "Terreno") {
       document.getElementById(`superficie${tipo}`).value = "";
       document.getElementById(`precio${tipo}`).value = "";
-    }
-    if (tipo === "Casa") {
-      document.getElementById(`patio${tipo}`).value = "Sí";
-      document.getElementById(`garage${tipo}`).value = "Sí";
-      selectYesNo('patioCasa', 'Sí');
-      selectYesNo('garageCasa', 'Sí');
-      document.getElementById(`antiguedad${tipo}`).value = "";
     }
     document.getElementById(`infoIngreso${tipo}`).value = "";
     document.getElementById(`detalles${tipo}`).value = "";
@@ -657,10 +711,10 @@ function resetAllForms() {
   document.getElementById("opcionesPropiedad").classList.remove("active");
   document.getElementById("opcionesVenta").classList.remove("active");
   document.getElementById("opcionesAlquiler").classList.remove("active");
+  document.getElementById("opcionesVenta").style.display = "flex";
+  document.getElementById("opcionesAlquiler").style.display = "none";
   document.getElementById("btnAgregarPropiedad").textContent = "➕ Agregar Propiedad";
-  document.getElementById("tipoOperacion").value = "Vender";
-  mostrarOpcionesPorOperacion();
-  updateToggleButtons();
+  seleccionarOperacion("Vender");
 }
 
 // === EDITAR ALQUILER ===
@@ -668,14 +722,16 @@ function editarAlquiler(row, datos) {
   const tipo = datos.Tipo || "Departamento";
   document.getElementById("btnAgregarPropiedad").textContent = "➖ Cerrar Opciones";
   document.getElementById(`formulario${tipo}`).classList.add("active");
+  document.getElementById(`formulario${tipo}`).style.display = "block";
   document.getElementById(`btnGuardar${tipo}`).textContent = "Guardar Cambios";
   document.getElementById(`editRow${tipo}`).value = row;
   document.getElementById(`enlaceCompartir${tipo}`).value = datos["Enlace para compartir"] || "";
   document.getElementById(`existingVideos${tipo}`).value = datos.Videos || "";
   document.getElementById(`direccion${tipo}`).value = datos.Direccion || "";
   if (tipo === "Departamento" || tipo === "Casa") {
-    document.getElementById(`ambientes${tipo}`).value = datos["Nro Ambientes"] || "";
-    document.getElementById(`ambientes${tipo}Value`).textContent = datos["Nro Ambientes"] || "1";
+    const ambientes = datos["Nro Ambientes"] || "1";
+    document.getElementById(`ambientes${tipo}`).value = ambientes;
+    document.getElementById(`ambientes${tipo}Display`).textContent = ambientes;
     document.getElementById(`precio${tipo}`).value = formatoPrecio(datos.Precio);
   }
   if (tipo === "Terreno") {
@@ -683,18 +739,21 @@ function editarAlquiler(row, datos) {
     document.getElementById(`precio${tipo}`).value = formatoPrecio(datos.Precio);
   }
   if (tipo === "Casa") {
-    const patio = datos.Patio || "No";
-    const garage = datos.Garage || "No";
+    const patio = datos.Patio || "Sí";
+    const garage = datos.Garage || "Sí";
     document.getElementById(`patio${tipo}`).value = patio;
     document.getElementById(`garage${tipo}`).value = garage;
-    selectYesNo('patioCasa', patio);
-    selectYesNo('garageCasa', garage);
     document.getElementById(`antiguedad${tipo}`).value = datos.Antiguedad || "";
+    const patioButtons = document.querySelectorAll('#patioCasaToggle .yes-no-btn');
+    const garageButtons = document.querySelectorAll('#garageCasaToggle .yes-no-btn');
+    patioButtons.forEach(btn => btn.classList.remove('active'));
+    garageButtons.forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`#patioCasaToggle .yes-no-btn[onclick="seleccionarOpcion('patioCasa', '${patio}')"]`).classList.add('active');
+    document.querySelector(`#garageCasaToggle .yes-no-btn[onclick="seleccionarOpcion('garageCasa', '${garage}')"]`).classList.add('active');
   }
   document.getElementById(`infoIngreso${tipo}`).value = datos.InfoIngreso || "";
   document.getElementById(`detalles${tipo}`).value = datos.Detalles || "";
-  document.getElementById("tipoOperacion").value = datos.Operacion || "Vender";
-  mostrarOpcionesPorOperacion();
+  seleccionarOperacion(datos.Operacion || "Vender");
   imagenesBase64[tipo] = datos.Fotos ? datos.Fotos.split(",") : [];
   videosBase64[tipo] = datos.Videos ? datos.Videos.split(",") : [];
   actualizarPreview(tipo);
@@ -702,7 +761,7 @@ function editarAlquiler(row, datos) {
   window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
 }
 
-// === CALLBACKS PARA AGREGAR Y EDITAR ===
+// === ALQUILER AGREGADO ===
 function alquilerAgregado(res) {
   const formularios = ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'];
   formularios.forEach(tipo => {
@@ -712,8 +771,8 @@ function alquilerAgregado(res) {
       msgEl.textContent = "✅ Propiedad agregada con éxito";
       setTimeout(() => {
         resetAllForms();
-        cargarAlquileres();
-        cargarEstadoPlan();
+        // cargarAlquileres(); // Comentado para mantener el archivo independiente
+        // cargarEstadoPlan();
       }, 3000);
     } else {
       msgEl.className = "estado-msg error";
@@ -723,6 +782,7 @@ function alquilerAgregado(res) {
   });
 }
 
+// === ALQUILER EDITADO ===
 function alquilerEditado(res) {
   const formularios = ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'];
   formularios.forEach(tipo => {
@@ -732,7 +792,7 @@ function alquilerEditado(res) {
       msgEl.textContent = "✅ Cambios guardados correctamente";
       setTimeout(() => {
         resetAllForms();
-        cargarAlquileres();
+        // cargarAlquileres();
       }, 3000);
     } else {
       msgEl.className = "estado-msg error";
@@ -744,3 +804,4 @@ function alquilerEditado(res) {
 </script>
 </body>
 </html>
+```
