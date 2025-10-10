@@ -939,7 +939,7 @@ query += `&patio=${encodeURIComponent(patio)}`;
 query += `&garage=${encodeURIComponent(garage)}`;
 query += `&antiguedad=${encodeURIComponent(antiguedad)}`;
 }
-query += `&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&contacto=auto&estado=${estado}&videos=${encodeURIComponent(videos)}&operacion=${encodeURIComponent(operacion)}`;
+query += `&fotos=${encodeURIComponent(fotosConcatenadas)}&infoIngreso=${encodeURIComponent(infoIngreso)}&detalles=${encodeURIComponent(detalles)}&lat=${lat}&lng=${lng}&estado=${estado}&videos=${encodeURIComponent(videos)}&operacion=${encodeURIComponent(operacion)}`;
 if (enlaceCompartir) query += `&enlaceCompartir=${encodeURIComponent(enlaceCompartir)}`;
 query += `&callback=${callback}`;
 script.src = query;
