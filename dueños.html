@@ -13,6 +13,8 @@ gtag('js', new Date());
 gtag('config', 'G-SSJ5DG33JK');
 </script>
 <link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
+<!-- ✅ CHART.JS PARA GRÁFICOS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 /* --- CSS adaptado para móvil con textos más grandes y centrados --- */
 body { font-family: Arial, sans-serif; margin: 10px; background:#f5f5f5; font-size:20px; text-align:center; margin-top: 120px; }
@@ -197,6 +199,11 @@ box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 .metricas-item { font-size: 1.4em; padding: 18px; }
 .metricas-numero { font-size: 2.5em; }
 }
+/* ✅ ESTILOS PARA MÉTRICAS EN TABLA */
+.metricas { text-align: center; margin: 5px; }
+.metricas .numero { font-size: 1.8em; font-weight: bold; display: block; color: #ff9800; }
+.metricas small { font-size: 0.8em; color: #666; }
+.grafico-container { text-align: center; padding: 5px; }
 </style>
 </head>
 <body>
@@ -486,17 +493,80 @@ window.mostrarModalEstadisticasCallback = function(data, idPropiedad) {
   mostrarModalEstadisticas(datosParaModal);
 };
 
-// ✅ NUEVA FUNCIÓN - SOLICITAR MÉTRICAS CON VALIDACIÓN (LÍNEA 966)
-function solicitarMetricas(idPropiedad, propId) {
+// ✅ FUNCIÓN NUEVA - CREAR GRÁFICO DONA
+function crearGraficoPropiedad(id, vistas, contactos) {
+    const ctx = document.getElementById(`chart-${id}`).getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['👁️ Vistas', '📞 Contactos'],
+            datasets: [{
+                data: [vistas, contactos],
+                backgroundColor: ['#3B82F6', '#10B981'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.label}: ${context.parsed}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// ✅ FUNCIÓN ACTUALIZADA - SOLICITAR MÉTRICAS CON VALIDACIÓN
+async function solicitarMetricas(idPropiedad, propId) {
     console.log(`🔍 Solicitando VISTAS(C) y CONTACTOS(D) para ID: ${idPropiedad}`);
     
-    google.script.run
-        .withSuccessHandler(datos => mostrarModalEstadisticasCallback(datos, propId))
-        .withFailureHandler(error => {
-            console.error('❌ Error métricas:', error);
-            mostrarErrorMetricas(propId);
-        })
-        .getMetricasPorIdPropiedadSeguro(idPropiedad); // ← NUEVA FUNCIÓN
+    try {
+        // ✅ ACTUALIZAR NÚMEROS EN TABLA
+        const response = await gapi.client.sheets.spreadsheets.values.get({
+            spreadsheetId: SPREADSHEET_ID,
+            range: `Propiedades!C${idPropiedad}:D${idPropiedad}`,
+        });
+
+        const values = response.result.values || [];
+        let vistas = 0, contactos = 0;
+        
+        if (values.length > 0) {
+            [vistas, contactos] = values[0];
+            vistas = parseInt(vistas) || 0;
+            contactos = parseInt(contactos) || 0;
+            console.log(`📊 ID ${idPropiedad}: Vistas=${vistas}, Contactos=${contactos}`);
+        }
+        
+        // ✅ ACTUALIZAR TABLA
+        document.getElementById(`vistas-${idPropiedad}`).textContent = vistas;
+        document.getElementById(`contactos-${idPropiedad}`).textContent = contactos;
+        
+        // ✅ CREAR GRÁFICO SI HAY DATOS
+        if (vistas > 0 || contactos > 0) {
+            crearGraficoPropiedad(idPropiedad, vistas, contactos);
+        }
+        
+        // ✅ LLAMAR MODAL CON DATOS REALES
+        const datosParaModal = {
+            propiedad: { direccion: `Propiedad ID: ${idPropiedad}` },
+            metricas: { vistas, contactos }
+        };
+        mostrarModalEstadisticas(datosParaModal);
+        
+    } catch (error) {
+        console.error(`❌ Error métricas ID ${idPropiedad}:`, error);
+        // ✅ MOSTRAR CEROS EN CASO DE ERROR
+        document.getElementById(`vistas-${idPropiedad}`).textContent = '0';
+        document.getElementById(`contactos-${idPropiedad}`).textContent = '0';
+        mostrarErrorMetricas(propId);
+    }
 }
 
 // ✅ FUNCIÓN ERROR MÉTRICAS
@@ -946,7 +1016,7 @@ setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
 }
 }
 
-// === CARGAR ALQUILERES (ACTUALIZADA PARA USAR LA NUEVA FUNCIÓN) ===
+// === CARGAR ALQUILERES (ACTUALIZADA CON MÉTRICAS EN TABLA) ===
 function cargarAlquileres() {
 const email = localStorage.getItem("dueno");
 const script = document.createElement("script");
@@ -976,6 +1046,13 @@ let operacion = alq.Operacion ? ` - Operación: ${alq.Operacion}` : "";
 div.innerHTML += `<div class="alquiler">
 <b>${alq.Direccion}</b> (${alq.Tipo})${infoAmbientes}${infoSuperficie}${precioFormateado}${infoPatio}${infoGarage}${infoAntiguedad}${operacion}<br>
 Estado: ${estado}<br>
+<table style="width:100%; border-collapse: collapse;">
+<tr>
+<td><div class="metricas"><span class="numero" id="vistas-${alq.row}">0</span><small>👁️ Vistas</small></div></td>
+<td><div class="metricas"><span class="numero" id="contactos-${alq.row}">0</span><small>📞 Contactos</small></div></td>
+<td><div class="grafico-container"><canvas id="chart-${alq.row}" style="height: 80px; width: 80px;"></canvas></div></td>
+</tr>
+</table>
 ${btnEstadisticas} ${btnEstado} ${btnEditar} ${btnEliminar}
 <span id="estadoMsg-${alq.row}" class="estado-msg"></span>
 </div>`;
