@@ -454,14 +454,15 @@ box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 <button id="contactoBtn" title="¿Necesitas ayuda o tuviste inconvenientes?" onclick="window.open('https://wa.me/5493764275443', '_blank')">Ayuda</button>
 
 <script>
-// === ✅ SOLUCIÓN ESTADÍSTICAS - CALLBACK GLOBAL DECLARADO PRIMERO ===
+// === ✅ SOLUCIÓN ESTADÍSTICAS - CALLBACK GLOBAL DECLARADO PRIMERO (CORREGIDO) ===
 window.mostrarModalEstadisticasCallback = function(data) {
-  if (data.success) {
+  console.log("🔄 Callback ejecutado:", data);
+  if (data && data.success && data.data) {
     mostrarModalEstadisticas(data.data);
   } else {
     const msgEl = document.getElementById("msgEstadisticas");
     msgEl.style.color = "red";
-    msgEl.textContent = `❌ ${data.error || "Error al cargar estadísticas"}`;
+    msgEl.textContent = `❌ ${data?.error || "Error al cargar estadísticas"}`;
     setTimeout(() => { msgEl.textContent = ""; }, 3000);
   }
 };
@@ -1342,19 +1343,6 @@ msgEl.textContent = "❌ Error al guardar: " + (err.message || "Error de conexi�
 console.error("Error en edición de cuenta:", err);
 }
 }
-
-// === ✅ SOLUCIÓN FINAL - CALLBACK GLOBAL PARA ESTADÍSTICAS (AGREGADO AL FINAL) ===
-window.mostrarModalEstadisticasCallback = window.mostrarModalEstadisticasCallback || function(data) {
-  console.log("🔄 Callback ejecutado:", data);
-  if (data && data.success && data.data) {
-    mostrarModalEstadisticas(data.data);
-  } else {
-    const msgEl = document.getElementById("msgEstadisticas");
-    msgEl.style.color = "red";
-    msgEl.textContent = `❌ ${data?.error || "Error al cargar estadísticas"}`;
-    setTimeout(() => { msgEl.textContent = ""; }, 3000);
-  }
-};
 
 console.log("✅ SISTEMA DE ESTADÍSTICAS COMPLETAMENTE CARGADO Y FUNCIONANDO");
 </script>
