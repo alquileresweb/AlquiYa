@@ -268,7 +268,7 @@ color: red;
 <div id="modal-terminos-content">
 <h2>Términos y Condiciones de Uso</h2>
 <p><strong>Última actualización: 10/09/2025</strong></p>
-<p>Bienvenido/a a AlquiYa (en adelante, “la Plataforma”).<br>
+<p>Bienvenido/a a AlquiYa (en adelante, "la Plataforma").<br>
 Al acceder o utilizar la Plataforma, usted acepta estos Términos y Condiciones. Si no está de acuerdo, debe abstenerse de usarla.</p>
 
 <h3>1. Naturaleza del Servicio – Exclusión de Intermediación Inmobiliaria</h3>
@@ -892,83 +892,7 @@ makeRequest(webAppURL + "?action=getAlquileres", {
     const verBtn = document.createElement('button');
     verBtn.className = 'popup-button';
     verBtn.textContent = 'Ver Alquiler';
-    verBtn.onclick = () => {
-      const detalle = document.getElementById('alquiler-detalle');
-      detalle.innerHTML = `<h2>Alquiler: ${direccion||''}</h2>`;
-
-      const rows = (tipo === "Temporario" || tipo === "Local") ? [
-        ['Dirección', direccion||''],
-        ['Información de ingreso', infoIngreso||''],
-        ['Detalles', detalles||'']
-      ] : [
-        ['Dirección', direccion||''],
-        ['Ambientes', nroAmb||''],
-        ['Precio', formattedPrecio||''],
-        ['Información de ingreso', infoIngreso||''],
-        ['Detalles', detalles||''],
-        ['Mascotas', mascotas||''],
-        ['Amoblado', amoblado||'']
-      ];
-      rows.forEach(([label,val])=>{
-        const p=document.createElement('p');
-        p.innerHTML=`<b>${label}:</b> ${val}`;
-        detalle.appendChild(p);
-      });
-
-      const imgContainer = document.createElement('div');
-      imgContainer.id = 'imagenes-container';
-
-      const fotos = getField(a, ["Fotos","Imagenes","Imágenes","images"]);
-      let imageUrls = [];
-      if(fotos){
-        imageUrls = fotos.split(',').map(f => driveUrlDirect(f.trim())).filter(url => url);
-        imageUrls.forEach((url, index) => {
-          const img = document.createElement('img');
-          img.src = url;
-          img.alt = "Imagen del alquiler";
-          img.referrerPolicy = "no-referrer";
-          img.onclick = () => abrirModal(url, imageUrls, index);
-          imgContainer.appendChild(img);
-        });
-      }
-      detalle.appendChild(imgContainer);
-
-      if(contacto){
-        const waBtn = document.createElement('button');
-        waBtn.textContent = 'Contactar por WhatsApp';
-        waBtn.style.background = '#25D366';
-        waBtn.style.color = 'white';
-        waBtn.style.marginTop = '10px';
-        waBtn.onclick = ()=>{
-          const mensaje = `Hola, vengo desde AlquiYa y quiero consultar por el alquiler de ${direccion}`;
-          window.open(`https://wa.me/${contacto}?text=${encodeURIComponent(mensaje)}`,'_blank');
-        };
-        detalle.appendChild(waBtn);
-      }
-
-      if(enlace){
-        const linkContainer = document.createElement('div');
-        linkContainer.id = 'link-container';
-        const linkInput = document.createElement('input');
-        linkInput.type = 'text';
-        linkInput.value = enlace;
-        const copyText = document.createElement('span');
-        copyText.textContent = 'Seleccioná y copiá para compartir';
-        linkContainer.appendChild(linkInput);
-        linkContainer.appendChild(copyText);
-        detalle.appendChild(linkContainer);
-      }
-
-      const copyMsg = document.createElement('p');
-      copyMsg.id = 'copy-msg';
-      detalle.appendChild(copyMsg);
-
-      detalle.style.display='block';
-      detalle.classList.add("highlight");
-      detalle.scrollIntoView({behavior:"smooth", block:"start"});
-      setTimeout(()=>detalle.classList.remove("highlight"),1200);
-      map.invalidateSize();
-    };
+    verBtn.onclick = () => verAlquiler(direccion);
     popupDiv.appendChild(verBtn);
     marker.bindPopup(popupDiv);
     cont++;
@@ -997,6 +921,150 @@ eyeIcon.style.backgroundImage = "url('https://img.icons8.com/ios/50/000000/invis
 input.type = "password";
 eyeIcon.style.backgroundImage = "url('https://img.icons8.com/ios/50/000000/visible.png')";
 }
+}
+
+/* =========================
+NUEVAS FUNCIONES DE MÉTRICAS - AÑADIDAS
+*/
+// Al presionar "Ver alquiler"
+function verAlquiler(direccionPropiedad) {
+  fetch('https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `action=registrarMetricaFrontend&direccionPropiedad=${encodeURIComponent(direccionPropiedad)}&tipo=verAlquiler`
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      console.log('✅ Vista registrada:', data.message);
+      // Abrir detalle
+      const detalle = document.getElementById('alquiler-detalle');
+      detalle.innerHTML = `<h2>Alquiler: ${direccionPropiedad||''}</h2>`;
+
+      // Cargar datos completos del alquiler para el detalle
+      makeRequest(webAppURL + "?action=getAlquilerByDireccion&direccion=" + encodeURIComponent(direccionPropiedad), {
+        method: "GET",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" }
+      })
+      .then(res => {
+        if (res.success && res.data && res.data.length > 0) {
+          const a = res.data[0];
+          const tipo = getField(a, ["Tipo"]);
+          const nroAmb = toInt(getField(a, ["Nro Ambientes","Ambientes","Nro de Ambientes","Nro"]), 0);
+          const precioVal = getField(a, ["Precio","precio","$"]);
+          const formattedPrecio = formatPrice(precioVal);
+          const infoIngreso = getField(a, ["Informacion ingreso","Información ingreso","InformacionIngreso","InfoIngreso","Informacion de ingreso"]);
+          const detalles = getField(a, ["Detalles","Detalle","Descripcion","Descripción"]);
+          const mascotas = getField(a, ["Mascotas"]);
+          const amoblado = getField(a, ["Amoblado"]);
+          const contacto = getField(a, ["Contacto","Whatsapp","WhatsApp","Tel","Telefono","Teléfono"]);
+          const enlace = getField(a, ["Enlace para compartir"]);
+
+          const rows = (tipo === "Temporario" || tipo === "Local") ? [
+            ['Dirección', direccionPropiedad||''],
+            ['Información de ingreso', infoIngreso||''],
+            ['Detalles', detalles||'']
+          ] : [
+            ['Dirección', direccionPropiedad||''],
+            ['Ambientes', nroAmb||''],
+            ['Precio', formattedPrecio||''],
+            ['Información de ingreso', infoIngreso||''],
+            ['Detalles', detalles||''],
+            ['Mascotas', mascotas||''],
+            ['Amoblado', amoblado||'']
+          ];
+          
+          rows.forEach(([label,val])=>{
+            const p=document.createElement('p');
+            p.innerHTML=`<b>${label}:</b> ${val}`;
+            detalle.appendChild(p);
+          });
+
+          const imgContainer = document.createElement('div');
+          imgContainer.id = 'imagenes-container';
+
+          const fotos = getField(a, ["Fotos","Imagenes","Imágenes","images"]);
+          let imageUrls = [];
+          if(fotos){
+            imageUrls = fotos.split(',').map(f => driveUrlDirect(f.trim())).filter(url => url);
+            imageUrls.forEach((url, index) => {
+              const img = document.createElement('img');
+              img.src = url;
+              img.alt = "Imagen del alquiler";
+              img.referrerPolicy = "no-referrer";
+              img.onclick = () => abrirModal(url, imageUrls, index);
+              imgContainer.appendChild(img);
+            });
+          }
+          detalle.appendChild(imgContainer);
+
+          if(contacto){
+            const waBtn = document.createElement('button');
+            waBtn.textContent = 'Contactar por WhatsApp';
+            waBtn.style.background = '#25D366';
+            waBtn.style.color = 'white';
+            waBtn.style.marginTop = '10px';
+            waBtn.onclick = () => contactarWhatsApp(direccionPropiedad, contacto);
+            detalle.appendChild(waBtn);
+          }
+
+          if(enlace){
+            const linkContainer = document.createElement('div');
+            linkContainer.id = 'link-container';
+            const linkInput = document.createElement('input');
+            linkInput.type = 'text';
+            linkInput.value = enlace;
+            const copyText = document.createElement('span');
+            copyText.textContent = 'Seleccioná y copiá para compartir';
+            linkContainer.appendChild(linkInput);
+            linkContainer.appendChild(copyText);
+            detalle.appendChild(linkContainer);
+          }
+
+          const copyMsg = document.createElement('p');
+          copyMsg.id = 'copy-msg';
+          detalle.appendChild(copyMsg);
+
+          detalle.style.display='block';
+          detalle.classList.add("highlight");
+          detalle.scrollIntoView({behavior:"smooth", block:"start"});
+          setTimeout(()=>detalle.classList.remove("highlight"),1200);
+          map.invalidateSize();
+        }
+      });
+    }
+  })
+  .catch(error => {
+    console.error('Error registrando métrica:', error);
+    // Continuar con el detalle aunque falle la métrica
+    const detalle = document.getElementById('alquiler-detalle');
+    detalle.innerHTML = `<h2>Alquiler: ${direccionPropiedad}</h2><p>Error al cargar detalles completos</p>`;
+    detalle.style.display='block';
+  });
+}
+
+// Al presionar "Contactar WhatsApp"
+function contactarWhatsApp(direccionPropiedad, numeroTelefono) {
+  fetch('https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `action=registrarMetricaFrontend&direccionPropiedad=${encodeURIComponent(direccionPropiedad)}&tipo=contactarWhatsApp`
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      console.log('✅ Contacto registrado:', data.message);
+      // Abrir WhatsApp
+      const mensaje = `Hola, vengo desde AlquiYa y quiero consultar por el alquiler de ${direccionPropiedad}`;
+      window.open(`https://wa.me/${numeroTelefono}?text=${encodeURIComponent(mensaje)}`,'_blank');
+    }
+  })
+  .catch(error => {
+    console.error('Error registrando métrica:', error);
+    // Continuar abriendo WhatsApp aunque falle la métrica
+    const mensaje = `Hola, vengo desde AlquiYa y quiero consultar por el alquiler de ${direccionPropiedad}`;
+    window.open(`https://wa.me/${numeroTelefono}?text=${encodeURIComponent(mensaje)}`,'_blank');
+  });
 }
 
 /* =========================
