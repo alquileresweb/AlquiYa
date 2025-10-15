@@ -9,9 +9,10 @@
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
-
 gtag('config', 'G-SSJ5DG33JK');
 </script>
+<!-- ✅ GOOGLE CHARTS API - OBLIGATORIO PARA GRÁFICOS -->
+<script src="https://www.gstatic.com/charts/loader.js" defer></script>
 <link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
 <style>
 /* --- CSS adaptado para móvil con textos más grandes y centrados --- */
@@ -196,6 +197,17 @@ box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 #modalEstadisticas .modal-content { margin: 10% auto; width: 98%; padding: 25px; }
 .metricas-item { font-size: 1.4em; padding: 18px; }
 .metricas-numero { font-size: 2.5em; }
+}
+/* ✅ GRÁFICOS DE MÉTRICAS - NUEVO */
+.grafico-metricas {
+    margin: 15px 0;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    background: white;
+    padding: 10px;
+}
+#metricas-17, #metricas-18, #metricas-19 {
+    margin: 20px 0;
 }
 </style>
 </head>
@@ -492,9 +504,16 @@ window.mostrarModalEstadisticasCallback = function(data, idPropiedad) {
   mostrarModalEstadisticas(datosParaModal);
 };
 
-// ✅ FUNCIÓN PRINCIPAL - SOLICITA MÉTRICAS (LÍNEA 966 DEL CÓDIGO ORIGINAL)
+// ✅ FUNCIÓN CORREGIDA - Línea 497
 function solicitarMetricas(idPropiedad, propId) {
     console.log(`🔍 Solicitando VISTAS(C) y CONTACTOS(D) para ID: ${idPropiedad}`);
+    
+    // ✅ ESPERAR GOOGLE CHARTS
+    if (typeof google === 'undefined' || !google.charts) {
+        console.log('⏳ Esperando Google Charts...');
+        setTimeout(() => solicitarMetricas(idPropiedad, propId), 500);
+        return;
+    }
     
     // ✅ LLAMA A GOOGLE APPS SCRIPT - BUSCA EN COLUMNA N → COLUMNA A
     google.script.run
@@ -504,6 +523,45 @@ function solicitarMetricas(idPropiedad, propId) {
             mostrarErrorMetricas(propId);
         })
         .getMetricasPorIdPropiedadSeguro(idPropiedad); // ← FUNCIÓN DE GOOGLE APPS SCRIPT
+}
+
+// ✅ NUEVA FUNCIÓN - GRÁFICO DE MÉTRICAS
+function mostrarGraficoMetricas(id, vistas, contactos) {
+    console.log('🎨 Creando gráfico para ID:', id);
+    
+    // Crear contenedor
+    let contenedor = document.getElementById(`grafico-${id}`);
+    if (!contenedor) {
+        contenedor = document.createElement('div');
+        contenedor.id = `grafico-${id}`;
+        contenedor.className = 'grafico-metricas';
+        contenedor.style.height = '300px';
+        document.getElementById(`metricas-${id}`).appendChild(contenedor);
+    }
+    
+    // ✅ GOOGLE CHARTS - Column Chart
+    google.charts.load('current', {packages: ['corechart']});
+    google.charts.setOnLoadCallback(() => {
+        const data = google.visualization.arrayToDataTable([
+            ['Métrica', 'Cantidad', {role: 'style'}],
+            ['👁️ Vistas', vistas || 0, '#4CAF50'],
+            ['📞 Contactos', contactos || 0, '#2196F3']
+        ]);
+        
+        const options = {
+            title: `📊 Métricas ID ${id}`,
+            width: '100%',
+            height: 250,
+            legend: {position: 'top'},
+            chartArea: {width: '85%', height: '70%'},
+            colors: ['#4CAF50', '#2196F3']
+        };
+        
+        const chart = new google.visualization.ColumnChart(contenedor);
+        chart.draw(data, options);
+        
+        console.log('✅ Gráfico creado para ID:', id);
+    });
 }
 
 // ✅ FUNCIÓN DE ERROR - MUESTRA 0 SI FALLA
