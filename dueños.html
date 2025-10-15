@@ -435,15 +435,23 @@ box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 <!-- === NUEVO MODAL DE ESTADÍSTICAS === -->
 <div id="modalEstadisticas">
 <div class="modal-content">
-<h3>📊 Estadísticas</h3>
+<h3 id="modal-titulo">📊 Estadísticas</h3>
 <div id="metricasContainer">
 <div class="metricas-item">
-<span class="metricas-numero" id="vistasNum">0</span>
+<span class="metricas-numero" id="modal-vistas">0</span>
 👁 Vistas
 </div>
 <div class="metricas-item">
-<span class="metricas-numero" id="contactosNum">0</span>
+<span class="metricas-numero" id="modal-contactos">0</span>
 📞 Contactos
+</div>
+<div class="metricas-item">
+<span id="modal-tipo"></span>
+🏠 Tipo
+</div>
+<div class="metricas-item">
+<span id="modal-precio"></span>
+💰 Precio
 </div>
 </div>
 <button onclick="cerrarModalEstadisticas()">Cerrar</button>
@@ -889,7 +897,7 @@ setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
 }
 }
 
-// === CARGAR ALQUILERES (MODIFICADA PARA INCLUIR BOTÓN ESTADÍSTICAS) ===
+// === CARGAR ALQUILERES (ACTUALIZADA PARA USAR LA NUEVA FUNCIÓN) ===
 function cargarAlquileres() {
 const email = localStorage.getItem("dueno");
 const script = document.createElement("script");
@@ -908,7 +916,7 @@ let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
 let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Cambiar Estado</button>`;
 let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
 let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
-let btnEstadisticas = `<button class="stats-btn" onclick="mostrarEstadisticas(${alq.row})">📊 Estadísticas</button>`;
+let btnEstadisticas = `<button class="stats-btn" onclick="mostrarEstadisticasPropiedad(${alq.row}, '${localStorage.getItem('dueno')}')">📊 Estadísticas</button>`;
 let precioFormateado = (alq.Tipo === "Departamento" || alq.Tipo === "Terreno" || alq.Tipo === "Casa") ? formatoPrecio(alq.Precio) : "";
 let infoAmbientes = alq.Tipo === "Departamento" || alq.Tipo === "Casa" ? ` - ${alq['Nro Ambientes']} amb` : "";
 let infoSuperficie = alq.Tipo === "Terreno" ? ` - ${alq.Superficie} m²` : "";
@@ -925,44 +933,28 @@ ${btnEstadisticas} ${btnEstado} ${btnEditar} ${btnEliminar}
 });
 }
 
-// === NUEVAS FUNCIONES PARA ESTADÍSTICAS ===
-function mostrarEstadisticas(row) {
-const msgEl = document.getElementById("msgEstadisticas");
-msgEl.textContent = "Cargando estadísticas...";
-msgEl.style.color = "blue";
-document.getElementById("modalEstadisticas").style.display = "block";
-cargarMetricas(row);
+// === NUEVAS FUNCIONES PARA ESTADÍSTICAS (SOLUCIÓN IMPLEMENTADA) ===
+// Al hacer click en el botón Estadísticas de una propiedad
+function mostrarEstadisticasPropiedad(idPropiedad, email) {
+  fetch(`https://script.google.com/macros/s/TU_SCRIPT_ID/exec?action=getEstadisticasPropiedad&idPropiedad=${idPropiedad}&email=${email}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Mostrar modal/popup con las estadísticas
+        mostrarModalEstadisticas(data.data);
+      }
+    });
 }
 
-async function cargarMetricas(row) {
-const msgEl = document.getElementById("msgEstadisticas");
-try {
-const response = await fetch(`${API_URL}?action=getMetricas&row=${row}`);
-const res = await response.json();
-metricasCargadas(res, row);
-} catch (err) {
-msgEl.style.color = "red";
-msgEl.textContent = `❌ Error al cargar métricas: ${err.message}`;
-setTimeout(() => { msgEl.textContent = ""; }, 5000);
-}
-}
-
-function metricasCargadas(res, row) {
-const msgEl = document.getElementById("msgEstadisticas");
-if (res.success && res.data && res.data.length > 0) {
-const metrica = res.data[0];
-document.getElementById("vistasNum").textContent = metrica.Vistas || 0;
-document.getElementById("contactosNum").textContent = metrica.Contactos || 0;
-msgEl.style.color = "green";
-msgEl.textContent = "✅ Estadísticas actualizadas";
-setTimeout(() => { msgEl.textContent = ""; }, 3000);
-} else {
-document.getElementById("vistasNum").textContent = 0;
-document.getElementById("contactosNum").textContent = 0;
-msgEl.style.color = "orange";
-msgEl.textContent = "ℹ️ Aún no hay métricas para esta propiedad";
-setTimeout(() => { msgEl.textContent = ""; }, 3000);
-}
+function mostrarModalEstadisticas(data) {
+  const { propiedad, metricas } = data;
+  document.getElementById('modal-titulo').textContent = `📊 Estadísticas - ${propiedad.direccion}`;
+  document.getElementById('modal-vistas').textContent = metricas.vistas;
+  document.getElementById('modal-contactos').textContent = metricas.contactos;
+  document.getElementById('modal-tipo').textContent = propiedad.tipo;
+  document.getElementById('modal-precio').textContent = `$${propiedad.precio}`;
+  // Mostrar modal
+  document.getElementById("modalEstadisticas").style.display = "block";
 }
 
 function cerrarModalEstadisticas() {
