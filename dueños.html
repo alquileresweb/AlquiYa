@@ -20,6 +20,7 @@ h2 { color:#333; font-size:2.2em; margin-bottom:18px; }
 h3 { color:#333; font-size:2em; margin-bottom:18px; }
 .alquiler { border:1px solid #ccc; padding:16px; margin:14px 0; background:#fff; font-size:1.4em; text-align:left; }
 button { margin: 6px; padding:14px 20px; font-size:1.3em; border-radius:6px; cursor:pointer; }
+button.stats-btn { background: #ff9800; color: white; }
 #btnAgregarPropiedad { background:#3681f3; color:white; }
 #opcionesPropiedad, #opcionesVenta, #opcionesAlquiler { background:#fff; padding:20px; border:1px solid #ccc; margin-top:24px; border-radius:12px; font-size:1.3em; text-align:left; display:none; }
 #opcionesPropiedad.active, #opcionesVenta.active, #opcionesAlquiler.active { display:block; }
@@ -154,6 +155,47 @@ margin: 5px 0;
 font-size: 1.2em;
 font-weight: bold;
 color: #333;
+}
+/* === NUEVOS ESTILOS PARA ESTADÍSTICAS === */
+#modalEstadisticas {
+display: none;
+position: fixed;
+z-index: 1001;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+overflow: auto;
+background-color: rgba(0,0,0,0.7);
+}
+#modalEstadisticas .modal-content {
+background-color: #fff;
+margin: 5% auto;
+padding: 30px;
+border: none;
+width: 95%;
+max-width: 500px;
+border-radius: 16px;
+text-align: center;
+box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+#modalEstadisticas h3 { color: #ff9800; font-size: 2.2em; margin-bottom: 20px; }
+.metricas-item { 
+background: linear-gradient(135deg, #ff9800, #f57c00); 
+color: white; 
+padding: 20px; 
+margin: 15px 0; 
+border-radius: 12px; 
+font-size: 1.6em; 
+text-align: center; 
+box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+.metricas-numero { font-size: 2.5em; font-weight: bold; display: block; margin-bottom: 5px; }
+#modalEstadisticas button { background: #ff9800; color: white; padding: 15px 25px; font-size: 1.4em; }
+@media screen and (max-width: 600px) {
+#modalEstadisticas .modal-content { margin: 10% auto; width: 98%; padding: 25px; }
+.metricas-item { font-size: 1.4em; padding: 18px; }
+.metricas-numero { font-size: 2.2em; }
 }
 </style>
 </head>
@@ -387,6 +429,25 @@ color: #333;
 <button onclick="editarCuenta()">Guardar Cambios</button>
 <button onclick="cerrarModalEditarCuenta()">Cerrar</button>
 <p id="msgEditarCuenta" style="color:green"></p>
+</div>
+</div>
+
+<!-- === NUEVO MODAL DE ESTADÍSTICAS === -->
+<div id="modalEstadisticas">
+<div class="modal-content">
+<h3>📊 Estadísticas</h3>
+<div id="metricasContainer">
+<div class="metricas-item">
+<span class="metricas-numero" id="vistasNum">0</span>
+👁 Vistas
+</div>
+<div class="metricas-item">
+<span class="metricas-numero" id="contactosNum">0</span>
+📞 Contactos
+</div>
+</div>
+<button onclick="cerrarModalEstadisticas()">Cerrar</button>
+<p id="msgEstadisticas" style="color:green; margin-top:15px;"></p>
 </div>
 </div>
 
@@ -828,7 +889,7 @@ setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
 }
 }
 
-// === CARGAR ALQUILERES ===
+// === CARGAR ALQUILERES (MODIFICADA PARA INCLUIR BOTÓN ESTADÍSTICAS) ===
 function cargarAlquileres() {
 const email = localStorage.getItem("dueno");
 const script = document.createElement("script");
@@ -847,6 +908,7 @@ let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
 let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Cambiar Estado</button>`;
 let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
 let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
+let btnEstadisticas = `<button class="stats-btn" onclick="mostrarEstadisticas(${alq.row})">📊 Estadísticas</button>`;
 let precioFormateado = (alq.Tipo === "Departamento" || alq.Tipo === "Terreno" || alq.Tipo === "Casa") ? formatoPrecio(alq.Precio) : "";
 let infoAmbientes = alq.Tipo === "Departamento" || alq.Tipo === "Casa" ? ` - ${alq['Nro Ambientes']} amb` : "";
 let infoSuperficie = alq.Tipo === "Terreno" ? ` - ${alq.Superficie} m²` : "";
@@ -857,10 +919,55 @@ let operacion = alq.Operacion ? ` - Operación: ${alq.Operacion}` : "";
 div.innerHTML += `<div class="alquiler">
 <b>${alq.Direccion}</b> (${alq.Tipo})${infoAmbientes}${infoSuperficie}${precioFormateado}${infoPatio}${infoGarage}${infoAntiguedad}${operacion}<br>
 Estado: ${estado}<br>
-${btnEstado} ${btnEditar} ${btnEliminar}
+${btnEstadisticas} ${btnEstado} ${btnEditar} ${btnEliminar}
 <span id="estadoMsg-${alq.row}" class="estado-msg"></span>
 </div>`;
 });
+}
+
+// === NUEVAS FUNCIONES PARA ESTADÍSTICAS ===
+function mostrarEstadisticas(row) {
+const msgEl = document.getElementById("msgEstadisticas");
+msgEl.textContent = "Cargando estadísticas...";
+msgEl.style.color = "blue";
+document.getElementById("modalEstadisticas").style.display = "block";
+cargarMetricas(row);
+}
+
+async function cargarMetricas(row) {
+const msgEl = document.getElementById("msgEstadisticas");
+try {
+const response = await fetch(`${API_URL}?action=getMetricas&row=${row}`);
+const res = await response.json();
+metricasCargadas(res, row);
+} catch (err) {
+msgEl.style.color = "red";
+msgEl.textContent = `❌ Error al cargar métricas: ${err.message}`;
+setTimeout(() => { msgEl.textContent = ""; }, 5000);
+}
+}
+
+function metricasCargadas(res, row) {
+const msgEl = document.getElementById("msgEstadisticas");
+if (res.success && res.data && res.data.length > 0) {
+const metrica = res.data[0];
+document.getElementById("vistasNum").textContent = metrica.Vistas || 0;
+document.getElementById("contactosNum").textContent = metrica.Contactos || 0;
+msgEl.style.color = "green";
+msgEl.textContent = "✅ Estadísticas actualizadas";
+setTimeout(() => { msgEl.textContent = ""; }, 3000);
+} else {
+document.getElementById("vistasNum").textContent = 0;
+document.getElementById("contactosNum").textContent = 0;
+msgEl.style.color = "orange";
+msgEl.textContent = "ℹ️ Aún no hay métricas para esta propiedad";
+setTimeout(() => { msgEl.textContent = ""; }, 3000);
+}
+}
+
+function cerrarModalEstadisticas() {
+document.getElementById("modalEstadisticas").style.display = "none";
+document.getElementById("msgEstadisticas").textContent = "";
 }
 
 // === AGREGAR / EDITAR ALQUILER ===
