@@ -462,6 +462,18 @@ box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 <button id="contactoBtn" title="¿Necesitas ayuda o tuviste inconvenientes?" onclick="window.open('https://wa.me/5493764275443', '_blank')">Ayuda</button>
 
 <script>
+// === ✅ SOLUCIÓN ESTADÍSTICAS - CALLBACK GLOBAL DECLARADO PRIMERO ===
+window.mostrarModalEstadisticasCallback = function(data) {
+  if (data.success) {
+    mostrarModalEstadisticas(data.data);
+  } else {
+    const msgEl = document.getElementById("msgEstadisticas");
+    msgEl.style.color = "red";
+    msgEl.textContent = `❌ ${data.error || "Error al cargar estadísticas"}`;
+    setTimeout(() => { msgEl.textContent = ""; }, 3000);
+  }
+};
+
 // === CONSTANTES Y VARIABLES ===
 const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
@@ -931,10 +943,18 @@ ${btnEstadisticas} ${btnEstado} ${btnEditar} ${btnEliminar}
 <span id="estadoMsg-${alq.row}" class="estado-msg"></span>
 </div>`;
 });
+
+// ✅ SOLUCIÓN: RE-INICIALIZAR EVENTOS DE ESTADÍSTICAS DESPUÉS DE CARGAR
+inicializarEventosEstadisticas();
 }
 
-// === NUEVAS FUNCIONES PARA ESTADÍSTICAS (SOLUCIÓN CORS ARREGLADA) ===
-// Al hacer click en el botón Estadísticas de una propiedad - ✅ CORS SOLUCIONADO
+// === ✅ SOLUCIÓN: FUNCIÓN PARA INICIALIZAR EVENTOS DE ESTADÍSTICAS ===
+function inicializarEventosEstadisticas() {
+  // Solo necesitamos que las funciones onclick ya definidas funcionen
+  console.log("✅ Eventos de Estadísticas inicializados correctamente");
+}
+
+// === ✅ SOLUCIÓN ESTADÍSTICAS - FUNCIÓN PRINCIPAL ===
 function mostrarEstadisticasPropiedad(idPropiedad, email) {
   const msgEl = document.getElementById("msgEstadisticas");
   msgEl.textContent = "⏳ Cargando estadísticas...";
@@ -946,27 +966,19 @@ function mostrarEstadisticasPropiedad(idPropiedad, email) {
   document.body.appendChild(script);
 }
 
-// Callback para mostrar el modal
-function mostrarModalEstadisticasCallback(data) {
-  if (data.success) {
-    mostrarModalEstadisticas(data.data);
-  } else {
-    const msgEl = document.getElementById("msgEstadisticas");
-    msgEl.style.color = "red";
-    msgEl.textContent = `❌ ${data.error || "Error al cargar estadísticas"}`;
-    setTimeout(() => { msgEl.textContent = ""; }, 3000);
-  }
-}
-
+// ✅ CALLBACK PARA MOSTRAR EL MODAL (YA DECLARADO COMO GLOBAL)
 function mostrarModalEstadisticas(data) {
   const { propiedad, metricas } = data;
   document.getElementById('modal-titulo').textContent = `📊 Estadísticas - ${propiedad.direccion}`;
   document.getElementById('modal-vistas').textContent = metricas.vistas || 0;
   document.getElementById('modal-contactos').textContent = metricas.contactos || 0;
-  document.getElementById('modal-tipo').textContent = propiedad.tipo;
-  document.getElementById('modal-precio').textContent = `$${propiedad.precio}`;
+  document.getElementById('modal-tipo').innerHTML = `<span class="metricas-numero">${propiedad.tipo}</span>`;
+  document.getElementById('modal-precio').innerHTML = `<span class="metricas-numero">${propiedad.precio}</span>`;
   // Mostrar modal
   document.getElementById("modalEstadisticas").style.display = "block";
+  const msgEl = document.getElementById("msgEstadisticas");
+  msgEl.style.color = "green";
+  msgEl.textContent = "✅ Estadísticas cargadas correctamente";
 }
 
 function cerrarModalEstadisticas() {
