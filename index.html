@@ -257,7 +257,7 @@ color: green;
 color: red;
 }
 /* =========================
-ESTILO DEBUG MÉTRICAS (NUEVO)
+ESTILO DEBUG MÉTRICAS (MANTENIDO PERO OCULTO POR DEFECTO)
 */
 #debug-metricas {
 position: fixed;
@@ -303,6 +303,7 @@ border-radius: 5px;
 cursor: pointer;
 z-index: 10002;
 font-weight: bold;
+display: none; /* BOTÓN OCULTO POR DEFECTO */
 }
 </style>
 </head>
@@ -313,13 +314,9 @@ font-weight: bold;
 </header>
 
 <!-- =========================
-BOTÓN DEBUG MÉTRICAS (NUEVO)
+PANEL DEBUG MÉTRICAS (MANTENIDO PERO SIN BOTÓN VISIBLE)
 -->
-<button id="toggle-debug" onclick="toggleDebugMetricas()">🔍 Debug Métricas</button>
-
-<!-- =========================
-PANEL DEBUG MÉTRICAS (NUEVO)
--->
+<button id="toggle-debug" onclick="toggleDebugMetricas()" style="display:none;">🔍 Debug Métricas</button>
 <div id="debug-metricas">
 <h3>📊 Métricas Enviadas</h3>
 <ul id="debug-list"></ul>
@@ -497,7 +494,7 @@ let currentImages = [];
 let currentImageIndex = 0;
 
 /* =========================
-SOLUCIÓN DEBUG MÉTRICAS (NUEVA)
+SOLUCIÓN DEBUG MÉTRICAS (MANTENIDA COMPLETA)
 */
 let metricasEnviadas = [];
 function logMetrica(idPropiedad, tipo, timestamp) {
@@ -512,7 +509,7 @@ function logMetrica(idPropiedad, tipo, timestamp) {
   // Mostrar en consola
   console.log(`📊 MÉTRICA ENVIADA: ID=${idPropiedad} | TIPO=${tipo} | ${new Date(timestamp).toLocaleString()}`);
   
-  // Mostrar en panel debug
+  // Mostrar en panel debug (solo si está visible)
   if (document.getElementById('debug-metricas').style.display !== 'none') {
     const li = document.createElement('li');
     li.innerHTML = `<strong>${tipo.toUpperCase()}</strong>: ID ${idPropiedad} <small>(${new Date(timestamp).toLocaleTimeString()})</small>`;
