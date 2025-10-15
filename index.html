@@ -256,6 +256,54 @@ color: green;
 #copy-msg.error {
 color: red;
 }
+/* =========================
+ESTILO DEBUG MÉTRICAS (NUEVO)
+*/
+#debug-metricas {
+position: fixed;
+top: 10px;
+right: 10px;
+background: #fff;
+border: 2px solid #3483fa;
+border-radius: 8px;
+padding: 10px;
+max-width: 300px;
+max-height: 400px;
+overflow-y: auto;
+z-index: 10001;
+font-family: monospace;
+font-size: 12px;
+display: none;
+box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+#debug-metricas h3 {
+margin: 0 0 10px 0;
+color: #3483fa;
+font-size: 14px;
+}
+#debug-metricas ul {
+margin: 0;
+padding-left: 20px;
+}
+#debug-metricas li {
+margin-bottom: 5px;
+padding: 2px 5px;
+background: #f0f8ff;
+border-left: 3px solid #3483fa;
+}
+#toggle-debug {
+position: fixed;
+top: 10px;
+left: 10px;
+background: #3483fa;
+color: white;
+border: none;
+padding: 8px 12px;
+border-radius: 5px;
+cursor: pointer;
+z-index: 10002;
+font-weight: bold;
+}
 </style>
 </head>
 <body>
@@ -263,6 +311,20 @@ color: red;
 <header>
 <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya" style="max-width:250px;margin-bottom:10px;">
 </header>
+
+<!-- =========================
+BOTÓN DEBUG MÉTRICAS (NUEVO)
+-->
+<button id="toggle-debug" onclick="toggleDebugMetricas()">🔍 Debug Métricas</button>
+
+<!-- =========================
+PANEL DEBUG MÉTRICAS (NUEVO)
+-->
+<div id="debug-metricas">
+<h3>📊 Métricas Enviadas</h3>
+<ul id="debug-list"></ul>
+<button onclick="clearDebugMetricas()" style="background:red;color:white;border:none;padding:5px 10px;border-radius:3px;margin-top:10px;">Limpiar</button>
+</div>
 
 <div id="modal-terminos">
 <div id="modal-terminos-content">
@@ -435,16 +497,61 @@ let currentImages = [];
 let currentImageIndex = 0;
 
 /* =========================
-FUNCIÓN NUEVA: CONTROL DE MÉTRICAS
+SOLUCIÓN DEBUG MÉTRICAS (NUEVA)
+*/
+let metricasEnviadas = [];
+function logMetrica(idPropiedad, tipo, timestamp) {
+  const metrica = {
+    id: idPropiedad,
+    tipo: tipo,
+    timestamp: timestamp,
+    hora: new Date(timestamp).toLocaleTimeString()
+  };
+  metricasEnviadas.push(metrica);
+  
+  // Mostrar en consola
+  console.log(`📊 MÉTRICA ENVIADA: ID=${idPropiedad} | TIPO=${tipo} | ${new Date(timestamp).toLocaleString()}`);
+  
+  // Mostrar en panel debug
+  if (document.getElementById('debug-metricas').style.display !== 'none') {
+    const li = document.createElement('li');
+    li.innerHTML = `<strong>${tipo.toUpperCase()}</strong>: ID ${idPropiedad} <small>(${new Date(timestamp).toLocaleTimeString()})</small>`;
+    document.getElementById('debug-list').appendChild(li);
+    document.getElementById('debug-metricas').scrollTop = document.getElementById('debug-metricas').scrollHeight;
+  }
+}
+
+function toggleDebugMetricas() {
+  const panel = document.getElementById('debug-metricas');
+  if (panel.style.display === 'none') {
+    panel.style.display = 'block';
+    document.getElementById('toggle-debug').textContent = '❌ Cerrar Debug';
+  } else {
+    panel.style.display = 'none';
+    document.getElementById('toggle-debug').textContent = '🔍 Debug Métricas';
+  }
+}
+
+function clearDebugMetricas() {
+  metricasEnviadas = [];
+  document.getElementById('debug-list').innerHTML = '';
+}
+
+/* =========================
+FUNCIÓN NUEVA: CONTROL DE MÉTRICAS (MODIFICADA CON DEBUG)
 */
 async function actualizarMetricas(idPropiedad, tipo) {
+  const timestamp = Date.now();
   const params = new URLSearchParams();
   params.append("action", "actualizarMetricas");
   params.append("idPropiedad", idPropiedad);
   params.append("tipo", tipo); // "vistas" o "contactos"
   
+  // LOG MÉTRICA ANTES DE ENVIAR
+  logMetrica(idPropiedad, tipo, timestamp);
+  
   try {
-    await makeRequest(webAppURL, {
+    const response = await makeRequest(webAppURL, {
       method: "POST",
       body: params,
       headers: {
@@ -452,8 +559,9 @@ async function actualizarMetricas(idPropiedad, tipo) {
       },
       mode: "no-cors"
     });
+    console.log(`✅ MÉTRICA CONFIRMADA: ${tipo} para ID ${idPropiedad}`);
   } catch (error) {
-    console.error(`Error actualizando ${tipo}:`, error);
+    console.error(`❌ Error actualizando ${tipo} ID ${idPropiedad}:`, error);
     // No interrumpir el flujo principal, solo loguear el error
   }
 }
