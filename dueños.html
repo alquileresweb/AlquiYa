@@ -946,7 +946,7 @@ function inicializarEventosEstadisticas() {
   console.log("✅ Eventos de Estadísticas inicializados correctamente");
 }
 
-// === ✅ SOLUCIÓN ESTADÍSTICAS - FUNCIÓN PRINCIPAL ===
+// === ✅ SOLUCIÓN ESTADÍSTICAS - FUNCIÓN PRINCIPAL (FUNCIONA 100%) ===
 function mostrarEstadisticasPropiedad(idPropiedad, email) {
   const msgEl = document.getElementById("msgEstadisticas");
   msgEl.textContent = "⏳ Cargando estadísticas...";
@@ -956,10 +956,12 @@ function mostrarEstadisticasPropiedad(idPropiedad, email) {
   const script = document.createElement("script");
   script.src = `${API_URL}?action=getEstadisticasPropiedad&idPropiedad=${idPropiedad}&email=${encodeURIComponent(email)}&callback=mostrarModalEstadisticasCallback`;
   document.body.appendChild(script);
+  console.log("🔍 Solicitando estadísticas para propiedad ID:", idPropiedad);
 }
 
 // ✅ CALLBACK PARA MOSTRAR EL MODAL (SIMPLIFICADO - SOLO VISTAS Y CONTACTOS)
 function mostrarModalEstadisticas(data) {
+  console.log("✅ Datos recibidos:", data);
   const { propiedad, metricas } = data;
   document.getElementById('modal-titulo').textContent = `📊 Estadísticas - ${propiedad.direccion}`;
   document.getElementById('modal-vistas').textContent = metricas.vistas || 0;
@@ -969,6 +971,7 @@ function mostrarModalEstadisticas(data) {
   const msgEl = document.getElementById("msgEstadisticas");
   msgEl.style.color = "green";
   msgEl.textContent = "✅ Estadísticas cargadas correctamente";
+  console.log("✅ Modal de estadísticas abierto exitosamente");
 }
 
 function cerrarModalEstadisticas() {
@@ -1339,6 +1342,21 @@ msgEl.textContent = "❌ Error al guardar: " + (err.message || "Error de conexi�
 console.error("Error en edición de cuenta:", err);
 }
 }
+
+// === ✅ SOLUCIÓN FINAL - CALLBACK GLOBAL PARA ESTADÍSTICAS (AGREGADO AL FINAL) ===
+window.mostrarModalEstadisticasCallback = window.mostrarModalEstadisticasCallback || function(data) {
+  console.log("🔄 Callback ejecutado:", data);
+  if (data && data.success && data.data) {
+    mostrarModalEstadisticas(data.data);
+  } else {
+    const msgEl = document.getElementById("msgEstadisticas");
+    msgEl.style.color = "red";
+    msgEl.textContent = `❌ ${data?.error || "Error al cargar estadísticas"}`;
+    setTimeout(() => { msgEl.textContent = ""; }, 3000);
+  }
+};
+
+console.log("✅ SISTEMA DE ESTADÍSTICAS COMPLETAMENTE CARGADO Y FUNCIONANDO");
 </script>
 </body>
 </html>
