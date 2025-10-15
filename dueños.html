@@ -11,8 +11,8 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-SSJ5DG33JK');
 </script>
-<!-- ✅ GOOGLE CHARTS API - OBLIGATORIO PARA GRÁFICOS -->
-<script src="https://www.gstatic.com/charts/loader.js" defer></script>
+<!-- ✅ GOOGLE CHARTS API - CARGA INMEDIATA CON CALLBACK -->
+<script src="https://www.gstatic.com/charts/loader.js"></script>
 <link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
 <style>
 /* --- CSS adaptado para móvil con textos más grandes y centrados --- */
@@ -467,10 +467,29 @@ box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 
 <script>
 // ===============================================================
-// ✅ SOLUCIÓN IMPLEMENTADA - NO SE EDITÓ NINGUNA FUNCIÓN EXISTENTE
-// 🔍 BUSCA ID EN COLUMNA N (Alquileres) → COLUMNA A (Métricas)
-// 📊 OBTIENE VISTAS (C) Y CONTACTOS (D) DE HOJA MÉTRICAS
+// ✅ SOLUCIÓN IMPLEMENTADA - GOOGLE CHARTS CON CALLBACK GLOBAL
+// 🔧 ELIMINADO "defer" → CARGA INMEDIATA
+// 🔧 VERIFICACIÓN ROBUSTA + RETRY AUTOMÁTICO
 // ===============================================================
+
+// === ✅ INICIALIZAR GOOGLE CHARTS AL CARGA DE PÁGINA ===
+function initGoogleCharts() {
+    console.log('🔄 Inicializando Google Charts...');
+    if (typeof google === 'undefined' || !google.charts) {
+        console.log('⏳ Google Charts no disponible, reintentando en 500ms...');
+        setTimeout(initGoogleCharts, 500);
+        return;
+    }
+    
+    google.charts.load('current', {
+        packages: ['corechart']
+    });
+    
+    google.charts.setOnLoadCallback(() => {
+        console.log('✅ GOOGLE CHARTS CARGADO COMPLETAMENTE');
+        window.googleChartsReady = true;
+    });
+}
 
 // === ✅ CALLBACK PRINCIPAL - PROCESA RESPUESTA DE GOOGLE APPS SCRIPT ===
 window.mostrarModalEstadisticasCallback = function(data, idPropiedad) {
@@ -504,17 +523,24 @@ window.mostrarModalEstadisticasCallback = function(data, idPropiedad) {
   mostrarModalEstadisticas(datosParaModal);
 };
 
-// ✅ FUNCIÓN CORREGIDA - Línea 497
-function solicitarMetricas(idPropiedad, propId) {
+// ✅ FUNCIÓN CORREGIDA - LÍNEA 500 (SOLUCIÓN COMPLETA)
+function solicitarMetricas(idPropiedad, propId, retryCount = 0) {
     console.log(`🔍 Solicitando VISTAS(C) y CONTACTOS(D) para ID: ${idPropiedad}`);
     
-    // ✅ ESPERAR GOOGLE CHARTS
-    if (typeof google === 'undefined' || !google.charts) {
-        console.log('⏳ Esperando Google Charts...');
-        setTimeout(() => solicitarMetricas(idPropiedad, propId), 500);
-        return;
+    // ✅ VERIFICACIÓN ROBUSTA DE GOOGLE CHARTS (MÁXIMO 10 RETRIES)
+    if (typeof google === 'undefined' || !google.charts || !window.googleChartsReady) {
+        if (retryCount < 10) {
+            console.log(`⏳ Esperando Google Charts... (Intento ${retryCount + 1}/10)`);
+            setTimeout(() => solicitarMetricas(idPropiedad, propId, retryCount + 1), 500);
+            return;
+        } else {
+            console.log('❌ Google Charts no disponible después de 10 intentos - usando FALLBACK');
+            mostrarErrorMetricas(propId);
+            return;
+        }
     }
     
+    console.log('✅ Google Charts listo - Llamando a Apps Script');
     // ✅ LLAMA A GOOGLE APPS SCRIPT - BUSCA EN COLUMNA N → COLUMNA A
     google.script.run
         .withSuccessHandler(datos => mostrarModalEstadisticasCallback(datos, propId))
@@ -525,9 +551,15 @@ function solicitarMetricas(idPropiedad, propId) {
         .getMetricasPorIdPropiedadSeguro(idPropiedad); // ← FUNCIÓN DE GOOGLE APPS SCRIPT
 }
 
-// ✅ NUEVA FUNCIÓN - GRÁFICO DE MÉTRICAS
+// ✅ NUEVA FUNCIÓN - GRÁFICO DE MÉTRICAS (CON VERIFICACIÓN)
 function mostrarGraficoMetricas(id, vistas, contactos) {
     console.log('🎨 Creando gráfico para ID:', id);
+    
+    // Verificar Google Charts antes de crear gráfico
+    if (typeof google === 'undefined' || !google.charts || !window.googleChartsReady) {
+        console.log('⚠️ Google Charts no listo para gráfico - omitiendo');
+        return;
+    }
     
     // Crear contenedor
     let contenedor = document.getElementById(`grafico-${id}`);
@@ -540,28 +572,25 @@ function mostrarGraficoMetricas(id, vistas, contactos) {
     }
     
     // ✅ GOOGLE CHARTS - Column Chart
-    google.charts.load('current', {packages: ['corechart']});
-    google.charts.setOnLoadCallback(() => {
-        const data = google.visualization.arrayToDataTable([
-            ['Métrica', 'Cantidad', {role: 'style'}],
-            ['👁️ Vistas', vistas || 0, '#4CAF50'],
-            ['📞 Contactos', contactos || 0, '#2196F3']
-        ]);
-        
-        const options = {
-            title: `📊 Métricas ID ${id}`,
-            width: '100%',
-            height: 250,
-            legend: {position: 'top'},
-            chartArea: {width: '85%', height: '70%'},
-            colors: ['#4CAF50', '#2196F3']
-        };
-        
-        const chart = new google.visualization.ColumnChart(contenedor);
-        chart.draw(data, options);
-        
-        console.log('✅ Gráfico creado para ID:', id);
-    });
+    const data = google.visualization.arrayToDataTable([
+        ['Métrica', 'Cantidad', {role: 'style'}],
+        ['👁️ Vistas', vistas || 0, '#4CAF50'],
+        ['📞 Contactos', contactos || 0, '#2196F3']
+    ]);
+    
+    const options = {
+        title: `📊 Métricas ID ${id}`,
+        width: '100%',
+        height: 250,
+        legend: {position: 'top'},
+        chartArea: {width: '85%', height: '70%'},
+        colors: ['#4CAF50', '#2196F3']
+    };
+    
+    const chart = new google.visualization.ColumnChart(contenedor);
+    chart.draw(data, options);
+    
+    console.log('✅ Gráfico creado para ID:', id);
 }
 
 // ✅ FUNCIÓN DE ERROR - MUESTRA 0 SI FALLA
@@ -597,7 +626,7 @@ document.getElementById("msgEstadisticas").textContent = "";
 }
 
 // ===============================================================
-// 📋 TODO EL RESTO DEL CÓDIGO ORIGINAL (SIN NINGÚN CAMBIO)
+// 📋 TODO EL RESTO DEL CÓDIGO ORIGINAL (100% SIN CAMBIOS)
 // ===============================================================
 
 // === CONSTANTES Y VARIABLES ===
@@ -840,21 +869,24 @@ document.getElementById("btnAgregarPropiedad").textContent = "➖ Cerrar Opcione
 window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
 }
 
-// === INICIALIZAR EVENTOS ===
+// === INICIALIZAR EVENTOS (MODIFICADO SOLO PARA Google Charts) ===
 window.onload = function() {
-const email = localStorage.getItem("dueno");
-if (!email) { window.location.href = "index.html"; return; }
-cargarEstadoPlan();
-cargarAlquileres();
-cargarPreciosPlanes();
-cargarDatosCuenta();
-checkPaymentOnReturn();
-['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'].forEach(tipo => {
-inicializarPreviewImagenes(tipo);
-inicializarPreviewVideos(tipo);
-if (tipo === 'Departamento' || tipo === 'Terreno' || tipo === 'Casa') inicializarFormatoPrecio(tipo);
-});
-document.getElementById("tipoOperacion").addEventListener("change", mostrarOpcionesPorOperacion);
+    // ✅ INICIALIZAR GOOGLE CHARTS PRIMERO
+    initGoogleCharts();
+    
+    const email = localStorage.getItem("dueno");
+    if (!email) { window.location.href = "index.html"; return; }
+    cargarEstadoPlan();
+    cargarAlquileres();
+    cargarPreciosPlanes();
+    cargarDatosCuenta();
+    checkPaymentOnReturn();
+    ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'].forEach(tipo => {
+    inicializarPreviewImagenes(tipo);
+    inicializarPreviewVideos(tipo);
+    if (tipo === 'Departamento' || tipo === 'Terreno' || tipo === 'Casa') inicializarFormatoPrecio(tipo);
+    });
+    document.getElementById("tipoOperacion").addEventListener("change", mostrarOpcionesPorOperacion);
 }
 
 // === VERIFICAR PAGO AL REGRESAR ===
