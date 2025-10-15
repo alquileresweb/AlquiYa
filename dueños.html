@@ -486,6 +486,31 @@ window.mostrarModalEstadisticasCallback = function(data, idPropiedad) {
   mostrarModalEstadisticas(datosParaModal);
 };
 
+// ✅ NUEVA FUNCIÓN - SOLICITAR MÉTRICAS CON VALIDACIÓN (LÍNEA 966)
+function solicitarMetricas(idPropiedad, propId) {
+    console.log(`🔍 Solicitando VISTAS(C) y CONTACTOS(D) para ID: ${idPropiedad}`);
+    
+    google.script.run
+        .withSuccessHandler(datos => mostrarModalEstadisticasCallback(datos, propId))
+        .withFailureHandler(error => {
+            console.error('❌ Error métricas:', error);
+            mostrarErrorMetricas(propId);
+        })
+        .getMetricasPorIdPropiedadSeguro(idPropiedad); // ← NUEVA FUNCIÓN
+}
+
+// ✅ FUNCIÓN ERROR MÉTRICAS
+function mostrarErrorMetricas(propId) {
+    const datosParaModal = {
+        propiedad: { direccion: `Propiedad ID: ${propId}` },
+        metricas: { vistas: 0, contactos: 0 }
+    };
+    mostrarModalEstadisticas(datosParaModal);
+    const msgEl = document.getElementById("msgEstadisticas");
+    msgEl.style.color = "orange";
+    msgEl.textContent = "⚠️ Sin datos aún - ¡Comparte tu propiedad!";
+}
+
 // === CONSTANTES Y VARIABLES ===
 const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
@@ -940,7 +965,7 @@ let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
 let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Cambiar Estado</button>`;
 let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
 let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
-let btnEstadisticas = `<button class="stats-btn" onclick="mostrarEstadisticasPropiedad(${alq.row}, '${localStorage.getItem('dueno')}')">📊 Estadísticas</button>`;
+let btnEstadisticas = `<button class="stats-btn" onclick="solicitarMetricas(${alq.row}, ${alq.row})">📊 Estadísticas</button>`;
 let precioFormateado = (alq.Tipo === "Departamento" || alq.Tipo === "Terreno" || alq.Tipo === "Casa") ? formatoPrecio(alq.Precio) : "";
 let infoAmbientes = alq.Tipo === "Departamento" || alq.Tipo === "Casa" ? ` - ${alq['Nro Ambientes']} amb` : "";
 let infoSuperficie = alq.Tipo === "Terreno" ? ` - ${alq.Superficie} m²` : "";
@@ -955,20 +980,6 @@ ${btnEstadisticas} ${btnEstado} ${btnEditar} ${btnEliminar}
 <span id="estadoMsg-${alq.row}" class="estado-msg"></span>
 </div>`;
 });
-}
-
-// === ✅ FUNCIÓN PRINCIPAL ESTADÍSTICAS - NUEVA ACTION PARA HOJA MÉTRICAS ===
-function mostrarEstadisticasPropiedad(idPropiedad, email) {
-  const msgEl = document.getElementById("msgEstadisticas");
-  msgEl.textContent = "⏳ Cargando estadísticas...";
-  msgEl.style.color = "blue";
-  
-  console.log("🔍 Solicitando VISTAS(C) y CONTACTOS(D) para ID:", idPropiedad);
-  
-  // ✅ NUEVA ACTION: getMetricasPorIdPropiedad
-  const script = document.createElement("script");
-  script.src = `${API_URL}?action=getMetricasPorIdPropiedad&idPropiedad=${idPropiedad}&callback=mostrarModalEstadisticasCallback&propId=${idPropiedad}`;
-  document.body.appendChild(script);
 }
 
 // ✅ CALLBACK PARA MOSTRAR EL MODAL (SIMPLIFICADO - SOLO VISTAS Y CONTACTOS)
