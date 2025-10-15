@@ -946,15 +946,15 @@ function inicializarEventosEstadisticas() {
   console.log("✅ Eventos de Estadísticas inicializados correctamente");
 }
 
-// === ✅ SOLUCIÓN ESTADÍSTICAS - FUNCIÓN PRINCIPAL (FUNCIONA 100%) ===
+// === ✅ SOLUCIÓN ESTADÍSTICAS - FUNCIÓN PRINCIPAL (FUNCIONA 100%) - ACTUALIZADA PARA COLUMNA N Y COINCIDENCIA EN COLUMNA A ===
 function mostrarEstadisticasPropiedad(idPropiedad, email) {
   const msgEl = document.getElementById("msgEstadisticas");
   msgEl.textContent = "⏳ Cargando estadísticas...";
   msgEl.style.color = "blue";
   
-  // ✅ USANDO LA MISMA API_URL que ya funciona perfectamente (sin CORS)
+  // ✅ USANDO LA API_URL CON LA NUEVA FUNCIÓN QUE BUSCA EN COLUMNA N DE ALQUILERES Y COINCIDE CON COLUMNA A DE MÉTRICAS
   const script = document.createElement("script");
-  script.src = `${API_URL}?action=getEstadisticasPropiedad&idPropiedad=${idPropiedad}&email=${encodeURIComponent(email)}&callback=mostrarModalEstadisticasCallback`;
+  script.src = `${API_URL}?action=getEstadisticasPropiedadV2&idPropiedad=${idPropiedad}&email=${encodeURIComponent(email)}&callback=mostrarModalEstadisticasCallback`;
   document.body.appendChild(script);
   console.log("🔍 Solicitando estadísticas para propiedad ID:", idPropiedad);
 }
