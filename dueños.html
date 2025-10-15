@@ -432,7 +432,7 @@ box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 </div>
 </div>
 
-<!-- === NUEVO MODAL DE ESTADÍSTICAS (YA FUNCIONAL) === -->
+<!-- === MODAL DE ESTADÍSTICAS (YA EXISTENTE) === -->
 <div id="modalEstadisticas">
 <div class="modal-content">
 <h3 id="modal-titulo">📊 Estadísticas</h3>
@@ -462,7 +462,7 @@ box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 <button id="contactoBtn" title="¿Necesitas ayuda o tuviste inconvenientes?" onclick="window.open('https://wa.me/5493764275443', '_blank')">Ayuda</button>
 
 <script>
-// === ✅ SOLUCIÓN ESTADÍSTICAS - CALLBACK GLOBAL DECLARADO PRIMERO ===
+// === ✅ CALLBACK GLOBAL PARA ESTADÍSTICAS (YA EXISTENTE) ===
 window.mostrarModalEstadisticasCallback = function(data) {
   if (data.success) {
     mostrarModalEstadisticas(data.data);
@@ -909,7 +909,7 @@ setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
 }
 }
 
-// === CARGAR ALQUILERES (ACTUALIZADA PARA USAR LA NUEVA FUNCIÓN) ===
+// === CARGAR ALQUILERES (ACTUALIZADA CON BOTÓN ESTADÍSTICAS ✅) ===
 function cargarAlquileres() {
 const email = localStorage.getItem("dueno");
 const script = document.createElement("script");
@@ -943,30 +943,19 @@ ${btnEstadisticas} ${btnEstado} ${btnEditar} ${btnEliminar}
 <span id="estadoMsg-${alq.row}" class="estado-msg"></span>
 </div>`;
 });
-
-// ✅ SOLUCIÓN: RE-INICIALIZAR EVENTOS DE ESTADÍSTICAS DESPUÉS DE CARGAR
-inicializarEventosEstadisticas();
 }
 
-// === ✅ SOLUCIÓN: FUNCIÓN PARA INICIALIZAR EVENTOS DE ESTADÍSTICAS ===
-function inicializarEventosEstadisticas() {
-  // Solo necesitamos que las funciones onclick ya definidas funcionen
-  console.log("✅ Eventos de Estadísticas inicializados correctamente");
-}
-
-// === ✅ SOLUCIÓN ESTADÍSTICAS - FUNCIÓN PRINCIPAL ===
+// === FUNCIÓN ESTADÍSTICAS (YA FUNCIONAL) ===
 function mostrarEstadisticasPropiedad(idPropiedad, email) {
   const msgEl = document.getElementById("msgEstadisticas");
   msgEl.textContent = "⏳ Cargando estadísticas...";
   msgEl.style.color = "blue";
   
-  // ✅ USANDO LA MISMA API_URL que ya funciona perfectamente (sin CORS)
   const script = document.createElement("script");
   script.src = `${API_URL}?action=getEstadisticasPropiedad&idPropiedad=${idPropiedad}&email=${encodeURIComponent(email)}&callback=mostrarModalEstadisticasCallback`;
   document.body.appendChild(script);
 }
 
-// ✅ CALLBACK PARA MOSTRAR EL MODAL (YA DECLARADO COMO GLOBAL)
 function mostrarModalEstadisticas(data) {
   const { propiedad, metricas } = data;
   document.getElementById('modal-titulo').textContent = `📊 Estadísticas - ${propiedad.direccion}`;
@@ -974,7 +963,6 @@ function mostrarModalEstadisticas(data) {
   document.getElementById('modal-contactos').textContent = metricas.contactos || 0;
   document.getElementById('modal-tipo').innerHTML = `<span class="metricas-numero">${propiedad.tipo}</span>`;
   document.getElementById('modal-precio').innerHTML = `<span class="metricas-numero">${propiedad.precio}</span>`;
-  // Mostrar modal
   document.getElementById("modalEstadisticas").style.display = "block";
   const msgEl = document.getElementById("msgEstadisticas");
   msgEl.style.color = "green";
