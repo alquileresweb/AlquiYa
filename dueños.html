@@ -933,24 +933,36 @@ ${btnEstadisticas} ${btnEstado} ${btnEditar} ${btnEliminar}
 });
 }
 
-// === NUEVAS FUNCIONES PARA ESTADÍSTICAS (SOLUCIÓN IMPLEMENTADA) ===
-// Al hacer click en el botón Estadísticas de una propiedad
+// === NUEVAS FUNCIONES PARA ESTADÍSTICAS (SOLUCIÓN CORS ARREGLADA) ===
+// Al hacer click en el botón Estadísticas de una propiedad - ✅ CORS SOLUCIONADO
 function mostrarEstadisticasPropiedad(idPropiedad, email) {
-  fetch(`https://script.google.com/macros/s/TU_SCRIPT_ID/exec?action=getEstadisticasPropiedad&idPropiedad=${idPropiedad}&email=${email}`)
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        // Mostrar modal/popup con las estadísticas
-        mostrarModalEstadisticas(data.data);
-      }
-    });
+  const msgEl = document.getElementById("msgEstadisticas");
+  msgEl.textContent = "⏳ Cargando estadísticas...";
+  msgEl.style.color = "blue";
+  
+  // ✅ USANDO LA MISMA API_URL que ya funciona perfectamente (sin CORS)
+  const script = document.createElement("script");
+  script.src = `${API_URL}?action=getEstadisticasPropiedad&idPropiedad=${idPropiedad}&email=${encodeURIComponent(email)}&callback=mostrarModalEstadisticasCallback`;
+  document.body.appendChild(script);
+}
+
+// Callback para mostrar el modal
+function mostrarModalEstadisticasCallback(data) {
+  if (data.success) {
+    mostrarModalEstadisticas(data.data);
+  } else {
+    const msgEl = document.getElementById("msgEstadisticas");
+    msgEl.style.color = "red";
+    msgEl.textContent = `❌ ${data.error || "Error al cargar estadísticas"}`;
+    setTimeout(() => { msgEl.textContent = ""; }, 3000);
+  }
 }
 
 function mostrarModalEstadisticas(data) {
   const { propiedad, metricas } = data;
   document.getElementById('modal-titulo').textContent = `📊 Estadísticas - ${propiedad.direccion}`;
-  document.getElementById('modal-vistas').textContent = metricas.vistas;
-  document.getElementById('modal-contactos').textContent = metricas.contactos;
+  document.getElementById('modal-vistas').textContent = metricas.vistas || 0;
+  document.getElementById('modal-contactos').textContent = metricas.contactos || 0;
   document.getElementById('modal-tipo').textContent = propiedad.tipo;
   document.getElementById('modal-precio').textContent = `$${propiedad.precio}`;
   // Mostrar modal
