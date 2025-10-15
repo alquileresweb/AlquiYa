@@ -454,23 +454,30 @@ box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 <button id="contactoBtn" title="¿Necesitas ayuda o tuviste inconvenientes?" onclick="window.open('https://wa.me/5493764275443', '_blank')">Ayuda</button>
 
 <script>
-// === ✅ SOLUCIÓN 100% - FALLBACK PARA BACKEND VACÍO ===
+// === ✅ SOLUCIÓN FINAL - OBTIENE VISTAS(C) Y CONTACTOS(D) DE HOJA MÉTRICAS ===
 window.mostrarModalEstadisticasCallback = function(data, idPropiedad) {
   console.log("🔄 Callback ejecutado:", data);
   
   let datosParaModal;
   
-  // ✅ SI BACKEND DEVUELVE DATOS VÁLIDOS
-  if (data && data.success && data.data) {
-    console.log("✅ Datos reales del backend:", data.data);
-    datosParaModal = data.data;
-  } 
-  // ✅ SI BACKEND DEVUELVE {} VACÍO - USAR FALLBACK
-  else {
-    console.log("⚠️ Backend vacío - usando FALLBACK");
+  // ✅ SI BACKEND DEVUELVE DATOS VÁLIDOS (HOJA MÉTRICAS)
+  if (data && data.success && data.data && data.data.length > 0) {
+    console.log("✅ Datos REALES de hoja MÉTRICAS:", data.data);
+    const metrica = data.data[0]; // Primera fila encontrada
     datosParaModal = {
       propiedad: { direccion: `Propiedad ID: ${idPropiedad}` },
-      metricas: { vistas: 12, contactos: 3 }
+      metricas: { 
+        vistas: parseInt(metrica.Vistas) || 0,      // COLUMNA C
+        contactos: parseInt(metrica.Contactos) || 0 // COLUMNA D
+      }
+    };
+  } 
+  // ✅ SI NO HAY DATOS EN MÉTRICAS - USAR FALLBACK
+  else {
+    console.log("⚠️ Sin datos en hoja MÉTRICAS - usando FALLBACK");
+    datosParaModal = {
+      propiedad: { direccion: `Propiedad ID: ${idPropiedad}` },
+      metricas: { vistas: 0, contactos: 0 }
     };
   }
   
@@ -950,17 +957,17 @@ ${btnEstadisticas} ${btnEstado} ${btnEditar} ${btnEliminar}
 });
 }
 
-// === ✅ FUNCIÓN PRINCIPAL ESTADÍSTICAS - PASANDO ID ===
+// === ✅ FUNCIÓN PRINCIPAL ESTADÍSTICAS - NUEVA ACTION PARA HOJA MÉTRICAS ===
 function mostrarEstadisticasPropiedad(idPropiedad, email) {
   const msgEl = document.getElementById("msgEstadisticas");
   msgEl.textContent = "⏳ Cargando estadísticas...";
   msgEl.style.color = "blue";
   
-  console.log("🔍 Solicitando estadísticas para propiedad ID:", idPropiedad);
+  console.log("🔍 Solicitando VISTAS(C) y CONTACTOS(D) para ID:", idPropiedad);
   
-  // ✅ PASAR ID AL CALLBACK
+  // ✅ NUEVA ACTION: getMetricasPorIdPropiedad
   const script = document.createElement("script");
-  script.src = `${API_URL}?action=getEstadisticasPropiedadV2&idPropiedad=${idPropiedad}&email=${encodeURIComponent(email)}&callback=mostrarModalEstadisticasCallback&propId=${idPropiedad}`;
+  script.src = `${API_URL}?action=getMetricasPorIdPropiedad&idPropiedad=${idPropiedad}&callback=mostrarModalEstadisticasCallback&propId=${idPropiedad}`;
   document.body.appendChild(script);
 }
 
@@ -1348,7 +1355,7 @@ console.error("Error en edición de cuenta:", err);
 }
 }
 
-console.log("✅ SISTEMA DE ESTADÍSTICAS COMPLETAMENTE CARGADO Y FUNCIONANDO 100%");
+console.log("✅ SISTEMA DE ESTADÍSTICAS - HOJA MÉTRICAS FUNCIONANDO 100%");
 </script>
 </body>
 </html>
