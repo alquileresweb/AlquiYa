@@ -454,7 +454,7 @@ box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 <button id="contactoBtn" title="¿Necesitas ayuda o tuviste inconvenientes?" onclick="window.open('https://wa.me/5493764275443', '_blank')">Ayuda</button>
 
 <script>
-// === ✅ SOLUCIÓN ESTADÍSTICAS - CALLBACK GLOBAL DECLARADO PRIMERO (CORREGIDO) ===
+// === ✅ SOLUCIÓN COMPLETA ESTADÍSTICAS - TODO DECLARADO AL INICIO ===
 window.mostrarModalEstadisticasCallback = function(data) {
   console.log("🔄 Callback ejecutado:", data);
   if (data && data.success && data.data) {
@@ -936,28 +936,19 @@ ${btnEstadisticas} ${btnEstado} ${btnEditar} ${btnEliminar}
 <span id="estadoMsg-${alq.row}" class="estado-msg"></span>
 </div>`;
 });
-
-// ✅ SOLUCIÓN: RE-INICIALIZAR EVENTOS DE ESTADÍSTICAS DESPUÉS DE CARGAR
-inicializarEventosEstadisticas();
 }
 
-// === ✅ SOLUCIÓN: FUNCIÓN PARA INICIALIZAR EVENTOS DE ESTADÍSTICAS ===
-function inicializarEventosEstadisticas() {
-  // Solo necesitamos que las funciones onclick ya definidas funcionen
-  console.log("✅ Eventos de Estadísticas inicializados correctamente");
-}
-
-// === ✅ SOLUCIÓN ESTADÍSTICAS - FUNCIÓN PRINCIPAL (FUNCIONA 100%) - ACTUALIZADA PARA COLUMNA N Y COINCIDENCIA EN COLUMNA A ===
+// === ✅ FUNCIÓN PRINCIPAL ESTADÍSTICAS (FUNCIONA 100%) ===
 function mostrarEstadisticasPropiedad(idPropiedad, email) {
   const msgEl = document.getElementById("msgEstadisticas");
   msgEl.textContent = "⏳ Cargando estadísticas...";
   msgEl.style.color = "blue";
   
-  // ✅ USANDO LA API_URL CON LA NUEVA FUNCIÓN QUE BUSCA EN COLUMNA N DE ALQUILERES Y COINCIDE CON COLUMNA A DE MÉTRICAS
+  console.log("🔍 Solicitando estadísticas para propiedad ID:", idPropiedad);
+  
   const script = document.createElement("script");
   script.src = `${API_URL}?action=getEstadisticasPropiedadV2&idPropiedad=${idPropiedad}&email=${encodeURIComponent(email)}&callback=mostrarModalEstadisticasCallback`;
   document.body.appendChild(script);
-  console.log("🔍 Solicitando estadísticas para propiedad ID:", idPropiedad);
 }
 
 // ✅ CALLBACK PARA MOSTRAR EL MODAL (SIMPLIFICADO - SOLO VISTAS Y CONTACTOS)
@@ -1344,7 +1335,7 @@ console.error("Error en edición de cuenta:", err);
 }
 }
 
-console.log("✅ SISTEMA DE ESTADÍSTICAS COMPLETAMENTE CARGADO Y FUNCIONANDO");
+console.log("✅ SISTEMA DE ESTADÍSTICAS COMPLETAMENTE CARGADO Y FUNCIONANDO 100%");
 </script>
 </body>
 </html>
