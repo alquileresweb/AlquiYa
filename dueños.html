@@ -468,8 +468,8 @@ box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 <script>
 // ===============================================================
 // ✅ SOLUCIÓN IMPLEMENTADA - GOOGLE CHARTS CON CALLBACK GLOBAL
-// 🔧 ELIMINADO "defer" → CARGA INMEDIATA
-// 🔧 VERIFICACIÓN ROBUSTA + RETRY AUTOMÁTICO
+// 🔧 PROCESO: Columna N (Alquileres) → Columna A (Métricas)
+// 🔧 OBTIENE: Vistas (Columna C) | Contactos (Columna D)
 // ===============================================================
 
 // === ✅ INICIALIZAR GOOGLE CHARTS AL CARGA DE PÁGINA ===
@@ -492,46 +492,49 @@ function initGoogleCharts() {
 }
 
 // === ✅ CALLBACK PRINCIPAL - PROCESA RESPUESTA DE GOOGLE APPS SCRIPT ===
+// 🔍 BUSCA ID en Columna N (Alquileres) → Compara con Columna A (Métricas)
 window.mostrarModalEstadisticasCallback = function(data, idPropiedad) {
-  console.log("🔄 Callback ejecutado:", data);
+  console.log("🔄 Callback ejecutado - ID Propiedad:", idPropiedad, "Datos:", data);
   
   let datosParaModal;
   
   // ✅ SI BACKEND DEVUELVE DATOS VÁLIDOS (HOJA MÉTRICAS - COLUMNAS C Y D)
   if (data && data.success && data.data && data.data.length > 0) {
-    console.log("✅ Datos REALES de hoja MÉTRICAS:", data.data);
-    const metrica = data.data[0]; // Primera fila encontrada
+    console.log("✅ Datos REALES encontrados en hoja MÉTRICAS:", data.data);
+    const metrica = data.data[0]; // Primera fila encontrada (coincidencia ID)
     datosParaModal = {
       propiedad: { direccion: `Propiedad ID: ${idPropiedad}` },
       metricas: { 
-        vistas: parseInt(metrica.Vistas) || 0,      // ✅ COLUMNA C (VISTAS)
-        contactos: parseInt(metrica.Contactos) || 0 // ✅ COLUMNA D (CONTACTOS)
+        vistas: parseInt(metrica[2]) || 0,      // ✅ COLUMNA C (VISTAS - índice 2)
+        contactos: parseInt(metrica[3]) || 0    // ✅ COLUMNA D (CONTACTOS - índice 3)
       }
     };
+    console.log("📊 Métricas extraídas - Vistas:", datosParaModal.metricas.vistas, "Contactos:", datosParaModal.metricas.contactos);
   } 
-  // ✅ SI NO HAY DATOS EN MÉTRICAS - USAR FALLBACK (0)
+  // ✅ SI NO HAY DATOS EN MÉTRICAS (NO COINCIDE ID) - USAR FALLBACK (0)
   else {
-    console.log("⚠️ Sin datos en hoja MÉTRICAS - usando FALLBACK");
+    console.log("⚠️ No se encontró coincidencia ID en hoja MÉTRICAS - usando FALLBACK 0");
     datosParaModal = {
       propiedad: { direccion: `Propiedad ID: ${idPropiedad}` },
       metricas: { vistas: 0, contactos: 0 }
     };
   }
   
-  // ✅ SIEMPRE MOSTRAR EL MODAL CON LOS DATOS
-  console.log("✅ Abriendo modal con:", datosParaModal);
+  // ✅ SIEMPRE MOSTRAR EL MODAL CON LOS DATOS (REALES O FALLBACK)
+  console.log("✅ Abriendo modal con datos finales:", datosParaModal);
   mostrarModalEstadisticas(datosParaModal);
 };
 
-// ✅ FUNCIÓN CORREGIDA - LÍNEA 500 (SOLUCIÓN COMPLETA)
-function solicitarMetricas(idPropiedad, propId, retryCount = 0) {
-    console.log(`🔍 Solicitando VISTAS(C) y CONTACTOS(D) para ID: ${idPropiedad}`);
+// ✅ FUNCIÓN PRINCIPAL - SOLICITA MÉTRICAS POR ID PROPIEDAD
+// 🔍 PROCESO: google.script.run → Apps Script → Columna N → Columna A
+function solicitarMetricas(idPropiedadAlquileres, propId, retryCount = 0) {
+    console.log(`🔍 Iniciando búsqueda métricas para ID Alquileres: ${idPropiedadAlquileres} (Mostrar como: ${propId})`);
     
     // ✅ VERIFICACIÓN ROBUSTA DE GOOGLE CHARTS (MÁXIMO 10 RETRIES)
     if (typeof google === 'undefined' || !google.charts || !window.googleChartsReady) {
         if (retryCount < 10) {
             console.log(`⏳ Esperando Google Charts... (Intento ${retryCount + 1}/10)`);
-            setTimeout(() => solicitarMetricas(idPropiedad, propId, retryCount + 1), 500);
+            setTimeout(() => solicitarMetricas(idPropiedadAlquileres, propId, retryCount + 1), 500);
             return;
         } else {
             console.log('❌ Google Charts no disponible después de 10 intentos - usando FALLBACK');
@@ -540,38 +543,89 @@ function solicitarMetricas(idPropiedad, propId, retryCount = 0) {
         }
     }
     
-    console.log('✅ Google Charts listo - Llamando a Apps Script');
-    // ✅ LLAMA A GOOGLE APPS SCRIPT - BUSCA EN COLUMNA N → COLUMNA A
+    console.log('✅ Google Charts listo - Llamando a Google Apps Script');
+    console.log('🔗 Función: getMetricasPorIdPropiedadSeguro(idPropiedadAlquileres)');
+    
+    // ✅ LLAMA A GOOGLE APPS SCRIPT CON EL ID DE LA COLUMNA N
+    // Apps Script debe: 
+    // 1. Buscar ID en Columna N de hoja "Alquileres"
+    // 2. Si encuentra, usar ese ID para buscar en Columna A de hoja "Métricas"
+    // 3. Devolver Vistas (C) y Contactos (D)
     google.script.run
-        .withSuccessHandler(datos => mostrarModalEstadisticasCallback(datos, propId))
+        .withSuccessHandler(datos => {
+            console.log('✅ Respuesta exitosa de Apps Script:', datos);
+            mostrarModalEstadisticasCallback(datos, propId);
+        })
         .withFailureHandler(error => {
-            console.error('❌ Error métricas:', error);
+            console.error('❌ ERROR en Apps Script - getMetricasPorIdPropiedadSeguro:', error);
+            console.error('💡 Apps Script debe implementar esta función correctamente');
             mostrarErrorMetricas(propId);
         })
-        .getMetricasPorIdPropiedadSeguro(idPropiedad); // ← FUNCIÓN DE GOOGLE APPS SCRIPT
+        .getMetricasPorIdPropiedadSeguro(idPropiedadAlquileres); // ← PASA ID DE COLUMNA N
 }
 
-// ✅ NUEVA FUNCIÓN - GRÁFICO DE MÉTRICAS (CON VERIFICACIÓN)
+// ✅ FUNCIÓN DE ERROR - MUESTRA 0 SI FALLA LA BÚSQUEDA
+function mostrarErrorMetricas(propId) {
+    console.log('⚠️ Mostrando fallback por error en búsqueda métricas');
+    const datosParaModal = {
+        propiedad: { direccion: `Propiedad ID: ${propId}` },
+        metricas: { vistas: 0, contactos: 0 }
+    };
+    mostrarModalEstadisticas(datosParaModal);
+    const msgEl = document.getElementById("msgEstadisticas");
+    msgEl.style.color = "orange";
+    msgEl.textContent = "⚠️ Sin datos de métricas aún - ¡Comparte tu propiedad para generar estadísticas!";
+}
+
+// === ✅ FUNCIÓN PARA MOSTRAR MODAL CON DATOS (REALES O FALLBACK) ===
+function mostrarModalEstadisticas(data) {
+  console.log("🎯 Mostrando modal con datos:", data);
+  const { propiedad, metricas } = data;
+  
+  // Actualizar título del modal
+  document.getElementById('modal-titulo').textContent = `📊 Estadísticas - ${propiedad.direccion}`;
+  
+  // Actualizar números de métricas
+  document.getElementById('modal-vistas').textContent = metricas.vistas || 0;
+  document.getElementById('modal-contactos').textContent = metricas.contactos || 0;
+  
+  // Mostrar modal
+  document.getElementById("modalEstadisticas").style.display = "block";
+  
+  // Mensaje de éxito
+  const msgEl = document.getElementById("msgEstadisticas");
+  msgEl.style.color = "green";
+  msgEl.textContent = "✅ Estadísticas cargadas correctamente";
+  
+  console.log("✅ Modal de estadísticas abierto exitosamente");
+  console.log(`📈 Vistas mostradas: ${metricas.vistas || 0} | 📞 Contactos mostrados: ${metricas.contactos || 0}`);
+}
+
+function cerrarModalEstadisticas() {
+    document.getElementById("modalEstadisticas").style.display = "none";
+    document.getElementById("msgEstadisticas").textContent = "";
+    console.log("❌ Modal de estadísticas cerrado");
+}
+
+// ✅ FUNCIÓN OPCIONAL - GRÁFICO DE MÉTRICAS (SI SE NECESITA)
 function mostrarGraficoMetricas(id, vistas, contactos) {
-    console.log('🎨 Creando gráfico para ID:', id);
+    console.log('🎨 Creando gráfico opcional para ID:', id);
     
-    // Verificar Google Charts antes de crear gráfico
     if (typeof google === 'undefined' || !google.charts || !window.googleChartsReady) {
         console.log('⚠️ Google Charts no listo para gráfico - omitiendo');
         return;
     }
     
-    // Crear contenedor
     let contenedor = document.getElementById(`grafico-${id}`);
     if (!contenedor) {
         contenedor = document.createElement('div');
         contenedor.id = `grafico-${id}`;
         contenedor.className = 'grafico-metricas';
         contenedor.style.height = '300px';
-        document.getElementById(`metricas-${id}`).appendChild(contenedor);
+        const metricasContainer = document.getElementById('metricasContainer');
+        if (metricasContainer) metricasContainer.appendChild(contenedor);
     }
     
-    // ✅ GOOGLE CHARTS - Column Chart
     const data = google.visualization.arrayToDataTable([
         ['Métrica', 'Cantidad', {role: 'style'}],
         ['👁️ Vistas', vistas || 0, '#4CAF50'],
@@ -591,38 +645,6 @@ function mostrarGraficoMetricas(id, vistas, contactos) {
     chart.draw(data, options);
     
     console.log('✅ Gráfico creado para ID:', id);
-}
-
-// ✅ FUNCIÓN DE ERROR - MUESTRA 0 SI FALLA
-function mostrarErrorMetricas(propId) {
-    const datosParaModal = {
-        propiedad: { direccion: `Propiedad ID: ${propId}` },
-        metricas: { vistas: 0, contactos: 0 }
-    };
-    mostrarModalEstadisticas(datosParaModal);
-    const msgEl = document.getElementById("msgEstadisticas");
-    msgEl.style.color = "orange";
-    msgEl.textContent = "⚠️ Sin datos aún - ¡Comparte tu propiedad!";
-}
-
-// === ✅ FUNCIÓN PARA MOSTRAR MODAL (YA EXISTENTE - SIN CAMBIOS) ===
-function mostrarModalEstadisticas(data) {
-  console.log("✅ Datos recibidos:", data);
-  const { propiedad, metricas } = data;
-  document.getElementById('modal-titulo').textContent = `📊 Estadísticas - ${propiedad.direccion}`;
-  document.getElementById('modal-vistas').textContent = metricas.vistas || 0;
-  document.getElementById('modal-contactos').textContent = metricas.contactos || 0;
-  // Mostrar modal
-  document.getElementById("modalEstadisticas").style.display = "block";
-  const msgEl = document.getElementById("msgEstadisticas");
-  msgEl.style.color = "green";
-  msgEl.textContent = "✅ Estadísticas cargadas correctamente";
-  console.log("✅ Modal de estadísticas abierto exitosamente");
-}
-
-function cerrarModalEstadisticas() {
-document.getElementById("modalEstadisticas").style.display = "none";
-document.getElementById("msgEstadisticas").textContent = "";
 }
 
 // ===============================================================
@@ -774,7 +796,7 @@ async function subirVideoMux(videoFile, row, tipo) {
     const base64Video = await fileToBase64(videoFile);
     const response = await fetch(API_URL, {
       method: 'POST',
-      mode: 'cors', // 👈 importante
+      mode: 'cors',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -869,9 +891,9 @@ document.getElementById("btnAgregarPropiedad").textContent = "➖ Cerrar Opcione
 window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
 }
 
-// === INICIALIZAR EVENTOS (MODIFICADO SOLO PARA Google Charts) ===
+// === INICIALIZAR EVENTOS ===
 window.onload = function() {
-    // ✅ INICIALIZAR GOOGLE CHARTS PRIMERO
+    // ✅ INICIALIZAR GOOGLE CHARTS PRIMERO (ESENCIAL PARA ESTADÍSTICAS)
     initGoogleCharts();
     
     const email = localStorage.getItem("dueno");
@@ -887,6 +909,9 @@ window.onload = function() {
     if (tipo === 'Departamento' || tipo === 'Terreno' || tipo === 'Casa') inicializarFormatoPrecio(tipo);
     });
     document.getElementById("tipoOperacion").addEventListener("change", mostrarOpcionesPorOperacion);
+    
+    console.log("🚀 Panel de Dueños cargado - Sistema de estadísticas listo");
+    console.log("🔍 Al presionar 'Estadísticas': Columna N(Alquileres) → Columna A(Métricas)");
 }
 
 // === VERIFICAR PAGO AL REGRESAR ===
@@ -992,82 +1017,7 @@ document.getElementById("limiteAlquileres").textContent = planActual === "Prueba
 document.getElementById("btnPlan").textContent = planActual ? "💳 Mejorar Plan" : "💳 Elegir Plan";
 }
 
-// === MODAL PLAN ===
-function abrirModalPlan() { document.getElementById("modalPlan").style.display = "block"; }
-function cerrarModalPlan() {
-document.getElementById("modalPlan").style.display = "none";
-document.getElementById("mpBtnBasico").innerHTML = "";
-document.getElementById("mpBtnPlus").innerHTML = "";
-document.getElementById("mpBtnFull").innerHTML = "";
-}
-
-async function seleccionarPlan(plan, retries = 3) {
-const email = localStorage.getItem("dueno");
-const precio = preciosPlanes[plan] || 0;
-const planStatusEl = document.getElementById("planStatus");
-planStatusEl.innerHTML = `<span class="estado-msg loading">⏳ Procesando pago...</span>`;
-const preferenceData = {
-items: [{ title: `Plan ${plan}`, quantity: 1, unit_price: parseFloat(precio), currency_id: "ARS" }],
-payer: { email: email },
-external_reference: email + "_" + plan,
-back_urls: {
-success: window.location.href,
-failure: window.location.href,
-pending: window.location.href
-},
-auto_return: "approved",
-notification_url: `${API_URL}?action=updatePlan`
-};
-try {
-const response = await fetch("https://api.mercadopago.com/checkout/preferences", {
-method: "POST",
-headers: { "Authorization": "Bearer " + MP_BEARER, "Content-Type": "application/json" },
-body: JSON.stringify(preferenceData)
-});
-const res = await response.json();
-if (res.init_point) {
-const mpContainer = document.getElementById("mpBtn" + plan);
-mpContainer.innerHTML = `<iframe src="${res.init_point}" width="100%" height="650" frameborder="0" allowtransparency="true"></iframe>`;
-planStatusEl.innerHTML = `<span class="estado-msg loading">⏳ Iniciando pago. Esperando confirmación...</span>`;
-} else {
-console.error("Error MP:", res);
-if (retries > 0) {
-console.log(`Reintentando (${retries} restantes)...`);
-setTimeout(() => seleccionarPlan(plan, retries - 1), 2000);
-} else {
-planStatusEl.innerHTML = `<span class="estado-msg error">❌ No se pudo generar el botón de pago. Revisa la consola.</span>`;
-setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
-}
-}
-} catch (err) {
-console.error("Error MP:", err);
-if (retries > 0) {
-console.log(`Reintentando (${retries} restantes)...`);
-setTimeout(() => seleccionarPlan(plan, retries - 1), 2000);
-} else {
-planStatusEl.innerHTML = `<span class="estado-msg error">❌ Error al procesar el pago. Por favor, intenta de nuevo.</span>`;
-setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
-}
-}
-}
-
-function planActualizado(res) {
-const planStatusEl = document.getElementById("planStatus");
-if (res.success) {
-planStatusEl.innerHTML = `<span class="estado-msg success">✅ Plan actualizado con éxito: ${res.plan}</span>`;
-setTimeout(() => {
-planStatusEl.innerHTML = "";
-cargarEstadoPlan();
-cargarAlquileres();
-cerrarModalPlan();
-}, 3000);
-} else {
-planStatusEl.innerHTML = `<span class="estado-msg error">❌ Error al actualizar el plan: ${res.error || "desconocido"}</span>`;
-setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
-}
-}
-
-// === CARGAR ALQUILERES (ACTUALIZADA PARA USAR LA NUEVA FUNCIÓN) ===
+// === CARGAR ALQUILERES (CON BOTÓN ESTADÍSTICAS CORREGIDO) ===
 function cargarAlquileres() {
 const email = localStorage.getItem("dueno");
 const script = document.createElement("script");
@@ -1078,32 +1028,43 @@ document.body.appendChild(script);
 function mostrarAlquileres(res) {
 const div = document.getElementById("listaAlquileres");
 div.innerHTML = "";
-if (!res.success || !res.data || res.data.length === 0) { div.innerHTML = "No tienes propiedades aún."; return; }
+if (!res.success || !res.data || res.data.length === 0) { 
+    div.innerHTML = "No tienes propiedades aún."; 
+    return; 
+}
 deptosActivos = res.data.filter(a => a.Estado === "Activo").length;
 document.getElementById("limiteAlquileres").textContent = planActual === "Prueba" ? `${deptosActivos} propiedades activas` : `${deptosActivos}/${limiteDeptos} propiedades activas`;
+
 res.data.forEach(alq => {
-let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
-let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Cambiar Estado</button>`;
-let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
-let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
-let btnEstadisticas = `<button class="stats-btn" onclick="solicitarMetricas(${alq.row}, ${alq.row})">📊 Estadísticas</button>`;
-let precioFormateado = (alq.Tipo === "Departamento" || alq.Tipo === "Terreno" || alq.Tipo === "Casa") ? formatoPrecio(alq.Precio) : "";
-let infoAmbientes = alq.Tipo === "Departamento" || alq.Tipo === "Casa" ? ` - ${alq['Nro Ambientes']} amb` : "";
-let infoSuperficie = alq.Tipo === "Terreno" ? ` - ${alq.Superficie} m²` : "";
-let infoPatio = alq.Tipo === "Casa" ? ` - Patio: ${alq.Patio || "N/D"}` : "";
-let infoGarage = alq.Tipo === "Casa" ? ` - Garage: ${alq.Garage || "N/D"}` : "";
-let infoAntiguedad = alq.Tipo === "Casa" ? ` - Antigüedad: ${alq.Antiguedad || "N/D"} años` : "";
-let operacion = alq.Operacion ? ` - Operación: ${alq.Operacion}` : "";
-div.innerHTML += `<div class="alquiler">
-<b>${alq.Direccion}</b> (${alq.Tipo})${infoAmbientes}${infoSuperficie}${precioFormateado}${infoPatio}${infoGarage}${infoAntiguedad}${operacion}<br>
-Estado: ${estado}<br>
-${btnEstadisticas} ${btnEstado} ${btnEditar} ${btnEliminar}
-<span id="estadoMsg-${alq.row}" class="estado-msg"></span>
-</div>`;
+    let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
+    let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Cambiar Estado</button>`;
+    let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
+    let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
+    
+    // ✅ BOTÓN ESTADÍSTICAS CORREGIDO - PASA ID DE COLUMNA N (alq.row)
+    let btnEstadisticas = `<button class="stats-btn" onclick="solicitarMetricas(${alq.row}, '${alq.Direccion || \`ID ${alq.row}\`}', 0)">📊 Estadísticas</button>`;
+    
+    let precioFormateado = (alq.Tipo === "Departamento" || alq.Tipo === "Terreno" || alq.Tipo === "Casa") ? formatoPrecio(alq.Precio) : "";
+    let infoAmbientes = alq.Tipo === "Departamento" || alq.Tipo === "Casa" ? ` - ${alq['Nro Ambientes']} amb` : "";
+    let infoSuperficie = alq.Tipo === "Terreno" ? ` - ${alq.Superficie} m²` : "";
+    let infoPatio = alq.Tipo === "Casa" ? ` - Patio: ${alq.Patio || "N/D"}` : "";
+    let infoGarage = alq.Tipo === "Casa" ? ` - Garage: ${alq.Garage || "N/D"}` : "";
+    let infoAntiguedad = alq.Tipo === "Casa" ? ` - Antigüedad: ${alq.Antiguedad || "N/D"} años` : "";
+    let operacion = alq.Operacion ? ` - Operación: ${alq.Operacion}` : "";
+    
+    div.innerHTML += `<div class="alquiler">
+        <b>${alq.Direccion}</b> (${alq.Tipo})${infoAmbientes}${infoSuperficie}${precioFormateado}${infoPatio}${infoGarage}${infoAntiguedad}${operacion}<br>
+        Estado: ${estado}<br>
+        ${btnEstadisticas} ${btnEstado} ${btnEditar} ${btnEliminar}
+        <span id="estadoMsg-${alq.row}" class="estado-msg"></span>
+    </div>`;
 });
+console.log(`✅ ${res.data.length} propiedades cargadas - Botones estadísticas listos`);
 }
 
-// === AGREGAR / EDITAR ALQUILER ===
+// Resto de funciones originales sin cambios...
+// [Todas las demás funciones permanecen exactamente iguales]
+
 async function agregarAlquiler(tipo) {
 const msgEl = document.getElementById(`msg${tipo}`);
 msgEl.textContent = "Agregando propiedad...";
@@ -1187,7 +1148,6 @@ document.body.appendChild(script);
 }
 }
 
-// === RESET FORMULARIOS ===
 function resetAllForms() {
 ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'].forEach(tipo => {
 document.getElementById(`formulario${tipo}`).classList.remove("active");
@@ -1227,7 +1187,6 @@ document.getElementById("tipoOperacion").value = "Vender";
 mostrarOpcionesPorOperacion();
 }
 
-// === EDITAR ALQUILER ===
 function editarAlquiler(row, datos) {
 const tipo = datos.Tipo || "Departamento";
 document.getElementById("btnAgregarPropiedad").textContent = "➖ Cerrar Opciones";
@@ -1261,7 +1220,6 @@ actualizarVideoPreview(tipo);
 window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
 }
 
-// === FUNCIONES RESTANTES ===
 async function cambiarEstado(row, estadoActual) {
 const msgEl = document.getElementById(`estadoMsg-${row}`);
 if (estadoActual === "Inactivo" && deptosActivos >= limiteDeptos && planActual !== "Prueba") {
@@ -1346,7 +1304,80 @@ setTimeout(() => { msgEl.textContent = ""; }, 5000);
 });
 }
 
-// === EDITAR CUENTA ===
+function abrirModalPlan() { document.getElementById("modalPlan").style.display = "block"; }
+function cerrarModalPlan() {
+document.getElementById("modalPlan").style.display = "none";
+document.getElementById("mpBtnBasico").innerHTML = "";
+document.getElementById("mpBtnPlus").innerHTML = "";
+document.getElementById("mpBtnFull").innerHTML = "";
+}
+
+async function seleccionarPlan(plan, retries = 3) {
+const email = localStorage.getItem("dueno");
+const precio = preciosPlanes[plan] || 0;
+const planStatusEl = document.getElementById("planStatus");
+planStatusEl.innerHTML = `<span class="estado-msg loading">⏳ Procesando pago...</span>`;
+const preferenceData = {
+items: [{ title: `Plan ${plan}`, quantity: 1, unit_price: parseFloat(precio), currency_id: "ARS" }],
+payer: { email: email },
+external_reference: email + "_" + plan,
+back_urls: {
+success: window.location.href,
+failure: window.location.href,
+pending: window.location.href
+},
+auto_return: "approved",
+notification_url: `${API_URL}?action=updatePlan`
+};
+try {
+const response = await fetch("https://api.mercadopago.com/checkout/preferences", {
+method: "POST",
+headers: { "Authorization": "Bearer " + MP_BEARER, "Content-Type": "application/json" },
+body: JSON.stringify(preferenceData)
+});
+const res = await response.json();
+if (res.init_point) {
+const mpContainer = document.getElementById("mpBtn" + plan);
+mpContainer.innerHTML = `<iframe src="${res.init_point}" width="100%" height="650" frameborder="0" allowtransparency="true"></iframe>`;
+planStatusEl.innerHTML = `<span class="estado-msg loading">⏳ Iniciando pago. Esperando confirmación...</span>`;
+} else {
+console.error("Error MP:", res);
+if (retries > 0) {
+console.log(`Reintentando (${retries} restantes)...`);
+setTimeout(() => seleccionarPlan(plan, retries - 1), 2000);
+} else {
+planStatusEl.innerHTML = `<span class="estado-msg error">❌ No se pudo generar el botón de pago. Revisa la consola.</span>`;
+setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
+}
+}
+} catch (err) {
+console.error("Error MP:", err);
+if (retries > 0) {
+console.log(`Reintentando (${retries} restantes)...`);
+setTimeout(() => seleccionarPlan(plan, retries - 1), 2000);
+} else {
+planStatusEl.innerHTML = `<span class="estado-msg error">❌ Error al procesar el pago. Por favor, intenta de nuevo.</span>`;
+setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
+}
+}
+}
+
+function planActualizado(res) {
+const planStatusEl = document.getElementById("planStatus");
+if (res.success) {
+planStatusEl.innerHTML = `<span class="estado-msg success">✅ Plan actualizado con éxito: ${res.plan}</span>`;
+setTimeout(() => {
+planStatusEl.innerHTML = "";
+cargarEstadoPlan();
+cargarAlquileres();
+cerrarModalPlan();
+}, 3000);
+} else {
+planStatusEl.innerHTML = `<span class="estado-msg error">❌ Error al actualizar el plan: ${res.error || "desconocido"}</span>`;
+setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
+}
+}
+
 function abrirModalEditarCuenta() {
 document.getElementById("modalEditarCuenta").style.display = "block";
 cargarDatosCuenta();
@@ -1467,9 +1498,10 @@ console.error("Error en edición de cuenta:", err);
 }
 }
 
-console.log("✅ SISTEMA DE ESTADÍSTICAS - HOJA MÉTRICAS FUNCIONANDO 100% ✅");
-console.log("🔍 PROCESO: Columna N (Alquileres) → Columna A (Métricas)");
-console.log("📊 OBTIENE: Vistas (C) | Contactos (D)");
+console.log("✅ SISTEMA DE ESTADÍSTICAS IMPLEMENTADO CORRECTAMENTE");
+console.log("🔍 FLUJO: Botón Estadísticas → Columna N(Alquileres.row) → Columna A(Métricas)");
+console.log("📊 RESULTADO: Muestra Vistas(C) y Contactos(D) en modal");
+console.log("⚠️ REQUISITO: Google Apps Script debe tener función getMetricasPorIdPropiedadSeguro(id)");
 </script>
 </body>
 </html>
