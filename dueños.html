@@ -454,8 +454,8 @@ box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 👁 Vistas
 </div>
 <div class="metricas-item">
-<span class="metricas-numero" id="modal-contactos">0</span>
-📞 Contactos
+<span class="metricas-numero" id="modal-consultas">0</span>
+📞 Consultas
 </div>
 </div>
 <button onclick="cerrarModalEstadisticas()">Cerrar</button>
@@ -492,7 +492,7 @@ function initGoogleCharts() {
 }
 
 // === ✅ CALLBACK PRINCIPAL - PROCESA RESPUESTA DE GOOGLE APPS SCRIPT ===
-window.mostrarModalEstadisticasCallback = function(data, idPropiedad) {
+window.mostrarModalEstadisticasCallback = function(data, direccion) {
   console.log("🔄 Callback ejecutado:", data);
   
   let datosParaModal;
@@ -502,10 +502,10 @@ window.mostrarModalEstadisticasCallback = function(data, idPropiedad) {
     console.log("✅ Datos REALES de hoja MÉTRICAS:", data.data);
     const metrica = data.data[0]; // Primera fila encontrada
     datosParaModal = {
-      propiedad: { direccion: `Propiedad ID: ${idPropiedad}` },
+      propiedad: { direccion: direccion },
       metricas: { 
         vistas: parseInt(metrica.Vistas) || 0,      // ✅ COLUMNA C (VISTAS)
-        contactos: parseInt(metrica.Contactos) || 0 // ✅ COLUMNA D (CONTACTOS)
+        consultas: parseInt(metrica.Consultas) || 0 // ✅ COLUMNA D (CONSULTAS)
       }
     };
   } 
@@ -513,8 +513,8 @@ window.mostrarModalEstadisticasCallback = function(data, idPropiedad) {
   else {
     console.log("⚠️ Sin datos en hoja MÉTRICAS - usando FALLBACK");
     datosParaModal = {
-      propiedad: { direccion: `Propiedad ID: ${idPropiedad}` },
-      metricas: { vistas: 0, contactos: 0 }
+      propiedad: { direccion: direccion },
+      metricas: { vistas: 0, consultas: 0 }
     };
   }
   
@@ -524,18 +524,18 @@ window.mostrarModalEstadisticasCallback = function(data, idPropiedad) {
 };
 
 // ✅ FUNCIÓN CORREGIDA - LÍNEA 500 (SOLUCIÓN COMPLETA)
-function solicitarMetricas(idPropiedad, propId, retryCount = 0) {
-    console.log(`🔍 Solicitando VISTAS(C) y CONTACTOS(D) para ID: ${idPropiedad}`);
+function solicitarMetricas(idPropiedad, direccion, retryCount = 0) {
+    console.log(`🔍 Solicitando VISTAS(C) y CONSULTAS(D) para ID: ${idPropiedad}`);
     
     // ✅ VERIFICACIÓN ROBUSTA DE GOOGLE CHARTS (MÁXIMO 10 RETRIES)
     if (typeof google === 'undefined' || !google.charts || !window.googleChartsReady) {
         if (retryCount < 10) {
             console.log(`⏳ Esperando Google Charts... (Intento ${retryCount + 1}/10)`);
-            setTimeout(() => solicitarMetricas(idPropiedad, propId, retryCount + 1), 500);
+            setTimeout(() => solicitarMetricas(idPropiedad, direccion, retryCount + 1), 500);
             return;
         } else {
             console.log('❌ Google Charts no disponible después de 10 intentos - usando FALLBACK');
-            mostrarErrorMetricas(propId);
+            mostrarErrorMetricas(direccion);
             return;
         }
     }
@@ -543,16 +543,16 @@ function solicitarMetricas(idPropiedad, propId, retryCount = 0) {
     console.log('✅ Google Charts listo - Llamando a Apps Script');
     // ✅ LLAMA A GOOGLE APPS SCRIPT - BUSCA EN COLUMNA N → COLUMNA A
     google.script.run
-        .withSuccessHandler(datos => mostrarModalEstadisticasCallback(datos, propId))
+        .withSuccessHandler(datos => mostrarModalEstadisticasCallback(datos, direccion))
         .withFailureHandler(error => {
             console.error('❌ Error métricas:', error);
-            mostrarErrorMetricas(propId);
+            mostrarErrorMetricas(direccion);
         })
         .getMetricasPorIdPropiedadSeguro(idPropiedad); // ← FUNCIÓN DE GOOGLE APPS SCRIPT
 }
 
 // ✅ NUEVA FUNCIÓN - GRÁFICO DE MÉTRICAS (CON VERIFICACIÓN)
-function mostrarGraficoMetricas(id, vistas, contactos) {
+function mostrarGraficoMetricas(id, vistas, consultas) {
     console.log('🎨 Creando gráfico para ID:', id);
     
     // Verificar Google Charts antes de crear gráfico
@@ -575,7 +575,7 @@ function mostrarGraficoMetricas(id, vistas, contactos) {
     const data = google.visualization.arrayToDataTable([
         ['Métrica', 'Cantidad', {role: 'style'}],
         ['👁️ Vistas', vistas || 0, '#4CAF50'],
-        ['📞 Contactos', contactos || 0, '#2196F3']
+        ['📞 Consultas', consultas || 0, '#2196F3']
     ]);
     
     const options = {
@@ -594,10 +594,10 @@ function mostrarGraficoMetricas(id, vistas, contactos) {
 }
 
 // ✅ FUNCIÓN DE ERROR - MUESTRA 0 SI FALLA
-function mostrarErrorMetricas(propId) {
+function mostrarErrorMetricas(direccion) {
     const datosParaModal = {
-        propiedad: { direccion: `Propiedad ID: ${propId}` },
-        metricas: { vistas: 0, contactos: 0 }
+        propiedad: { direccion: direccion },
+        metricas: { vistas: 0, consultas: 0 }
     };
     mostrarModalEstadisticas(datosParaModal);
     const msgEl = document.getElementById("msgEstadisticas");
@@ -611,7 +611,7 @@ function mostrarModalEstadisticas(data) {
   const { propiedad, metricas } = data;
   document.getElementById('modal-titulo').textContent = `📊 Estadísticas - ${propiedad.direccion}`;
   document.getElementById('modal-vistas').textContent = metricas.vistas || 0;
-  document.getElementById('modal-contactos').textContent = metricas.contactos || 0;
+  document.getElementById('modal-consultas').textContent = metricas.consultas || 0;
   // Mostrar modal
   document.getElementById("modalEstadisticas").style.display = "block";
   const msgEl = document.getElementById("msgEstadisticas");
@@ -1086,7 +1086,7 @@ let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
 let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Cambiar Estado</button>`;
 let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
 let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
-let btnEstadisticas = `<button class="stats-btn" onclick="solicitarMetricas(${alq.row}, ${alq.row})">📊 Estadísticas</button>`;
+let btnEstadisticas = `<button class="stats-btn" onclick="solicitarMetricas(${alq.row}, ${JSON.stringify(alq.Direccion)})">📊 Estadísticas</button>`;
 let precioFormateado = (alq.Tipo === "Departamento" || alq.Tipo === "Terreno" || alq.Tipo === "Casa") ? formatoPrecio(alq.Precio) : "";
 let infoAmbientes = alq.Tipo === "Departamento" || alq.Tipo === "Casa" ? ` - ${alq['Nro Ambientes']} amb` : "";
 let infoSuperficie = alq.Tipo === "Terreno" ? ` - ${alq.Superficie} m²` : "";
@@ -1469,7 +1469,7 @@ console.error("Error en edición de cuenta:", err);
 
 console.log("✅ SISTEMA DE ESTADÍSTICAS - HOJA MÉTRICAS FUNCIONANDO 100% ✅");
 console.log("🔍 PROCESO: Columna N (Alquileres) → Columna A (Métricas)");
-console.log("📊 OBTIENE: Vistas (C) | Contactos (D)");
+console.log("📊 OBTIENE: Vistas (C) | Consultas (D)");
 </script>
 </body>
 </html>
