@@ -1223,11 +1223,13 @@ document.getElementById("passwordEditar").value = login.Password || "";
 const contacto = login.Contacto || "";
 let codigoPais = "+549";
 let numero = contacto;
+if (typeof contacto === "string" && contacto) {
 for (const code of countryCodes) {
 if (contacto.startsWith(code)) {
 codigoPais = code;
 numero = contacto.slice(code.length);
 break;
+}
 }
 }
 document.getElementById("codigoPaisEditar").value = codigoPais;
@@ -1342,17 +1344,18 @@ window.mostrarModalEstadisticasCallback = function(data, direccion) {
 };
 
 // ✅ FUNCIÓN PARA SOLICITAR MÉTRICAS
-function solicitarMetricas(idPropiedad, direccion) {
+async function solicitarMetricas(idPropiedad, direccion) {
     console.log(`🔍 Solicitando VISTAS(S) y CONSULTAS(T) para ID: ${idPropiedad}`);
     
     // ✅ LLAMA A GOOGLE APPS SCRIPT PARA OBTENER DATOS DE ALQUILERES
-    google.script.run
-        .withSuccessHandler(datos => mostrarModalEstadisticasCallback(datos, direccion))
-        .withFailureHandler(error => {
-            console.error('❌ Error al obtener métricas:', error);
-            mostrarErrorMetricas(direccion);
-        })
-        .getAlquilerPorId(idPropiedad); // ← FUNCIÓN DE GOOGLE APPS SCRIPT
+    try {
+        const script = document.createElement("script");
+        script.src = `${API_URL}?action=getAlquilerPorId&id=${idPropiedad}&callback=mostrarModalEstadisticasCallback&direccion=${encodeURIComponent(direccion)}`;
+        document.body.appendChild(script);
+    } catch (error) {
+        console.error('❌ Error al obtener métricas:', error);
+        mostrarErrorMetricas(direccion);
+    }
 }
 
 // ✅ FUNCIÓN PARA MOSTRAR MODAL DE ESTADÍSTICAS
