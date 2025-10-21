@@ -1311,72 +1311,60 @@ console.error("Error en edición de cuenta:", err);
 
 // === ✅ FUNCIONES DE ESTADÍSTICAS ACTUALIZADAS ===
 
-// ✅ CALLBACK PARA PROCESAR DATOS DE VISTAS (S) Y CONSULTAS (T)
-window.mostrarModalEstadisticasCallback = function(data, direccion) {
-  console.log("🔄 Callback ejecutado:", data);
-  
-  let datosParaModal;
-  
-  // ✅ SI BACKEND DEVUELVE DATOS VÁLIDOS (HOJA ALQUILERES - COLUMNAS S Y T)
-  if (data && data.success && data.data && data.data.length > 0) {
-    console.log("✅ Datos REALES de hoja ALQUILERES:", data.data);
-    const alquiler = data.data[0]; // Primera fila encontrada
-    datosParaModal = {
-      propiedad: { direccion: direccion },
-      metricas: { 
-        vistas: parseInt(alquiler.Vistas) || 0,      // ✅ COLUMNA S (VISTAS)
-        consultas: parseInt(alquiler.Consultas) || 0 // ✅ COLUMNA T (CONSULTAS)
-      }
-    };
-  } 
-  // ✅ SI NO HAY DATOS EN ALQUILERES - USAR FALLBACK (0)
-  else {
-    console.log("⚠️ Sin datos en hoja ALQUILERES - usando FALLBACK");
-    datosParaModal = {
-      propiedad: { direccion: direccion },
-      metricas: { vistas: 0, consultas: 0 }
-    };
-  }
-  
-  // ✅ MOSTRAR EL MODAL CON LOS DATOS
-  console.log("✅ Abriendo modal con:", datosParaModal);
-  mostrarModalEstadisticas(datosParaModal);
-};
-
 // ✅ FUNCIÓN PARA SOLICITAR MÉTRICAS
-async function solicitarMetricas(idPropiedad, direccion) {
-    console.log(`🔍 Solicitando VISTAS(S) y CONSULTAS(T) para ID: ${idPropiedad}`);
-    
-    // ✅ LLAMA A GOOGLE APPS SCRIPT PARA OBTENER DATOS DE ALQUILERES
+async function solicitarMetricas(fila, direccion) {
+    console.log(`🔍 Solicitando VISTAS (S) y CONSULTAS (T) para fila: ${fila}`);
+    const msgEl = document.getElementById("msgEstadisticas");
+    msgEl.textContent = "Cargando estadísticas...";
+    msgEl.className = "estado-msg loading";
+    const email = localStorage.getItem("dueno");
+
     try {
-        const script = document.createElement("script");
-        script.src = `${API_URL}?action=getAlquilerPorId&id=${idPropiedad}&callback=mostrarModalEstadisticasCallback&direccion=${encodeURIComponent(direccion)}`;
-        document.body.appendChild(script);
+        const response = await fetch(`${API_URL}?action=getEstadisticasPorFila&fila=${fila}&email=${encodeURIComponent(email)}`);
+        const data = await response.json();
+        console.log("🔄 Respuesta del servidor:", data);
+
+        if (data.success && data.data) {
+            console.log("✅ Datos REALES de hoja ALQUILERES:", data.data);
+            const datosParaModal = {
+                propiedad: { direccion: data.data.propiedad.direccion },
+                metricas: {
+                    vistas: parseInt(data.data.metricas.vistas) || 0,
+                    consultas: parseInt(data.data.metricas.consultas) || 0
+                }
+            };
+            mostrarModalEstadisticas(datosParaModal);
+        } else {
+            console.log("⚠️ Sin datos en hoja ALQUILERES o error:", data.error || "No data");
+            mostrarErrorMetricas(direccion);
+        }
     } catch (error) {
         console.error('❌ Error al obtener métricas:', error);
+        msgEl.textContent = `❌ Error al cargar estadísticas: ${error.message}`;
+        msgEl.className = "estado-msg error";
+        setTimeout(() => { msgEl.textContent = ""; }, 5000);
         mostrarErrorMetricas(direccion);
     }
 }
 
 // ✅ FUNCIÓN PARA MOSTRAR MODAL DE ESTADÍSTICAS
 function mostrarModalEstadisticas(data) {
-  console.log("✅ Datos recibidos:", data);
-  const { propiedad, metricas } = data;
-  document.getElementById('modal-titulo').textContent = `📊 Estadísticas - ${propiedad.direccion}`;
-  document.getElementById('modal-vistas').textContent = metricas.vistas || 0;
-  document.getElementById('modal-consultas').textContent = metricas.consultas || 0;
-  // Mostrar modal
-  document.getElementById("modalEstadisticas").style.display = "block";
-  const msgEl = document.getElementById("msgEstadisticas");
-  msgEl.style.color = "green";
-  msgEl.textContent = "✅ Estadísticas cargadas correctamente";
-  console.log("✅ Modal de estadísticas abierto exitosamente");
+    console.log("✅ Datos recibidos:", data);
+    const { propiedad, metricas } = data;
+    document.getElementById('modal-titulo').textContent = `📊 Estadísticas - ${propiedad.direccion}`;
+    document.getElementById('modal-vistas').textContent = metricas.vistas || 0;
+    document.getElementById('modal-consultas').textContent = metricas.consultas || 0;
+    document.getElementById("modalEstadisticas").style.display = "block";
+    const msgEl = document.getElementById("msgEstadisticas");
+    msgEl.style.color = "green";
+    msgEl.textContent = "✅ Estadísticas cargadas correctamente";
+    console.log("✅ Modal de estadísticas abierto exitosamente");
 }
 
 // ✅ FUNCIÓN PARA CERRAR MODAL
 function cerrarModalEstadisticas() {
-document.getElementById("modalEstadisticas").style.display = "none";
-document.getElementById("msgEstadisticas").textContent = "";
+    document.getElementById("modalEstadisticas").style.display = "none";
+    document.getElementById("msgEstadisticas").textContent = "";
 }
 
 // ✅ FUNCIÓN DE ERROR - MUESTRA 0 SI FALLA
