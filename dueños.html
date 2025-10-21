@@ -454,8 +454,8 @@ box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 👁 Vistas
 </div>
 <div class="metricas-item">
-<span class="metricas-numero" id="modal-contactos">0</span>
-📞 Contactos
+<span class="metricas-numero" id="modal-consultas">0</span>
+💬 Consultas
 </div>
 </div>
 <button onclick="cerrarModalEstadisticas()">Cerrar</button>
@@ -505,7 +505,7 @@ window.mostrarModalEstadisticasCallback = function(data, idPropiedad) {
       propiedad: { direccion: `Propiedad ID: ${idPropiedad}` },
       metricas: { 
         vistas: parseInt(metrica.Vistas) || 0,      // ✅ COLUMNA C (VISTAS)
-        contactos: parseInt(metrica.Contactos) || 0 // ✅ COLUMNA D (CONTACTOS)
+        consultas: parseInt(metrica.Consultas) || 0 // ✅ COLUMNA D (CONSULTAS)
       }
     };
   } 
@@ -514,7 +514,7 @@ window.mostrarModalEstadisticasCallback = function(data, idPropiedad) {
     console.log("⚠️ Sin datos en hoja MÉTRICAS - usando FALLBACK");
     datosParaModal = {
       propiedad: { direccion: `Propiedad ID: ${idPropiedad}` },
-      metricas: { vistas: 0, contactos: 0 }
+      metricas: { vistas: 0, consultas: 0 }
     };
   }
   
@@ -525,7 +525,7 @@ window.mostrarModalEstadisticasCallback = function(data, idPropiedad) {
 
 // ✅ FUNCIÓN CORREGIDA - LÍNEA 500 (SOLUCIÓN COMPLETA)
 function solicitarMetricas(idPropiedad, propId, retryCount = 0) {
-    console.log(`🔍 Solicitando VISTAS(C) y CONTACTOS(D) para ID: ${idPropiedad}`);
+    console.log(`🔍 Solicitando VISTAS(C) y CONSULTAS(D) para ID: ${idPropiedad}`);
     
     // ✅ VERIFICACIÓN ROBUSTA DE GOOGLE CHARTS (MÁXIMO 10 RETRIES)
     if (typeof google === 'undefined' || !google.charts || !window.googleChartsReady) {
@@ -552,7 +552,7 @@ function solicitarMetricas(idPropiedad, propId, retryCount = 0) {
 }
 
 // ✅ NUEVA FUNCIÓN - GRÁFICO DE MÉTRICAS (CON VERIFICACIÓN)
-function mostrarGraficoMetricas(id, vistas, contactos) {
+function mostrarGraficoMetricas(id, vistas, consultas) {
     console.log('🎨 Creando gráfico para ID:', id);
     
     // Verificar Google Charts antes de crear gráfico
@@ -575,7 +575,7 @@ function mostrarGraficoMetricas(id, vistas, contactos) {
     const data = google.visualization.arrayToDataTable([
         ['Métrica', 'Cantidad', {role: 'style'}],
         ['👁️ Vistas', vistas || 0, '#4CAF50'],
-        ['📞 Contactos', contactos || 0, '#2196F3']
+        ['💬 Consultas', consultas || 0, '#2196F3']
     ]);
     
     const options = {
@@ -597,7 +597,7 @@ function mostrarGraficoMetricas(id, vistas, contactos) {
 function mostrarErrorMetricas(propId) {
     const datosParaModal = {
         propiedad: { direccion: `Propiedad ID: ${propId}` },
-        metricas: { vistas: 0, contactos: 0 }
+        metricas: { vistas: 0, consultas: 0 }
     };
     mostrarModalEstadisticas(datosParaModal);
     const msgEl = document.getElementById("msgEstadisticas");
@@ -611,7 +611,7 @@ function mostrarModalEstadisticas(data) {
   const { propiedad, metricas } = data;
   document.getElementById('modal-titulo').textContent = `📊 Estadísticas - ${propiedad.direccion}`;
   document.getElementById('modal-vistas').textContent = metricas.vistas || 0;
-  document.getElementById('modal-contactos').textContent = metricas.contactos || 0;
+  document.getElementById('modal-consultas').textContent = metricas.consultas || 0;
   // Mostrar modal
   document.getElementById("modalEstadisticas").style.display = "block";
   const msgEl = document.getElementById("msgEstadisticas");
@@ -1469,7 +1469,7 @@ console.error("Error en edición de cuenta:", err);
 
 console.log("✅ SISTEMA DE ESTADÍSTICAS - HOJA MÉTRICAS FUNCIONANDO 100% ✅");
 console.log("🔍 PROCESO: Columna N (Alquileres) → Columna A (Métricas)");
-console.log("📊 OBTIENE: Vistas (C) | Contactos (D)");
+console.log("📊 OBTIENE: Vistas (C) | Consultas (D)");
 </script>
 </body>
 </html>
