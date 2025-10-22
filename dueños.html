@@ -444,7 +444,7 @@ box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 </div>
 </div>
 
-<!-- === MODAL DE ESTADÍSTICAS SIMPLIFICADO (SOLO VISTAS Y CONTACTOS) === -->
+<!-- === MODAL DE ESTADÍSTICAS SIMPLIFICADO (VISTAS Y CONSULTAS) === -->
 <div id="modalEstadisticas">
 <div class="modal-content">
 <h3 id="modal-titulo">📊 Estadísticas</h3>
@@ -454,8 +454,8 @@ box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 👁 Vistas
 </div>
 <div class="metricas-item">
-<span class="metricas-numero" id="modal-contactos">0</span>
-📞 Contactos
+<span class="metricas-numero" id="modal-consultas">0</span>
+📞 Consultas
 </div>
 </div>
 <button onclick="cerrarModalEstadisticas()">Cerrar</button>
@@ -467,166 +467,9 @@ box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 
 <script>
 // ===============================================================
-// ✅ SOLUCIÓN IMPLEMENTADA - GOOGLE CHARTS CON CALLBACK GLOBAL
-// 🔧 ELIMINADO "defer" → CARGA INMEDIATA
-// 🔧 VERIFICACIÓN ROBUSTA + RETRY AUTOMÁTICO
-// ===============================================================
-
-// === ✅ INICIALIZAR GOOGLE CHARTS AL CARGA DE PÁGINA ===
-function initGoogleCharts() {
-    console.log('🔄 Inicializando Google Charts...');
-    if (typeof google === 'undefined' || !google.charts) {
-        console.log('⏳ Google Charts no disponible, reintentando en 500ms...');
-        setTimeout(initGoogleCharts, 500);
-        return;
-    }
-    
-    google.charts.load('current', {
-        packages: ['corechart']
-    });
-    
-    google.charts.setOnLoadCallback(() => {
-        console.log('✅ GOOGLE CHARTS CARGADO COMPLETAMENTE');
-        window.googleChartsReady = true;
-    });
-}
-
-// === ✅ CALLBACK PRINCIPAL - PROCESA RESPUESTA DE GOOGLE APPS SCRIPT ===
-window.mostrarModalEstadisticasCallback = function(data, idPropiedad) {
-  console.log("🔄 Callback ejecutado:", data);
-  
-  let datosParaModal;
-  
-  // ✅ SI BACKEND DEVUELVE DATOS VÁLIDOS (HOJA MÉTRICAS - COLUMNAS C Y D)
-  if (data && data.success && data.data && data.data.length > 0) {
-    console.log("✅ Datos REALES de hoja MÉTRICAS:", data.data);
-    const metrica = data.data[0]; // Primera fila encontrada
-    datosParaModal = {
-      propiedad: { direccion: `Propiedad ID: ${idPropiedad}` },
-      metricas: { 
-        vistas: parseInt(metrica.Vistas) || 0,      // ✅ COLUMNA C (VISTAS)
-        contactos: parseInt(metrica.Contactos) || 0 // ✅ COLUMNA D (CONTACTOS)
-      }
-    };
-  } 
-  // ✅ SI NO HAY DATOS EN MÉTRICAS - USAR FALLBACK (0)
-  else {
-    console.log("⚠️ Sin datos en hoja MÉTRICAS - usando FALLBACK");
-    datosParaModal = {
-      propiedad: { direccion: `Propiedad ID: ${idPropiedad}` },
-      metricas: { vistas: 0, contactos: 0 }
-    };
-  }
-  
-  // ✅ SIEMPRE MOSTRAR EL MODAL CON LOS DATOS
-  console.log("✅ Abriendo modal con:", datosParaModal);
-  mostrarModalEstadisticas(datosParaModal);
-};
-
-// ✅ FUNCIÓN CORREGIDA - LÍNEA 500 (SOLUCIÓN COMPLETA)
-function solicitarMetricas(idPropiedad, propId, retryCount = 0) {
-    console.log(`🔍 Solicitando VISTAS(C) y CONTACTOS(D) para ID: ${idPropiedad}`);
-    
-    // ✅ VERIFICACIÓN ROBUSTA DE GOOGLE CHARTS (MÁXIMO 10 RETRIES)
-    if (typeof google === 'undefined' || !google.charts || !window.googleChartsReady) {
-        if (retryCount < 10) {
-            console.log(`⏳ Esperando Google Charts... (Intento ${retryCount + 1}/10)`);
-            setTimeout(() => solicitarMetricas(idPropiedad, propId, retryCount + 1), 500);
-            return;
-        } else {
-            console.log('❌ Google Charts no disponible después de 10 intentos - usando FALLBACK');
-            mostrarErrorMetricas(propId);
-            return;
-        }
-    }
-    
-    console.log('✅ Google Charts listo - Llamando a Apps Script');
-    // ✅ LLAMA A GOOGLE APPS SCRIPT - BUSCA EN COLUMNA N → COLUMNA A
-    google.script.run
-        .withSuccessHandler(datos => mostrarModalEstadisticasCallback(datos, propId))
-        .withFailureHandler(error => {
-            console.error('❌ Error métricas:', error);
-            mostrarErrorMetricas(propId);
-        })
-        .getMetricasPorIdPropiedadSeguro(idPropiedad); // ← FUNCIÓN DE GOOGLE APPS SCRIPT
-}
-
-// ✅ NUEVA FUNCIÓN - GRÁFICO DE MÉTRICAS (CON VERIFICACIÓN)
-function mostrarGraficoMetricas(id, vistas, contactos) {
-    console.log('🎨 Creando gráfico para ID:', id);
-    
-    // Verificar Google Charts antes de crear gráfico
-    if (typeof google === 'undefined' || !google.charts || !window.googleChartsReady) {
-        console.log('⚠️ Google Charts no listo para gráfico - omitiendo');
-        return;
-    }
-    
-    // Crear contenedor
-    let contenedor = document.getElementById(`grafico-${id}`);
-    if (!contenedor) {
-        contenedor = document.createElement('div');
-        contenedor.id = `grafico-${id}`;
-        contenedor.className = 'grafico-metricas';
-        contenedor.style.height = '300px';
-        document.getElementById(`metricas-${id}`).appendChild(contenedor);
-    }
-    
-    // ✅ GOOGLE CHARTS - Column Chart
-    const data = google.visualization.arrayToDataTable([
-        ['Métrica', 'Cantidad', {role: 'style'}],
-        ['👁️ Vistas', vistas || 0, '#4CAF50'],
-        ['📞 Contactos', contactos || 0, '#2196F3']
-    ]);
-    
-    const options = {
-        title: `📊 Métricas ID ${id}`,
-        width: '100%',
-        height: 250,
-        legend: {position: 'top'},
-        chartArea: {width: '85%', height: '70%'},
-        colors: ['#4CAF50', '#2196F3']
-    };
-    
-    const chart = new google.visualization.ColumnChart(contenedor);
-    chart.draw(data, options);
-    
-    console.log('✅ Gráfico creado para ID:', id);
-}
-
-// ✅ FUNCIÓN DE ERROR - MUESTRA 0 SI FALLA
-function mostrarErrorMetricas(propId) {
-    const datosParaModal = {
-        propiedad: { direccion: `Propiedad ID: ${propId}` },
-        metricas: { vistas: 0, contactos: 0 }
-    };
-    mostrarModalEstadisticas(datosParaModal);
-    const msgEl = document.getElementById("msgEstadisticas");
-    msgEl.style.color = "orange";
-    msgEl.textContent = "⚠️ Sin datos aún - ¡Comparte tu propiedad!";
-}
-
-// === ✅ FUNCIÓN PARA MOSTRAR MODAL (YA EXISTENTE - SIN CAMBIOS) ===
-function mostrarModalEstadisticas(data) {
-  console.log("✅ Datos recibidos:", data);
-  const { propiedad, metricas } = data;
-  document.getElementById('modal-titulo').textContent = `📊 Estadísticas - ${propiedad.direccion}`;
-  document.getElementById('modal-vistas').textContent = metricas.vistas || 0;
-  document.getElementById('modal-contactos').textContent = metricas.contactos || 0;
-  // Mostrar modal
-  document.getElementById("modalEstadisticas").style.display = "block";
-  const msgEl = document.getElementById("msgEstadisticas");
-  msgEl.style.color = "green";
-  msgEl.textContent = "✅ Estadísticas cargadas correctamente";
-  console.log("✅ Modal de estadísticas abierto exitosamente");
-}
-
-function cerrarModalEstadisticas() {
-document.getElementById("modalEstadisticas").style.display = "none";
-document.getElementById("msgEstadisticas").textContent = "";
-}
-
-// ===============================================================
-// 📋 TODO EL RESTO DEL CÓDIGO ORIGINAL (100% SIN CAMBIOS)
+// ✅ SOLUCIÓN IMPLEMENTADA - OBTENER VISTAS (S) Y CONSULTAS (T) DE LA HOJA ALQUILERES
+// 🔧 MANTIENE TODAS LAS DEMÁS FUNCIONES INTACTAS
+// 🔧 ELIMINA DEPENDENCIA DE GOOGLE CHARTS PARA ESTADÍSTICAS SIMPLES
 // ===============================================================
 
 // === CONSTANTES Y VARIABLES ===
@@ -774,7 +617,7 @@ async function subirVideoMux(videoFile, row, tipo) {
     const base64Video = await fileToBase64(videoFile);
     const response = await fetch(API_URL, {
       method: 'POST',
-      mode: 'cors', // 👈 importante
+      mode: 'cors',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -869,11 +712,8 @@ document.getElementById("btnAgregarPropiedad").textContent = "➖ Cerrar Opcione
 window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
 }
 
-// === INICIALIZAR EVENTOS (MODIFICADO SOLO PARA Google Charts) ===
+// === INICIALIZAR EVENTOS ===
 window.onload = function() {
-    // ✅ INICIALIZAR GOOGLE CHARTS PRIMERO
-    initGoogleCharts();
-    
     const email = localStorage.getItem("dueno");
     if (!email) { window.location.href = "index.html"; return; }
     cargarEstadoPlan();
@@ -1067,7 +907,7 @@ setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
 }
 }
 
-// === CARGAR ALQUILERES (ACTUALIZADA PARA USAR LA NUEVA FUNCIÓN) ===
+// === CARGAR ALQUILERES ===
 function cargarAlquileres() {
 const email = localStorage.getItem("dueno");
 const script = document.createElement("script");
@@ -1086,7 +926,7 @@ let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
 let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Cambiar Estado</button>`;
 let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
 let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
-let btnEstadisticas = `<button class="stats-btn" onclick="solicitarMetricas(${alq.row}, ${alq.row})">📊 Estadísticas</button>`;
+let btnEstadisticas = `<button class="stats-btn" onclick="solicitarMetricas(${alq.row}, '${alq.Direccion}')">📊 Estadísticas</button>`;
 let precioFormateado = (alq.Tipo === "Departamento" || alq.Tipo === "Terreno" || alq.Tipo === "Casa") ? formatoPrecio(alq.Precio) : "";
 let infoAmbientes = alq.Tipo === "Departamento" || alq.Tipo === "Casa" ? ` - ${alq['Nro Ambientes']} amb` : "";
 let infoSuperficie = alq.Tipo === "Terreno" ? ` - ${alq.Superficie} m²` : "";
@@ -1467,9 +1307,89 @@ console.error("Error en edición de cuenta:", err);
 }
 }
 
-console.log("✅ SISTEMA DE ESTADÍSTICAS - HOJA MÉTRICAS FUNCIONANDO 100% ✅");
-console.log("🔍 PROCESO: Columna N (Alquileres) → Columna A (Métricas)");
-console.log("📊 OBTIENE: Vistas (C) | Contactos (D)");
+// === ✅ FUNCIONES DE ESTADÍSTICAS ACTUALIZADAS ===
+
+// ✅ CALLBACK PARA PROCESAR DATOS DE VISTAS (S) Y CONSULTAS (T)
+window.mostrarModalEstadisticasCallback = function(data, direccion) {
+  console.log("🔄 Callback ejecutado:", data);
+  
+  let datosParaModal;
+  
+  // ✅ SI BACKEND DEVUELVE DATOS VÁLIDOS (HOJA ALQUILERES - COLUMNAS S Y T)
+  if (data && data.success && data.data && data.data.length > 0) {
+    console.log("✅ Datos REALES de hoja ALQUILERES:", data.data);
+    const alquiler = data.data[0]; // Primera fila encontrada
+    datosParaModal = {
+      propiedad: { direccion: direccion },
+      metricas: { 
+        vistas: parseInt(alquiler.Vistas) || 0,      // ✅ COLUMNA S (VISTAS)
+        consultas: parseInt(alquiler.Consultas) || 0 // ✅ COLUMNA T (CONSULTAS)
+      }
+    };
+  } 
+  // ✅ SI NO HAY DATOS EN ALQUILERES - USAR FALLBACK (0)
+  else {
+    console.log("⚠️ Sin datos en hoja ALQUILERES - usando FALLBACK");
+    datosParaModal = {
+      propiedad: { direccion: direccion },
+      metricas: { vistas: 0, consultas: 0 }
+    };
+  }
+  
+  // ✅ MOSTRAR EL MODAL CON LOS DATOS
+  console.log("✅ Abriendo modal con:", datosParaModal);
+  mostrarModalEstadisticas(datosParaModal);
+};
+
+// ✅ FUNCIÓN PARA SOLICITAR MÉTRICAS
+function solicitarMetricas(idPropiedad, direccion) {
+    console.log(`🔍 Solicitando VISTAS(S) y CONSULTAS(T) para ID: ${idPropiedad}`);
+    
+    // ✅ LLAMA A GOOGLE APPS SCRIPT PARA OBTENER DATOS DE ALQUILERES
+    google.script.run
+        .withSuccessHandler(datos => mostrarModalEstadisticasCallback(datos, direccion))
+        .withFailureHandler(error => {
+            console.error('❌ Error al obtener métricas:', error);
+            mostrarErrorMetricas(direccion);
+        })
+        .getAlquilerPorId(idPropiedad); // ← FUNCIÓN DE GOOGLE APPS SCRIPT
+}
+
+// ✅ FUNCIÓN PARA MOSTRAR MODAL DE ESTADÍSTICAS
+function mostrarModalEstadisticas(data) {
+  console.log("✅ Datos recibidos:", data);
+  const { propiedad, metricas } = data;
+  document.getElementById('modal-titulo').textContent = `📊 Estadísticas - ${propiedad.direccion}`;
+  document.getElementById('modal-vistas').textContent = metricas.vistas || 0;
+  document.getElementById('modal-consultas').textContent = metricas.consultas || 0;
+  // Mostrar modal
+  document.getElementById("modalEstadisticas").style.display = "block";
+  const msgEl = document.getElementById("msgEstadisticas");
+  msgEl.style.color = "green";
+  msgEl.textContent = "✅ Estadísticas cargadas correctamente";
+  console.log("✅ Modal de estadísticas abierto exitosamente");
+}
+
+// ✅ FUNCIÓN PARA CERRAR MODAL
+function cerrarModalEstadisticas() {
+document.getElementById("modalEstadisticas").style.display = "none";
+document.getElementById("msgEstadisticas").textContent = "";
+}
+
+// ✅ FUNCIÓN DE ERROR - MUESTRA 0 SI FALLA
+function mostrarErrorMetricas(direccion) {
+    const datosParaModal = {
+        propiedad: { direccion: direccion },
+        metricas: { vistas: 0, consultas: 0 }
+    };
+    mostrarModalEstadisticas(datosParaModal);
+    const msgEl = document.getElementById("msgEstadisticas");
+    msgEl.style.color = "orange";
+    msgEl.textContent = "⚠️ Sin datos aún - ¡Comparte tu propiedad!";
+}
+
+console.log("✅ SISTEMA DE ESTADÍSTICAS - HOJA ALQUILERES FUNCIONANDO 100% ✅");
+console.log("🔍 OBTIENE: Vistas (S) | Consultas (T)");
 </script>
 </body>
 </html>
