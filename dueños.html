@@ -9,10 +9,9 @@
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
+
 gtag('config', 'G-SSJ5DG33JK');
 </script>
-<!-- ✅ GOOGLE CHARTS API - CARGA INMEDIATA CON CALLBACK -->
-<script src="https://www.gstatic.com/charts/loader.js"></script>
 <link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
 <style>
 /* --- CSS adaptado para móvil con textos más grandes y centrados --- */
@@ -21,7 +20,6 @@ h2 { color:#333; font-size:2.2em; margin-bottom:18px; }
 h3 { color:#333; font-size:2em; margin-bottom:18px; }
 .alquiler { border:1px solid #ccc; padding:16px; margin:14px 0; background:#fff; font-size:1.4em; text-align:left; }
 button { margin: 6px; padding:14px 20px; font-size:1.3em; border-radius:6px; cursor:pointer; }
-button.stats-btn { background: #ff9800; color: white; }
 #btnAgregarPropiedad { background:#3681f3; color:white; }
 #opcionesPropiedad, #opcionesVenta, #opcionesAlquiler { background:#fff; padding:20px; border:1px solid #ccc; margin-top:24px; border-radius:12px; font-size:1.3em; text-align:left; display:none; }
 #opcionesPropiedad.active, #opcionesVenta.active, #opcionesAlquiler.active { display:block; }
@@ -157,58 +155,6 @@ font-size: 1.2em;
 font-weight: bold;
 color: #333;
 }
-/* === NUEVOS ESTILOS PARA ESTADÍSTICAS (SIMPLIFICADO) === */
-#modalEstadisticas {
-display: none;
-position: fixed;
-z-index: 1001;
-left: 0;
-top: 0;
-width: 100%;
-height: 100%;
-overflow: auto;
-background-color: rgba(0,0,0,0.7);
-}
-#modalEstadisticas .modal-content {
-background-color: #fff;
-margin: 5% auto;
-padding: 30px;
-border: none;
-width: 95%;
-max-width: 400px;
-border-radius: 16px;
-text-align: center;
-box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-}
-#modalEstadisticas h3 { color: #ff9800; font-size: 2.2em; margin-bottom: 20px; }
-.metricas-item { 
-background: linear-gradient(135deg, #ff9800, #f57c00); 
-color: white; 
-padding: 20px; 
-margin: 15px 0; 
-border-radius: 12px; 
-font-size: 1.6em; 
-text-align: center; 
-box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
-.metricas-numero { font-size: 2.8em; font-weight: bold; display: block; margin-bottom: 5px; }
-#modalEstadisticas button { background: #ff9800; color: white; padding: 15px 25px; font-size: 1.4em; }
-@media screen and (max-width: 600px) {
-#modalEstadisticas .modal-content { margin: 10% auto; width: 98%; padding: 25px; }
-.metricas-item { font-size: 1.4em; padding: 18px; }
-.metricas-numero { font-size: 2.5em; }
-}
-/* ✅ GRÁFICOS DE MÉTRICAS - NUEVO */
-.grafico-metricas {
-    margin: 15px 0;
-    border: 2px solid #e0e0e0;
-    border-radius: 10px;
-    background: white;
-    padding: 10px;
-}
-#metricas-17, #metricas-18, #metricas-19 {
-    margin: 20px 0;
-}
 </style>
 </head>
 <body>
@@ -300,13 +246,13 @@ box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 <input type="number" id="ambientesCasa">
 <label>Patio</label>
 <select id="patioCasa">
- <option value="Sí">Sí</option>
- <option value="No">No</option>
+<option value="Sí">Sí</option>
+<option value="No">No</option>
 </select>
 <label>Garage</label>
 <select id="garageCasa">
- <option value="Sí">Sí</option>
- <option value="No">No</option>
+<option value="Sí">Sí</option>
+<option value="No">No</option>
 </select>
 <label>Antigüedad (años)</label>
 <input type="number" id="antiguedadCasa">
@@ -444,34 +390,9 @@ box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 </div>
 </div>
 
-<!-- === MODAL DE ESTADÍSTICAS SIMPLIFICADO (VISTAS Y CONSULTAS) === -->
-<div id="modalEstadisticas">
-<div class="modal-content">
-<h3 id="modal-titulo">📊 Estadísticas</h3>
-<div id="metricasContainer">
-<div class="metricas-item">
-<span class="metricas-numero" id="modal-vistas">0</span>
-👁 Vistas
-</div>
-<div class="metricas-item">
-<span class="metricas-numero" id="modal-consultas">0</span>
-📞 Consultas
-</div>
-</div>
-<button onclick="cerrarModalEstadisticas()">Cerrar</button>
-<p id="msgEstadisticas" style="color:green; margin-top:15px;"></p>
-</div>
-</div>
-
 <button id="contactoBtn" title="¿Necesitas ayuda o tuviste inconvenientes?" onclick="window.open('https://wa.me/5493764275443', '_blank')">Ayuda</button>
 
 <script>
-// ===============================================================
-// ✅ SOLUCIÓN IMPLEMENTADA - OBTENER VISTAS (S) Y CONSULTAS (T) DE LA HOJA ALQUILERES
-// 🔧 MANTIENE TODAS LAS DEMÁS FUNCIONES INTACTAS
-// 🔧 ELIMINA DEPENDENCIA DE GOOGLE CHARTS PARA ESTADÍSTICAS SIMPLES
-// ===============================================================
-
 // === CONSTANTES Y VARIABLES ===
 const API_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
@@ -612,50 +533,50 @@ return null;
 
 // === SUBIR VIDEO A MUX ===
 async function subirVideoMux(videoFile, row, tipo) {
-  const msgEl = document.getElementById(`msg${tipo}`);
-  try {
-    const base64Video = await fileToBase64(videoFile);
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      mode: 'cors',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        action: 'uploadVideoMux',
-        video: base64Video,
-        row: row
-      })
-    });
+const msgEl = document.getElementById(`msg${tipo}`);
+try {
+const base64Video = await fileToBase64(videoFile);
+const response = await fetch(API_URL, {
+method: 'POST',
+mode: 'cors', // 👈 importante
+headers: {
+Content-Type': 'application/json',
+},
+body: JSON.stringify({
+action: 'uploadVideoMux',
+video: base64Video,
+row: row
+})
+});
 
-    if (!response.ok) {
-      throw new Error(`Error HTTP! Estado: ${response.status}`);
-    }
+if (!response.ok) {
+throw new Error(`Error HTTP! Estado: ${response.status}`);
+}
 
-    const result = await response.json();
-    if (result.success) {
-      console.log('Video subido a Mux:', result.videoUrl);
-      return result.videoUrl;
-    } else {
-      throw new Error(result.error || 'Error desconocido al subir el video');
-    }
-  } catch (error) {
-    console.error('Error subiendo video a Mux:', error.message);
-    msgEl.className = "estado-msg error";
-    msgEl.textContent = `❌ Error al subir video: ${error.message}`;
-    setTimeout(() => { msgEl.textContent = ""; }, 5000);
-    throw error;
-  }
+const result = await response.json();
+if (result.success) {
+console.log('Video subido a Mux:', result.videoUrl);
+return result.videoUrl;
+} else {
+throw new Error(result.error || 'Error desconocido al subir el video');
+}
+} catch (error) {
+console.error('Error subiendo video a Mux:', error.message);
+msgEl.className = "estado-msg error";
+msgEl.textContent = `❌ Error al subir video: ${error.message}`;
+setTimeout(() => { msgEl.textContent = ""; }, 5000);
+throw error;
+}
 }
 
 // === CONVERTIR ARCHIVO A BASE64 ===
 function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error('Error al convertir el video a base64'));
-    reader.readAsDataURL(file);
-  });
+return new Promise((resolve, reject) => {
+const reader = new FileReader();
+reader.onload = () => resolve(reader.result);
+reader.onerror = () => reject(new Error('Error al convertir el video a base64'));
+reader.readAsDataURL(file);
+});
 }
 
 // === MENÚ HAMBURGUESA ===
@@ -714,19 +635,19 @@ window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
 
 // === INICIALIZAR EVENTOS ===
 window.onload = function() {
-    const email = localStorage.getItem("dueno");
-    if (!email) { window.location.href = "index.html"; return; }
-    cargarEstadoPlan();
-    cargarAlquileres();
-    cargarPreciosPlanes();
-    cargarDatosCuenta();
-    checkPaymentOnReturn();
-    ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'].forEach(tipo => {
-    inicializarPreviewImagenes(tipo);
-    inicializarPreviewVideos(tipo);
-    if (tipo === 'Departamento' || tipo === 'Terreno' || tipo === 'Casa') inicializarFormatoPrecio(tipo);
-    });
-    document.getElementById("tipoOperacion").addEventListener("change", mostrarOpcionesPorOperacion);
+const email = localStorage.getItem("dueno");
+if (!email) { window.location.href = "index.html"; return; }
+cargarEstadoPlan();
+cargarAlquileres();
+cargarPreciosPlanes();
+cargarDatosCuenta();
+checkPaymentOnReturn();
+['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'].forEach(tipo => {
+inicializarPreviewImagenes(tipo);
+inicializarPreviewVideos(tipo);
+if (tipo === 'Departamento' || tipo === 'Terreno' || tipo === 'Casa') inicializarFormatoPrecio(tipo);
+});
+document.getElementById("tipoOperacion").addEventListener("change", mostrarOpcionesPorOperacion);
 }
 
 // === VERIFICAR PAGO AL REGRESAR ===
@@ -926,7 +847,6 @@ let estado = alq.Estado === "Activo" ? "Activo ✅" : "Inactivo ❌";
 let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Cambiar Estado</button>`;
 let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
 let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
-let btnEstadisticas = `<button class="stats-btn" onclick="solicitarMetricas(${alq.row}, '${alq.Direccion}')">📊 Estadísticas</button>`;
 let precioFormateado = (alq.Tipo === "Departamento" || alq.Tipo === "Terreno" || alq.Tipo === "Casa") ? formatoPrecio(alq.Precio) : "";
 let infoAmbientes = alq.Tipo === "Departamento" || alq.Tipo === "Casa" ? ` - ${alq['Nro Ambientes']} amb` : "";
 let infoSuperficie = alq.Tipo === "Terreno" ? ` - ${alq.Superficie} m²` : "";
@@ -937,7 +857,7 @@ let operacion = alq.Operacion ? ` - Operación: ${alq.Operacion}` : "";
 div.innerHTML += `<div class="alquiler">
 <b>${alq.Direccion}</b> (${alq.Tipo})${infoAmbientes}${infoSuperficie}${precioFormateado}${infoPatio}${infoGarage}${infoAntiguedad}${operacion}<br>
 Estado: ${estado}<br>
-${btnEstadisticas} ${btnEstado} ${btnEditar} ${btnEliminar}
+${btnEstado} ${btnEditar} ${btnEliminar}
 <span id="estadoMsg-${alq.row}" class="estado-msg"></span>
 </div>`;
 });
@@ -961,14 +881,14 @@ const operacion = document.getElementById("tipoOperacion").value;
 let row = document.getElementById(`editRow${tipo}`).value || new Date().getTime();
 const enlaceCompartir = document.getElementById(`editRow${tipo}`).value ? document.getElementById(`enlaceCompartir${tipo}`).value : "";
 const email = localStorage.getItem("dueno");
-if (!direccion || 
-    (tipo === "Departamento" && (!ambientes || !precio)) || 
-    (tipo === "Terreno" && (!superficie || !precio)) || 
-    (tipo === "Casa" && (!ambientes || !precio))) { 
+if (!direccion ||
+(tipo === "Departamento" && (!ambientes || !precio)) ||
+(tipo === "Terreno" && (!superficie || !precio)) ||
+(tipo === "Casa" && (!ambientes || !precio))) {
 msgEl.className = "estado-msg error";
 msgEl.textContent = "Completa todos los campos obligatorios.";
 setTimeout(() => { msgEl.textContent = ""; }, 5000);
-return; 
+return;
 }
 direccion = direccion + ", Santo Tomé Corrientes";
 const files = document.getElementById(`imagenFile${tipo}`).files;
@@ -1223,13 +1143,11 @@ document.getElementById("passwordEditar").value = login.Password || "";
 const contacto = login.Contacto || "";
 let codigoPais = "+549";
 let numero = contacto;
-if (typeof contacto === "string" && contacto) {
 for (const code of countryCodes) {
 if (contacto.startsWith(code)) {
 codigoPais = code;
 numero = contacto.slice(code.length);
 break;
-}
 }
 }
 document.getElementById("codigoPaisEditar").value = codigoPais;
@@ -1308,79 +1226,6 @@ msgEl.textContent = "❌ Error al guardar: " + (err.message || "Error de conexi�
 console.error("Error en edición de cuenta:", err);
 }
 }
-
-// === ✅ FUNCIONES DE ESTADÍSTICAS ACTUALIZADAS ===
-
-// ✅ FUNCIÓN PARA SOLICITAR MÉTRICAS
-async function solicitarMetricas(fila, direccion) {
-    console.log(`🔍 Solicitando VISTAS (S) y CONSULTAS (T) para fila: ${fila}`);
-    const msgEl = document.getElementById("msgEstadisticas");
-    msgEl.textContent = "Cargando estadísticas...";
-    msgEl.className = "estado-msg loading";
-    const email = localStorage.getItem("dueno");
-
-    try {
-        const response = await fetch(`${API_URL}?action=getEstadisticasPorFila&fila=${fila}&email=${encodeURIComponent(email)}`);
-        const data = await response.json();
-        console.log("🔄 Respuesta del servidor:", data);
-
-        if (data.success && data.data) {
-            console.log("✅ Datos REALES de hoja ALQUILERES:", data.data);
-            const datosParaModal = {
-                propiedad: { direccion: data.data.propiedad.direccion },
-                metricas: {
-                    vistas: parseInt(data.data.metricas.vistas) || 0,
-                    consultas: parseInt(data.data.metricas.consultas) || 0
-                }
-            };
-            mostrarModalEstadisticas(datosParaModal);
-        } else {
-            console.log("⚠️ Sin datos en hoja ALQUILERES o error:", data.error || "No data");
-            mostrarErrorMetricas(direccion);
-        }
-    } catch (error) {
-        console.error('❌ Error al obtener métricas:', error);
-        msgEl.textContent = `❌ Error al cargar estadísticas: ${error.message}`;
-        msgEl.className = "estado-msg error";
-        setTimeout(() => { msgEl.textContent = ""; }, 5000);
-        mostrarErrorMetricas(direccion);
-    }
-}
-
-// ✅ FUNCIÓN PARA MOSTRAR MODAL DE ESTADÍSTICAS
-function mostrarModalEstadisticas(data) {
-    console.log("✅ Datos recibidos:", data);
-    const { propiedad, metricas } = data;
-    document.getElementById('modal-titulo').textContent = `📊 Estadísticas - ${propiedad.direccion}`;
-    document.getElementById('modal-vistas').textContent = metricas.vistas || 0;
-    document.getElementById('modal-consultas').textContent = metricas.consultas || 0;
-    document.getElementById("modalEstadisticas").style.display = "block";
-    const msgEl = document.getElementById("msgEstadisticas");
-    msgEl.style.color = "green";
-    msgEl.textContent = "✅ Estadísticas cargadas correctamente";
-    console.log("✅ Modal de estadísticas abierto exitosamente");
-}
-
-// ✅ FUNCIÓN PARA CERRAR MODAL
-function cerrarModalEstadisticas() {
-    document.getElementById("modalEstadisticas").style.display = "none";
-    document.getElementById("msgEstadisticas").textContent = "";
-}
-
-// ✅ FUNCIÓN DE ERROR - MUESTRA 0 SI FALLA
-function mostrarErrorMetricas(direccion) {
-    const datosParaModal = {
-        propiedad: { direccion: direccion },
-        metricas: { vistas: 0, consultas: 0 }
-    };
-    mostrarModalEstadisticas(datosParaModal);
-    const msgEl = document.getElementById("msgEstadisticas");
-    msgEl.style.color = "orange";
-    msgEl.textContent = "⚠️ Sin datos aún - ¡Comparte tu propiedad!";
-}
-
-console.log("✅ SISTEMA DE ESTADÍSTICAS - HOJA ALQUILERES FUNCIONANDO 100% ✅");
-console.log("🔍 OBTIENE: Vistas (S) | Consultas (T)");
 </script>
 </body>
 </html>
