@@ -466,13 +466,20 @@ box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 <button id="contactoBtn" title="¿Necesitas ayuda o tuviste inconvenientes?" onclick="window.open('https://wa.me/5493764275443', '_blank')">Ayuda</button>
 
 <script>
-// ===============================================================
-// ✅ SOLUCIÓN IMPLEMENTADA - GOOGLE CHARTS CON CALLBACK GLOBAL
-// 🔧 ELIMINADO "defer" → CARGA INMEDIATA
-// 🔧 VERIFICACIÓN ROBUSTA + RETRY AUTOMÁTICO
-// ===============================================================
+// === CONSTANTES Y VARIABLES ===
+const API_URL = "https://script.google.com/macros/s/AKfycby8Im_WuA2Gfkbc-wHQjL-KOTpl_LnGsgvbR-l1zF3KVYyLv5Qr25d7njUplky8CUWY/exec";
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
+const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
+const GEOCODE_KEY = "AIzaSyAisqYSTfpQ_rqqutAomzitD2v_dtKYtLE";
+const MP_BEARER = "APP_USR-595288641172928-010710-d915bce4137b3ee26e0c6e04873f1ac1-695835795";
+let imagenesBase64 = { Departamento: [], Local: [], Temporario: [], Terreno: [], Casa: [] };
+let videosBase64 = { Departamento: [], Local: [], Temporario: [], Terreno: [], Casa: [] };
+let planActual = null;
+let limiteDeptos = 0;
+let deptosActivos = 0;
+let preciosPlanes = {Basico: 0, Plus: 0, Full: 0};
 
-// === ✅ INICIALIZAR GOOGLE CHARTS AL CARGA DE PÁGINA ===
+// === INICIALIZAR GOOGLE CHARTS AL CARGA DE PÁGINA ===
 function initGoogleCharts() {
     console.log('🔄 Inicializando Google Charts...');
     if (typeof google === 'undefined' || !google.charts) {
@@ -491,43 +498,38 @@ function initGoogleCharts() {
     });
 }
 
-// === ✅ CALLBACK PRINCIPAL - PROCESA RESPUESTA DE GOOGLE APPS SCRIPT ===
+// === CALLBACK PARA ESTADÍSTICAS DE ALQUILERES ===
 window.mostrarModalEstadisticasCallback = function(data, idPropiedad) {
   console.log("🔄 Callback ejecutado:", data);
   
   let datosParaModal;
   
-  // ✅ SI BACKEND DEVUELVE DATOS VÁLIDOS (HOJA MÉTRICAS - COLUMNAS C Y D)
   if (data && data.success && data.data && data.data.length > 0) {
-    console.log("✅ Datos REALES de hoja MÉTRICAS:", data.data);
-    const metrica = data.data[0]; // Primera fila encontrada
+    console.log("✅ Datos REALES de hoja Alquileres:", data.data);
+    const alquiler = data.data[0];
     datosParaModal = {
-      propiedad: { direccion: `Propiedad ID: ${idPropiedad}` },
+      propiedad: { direccion: alquiler.Direccion || `Propiedad ID: ${idPropiedad}` },
       metricas: { 
-        vistas: parseInt(metrica.Vistas) || 0,      // ✅ COLUMNA C (VISTAS)
-        contactos: parseInt(metrica.Contactos) || 0 // ✅ COLUMNA D (CONTACTOS)
+        vistas: parseInt(alquiler.Vistas) || 0,      // COLUMNA S (Vistas)
+        contactos: parseInt(alquiler.Consultas) || 0 // COLUMNA T (Consultas)
       }
     };
-  } 
-  // ✅ SI NO HAY DATOS EN MÉTRICAS - USAR FALLBACK (0)
-  else {
-    console.log("⚠️ Sin datos en hoja MÉTRICAS - usando FALLBACK");
+  } else {
+    console.log("⚠️ Sin datos en hoja Alquileres - usando FALLBACK");
     datosParaModal = {
       propiedad: { direccion: `Propiedad ID: ${idPropiedad}` },
       metricas: { vistas: 0, contactos: 0 }
     };
   }
   
-  // ✅ SIEMPRE MOSTRAR EL MODAL CON LOS DATOS
   console.log("✅ Abriendo modal con:", datosParaModal);
   mostrarModalEstadisticas(datosParaModal);
 };
 
-// ✅ FUNCIÓN CORREGIDA - LÍNEA 500 (SOLUCIÓN COMPLETA)
+// === SOLICITAR MÉTRICAS DE ALQUILERES ===
 function solicitarMetricas(idPropiedad, propId, retryCount = 0) {
-    console.log(`🔍 Solicitando VISTAS(C) y CONTACTOS(D) para ID: ${idPropiedad}`);
+    console.log(`🔍 Solicitando VISTAS(S) y CONSULTAS(T) para ID: ${idPropiedad}`);
     
-    // ✅ VERIFICACIÓN ROBUSTA DE GOOGLE CHARTS (MÁXIMO 10 RETRIES)
     if (typeof google === 'undefined' || !google.charts || !window.googleChartsReady) {
         if (retryCount < 10) {
             console.log(`⏳ Esperando Google Charts... (Intento ${retryCount + 1}/10)`);
@@ -541,59 +543,16 @@ function solicitarMetricas(idPropiedad, propId, retryCount = 0) {
     }
     
     console.log('✅ Google Charts listo - Llamando a Apps Script');
-    // ✅ LLAMA A GOOGLE APPS SCRIPT - BUSCA EN COLUMNA N → COLUMNA A
     google.script.run
         .withSuccessHandler(datos => mostrarModalEstadisticasCallback(datos, propId))
         .withFailureHandler(error => {
             console.error('❌ Error métricas:', error);
             mostrarErrorMetricas(propId);
         })
-        .getMetricasPorIdPropiedadSeguro(idPropiedad); // ← FUNCIÓN DE GOOGLE APPS SCRIPT
+        .getAlquilerPorId(idPropiedad); // FUNCIÓN DE GOOGLE APPS SCRIPT
 }
 
-// ✅ NUEVA FUNCIÓN - GRÁFICO DE MÉTRICAS (CON VERIFICACIÓN)
-function mostrarGraficoMetricas(id, vistas, contactos) {
-    console.log('🎨 Creando gráfico para ID:', id);
-    
-    // Verificar Google Charts antes de crear gráfico
-    if (typeof google === 'undefined' || !google.charts || !window.googleChartsReady) {
-        console.log('⚠️ Google Charts no listo para gráfico - omitiendo');
-        return;
-    }
-    
-    // Crear contenedor
-    let contenedor = document.getElementById(`grafico-${id}`);
-    if (!contenedor) {
-        contenedor = document.createElement('div');
-        contenedor.id = `grafico-${id}`;
-        contenedor.className = 'grafico-metricas';
-        contenedor.style.height = '300px';
-        document.getElementById(`metricas-${id}`).appendChild(contenedor);
-    }
-    
-    // ✅ GOOGLE CHARTS - Column Chart
-    const data = google.visualization.arrayToDataTable([
-        ['Métrica', 'Cantidad', {role: 'style'}],
-        ['👁️ Vistas', vistas || 0, '#4CAF50'],
-        ['📞 Contactos', contactos || 0, '#2196F3']
-    ]);
-    
-    const options = {
-        title: `📊 Métricas ID ${id}`,
-        width: '100%',
-        height: 250,
-        legend: {position: 'top'},
-        chartArea: {width: '85%', height: '70%'},
-        colors: ['#4CAF50', '#2196F3']
-    };
-    
-    const chart = new google.visualization.ColumnChart(contenedor);
-    chart.draw(data, options);
-    
-    console.log('✅ Gráfico creado para ID:', id);
-}
-
-// ✅ FUNCIÓN DE ERROR - MUESTRA 0 SI FALLA
+// === FUNCIÓN DE ERROR PARA MÉTRICAS ===
 function mostrarErrorMetricas(propId) {
     const datosParaModal = {
         propiedad: { direccion: `Propiedad ID: ${propId}` },
@@ -605,14 +564,13 @@ function mostrarErrorMetricas(propId) {
     msgEl.textContent = "⚠️ Sin datos aún - ¡Comparte tu propiedad!";
 }
 
-// === ✅ FUNCIÓN PARA MOSTRAR MODAL (YA EXISTENTE - SIN CAMBIOS) ===
+// === MOSTRAR MODAL DE ESTADÍSTICAS ===
 function mostrarModalEstadisticas(data) {
   console.log("✅ Datos recibidos:", data);
   const { propiedad, metricas } = data;
   document.getElementById('modal-titulo').textContent = `📊 Estadísticas - ${propiedad.direccion}`;
   document.getElementById('modal-vistas').textContent = metricas.vistas || 0;
   document.getElementById('modal-contactos').textContent = metricas.contactos || 0;
-  // Mostrar modal
   document.getElementById("modalEstadisticas").style.display = "block";
   const msgEl = document.getElementById("msgEstadisticas");
   msgEl.style.color = "green";
@@ -620,27 +578,11 @@ function mostrarModalEstadisticas(data) {
   console.log("✅ Modal de estadísticas abierto exitosamente");
 }
 
+// === CERRAR MODAL DE ESTADÍSTICAS ===
 function cerrarModalEstadisticas() {
 document.getElementById("modalEstadisticas").style.display = "none";
 document.getElementById("msgEstadisticas").textContent = "";
 }
-
-// ===============================================================
-// 📋 TODO EL RESTO DEL CÓDIGO ORIGINAL (100% SIN CAMBIOS)
-// ===============================================================
-
-// === CONSTANTES Y VARIABLES ===
-const API_URL = "https://script.google.com/macros/s/AKfycby8Im_WuA2Gfkbc-wHQjL-KOTpl_LnGsgvbR-l1zF3KVYyLv5Qr25d7njUplky8CUWY/exec";
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
-const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
-const GEOCODE_KEY = "AIzaSyAisqYSTfpQ_rqqutAomzitD2v_dtKYtLE";
-const MP_BEARER = "APP_USR-595288641172928-010710-d915bce4137b3ee26e0c6e04873f1ac1-695835795";
-let imagenesBase64 = { Departamento: [], Local: [], Temporario: [], Terreno: [], Casa: [] };
-let videosBase64 = { Departamento: [], Local: [], Temporario: [], Terreno: [], Casa: [] };
-let planActual = null;
-let limiteDeptos = 0;
-let deptosActivos = 0;
-let preciosPlanes = {Basico: 0, Plus: 0, Full: 0};
 
 // === FORMATO DE PRECIO PARA ALQUILERES ===
 function formatoPrecio(valor) {
@@ -774,7 +716,7 @@ async function subirVideoMux(videoFile, row, tipo) {
     const base64Video = await fileToBase64(videoFile);
     const response = await fetch(API_URL, {
       method: 'POST',
-      mode: 'cors', // 👈 importante
+      mode: 'cors',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -810,7 +752,7 @@ function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error('Error al convertir el video a base64'));
+    readerhedral.onerror = () => reject(new Error('Error al convertir el video a base64'));
     reader.readAsDataURL(file);
   });
 }
@@ -869,9 +811,8 @@ document.getElementById("btnAgregarPropiedad").textContent = "➖ Cerrar Opcione
 window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
 }
 
-// === INICIALIZAR EVENTOS (MODIFICADO SOLO PARA Google Charts) ===
+// === INICIALIZAR EVENTOS ===
 window.onload = function() {
-    // ✅ INICIALIZAR GOOGLE CHARTS PRIMERO
     initGoogleCharts();
     
     const email = localStorage.getItem("dueno");
@@ -1067,7 +1008,7 @@ setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
 }
 }
 
-// === CARGAR ALQUILERES (ACTUALIZADA PARA USAR LA NUEVA FUNCIÓN) ===
+// === CARGAR ALQUILERES ===
 function cargarAlquileres() {
 const email = localStorage.getItem("dueno");
 const script = document.createElement("script");
@@ -1467,9 +1408,8 @@ console.error("Error en edición de cuenta:", err);
 }
 }
 
-console.log("✅ SISTEMA DE ESTADÍSTICAS - HOJA MÉTRICAS FUNCIONANDO 100% ✅");
-console.log("🔍 PROCESO: Columna N (Alquileres) → Columna A (Métricas)");
-console.log("📊 OBTIENE: Vistas (C) | Contactos (D)");
+console.log("✅ SISTEMA DE ESTADÍSTICAS - HOJA ALQUILERES FUNCIONANDO 100% ✅");
+console.log("🔍 PROCESO: Columna ROW (Alquileres) → Vistas (S) | Consultas (T)");
 </script>
 </body>
 </html>
