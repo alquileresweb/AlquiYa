@@ -268,7 +268,7 @@ color: red;
 <div id="modal-terminos-content">
 <h2>Términos y Condiciones de Uso</h2>
 <p><strong>Última actualización: 10/09/2025</strong></p>
-<p>Bienvenido/a a AlquiYa (en adelante, "la Plataforma").<br>
+<p>Bienvenido/a a AlquiYa (en adelante, “la Plataforma”).<br>
 Al acceder o utilizar la Plataforma, usted acepta estos Términos y Condiciones. Si no está de acuerdo, debe abstenerse de usarla.</p>
 
 <h3>1. Naturaleza del Servicio – Exclusión de Intermediación Inmobiliaria</h3>
@@ -433,30 +433,6 @@ const cloudinaryURL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
 const cloudinaryUploadPreset = "preset_alquileres";
 let currentImages = [];
 let currentImageIndex = 0;
-
-/* =========================
-FUNCIÓN NUEVA: CONTROL DE MÉTRICAS
-*/
-async function actualizarMetricas(idPropiedad, tipo) {
-  const params = new URLSearchParams();
-  params.append("action", "actualizarMetricas");
-  params.append("idPropiedad", idPropiedad);
-  params.append("tipo", tipo); // "vistas" o "contactos"
-  
-  try {
-    await makeRequest(webAppURL, {
-      method: "POST",
-      body: params,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      mode: "no-cors"
-    });
-  } catch (error) {
-    console.error(`Error actualizando ${tipo}:`, error);
-    // No interrumpir el flujo principal, solo loguear el error
-  }
-}
 
 /* =========================
 MAPA
@@ -808,7 +784,7 @@ document.getElementById("img-grande").src = currentImages[currentImageIndex];
 }
 
 /* =========================
-CARGA DE ALQUILERES (MODIFICADA SOLO EN LOS onclick)
+CARGA DE ALQUILERES
 */
 function cargarAlquileres(){
 const loadingEl = document.getElementById("loading-msg");
@@ -889,9 +865,6 @@ makeRequest(webAppURL + "?action=getAlquileres", {
     const detalles = getField(a, ["Detalles","Detalle","Descripcion","Descripción"]);
     const contacto = getField(a, ["Contacto","Whatsapp","WhatsApp","Tel","Telefono","Teléfono"]);
     const enlace = getField(a, ["Enlace para compartir"]);
-    
-    // OBTENER ID PROPIEDAD DE COLUMNA N
-    const idPropiedad = getField(a, ["N", "ID", "id", "IdPropiedad", "idPropiedad"]);
 
     let iconHtml;
     if (tipo === "Temporario") {
@@ -919,13 +892,7 @@ makeRequest(webAppURL + "?action=getAlquileres", {
     const verBtn = document.createElement('button');
     verBtn.className = 'popup-button';
     verBtn.textContent = 'Ver Alquiler';
-    // MODIFICADO: AÑADIDO CONTROL MÉTRICAS VISTAS
-    verBtn.onclick = async () => {
-      // PRIMERO: Actualizar métrica de vistas
-      if (idPropiedad) {
-        await actualizarMetricas(idPropiedad, "vistas");
-      }
-      // DESPUÉS: Mostrar detalle normalmente
+    verBtn.onclick = () => {
       const detalle = document.getElementById('alquiler-detalle');
       detalle.innerHTML = `<h2>Alquiler: ${direccion||''}</h2>`;
 
@@ -972,13 +939,7 @@ makeRequest(webAppURL + "?action=getAlquileres", {
         waBtn.style.background = '#25D366';
         waBtn.style.color = 'white';
         waBtn.style.marginTop = '10px';
-        // MODIFICADO: AÑADIDO CONTROL MÉTRICAS CONTACTOS
-        waBtn.onclick = async () => {
-          // PRIMERO: Actualizar métrica de contactos
-          if (idPropiedad) {
-            await actualizarMetricas(idPropiedad, "contactos");
-          }
-          // DESPUÉS: Abrir WhatsApp normalmente
+        waBtn.onclick = ()=>{
           const mensaje = `Hola, vengo desde AlquiYa y quiero consultar por el alquiler de ${direccion}`;
           window.open(`https://wa.me/${contacto}?text=${encodeURIComponent(mensaje)}`,'_blank');
         };
