@@ -14,7 +14,6 @@ gtag('config', 'G-SSJ5DG33JK');
 <link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
-/* === TODO TU CSS ORIGINAL (sin cambios) === */
 body{margin:0;font-family:Arial,sans-serif}
 header{background:white;color:white;padding:15px;text-align:center}
 nav{display:flex;justify-content:center;gap:20px;background:#f4f4f4;padding:10px}
@@ -420,8 +419,8 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 <div id="modal-img">
 <img id="img-grande">
 <button class="close-btn" onclick="cerrarModal()">X</button>
-<button class="nav-btn prev-btn" onclick="cambiarImagen(-1)"><</button>
-<button class="nav-btn next-btn" onclick="cambiarImagen(1)">></button>
+<button class="nav-btn prev-btn" onclick="cambiarImagen(-1)">&lt;</button>
+<button class="nav-btn next-btn" onclick="cambiarImagen(1)">&gt;</button>
 </div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -449,11 +448,13 @@ async function actualizarMetricas(idPropiedad, tipo) {
       method: "POST",
       body: params,
       headers: {
-        "Content-Via-Proxy": "true"
-      }
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      mode: "no-cors"
     });
   } catch (error) {
     console.error(`Error actualizando ${tipo}:`, error);
+    // No interrumpir el flujo principal, solo loguear el error
   }
 }
 
@@ -513,7 +514,7 @@ let num = parseInt(cleaned,10);
 return isNaN(num) ? 0 : num;
 }
 function formatPrice(num) {
-if (!num ˜) return "";
+if (!num) return "";
 const clean = String(num).replace(/[^\d]/g, "");
 const formatted = parseInt(clean, 10).toLocaleString('es-AR');
 return "$" + formatted.replace(/,/g, ".");
@@ -592,35 +593,22 @@ document.getElementById("modal-terminos").style.display = "none";
 }
 
 /* =========================
-FETCH HELPER - MODIFICADO CON PROXY
+FETCH HELPER
 */
-async function makeRequest(url, options = {}) {
-  const isPost = options.method === "POST";
-  const useProxy = options.headers?.["Content-Via-Proxy"] || !isPost;
-
-  if (useProxy) {
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-    const proxyOptions = { method: "GET" };
-    if (isPost && options.body) {
-      // Para POST: enviar datos en URL
-      const separator = url.includes('?') ? '&' : '?';
-      url = url + separator + options.body.toString();
-      delete options.body;
-      delete options.method;
+async function makeRequest(url, options) {
+  try {
+    const response = await fetch(url, options);
+    if (!response.ok && options.mode !== 'no-cors') {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const response = await fetch(proxyUrl + (isPost ? `&${options.body}` : ""), proxyOptions);
-    const data = await response.json();
-    const contents = data.contents;
-    try {
-      return JSON.parse(contents);
-    } catch {
-      throw new Error("Respuesta no válida del servidor");
+    // For no-cors mode, we can't read the response, so return null
+    if (options.mode === 'no-cors') {
+      return null;
     }
-  } else {
-    // Directo (solo para POST sin proxy si es necesario)
-    const response = await fetch(url, { ...options, mode: "cors" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     return await response.json();
+  } catch (error) {
+    console.error("Fetch error:", error);
+    throw new Error("No se pudo conectar con el servidor. Por favor, intenta de nuevo.");
   }
 }
 
@@ -639,7 +627,9 @@ document.getElementById("login-loading").style.display = "block";
 document.getElementById("login-msg").textContent = "";
 makeRequest(webAppURL+"?action=verificarLogin&email="+encodeURIComponent(email)+"&password="+encodeURIComponent(password), {
   method: "GET",
-  headers: { "Content-Via-Proxy": "true" }
+  headers: {
+    "Content-Type": "application/x-www-form-urlencoded"
+  }
 })
 .then(data => {
   document.getElementById("login-loading").style.display = "none";
@@ -705,10 +695,15 @@ function registrarDueno() {
   params.append("password", password);
   params.append("contacto", codigoPais + contacto);
 
+  console.log("Enviando URLSearchParams:", params.toString());
+
   makeRequest(webAppURL, {
     method: "POST",
     body: params,
-    headers: { "Content-Via-Proxy": "true" }
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    mode: "no-cors"
   })
     .then(() => {
       document.getElementById("registro-msg").style.color = "green";
@@ -747,7 +742,10 @@ function registrarEmailAvisos() {
   makeRequest(webAppURL, {
     method: "POST",
     body: params,
-    headers: { "Content-Via-Proxy": "true" }
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    mode: "no-cors"
   })
   .then(() => {
     document.getElementById("avisos-msg").style.color = "green";
@@ -810,18 +808,18 @@ document.getElementById("img-grande").src = currentImages[currentImageIndex];
 }
 
 /* =========================
-CARGA DE ALQUILERES - MODIFICADO CON PROXY
+CARGA DE ALQUILERES (MODIFICADA SOLO EN LOS onclick)
 */
 function cargarAlquileres(){
 const loadingEl = document.getElementById("loading-msg");
 loadingEl.style.display="block";
 markersLayer.clearLayers();
 
-const uniIcon = L.divIcon({className:'marker-icon', html:'Facultad', iconSize:[30,30], iconAnchor:[15,15]});
-const hospIcon = L.divIcon({className:'marker-icon', html:'Hospital', iconSize:[30,30], iconAnchor:[15,15]});
-const superIcon = L.divIcon({className:'marker-icon', html:'Mercado', iconSize:[30,30], iconAnchor:[15,15]});
-const busIcon = L.divIcon({className:'marker-icon', html:'Bus', iconSize:[30,30], iconAnchor:[15,15]});
-const policeIcon = L.divIcon({className:'marker-icon', html:'Policía', iconSize:[30,30], iconAnchor:[15,15]});
+const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15]});
+const hospIcon = L.divIcon({className:'marker-icon', html:'🏥', iconSize:[30,30], iconAnchor:[15,15]});
+const superIcon = L.divIcon({className:'marker-icon', html:'🛒', iconSize:[30,30], iconAnchor:[15,15]});
+const busIcon = L.divIcon({className:'marker-icon', html:'🚌', iconSize:[30,30], iconAnchor:[15,15]});
+const policeIcon = L.divIcon({className:'marker-icon', html:'👮', iconSize:[30,30], iconAnchor:[15,15]});
 
 L.marker([-28.5509978,-56.0409727],{icon:uniIcon}).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
 L.marker([-28.5551127,-56.0389282],{icon:hospIcon}).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
@@ -840,7 +838,9 @@ const filtroTipo = document.getElementById("filtroTipo").value;
 
 makeRequest(webAppURL + "?action=getAlquileres", {
   method: "GET",
-  headers: { "Content-Via-Proxy": "true" }
+  headers: {
+    "Content-Type": "application/x-www-form-urlencoded"
+  }
 })
 .then(res => {
   loadingEl.style.display="none";
@@ -852,13 +852,14 @@ makeRequest(webAppURL + "?action=getAlquileres", {
   let cont = 0;
 
   res.data.forEach(a=>{
+    // Verificar plan y fecha de vencimiento
     const plan = getField(a, ["Plan"]);
     const fechaVencimientoStr = getField(a, ["Fecha de Vencimiento", "FechaVencimiento", "Vencimiento"]);
     if (plan === "Prueba") {
       const fechaVencimiento = parseDate(fechaVencimientoStr);
       const fechaActual = new Date();
       if (fechaVencimiento && fechaActual > fechaVencimiento) {
-        return;
+        return; // Saltar si el plan es "Prueba" y está vencido
       }
     }
 
@@ -888,15 +889,17 @@ makeRequest(webAppURL + "?action=getAlquileres", {
     const detalles = getField(a, ["Detalles","Detalle","Descripcion","Descripción"]);
     const contacto = getField(a, ["Contacto","Whatsapp","WhatsApp","Tel","Telefono","Teléfono"]);
     const enlace = getField(a, ["Enlace para compartir"]);
+    
+    // OBTENER ID PROPIEDAD DE COLUMNA N
     const idPropiedad = getField(a, ["N", "ID", "id", "IdPropiedad", "idPropiedad"]);
 
     let iconHtml;
     if (tipo === "Temporario") {
-      iconHtml = 'Temporario';
+      iconHtml = '⌛';
     } else if (tipo === "Local") {
-      iconHtml = 'Local';
+      iconHtml = '🛍️';
     } else {
-      iconHtml = 'Casa<span style="font-size:12px;margin-left:2px;">'+(nroAmb||"-")+'</span>';
+      iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">'+(nroAmb||"-")+'</span>';
     }
 
     const icon = L.divIcon({
@@ -916,10 +919,13 @@ makeRequest(webAppURL + "?action=getAlquileres", {
     const verBtn = document.createElement('button');
     verBtn.className = 'popup-button';
     verBtn.textContent = 'Ver Alquiler';
+    // MODIFICADO: AÑADIDO CONTROL MÉTRICAS VISTAS
     verBtn.onclick = async () => {
+      // PRIMERO: Actualizar métrica de vistas
       if (idPropiedad) {
         await actualizarMetricas(idPropiedad, "vistas");
       }
+      // DESPUÉS: Mostrar detalle normalmente
       const detalle = document.getElementById('alquiler-detalle');
       detalle.innerHTML = `<h2>Alquiler: ${direccion||''}</h2>`;
 
@@ -966,10 +972,13 @@ makeRequest(webAppURL + "?action=getAlquileres", {
         waBtn.style.background = '#25D366';
         waBtn.style.color = 'white';
         waBtn.style.marginTop = '10px';
+        // MODIFICADO: AÑADIDO CONTROL MÉTRICAS CONTACTOS
         waBtn.onclick = async () => {
+          // PRIMERO: Actualizar métrica de contactos
           if (idPropiedad) {
             await actualizarMetricas(idPropiedad, "contactos");
           }
+          // DESPUÉS: Abrir WhatsApp normalmente
           const mensaje = `Hola, vengo desde AlquiYa y quiero consultar por el alquiler de ${direccion}`;
           window.open(`https://wa.me/${contacto}?text=${encodeURIComponent(mensaje)}`,'_blank');
         };
