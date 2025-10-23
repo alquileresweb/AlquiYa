@@ -908,7 +908,8 @@ const filtroMascotas = document.getElementById("filtroMascotas").checked;
 const filtroAmoblado = document.getElementById("filtroAmoblado").checked;
 const filtroTipo = document.getElementById("filtroTipo").value;
 
-makeRequest(webAppURL + "?action=getAlquileres", {
+// CAMBIO CLAVE: Acción correcta para obtener alquileres públicos
+makeRequest(webAppURL + "?action=getAlquileresPublicos", {
   method: "GET",
   headers: { "Content-Type": "application/x-www-form-urlencoded" }
 })
@@ -1000,7 +1001,7 @@ makeRequest(webAppURL + "?action=getAlquileres", {
         ['Información de ingreso', infoIngreso||''],
         ['Detalles', detalles||''],
         ['Mascotas', mascotas||''],
-        ['Amoblado', amoblado||'']
+        ['Amoblado',(amoblado||'')]
       ];
       rows.forEach(([label,val])=>{
         const p=document.createElement('p');
