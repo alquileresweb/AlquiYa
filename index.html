@@ -179,7 +179,7 @@ align-items: center;
 width: 30%;
 min-width: 80px;
 }
-#reg_contacto-container input {
+#reg_contacto-container adjust {
 width: 70%;
 }
 #registro input#reg_email, #registro input#reg_nombre {
@@ -519,11 +519,36 @@ let currentImages = [];
 let currentImageIndex = 0;
 
 /* =========================
-SOLUCIÓN CORS: PROXY
+SOLUCIÓN: FETCH MEJORADO (SIN PROXY CORS)
 */
-const CORS_PROXY = "https://corsproxy.io/?";
-function withCors(url) {
-  return CORS_PROXY + encodeURIComponent(url);
+async function makeRequest(url, options = {}) {
+  try {
+    const response = await fetch(url, {
+      ...options,
+      mode: "cors",
+      headers: {
+        ...options.headers,
+        "Content-Type": "application/x-www-form-urlencoded"
+      }
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("Respuesta HTML recibida (no JSON):", text.substring(0, 500));
+      throw new Error(`Error HTTP ${response.status}. Probablemente el Web App no está desplegado como "Cualquiera" o la URL es incorrecta.`);
+    }
+
+    const text = await response.text();
+    if (text.trim().startsWith('<')) {
+      console.error("Respuesta HTML (no JSON):", text.substring(0, 500));
+      throw new Error("El servidor devolvió HTML. Verifica que la URL termine en '/exec' y esté desplegada como 'Cualquiera'.");
+    }
+
+    return JSON.parse(text);
+  } catch (error) {
+    console.error("Fetch error:", error);
+    throw new Error("No se pudo conectar con el servidor. Por favor, intenta de nuevo.");
+  }
 }
 
 /* =========================
@@ -568,11 +593,9 @@ async function actualizarMetricas(idPropiedad, tipo) {
   params.append("tipo", tipo);
   logMetrica(idPropiedad, tipo, timestamp);
   try {
-    await fetch(withCors(webAppURL), {
+    await makeRequest(webAppURL, {
       method: "POST",
-      body: params,
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      mode: "cors"
+      body: params
     });
   } catch (error) {
     console.error(`Error métrica ${tipo}:`, error);
@@ -709,29 +732,6 @@ function aceptarTerminos() {
 }
 
 /* =========================
-FETCH HELPER CON PROXY CORS
-*/
-async function makeRequest(url, options = {}) {
-  const isGET = !options.method || options.method === "GET";
-  const finalUrl = isGET ? withCors(url) : url;
-  try {
-    const response = await fetch(finalUrl, {
-      ...options,
-      mode: "cors",
-      headers: {
-        ...options.headers,
-        "Content-Type": "application/x-www-form-urlencoded"
-      }
-    });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return await response.json();
-  } catch (error) {
-    console.error("Fetch error:", error);
-    throw new Error("No se pudo conectar con el servidor. Por favor, intenta de nuevo.");
-  }
-}
-
-/* =========================
 AUTH
 */
 function login() {
@@ -802,11 +802,9 @@ function registrarDueno() {
   params.append("password", password);
   params.append("contacto", codigoPais + contacto);
 
-  fetch(withCors(webAppURL), {
+  makeRequest(webAppURL, {
     method: "POST",
-    body: params,
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    mode: "cors"
+    body: params
   })
     .then(() => {
       document.getElementById("registro-msg").style.color = "green";
@@ -830,11 +828,9 @@ function registrarEmailAvisos() {
   const params = new URLSearchParams();
   params.append("action", "suscribirNotificaciones");
   params.append("email", email);
-  fetch(withCors(webAppURL), {
+  makeRequest(webAppURL, {
     method: "POST",
-    body: params,
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    mode: "cors"
+    body: params
   })
     .then(() => {
       document.getElementById("avisos-msg").style.color = "green";
@@ -893,18 +889,18 @@ function cambiarImagen(direction) {
 }
 
 /* =========================
-CARGA DE ALQUILERES (CON CORS PROXY)
+CARGA DE ALQUILERES
 */
 function cargarAlquileres() {
   const loadingEl = document.getElementById("loading-msg");
   loadingEl.style.display = "block";
   markersLayer.clearLayers();
 
-  const uniIcon = L.divIcon({ className: 'marker-icon', html: '🎓', iconSize: [30, 30], iconAnchor: [15, 15] });
-  const hospIcon = L.divIcon({ className: 'marker-icon', html: '🏥', iconSize: [30, 30], iconAnchor: [15, 15] });
-  const superIcon = L.divIcon({ className: 'marker-icon', html: '🛒', iconSize: [30, 30], iconAnchor: [15, 15] });
-  const busIcon = L.divIcon({ className: 'marker-icon', html: '🚌', iconSize: [30, 30], iconAnchor: [15, 15] });
-  const policeIcon = L.divIcon({ className: 'marker-icon', html: '👮', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const uniIcon = L.divIcon({ className: 'marker-icon', html: 'University', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const hospIcon = L.divIcon({ className: 'marker-icon', html: 'Hospital', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const superIcon = L.divIcon({ className: 'marker-icon', html: 'Shopping Cart', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const busIcon = L.divIcon({ className: 'marker-icon', html: 'Bus', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const policeIcon = L.divIcon({ className: 'marker-icon', html: 'Police', iconSize: [30, 30], iconAnchor: [15, 15] });
 
   L.marker([-28.5509978, -56.0409727], { icon: uniIcon }).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
   L.marker([-28.5551127, -56.0389282], { icon: hospIcon }).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
@@ -921,8 +917,7 @@ function cargarAlquileres() {
   const filtroAmoblado = document.getElementById("filtroAmoblado").checked;
   const filtroTipo = document.getElementById("filtroTipo").value;
 
-  // USAMOS PROXY CORS AQUÍ
-  makeRequest(withCors(webAppURL + "?action=getAlquileres"))
+  makeRequest(webAppURL + "?action=getAlquileres")
     .then(res => {
       loadingEl.style.display = "none";
       if (!res.success || !Array.isArray(res.data)) {
@@ -967,7 +962,7 @@ function cargarAlquileres() {
         const enlace = getField(a, ["Enlace para compartir"]);
         const idPropiedad = getField(a, ["N", "ID", "id", "IdPropiedad", "idPropiedad"]);
 
-        let iconHtml = tipo === "Temporario" ? '⌛' : tipo === "Local" ? '🛍️' : `🏠<span style="font-size:12px;margin-left:2px;">${nroAmb || "-"}</span>`;
+        let iconHtml = tipo === "Temporario" ? 'Hourglass' : tipo === "Local" ? 'Shopping Bag' : `House<span style="font-size:12px;margin-left:2px;">${nroAmb || "-"}</span>`;
         const icon = L.divIcon({ className: 'marker-icon', html: iconHtml, iconSize: [30, 30], iconAnchor: [15, 15] });
         const marker = L.marker([lat, lng], { icon }).addTo(markersLayer);
 
