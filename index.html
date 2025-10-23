@@ -260,6 +260,9 @@ flex: 1;
 padding: 8px;
 border-radius: 6px;
 border: 1px solid #ccc;
+padding: 40px 20px;
+border-radius: 10px;
+box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 #link-container span {
 font-size: 14px;
@@ -294,9 +297,6 @@ font-family: monospace;
 font-size: 12px;
 display: none;
 box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-padding: 40px 20px;
-border-radius: 10px;
-box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 #debug-metricas h3 {
 margin: 0 0 10px 0;
@@ -474,7 +474,6 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 <div id="map"></div>
 <div id="rapiclean-img-container">
 <a href="https://wa.me/5493756617167?text=Hola" target="_blank">
-<img src="https://i.postimg.cc/NMMZQ3YG/M-s-de-40-estudiantes-ya-confiaron-en-Rapiclean-1.png" alt="Más de 40 estudiantes confiaron en Rapiclean" style="max-width:100%;margin:10px auto;display:block;">
 <img src="https://i.postimg.cc/9MWzRqbF/M-s-de-40-estudiantes-ya-confiaron-en-Rapiclean-3.png" alt="Más de 40 estudiantes confiaron en Rapiclean" style="max-width:100%;margin:10px auto;display:block;">
 </a>
 <a href="https://wa.me/5493764275443?text=Hola,+quiero+publicitar+en+AlquiYa&utm_source=chatgpt.com" target="_blank">
@@ -560,10 +559,10 @@ function logMetrica(idPropiedad, tipo, timestamp) {
     hora: new Date(timestamp).toLocaleTimeString()
   };
   metricasEnviadas.push(metrica);
-
+  
   // Mostrar en consola
   console.log(`📊 MÉTRICA ENVIADA: ID=${idPropiedad} | TIPO=${tipo} | ${new Date(timestamp).toLocaleString()}`);
-
+  
   // Mostrar en panel debug (solo si está visible)
   if (document.getElementById('debug-metricas').style.display !== 'none') {
     const li = document.createElement('li');
@@ -588,10 +587,6 @@ function clearDebugMetricas() {
   metricasEnviadas = [];
   document.getElementById('debug-list').innerHTML = '';
 }
-<main>
-<h1>Estamos realizando tareas de mantenimiento 🔧</h1>
-<p>Estamos mejorando AlquiYA para ofrecerte una experiencia más rápida y completa.<br>
-Volveremos a estar en línea muy pronto. Gracias por tu paciencia 💙</p>
 
 /* =========================
 FUNCIÓN NUEVA: CONTROL DE MÉTRICAS (MODIFICADA CON DEBUG)
@@ -602,11 +597,10 @@ async function actualizarMetricas(idPropiedad, tipo) {
   params.append("action", "actualizarMetricas");
   params.append("idPropiedad", idPropiedad);
   params.append("tipo", tipo); // "vistas" o "contactos"
-<div class="spinner"></div>
-
+  
   // LOG MÉTRICA ANTES DE ENVIAR
   logMetrica(idPropiedad, tipo, timestamp);
-
+  
   try {
     const response = await makeRequest(webAppURL, {
       method: "POST",
@@ -656,6 +650,10 @@ const [day, month, year] = dateStr.split('/').map(Number);
 if (!day || !month || !year) return null;
 return new Date(year, month - 1, day);
 }
+<main>
+<h1>Estamos realizando tareas de mantenimiento 🔧</h1>
+<p>Estamos mejorando AlquiYA para ofrecerte una experiencia más rápida y completa.<br>
+Volveremos a estar en línea muy pronto. Gracias por tu paciencia 💙</p>
 
 /* =========================
 FORMATO MONEDA
@@ -742,6 +740,7 @@ document.getElementById("boton-filtros-container").style.display = "none";
 document.getElementById("loading-msg").style.display = "none";
 document.getElementById("rapiclean-img-container").style.display = "none";
 }
+<div class="spinner"></div>
 
 /* =========================
 TÉRMINOS Y CONDICIONES
@@ -1054,7 +1053,7 @@ makeRequest(webAppURL + "?action=getAlquileres", {
     const detalles = getField(a, ["Detalles","Detalle","Descripcion","Descripción"]);
     const contacto = getField(a, ["Contacto","Whatsapp","WhatsApp","Tel","Telefono","Teléfono"]);
     const enlace = getField(a, ["Enlace para compartir"]);
-
+    
     // OBTENER ID PROPIEDAD DE COLUMNA N
     const idPropiedad = getField(a, ["N", "ID", "id", "IdPropiedad", "idPropiedad"]);
 
