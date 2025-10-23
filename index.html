@@ -11,10 +11,8 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-SSJ5DG33JK');
 </script>
-<title>AlquiYA - Mantenimiento</title>
 <link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-
 <style>
 body{margin:0;font-family:Arial,sans-serif}
 header{background:white;color:white;padding:15px;text-align:center}
@@ -168,11 +166,6 @@ background-size: contain;
 margin-left: 10px;
 }
 #reg_contacto-container {
-body {
-margin: 0;
-font-family: Arial, sans-serif;
-background: #f9f9f9;
-color: #333;
 display: flex;
 flex-direction: row;
 gap: 10px;
@@ -200,30 +193,21 @@ width: 100%;
 height: 100%;
 background: rgba(0,0,0,0.5);
 z-index: 10000;
-flex-direction: column;
 align-items: center;
 justify-content: center;
-min-height: 100vh;
-text-align: center;
 }
 #modal-terminos-content {
-header {
 background: white;
 max-width: 90%;
 max-height: 80%;
 overflow-y: auto;
-width: 100%;
-text-align: center;
 padding: 20px;
 border-radius: 8px;
 box-shadow: 0 0 10px rgba(0,0,0,0.3);
 text-align: left;
-box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 #modal-terminos-content h2 {
 margin-top: 0;
-header img {
-max-width: 250px;
 }
 #modal-terminos-content button {
 width: auto;
@@ -231,9 +215,6 @@ padding: 10px 20px;
 margin-top: 20px;
 }
 #publicidad-container {
-main {
-max-width: 600px;
-margin: 40px auto;
 background: white;
 border: 1px solid #ccc;
 border-radius: 8px;
@@ -260,9 +241,6 @@ flex: 1;
 padding: 8px;
 border-radius: 6px;
 border: 1px solid #ccc;
-padding: 40px 20px;
-border-radius: 10px;
-box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 #link-container span {
 font-size: 14px;
@@ -278,104 +256,13 @@ color: green;
 #copy-msg.error {
 color: red;
 }
-/* =========================
-ESTILO DEBUG MÉTRICAS (MANTENIDO PERO OCULTO POR DEFECTO)
-*/
-#debug-metricas {
-position: fixed;
-top: 10px;
-right: 10px;
-background: #fff;
-border: 2px solid #3483fa;
-border-radius: 8px;
-padding: 10px;
-max-width: 300px;
-max-height: 400px;
-overflow-y: auto;
-z-index: 10001;
-font-family: monospace;
-font-size: 12px;
-display: none;
-box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-#debug-metricas h3 {
-margin: 0 0 10px 0;
-h1 {
-color: #3483fa;
-font-size: 14px;
-}
-#debug-metricas ul {
-margin: 0;
-padding-left: 20px;
-}
-#debug-metricas li {
-margin-bottom: 5px;
-padding: 2px 5px;
-background: #f0f8ff;
-border-left: 3px solid #3483fa;
-margin-bottom: 15px;
-}
-p {
-font-size: 1.1em;
-line-height: 1.5;
-}
-.spinner {
-margin: 30px auto;
-border: 5px solid #eee;
-border-top: 5px solid #3483fa;
-border-radius: 50%;
-width: 50px;
-height: 50px;
-animation: spin 1s linear infinite;
-}
-@keyframes spin {
-0% { transform: rotate(0deg); }
-100% { transform: rotate(360deg); }
-}
-footer {
-margin-top: 40px;
-font-size: 0.9em;
-color: #555;
-}
-footer a {
-color: #3483fa;
-text-decoration: none;
-}
-#toggle-debug {
-position: fixed;
-top: 10px;
-left: 10px;
-background: #3483fa;
-color: white;
-border: none;
-padding: 8px 12px;
-border-radius: 5px;
-cursor: pointer;
-z-index: 10002;
-font-weight: bold;
-display: none; /* BOTÓN OCULTO POR DEFECTO */
-footer a:hover {
-text-decoration: underline;
-}
 </style>
 </head>
 <body>
 
-<body>
 <header>
 <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya" style="max-width:250px;margin-bottom:10px;">
-<img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo AlquiYa">
 </header>
-
-<!-- =========================
-PANEL DEBUG MÉTRICAS (MANTENIDO PERO SIN BOTÓN VISIBLE)
--->
-<button id="toggle-debug" onclick="toggleDebugMetricas()" style="display:none;">🔍 Debug Métricas</button>
-<div id="debug-metricas">
-<h3>📊 Métricas Enviadas</h3>
-<ul id="debug-list"></ul>
-<button onclick="clearDebugMetricas()" style="background:red;color:white;border:none;padding:5px 10px;border-radius:3px;margin-top:10px;">Limpiar</button>
-</div>
 
 <div id="modal-terminos">
 <div id="modal-terminos-content">
@@ -474,7 +361,7 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 <div id="map"></div>
 <div id="rapiclean-img-container">
 <a href="https://wa.me/5493756617167?text=Hola" target="_blank">
-<img src="https://i.postimg.cc/9MWzRqbF/M-s-de-40-estudiantes-ya-confiaron-en-Rapiclean-3.png" alt="Más de 40 estudiantes confiaron en Rapiclean" style="max-width:100%;margin:10px auto;display:block;">
+<img src="https://i.postimg.cc/NMMZQ3YG/M-s-de-40-estudiantes-ya-confiaron-en-Rapiclean-1.png" alt="Más de 40 estudiantes confiaron en Rapiclean" style="max-width:100%;margin:10px auto;display:block;">
 </a>
 <a href="https://wa.me/5493764275443?text=Hola,+quiero+publicitar+en+AlquiYa&utm_source=chatgpt.com" target="_blank">
 <div id="publicidad-container">
@@ -548,61 +435,16 @@ let currentImages = [];
 let currentImageIndex = 0;
 
 /* =========================
-SOLUCIÓN DEBUG MÉTRICAS (MANTENIDA COMPLETA)
-*/
-let metricasEnviadas = [];
-function logMetrica(idPropiedad, tipo, timestamp) {
-  const metrica = {
-    id: idPropiedad,
-    tipo: tipo,
-    timestamp: timestamp,
-    hora: new Date(timestamp).toLocaleTimeString()
-  };
-  metricasEnviadas.push(metrica);
-  
-  // Mostrar en consola
-  console.log(`📊 MÉTRICA ENVIADA: ID=${idPropiedad} | TIPO=${tipo} | ${new Date(timestamp).toLocaleString()}`);
-  
-  // Mostrar en panel debug (solo si está visible)
-  if (document.getElementById('debug-metricas').style.display !== 'none') {
-    const li = document.createElement('li');
-    li.innerHTML = `<strong>${tipo.toUpperCase()}</strong>: ID ${idPropiedad} <small>(${new Date(timestamp).toLocaleTimeString()})</small>`;
-    document.getElementById('debug-list').appendChild(li);
-    document.getElementById('debug-metricas').scrollTop = document.getElementById('debug-metricas').scrollHeight;
-  }
-}
-
-function toggleDebugMetricas() {
-  const panel = document.getElementById('debug-metricas');
-  if (panel.style.display === 'none') {
-    panel.style.display = 'block';
-    document.getElementById('toggle-debug').textContent = '❌ Cerrar Debug';
-  } else {
-    panel.style.display = 'none';
-    document.getElementById('toggle-debug').textContent = '🔍 Debug Métricas';
-  }
-}
-
-function clearDebugMetricas() {
-  metricasEnviadas = [];
-  document.getElementById('debug-list').innerHTML = '';
-}
-
-/* =========================
-FUNCIÓN NUEVA: CONTROL DE MÉTRICAS (MODIFICADA CON DEBUG)
+FUNCIÓN NUEVA: CONTROL DE MÉTRICAS
 */
 async function actualizarMetricas(idPropiedad, tipo) {
-  const timestamp = Date.now();
   const params = new URLSearchParams();
   params.append("action", "actualizarMetricas");
   params.append("idPropiedad", idPropiedad);
   params.append("tipo", tipo); // "vistas" o "contactos"
   
-  // LOG MÉTRICA ANTES DE ENVIAR
-  logMetrica(idPropiedad, tipo, timestamp);
-  
   try {
-    const response = await makeRequest(webAppURL, {
+    await makeRequest(webAppURL, {
       method: "POST",
       body: params,
       headers: {
@@ -610,9 +452,8 @@ async function actualizarMetricas(idPropiedad, tipo) {
       },
       mode: "no-cors"
     });
-    console.log(`✅ MÉTRICA CONFIRMADA: ${tipo} para ID ${idPropiedad}`);
   } catch (error) {
-    console.error(`❌ Error actualizando ${tipo} ID ${idPropiedad}:`, error);
+    console.error(`Error actualizando ${tipo}:`, error);
     // No interrumpir el flujo principal, solo loguear el error
   }
 }
@@ -650,10 +491,6 @@ const [day, month, year] = dateStr.split('/').map(Number);
 if (!day || !month || !year) return null;
 return new Date(year, month - 1, day);
 }
-<main>
-<h1>Estamos realizando tareas de mantenimiento 🔧</h1>
-<p>Estamos mejorando AlquiYA para ofrecerte una experiencia más rápida y completa.<br>
-Volveremos a estar en línea muy pronto. Gracias por tu paciencia 💙</p>
 
 /* =========================
 FORMATO MONEDA
@@ -740,7 +577,6 @@ document.getElementById("boton-filtros-container").style.display = "none";
 document.getElementById("loading-msg").style.display = "none";
 document.getElementById("rapiclean-img-container").style.display = "none";
 }
-<div class="spinner"></div>
 
 /* =========================
 TÉRMINOS Y CONDICIONES
@@ -1201,9 +1037,6 @@ input.type = "password";
 eyeIcon.style.backgroundImage = "url('https://img.icons8.com/ios/50/000000/visible.png')";
 }
 }
-<p>Si necesitás contactarnos, escribinos a<br>
-<strong><a href="mailto:alquiya@gmail.com">alquiya@gmail.com</a></strong></p>
-</main>
 
 /* =========================
 INIT
@@ -1213,8 +1046,5 @@ mostrarTerminos();
 mostrarMapa();
 };
 </script>
-<footer>
-© 2025 AlquiYA — Todos los derechos reservados
-</footer>
 </body>
 </html>
