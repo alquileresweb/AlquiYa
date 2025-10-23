@@ -179,7 +179,7 @@ align-items: center;
 width: 30%;
 min-width: 80px;
 }
-#reg_contacto-container adjust {
+#reg_contacto-container input {
 width: 70%;
 }
 #registro input#reg_email, #registro input#reg_nombre {
@@ -519,36 +519,11 @@ let currentImages = [];
 let currentImageIndex = 0;
 
 /* =========================
-SOLUCIÓN: FETCH MEJORADO (SIN PROXY CORS)
+SOLUCIÓN CORS: PROXY + FALLBACK
 */
-async function makeRequest(url, options = {}) {
-  try {
-    const response = await fetch(url, {
-      ...options,
-      mode: "cors",
-      headers: {
-        ...options.headers,
-        "Content-Type": "application/x-www-form-urlencoded"
-      }
-    });
-
-    if (!response.ok) {
-      const text = await response.text();
-      console.error("Respuesta HTML recibida (no JSON):", text.substring(0, 500));
-      throw new Error(`Error HTTP ${response.status}. Probablemente el Web App no está desplegado como "Cualquiera" o la URL es incorrecta.`);
-    }
-
-    const text = await response.text();
-    if (text.trim().startsWith('<')) {
-      console.error("Respuesta HTML (no JSON):", text.substring(0, 500));
-      throw new Error("El servidor devolvió HTML. Verifica que la URL termine en '/exec' y esté desplegada como 'Cualquiera'.");
-    }
-
-    return JSON.parse(text);
-  } catch (error) {
-    console.error("Fetch error:", error);
-    throw new Error("No se pudo conectar con el servidor. Por favor, intenta de nuevo.");
-  }
+const CORS_PROXY = "https://corsproxy.io/?";
+function withCors(url) {
+  return CORS_PROXY + encodeURIComponent(url);
 }
 
 /* =========================
@@ -593,9 +568,11 @@ async function actualizarMetricas(idPropiedad, tipo) {
   params.append("tipo", tipo);
   logMetrica(idPropiedad, tipo, timestamp);
   try {
-    await makeRequest(webAppURL, {
+    await fetch(withCors(webAppURL), {
       method: "POST",
-      body: params
+      body: params,
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      mode: "cors"
     });
   } catch (error) {
     console.error(`Error métrica ${tipo}:`, error);
@@ -732,6 +709,58 @@ function aceptarTerminos() {
 }
 
 /* =========================
+FETCH HELPER CON PROXY + FALLBACK (SOLUCIÓN AQUÍ)
+*/
+async function makeRequest(url, options = {}) {
+  const isGET = !options.method || options.method === "GET";
+  const useProxy = isGET;
+
+  // Intento 1: Con proxy
+  if (useProxy) {
+    try {
+      const proxyUrl = withCors(url);
+      const response = await fetch(proxyUrl, {
+        ...options,
+        mode: "cors",
+        headers: {
+          ...options.headers,
+          "Content-Type": "application/x-www-form-urlencoded"
+        }
+      });
+
+      const text = await response.text();
+      if (text.trim().startsWith("<")) {
+        console.warn("Proxy devolvió HTML, intentando sin proxy...");
+        throw new Error("Proxy HTML response");
+      }
+
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return JSON.parse(text);
+    } catch (err) {
+      console.warn("Fallo con proxy, intentando directo...");
+    }
+  }
+
+  // Intento 2: Sin proxy (para GET)
+  if (isGET) {
+    try {
+      const response = await fetch(url, {
+        ...options,
+        mode: "no-cors", // no-cors permite GET sin headers
+        cache: "no-store"
+      });
+      // no-cors no permite leer respuesta → forzar recarga
+      setTimeout(() => location.reload(), 1000);
+      throw new Error("Conexión directa bloqueada por CORS. Recargando...");
+    } catch (err) {
+      console.error("Fallo directo:", err);
+    }
+  }
+
+  throw new Error("No se pudo conectar con el servidor. Por favor, intenta de nuevo.");
+}
+
+/* =========================
 AUTH
 */
 function login() {
@@ -802,9 +831,11 @@ function registrarDueno() {
   params.append("password", password);
   params.append("contacto", codigoPais + contacto);
 
-  makeRequest(webAppURL, {
+  fetch(withCors(webAppURL), {
     method: "POST",
-    body: params
+    body: params,
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    mode: "cors"
   })
     .then(() => {
       document.getElementById("registro-msg").style.color = "green";
@@ -828,9 +859,11 @@ function registrarEmailAvisos() {
   const params = new URLSearchParams();
   params.append("action", "suscribirNotificaciones");
   params.append("email", email);
-  makeRequest(webAppURL, {
+  fetch(withCors(webAppURL), {
     method: "POST",
-    body: params
+    body: params,
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    mode: "cors"
   })
     .then(() => {
       document.getElementById("avisos-msg").style.color = "green";
@@ -896,7 +929,7 @@ function cargarAlquileres() {
   loadingEl.style.display = "block";
   markersLayer.clearLayers();
 
-  const uniIcon = L.divIcon({ className: 'marker-icon', html: 'University', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const uniIcon = L.divIcon({ className: 'marker-icon', html: 'Graduation Cap', iconSize: [30, 30], iconAnchor: [15, 15] });
   const hospIcon = L.divIcon({ className: 'marker-icon', html: 'Hospital', iconSize: [30, 30], iconAnchor: [15, 15] });
   const superIcon = L.divIcon({ className: 'marker-icon', html: 'Shopping Cart', iconSize: [30, 30], iconAnchor: [15, 15] });
   const busIcon = L.divIcon({ className: 'marker-icon', html: 'Bus', iconSize: [30, 30], iconAnchor: [15, 15] });
@@ -917,7 +950,7 @@ function cargarAlquileres() {
   const filtroAmoblado = document.getElementById("filtroAmoblado").checked;
   const filtroTipo = document.getElementById("filtroTipo").value;
 
-  makeRequest(webAppURL + "?action=getAlquileres")
+  makeRequest(withCors(webAppURL + "?action=getAlquileres"))
     .then(res => {
       loadingEl.style.display = "none";
       if (!res.success || !Array.isArray(res.data)) {
@@ -980,7 +1013,7 @@ function cargarAlquileres() {
           const detalle = document.getElementById('alquiler-detalle');
           detalle.innerHTML = `<h2>Alquiler: ${direccion || ''}</h2>`;
 
-          const rows = (tipo === "Temporario" || tipo === "Local") ? [
+          const rows = (tipo === "Temp" || tipo === "Local") ? [
             ['Dirección', direccion || ''],
             ['Información de ingreso', infoIngreso || ''],
             ['Detalles', detalles || '']
