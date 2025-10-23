@@ -16,6 +16,7 @@ gtag('config', 'G-SSJ5DG33JK');
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
 <style>
+/* === ESTILOS ORIGINALES (sin cambios) === */
 body{margin:0;font-family:Arial,sans-serif}
 header{background:white;color:white;padding:15px;text-align:center}
 nav{display:flex;justify-content:center;gap:20px;background:#f4f4f4;padding:10px}
@@ -214,6 +215,9 @@ background: white;
 #modal-terminos-content h2 {
 margin-top: 0;
 }
+#modal-terminos-content img {
+max-width: 250px;
+}
 #modal-terminos-content button {
 width: auto;
 padding: 10px 20px;
@@ -221,7 +225,7 @@ margin-top: 20px;
 }
 #publicidad-container {
 max-width: 600px;
-margin: 40px auto;
+margin: 10px auto;
 background: white;
 border: 1px solid #ccc;
 border-radius: 8px;
@@ -512,28 +516,20 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 /* =========================
 CONFIG
 */
-const webAppURL = "https://script.google.com/macros/s/AKfycbyFvDRwPZoG6ChhvcxGm6B27ziD6Qkg4RcH0TI9K59b7zPz7iFxy7mgmbs5mo5T-TxD/exec";
+const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 const cloudinaryURL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
 const cloudinaryUploadPreset = "preset_alquileres";
 let currentImages = [];
 let currentImageIndex = 0;
 
 /* =========================
-SOLUCIÓN CORS: PROXY + FALLBACK
-*/
-const CORS_PROXY = "https://corsproxy.io/?";
-function withCors(url) {
-  return CORS_PROXY + encodeURIComponent(url);
-}
-
-/* =========================
-DEBUG MÉTRICAS
+SOLUCIÓN DEBUG MÉTRICAS
 */
 let metricasEnviadas = [];
 function logMetrica(idPropiedad, tipo, timestamp) {
-  const metrica = { id: idPropiedad, tipo, timestamp, hora: new Date(timestamp).toLocaleTimeString() };
+  const metrica = { id: idPropiedad, tipo: tipo, timestamp: timestamp, hora: new Date(timestamp).toLocaleTimeString() };
   metricasEnviadas.push(metrica);
-  console.log(`MÉTRICA: ID=${idPropiedad} | ${tipo} | ${new Date(timestamp).toLocaleString()}`);
+  console.log(`MÉTRICA ENVIADA: ID=${idPropiedad} | TIPO=${tipo} | ${new Date(timestamp).toLocaleString()}`);
   if (document.getElementById('debug-metricas').style.display !== 'none') {
     const li = document.createElement('li');
     li.innerHTML = `<strong>${tipo.toUpperCase()}</strong>: ID ${idPropiedad} <small>(${new Date(timestamp).toLocaleTimeString()})</small>`;
@@ -543,14 +539,8 @@ function logMetrica(idPropiedad, tipo, timestamp) {
 }
 function toggleDebugMetricas() {
   const panel = document.getElementById('debug-metricas');
-  const btn = document.getElementById('toggle-debug');
-  if (panel.style.display === 'none') {
-    panel.style.display = 'block';
-    btn.textContent = 'Cerrar Debug';
-  } else {
-    panel.style.display = 'none';
-    btn.textContent = 'Debug Métricas';
-  }
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  document.getElementById('toggle-debug').textContent = panel.style.display === 'none' ? 'Debug Métricas' : 'Cerrar Debug';
 }
 function clearDebugMetricas() {
   metricasEnviadas = [];
@@ -558,7 +548,7 @@ function clearDebugMetricas() {
 }
 
 /* =========================
-MÉTRICAS
+FUNCIÓN NUEVA: CONTROL DE MÉTRICAS
 */
 async function actualizarMetricas(idPropiedad, tipo) {
   const timestamp = Date.now();
@@ -568,230 +558,208 @@ async function actualizarMetricas(idPropiedad, tipo) {
   params.append("tipo", tipo);
   logMetrica(idPropiedad, tipo, timestamp);
   try {
-    await fetch(withCors(webAppURL), {
+    await makeRequest(webAppURL, {
       method: "POST",
       body: params,
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      mode: "cors"
+      mode: "no-cors"
     });
+    console.log(`MÉTRICA CONFIRMADA: ${tipo} para ID ${idPropiedad}`);
   } catch (error) {
-    console.error(`Error métrica ${tipo}:`, error);
+    console.error(`Error actualizando ${tipo} ID ${idPropiedad}:`, error);
   }
 }
 
 /* =========================
 MAPA
 */
-let map = L.map('map').setView([-28.5503, -56.0406], 14);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+let map = L.map('map').setView([-28.5503, -56.0406],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
 let markersLayer = L.layerGroup().addTo(map);
 
 /* =========================
 UTILS
 */
-function getField(obj, keys) {
-  for (const k of keys) {
-    if (Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null && obj[k] !== "") return obj[k];
-  }
-  return "";
+function getField(obj, keys){
+for (const k of keys){
+if (Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null && obj[k] !== "") return obj[k];
 }
-function toNumber(val) {
-  if (typeof val === "number") return val;
-  if (!val) return 0;
-  const clean = String(val).replace(/[^\d.,-]/g, "").replace(/\./g, "").replace(",", ".");
-  const num = parseFloat(clean);
-  return isNaN(num) ? 0 : num;
+return "";
 }
-function toInt(val, def = 0) {
-  const n = parseInt(val, 10);
-  return isNaN(n) ? def : n;
+function toNumber(val){
+if (typeof val === "number") return val;
+if (!val) return 0;
+const clean = String(val).replace(/[^\d.,-]/g,"").replace(/\./g,"").replace(",",".");
+const num = parseFloat(clean);
+return isNaN(num) ? 0 : num;
+}
+function toInt(val, def=0){
+const n = parseInt(val,10);
+return isNaN(n) ? def : n;
 }
 function parseDate(dateStr) {
-  if (!dateStr) return null;
-  const [day, month, year] = dateStr.split('/').map(Number);
-  if (!day || !month || !year) return null;
-  return new Date(year, month - 1, day);
+if (!dateStr) return null;
+const [day, month, year] = dateStr.split('/').map(Number);
+if (!day || !month || !year) return null;
+return new Date(year, month - 1, day);
 }
-function formatCurrency(el) {
-  let selectionStart = el.selectionStart;
-  let raw = String(el.value || "");
-  let digits = raw.replace(/\D/g, '');
-  if (digits === '') { el.value = ''; return; }
-  let n = parseInt(digits, 10);
-  if (isNaN(n)) { el.value = ''; return; }
-  let formatted = n.toLocaleString('es-AR');
-  el.value = '$' + formatted;
-  try { el.setSelectionRange(el.value.length, el.value.length); } catch (e) {}
+
+/* =========================
+FORMATO MONEDA
+*/
+function formatCurrency(el){
+let selectionStart = el.selectionStart;
+let raw = String(el.value || "");
+let digits = raw.replace(/\D/g,'');
+if(digits === '') { el.value = ''; return; }
+let n = parseInt(digits, 10);
+if(isNaN(n)) { el.value = ''; return; }
+let formatted = n.toLocaleString('es-AR');
+el.value = '$' + formatted;
+try { el.setSelectionRange(el.value.length, el.value.length); } catch(e){}
 }
-function parseCurrency(str) {
-  if (!str) return 0;
-  let cleaned = String(str).replace(/[^\d]/g, '');
-  if (cleaned === '') return 0;
-  let num = parseInt(cleaned, 10);
-  return isNaN(num) ? 0 : num;
+function parseCurrency(str){
+if(!str) return 0;
+let cleaned = String(str).replace(/[^\d]/g,'');
+if(cleaned === '') return 0;
+let num = parseInt(cleaned,10);
+return isNaN(num) ? 0 : num;
 }
 function formatPrice(num) {
-  if (!num) return "";
-  const clean = String(num).replace(/[^\d]/g, "");
-  const formatted = parseInt(clean, 10).toLocaleString('es-AR');
-  return "$" + formatted.replace(/,/g, ".");
+if (!num) return "";
+const clean = String(num).replace(/[^\d]/g, "");
+const formatted = parseInt(clean, 10).toLocaleString('es-AR');
+return "$" + formatted.replace(/,/g, ".");
 }
 
 /* =========================
 UI NAV
 */
-function toggleFiltros() {
-  const f = document.getElementById("filtros");
-  f.style.display = (f.style.display === "none" || f.style.display === "") ? "flex" : "none";
+function toggleFiltros(){
+const f = document.getElementById("filtros");
+f.style.display = (f.style.display==="none"||f.style.display==="") ? "flex":"none";
 }
-function mostrarMapa() {
-  document.getElementById("map").style.display = "block";
-  document.getElementById("login").style.display = "none";
-  document.getElementById("panel-dueno").style.display = "none";
-  document.getElementById("registro").style.display = "none";
-  document.getElementById("avisos-panel").style.display = "none";
-  document.getElementById("alquiler-detalle").style.display = "none";
-  document.getElementById("boton-filtros-container").style.display = "flex";
-  document.getElementById("loading-msg").style.display = "none";
-  document.getElementById("rapiclean-img-container").style.display = "block";
-  map.invalidateSize();
-  cargarAlquileres();
+function mostrarMapa(){
+document.getElementById("map").style.display="block";
+document.getElementById("login").style.display="none";
+document.getElementById("panel-dueno").style.display="none";
+document.getElementById("registro").style.display="none";
+document.getElementById("avisos-panel").style.display="none";
+document.getElementById("alquiler-detalle").style.display="none";
+document.getElementById("boton-filtros-container").style.display = "flex";
+document.getElementById("loading-msg").style.display = "none";
+document.getElementById("rapiclean-img-container").style.display = "block";
+map.invalidateSize();
+cargarAlquileres();
 }
-function mostrarLogin() {
-  document.getElementById("map").style.display = "none";
-  document.getElementById("filtros").style.display = "none";
-  document.getElementById("login").style.display = "block";
-  document.getElementById("panel-dueno").style.display = "none";
-  document.getElementById("registro").style.display = "none";
-  document.getElementById("avisos-panel").style.display = "none";
-  document.getElementById("alquiler-detalle").style.display = "none";
-  document.getElementById("boton-filtros-container").style.display = "none";
-  document.getElementById("loading-msg").style.display = "none";
-  document.getElementById("rapiclean-img-container").style.display = "none";
-  document.getElementById("login-loading").style.display = "none";
+function mostrarLogin(){
+document.getElementById("map").style.display="none";
+document.getElementById("filtros").style.display="none";
+document.getElementById("login").style.display="block";
+document.getElementById("panel-dueno").style.display="none";
+document.getElementById("registro").style.display="none";
+document.getElementById("avisos-panel").style.display="none";
+document.getElementById("alquiler-detalle").style.display="none";
+document.getElementById("boton-filtros-container").style.display = "none";
+document.getElementById("loading-msg").style.display = "none";
+document.getElementById("rapiclean-img-container").style.display = "none";
+document.getElementById("login-loading").style.display = "none";
 }
-function mostrarRegistro() {
-  document.getElementById("login").style.display = "none";
-  document.getElementById("registro").style.display = "block";
-  document.getElementById("map").style.display = "none";
-  document.getElementById("filtros").style.display = "none";
-  document.getElementById("panel-dueno").style.display = "none";
-  document.getElementById("avisos-panel").style.display = "none";
-  document.getElementById("alquiler-detalle").style.display = "none";
-  document.getElementById("boton-filtros-container").style.display = "none";
-  document.getElementById("loading-msg").style.display = "none";
-  document.getElementById("rapiclean-img-container").style.display = "none";
+function mostrarRegistro(){
+document.getElementById("login").style.display="none";
+document.getElementById("registro").style.display="block";
+document.getElementById("map").style.display="none";
+document.getElementById("filtros").style.display="none";
+document.getElementById("panel-dueno").style.display="none";
+document.getElementById("avisos-panel").style.display="none";
+document.getElementById("alquiler-detalle").style.display="none";
+document.getElementById("boton-filtros-container").style.display = "none";
+document.getElementById("loading-msg").style.display = "none";
+document.getElementById("rapiclean-img-container").style.display = "none";
 }
-function mostrarAvisos() {
-  document.getElementById("map").style.display = "none";
-  document.getElementById("filtros").style.display = "none";
-  document.getElementById("login").style.display = "none";
-  document.getElementById("panel-dueno").style.display = "none";
-  document.getElementById("registro").style.display = "none";
-  document.getElementById("avisos-panel").style.display = "block";
-  document.getElementById("alquiler-detalle").style.display = "none";
-  document.getElementById("boton-filtros-container").style.display = "none";
-  document.getElementById("loading-msg").style.display = "none";
-  document.getElementById("rapiclean-img-container").style.display = "none";
+function mostrarAvisos(){
+document.getElementById("map").style.display="none";
+document.getElementById("filtros").style.display="none";
+document.getElementById("login").style.display="none";
+document.getElementById("panel-dueno").style.display="none";
+document.getElementById("registro").style.display="none";
+document.getElementById("avisos-panel").style.display="block";
+document.getElementById("alquiler-detalle").style.display="none";
+document.getElementById("boton-filtros-container").style.display = "none";
+document.getElementById("loading-msg").style.display = "none";
+document.getElementById("rapiclean-img-container").style.display = "none";
 }
 
 /* =========================
-TÉRMINOS
+TÉRMINOS Y CONDICIONES
 */
 function mostrarTerminos() {
-  if (!localStorage.getItem("terminosAceptados")) {
-    document.getElementById("modal-terminos").style.display = "flex";
-  }
+const terminosAceptados = localStorage.getItem("terminosAceptados");
+if (!terminosAceptados) {
+document.getElementById("modal-terminos").style.display = "flex";
+}
 }
 function aceptarTerminos() {
-  localStorage.setItem("terminosAceptados", "true");
-  document.getElementById("modal-terminos").style.display = "none";
+localStorage.setItem("terminosAceptados", "true");
+document.getElementById("modal-terminos").style.display = "none";
 }
 
 /* =========================
-FETCH HELPER CON PROXY + FALLBACK (SOLUCIÓN AQUÍ)
+FETCH HELPER - SOLUCIÓN CORS
 */
 async function makeRequest(url, options = {}) {
-  const isGET = !options.method || options.method === "GET";
-  const useProxy = isGET;
+  const defaultOptions = {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+    mode: 'cors',  // ← Cambiado: por defecto cors
+    credentials: 'omit'
+  };
+  const finalOptions = { ...defaultOptions, ...options, headers: { ...defaultOptions.headers, ...options.headers } };
 
-  // Intento 1: Con proxy
-  if (useProxy) {
-    try {
-      const proxyUrl = withCors(url);
-      const response = await fetch(proxyUrl, {
-        ...options,
-        mode: "cors",
-        headers: {
-          ...options.headers,
-          "Content-Type": "application/x-www-form-urlencoded"
-        }
-      });
-
-      const text = await response.text();
-      if (text.trim().startsWith("<")) {
-        console.warn("Proxy devolvió HTML, intentando sin proxy...");
-        throw new Error("Proxy HTML response");
-      }
-
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return JSON.parse(text);
-    } catch (err) {
-      console.warn("Fallo con proxy, intentando directo...");
-    }
+  try {
+    const response = await fetch(url, finalOptions);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    if (options.mode === 'no-cors') return null;
+    return await response.json();
+  } catch (error) {
+    console.error("Fetch error:", error);
+    throw new Error("No se pudo conectar con el servidor. Por favor, intenta de nuevo.");
   }
-
-  // Intento 2: Sin proxy (para GET)
-  if (isGET) {
-    try {
-      const response = await fetch(url, {
-        ...options,
-        mode: "no-cors", // no-cors permite GET sin headers
-        cache: "no-store"
-      });
-      // no-cors no permite leer respuesta → forzar recarga
-      setTimeout(() => location.reload(), 1000);
-      throw new Error("Conexión directa bloqueada por CORS. Recargando...");
-    } catch (err) {
-      console.error("Fallo directo:", err);
-    }
-  }
-
-  throw new Error("No se pudo conectar con el servidor. Por favor, intenta de nuevo.");
 }
 
 /* =========================
 AUTH
 */
-function login() {
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-  if (!email || !password) {
-    document.getElementById("login-msg").textContent = "Ingrese email y contraseña";
-    return;
-  }
-  document.getElementById("login-loading").style.display = "block";
-  document.getElementById("login-msg").textContent = "";
-  makeRequest(`${webAppURL}?action=verificarLogin&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`)
-    .then(data => {
-      document.getElementById("login-loading").style.display = "none";
-      if (data.success) {
-        localStorage.setItem("dueno", email);
-        localStorage.setItem("dueno_email", email);
-        window.location.href = "dueños.html";
-      } else {
-        document.getElementById("login-msg").textContent = data.error === "Usuario no registrado" ? "Usuario no registrado" : "Contraseña incorrecta";
-      }
-    })
-    .catch(error => {
-      document.getElementById("login-loading").style.display = "none";
-      document.getElementById("login-msg").textContent = error.message;
-    });
+function login(){
+const email = document.getElementById("email").value.trim();
+const password = document.getElementById("password").value.trim();
+if(!email || !password){
+document.getElementById("login-msg").textContent="Ingrese email y contraseña";
+document.getElementById("login-loading").style.display = "none";
+return;
 }
-function logout() {
-  localStorage.removeItem("dueno");
-  localStorage.removeItem("dueno_email");
-  mostrarLogin();
+document.getElementById("login-loading").style.display = "block";
+document.getElementById("login-msg").textContent = "";
+makeRequest(webAppURL+"?action=verificarLogin&email="+encodeURIComponent(email)+"&password="+encodeURIComponent(password))
+.then(data => {
+  document.getElementById("login-loading").style.display = "none";
+  if (data.success) {
+    localStorage.setItem("dueno", email);
+    localStorage.setItem("dueno_email", email);
+    window.location.href = "dueños.html";
+  } else {
+    document.getElementById("login-msg").textContent = data.error || "Error en el inicio de sesión";
+  }
+})
+.catch(error => {
+  document.getElementById("login-loading").style.display = "none";
+  document.getElementById("login-msg").textContent = error.message;
+});
+}
+function logout(){
+localStorage.removeItem("dueno");
+localStorage.removeItem("dueno_email");
+mostrarLogin();
 }
 function registrarDueno() {
   const email = document.getElementById("reg_email").value.trim();
@@ -815,12 +783,12 @@ function registrarDueno() {
   }
   if (!contactoRegex.test(contacto)) {
     document.getElementById("registro-msg").style.color = "red";
-    document.getElementById("registro-msg").textContent = "WhatsApp inválido (9-10 dígitos)";
+    document.getElementById("registro-msg").textContent = "Ingrese un número de WhatsApp válido (9-10 dígitos)";
     return;
   }
   if (password.length < 6) {
     document.getElementById("registro-msg").style.color = "red";
-    document.getElementById("registro-msg").textContent = "Contraseña mínima 6 caracteres";
+    document.getElementById("registro-msg").textContent = "La contraseña debe tener al menos 6 caracteres";
     return;
   }
 
@@ -831,16 +799,16 @@ function registrarDueno() {
   params.append("password", password);
   params.append("contacto", codigoPais + contacto);
 
-  fetch(withCors(webAppURL), {
+  makeRequest(webAppURL, {
     method: "POST",
     body: params,
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    mode: "cors"
+    mode: "no-cors"
   })
     .then(() => {
       document.getElementById("registro-msg").style.color = "green";
-      document.getElementById("registro-msg").innerHTML = "Registrado con éxito.<br><button onclick='mostrarLogin()'>Ir a Login</button>";
-      setTimeout(mostrarLogin, 2000);
+      document.getElementById("registro-msg").innerHTML = "Dueño registrado con éxito.<br><button onclick='mostrarLogin()'>Ir a Login</button>";
+      setTimeout(() => mostrarLogin(), 2000);
     })
     .catch(error => {
       document.getElementById("registro-msg").style.color = "red";
@@ -848,278 +816,305 @@ function registrarDueno() {
     });
 }
 
+/* =========================
+REGISTRO DE EMAILS PARA AVISOS
+*/
 function registrarEmailAvisos() {
   const email = document.getElementById("avisos_email").value.trim();
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   if (!email || !emailRegex.test(email)) {
     document.getElementById("avisos-msg").style.color = "red";
-    document.getElementById("avisos-msg").textContent = "Email inválido";
+    document.getElementById("avisos-msg").textContent = "Ingrese un email válido";
     return;
   }
+
   const params = new URLSearchParams();
   params.append("action", "suscribirNotificaciones");
   params.append("email", email);
-  fetch(withCors(webAppURL), {
+
+  makeRequest(webAppURL, {
     method: "POST",
     body: params,
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    mode: "cors"
+    mode: "no-cors"
   })
-    .then(() => {
-      document.getElementById("avisos-msg").style.color = "green";
-      document.getElementById("avisos-msg").textContent = "Suscripción exitosa.";
-      document.getElementById("avisos_email").value = "";
-      setTimeout(mostrarMapa, 2000);
-    })
-    .catch(error => {
-      document.getElementById("avisos-msg").style.color = "red";
-      document.getElementById("avisos-msg").textContent = error.message;
-    });
+  .then(() => {
+    document.getElementById("avisos-msg").style.color = "green";
+    document.getElementById("avisos-msg").textContent = "Email registrado con éxito para recibir notificaciones.";
+    document.getElementById("avisos_email").value = "";
+    setTimeout(() => mostrarMapa(), 2000);
+  })
+  .catch(error => {
+    document.getElementById("avisos-msg").style.color = "red";
+    document.getElementById("avisos-msg").textContent = error.message;
+  });
 }
 
 /* =========================
 IMÁGENES
 */
-async function subirImagenCloudinary(file) {
-  const data = new FormData();
-  data.append("file", file);
-  data.append("upload_preset", cloudinaryUploadPreset);
-  try {
-    const res = await fetch(cloudinaryURL, { method: "POST", body: data });
-    const json = await res.json();
-    return json.secure_url;
-  } catch (err) {
-    console.error("Error Cloudinary:", err);
-    return null;
-  }
+async function subirImagenCloudinary(file){
+const data = new FormData();
+data.append("file", file);
+data.append("upload_preset", cloudinaryUploadPreset);
+try {
+const res = await fetch(cloudinaryURL, {method:"POST", body:data});
+const json = await res.json();
+return json.secure_url;
+} catch(err){
+console.error("Error subiendo imagen a Cloudinary:", err);
+return null;
 }
-function driveUrlDirect(url) {
-  let fileId = null;
-  if (url && url.includes("drive.google.com")) {
-    let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
-    if (match) fileId = match[1];
-  }
-  return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
 }
-function abrirModal(src, images, index) {
-  currentImages = images;
-  currentImageIndex = index;
-  const modal = document.getElementById("modal-img");
-  const img = document.getElementById("img-grande");
-  img.src = src;
-  modal.style.display = "flex";
-  document.querySelector(".prev-btn").style.display = images.length > 1 ? "block" : "none";
-  document.querySelector(".next-btn").style.display = images.length > 1 ? "block" : "none";
+function driveUrlDirect(url){
+let fileId = null;
+if(url && url.includes("drive.google.com")){
+let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+if(match) fileId = match[1];
+else {
+match = url.match(/id=([a-zA-Z0-9_-]+)/);
+if(match) fileId = match[1];
 }
-function cerrarModal() {
-  document.getElementById("modal-img").style.display = "none";
-  currentImages = [];
-  currentImageIndex = 0;
 }
-function cambiarImagen(direction) {
-  currentImageIndex = (currentImageIndex + direction + currentImages.length) % currentImages.length;
-  document.getElementById("img-grande").src = currentImages[currentImageIndex];
+return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
+}
+function abrirModal(src, images, index){
+currentImages = images;
+currentImageIndex = index;
+const modal = document.getElementById("modal-img");
+const img = document.getElementById("img-grande");
+img.src = src;
+modal.style.display = "flex";
+document.querySelector(".prev-btn").style.display = images.length > 1 ? "block" : "none";
+document.querySelector(".next-btn").style.display = images.length > 1 ? "block" : "none";
+}
+function cerrarModal(){
+document.getElementById("modal-img").style.display = "none";
+currentImages = [];
+currentImageIndex = 0;
+}
+function cambiarImagen(direction){
+currentImageIndex = (currentImageIndex + direction + currentImages.length) % currentImages.length;
+document.getElementById("img-grande").src = currentImages[currentImageIndex];
 }
 
 /* =========================
-CARGA DE ALQUILERES
+CARGA DE ALQUILERES - SIN NO-CORS
 */
-function cargarAlquileres() {
-  const loadingEl = document.getElementById("loading-msg");
-  loadingEl.style.display = "block";
-  markersLayer.clearLayers();
+function cargarAlquileres(){
+const loadingEl = document.getElementById("loading-msg");
+loadingEl.style.display="block";
+markersLayer.clearLayers();
 
-  const uniIcon = L.divIcon({ className: 'marker-icon', html: 'Graduation Cap', iconSize: [30, 30], iconAnchor: [15, 15] });
-  const hospIcon = L.divIcon({ className: 'marker-icon', html: 'Hospital', iconSize: [30, 30], iconAnchor: [15, 15] });
-  const superIcon = L.divIcon({ className: 'marker-icon', html: 'Shopping Cart', iconSize: [30, 30], iconAnchor: [15, 15] });
-  const busIcon = L.divIcon({ className: 'marker-icon', html: 'Bus', iconSize: [30, 30], iconAnchor: [15, 15] });
-  const policeIcon = L.divIcon({ className: 'marker-icon', html: 'Police', iconSize: [30, 30], iconAnchor: [15, 15] });
+const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15]});
+const hospIcon = L.divIcon({className:'marker-icon', html:'🏥', iconSize:[30,30], iconAnchor:[15,15]});
+const superIcon = L.divIcon({className:'marker-icon', html:'🛒', iconSize:[30,30], iconAnchor:[15,15]});
+const busIcon = L.divIcon({className:'marker-icon', html:'🚌', iconSize:[30,30], iconAnchor:[15,15]});
+const policeIcon = L.divIcon({className:'marker-icon', html:'👮', iconSize:[30,30], iconAnchor:[15,15]});
 
-  L.marker([-28.5509978, -56.0409727], { icon: uniIcon }).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
-  L.marker([-28.5551127, -56.0389282], { icon: hospIcon }).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
-  L.marker([-28.5519443, -56.0401962], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado La Bomba</b>");
-  L.marker([-28.5472635, -56.0438082], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado El Super</b>");
-  L.marker([-28.5462903, -56.0440365], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado La Economía</b>");
-  L.marker([-28.5468697, -56.0432862], { icon: busIcon }).addTo(markersLayer).bindPopup("<b>Terminal de Omnibus</b>");
-  L.marker([-28.5487787, -56.0396171], { icon: policeIcon }).addTo(markersLayer).bindPopup("<b>Policía</b>");
+L.marker([-28.5509978,-56.0409727],{icon:uniIcon}).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
+L.marker([-28.5551127,-56.0389282],{icon:hospIcon}).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
+L.marker([-28.5519443,-56.0401962],{icon:superIcon}).addTo(markersLayer).bindPopup("<b>Supermercado La Bomba</b>");
+L.marker([-28.5472635,-56.0438082],{icon:superIcon}).addTo(markersLayer).bindPopup("<b>Supermercado El Super</b>");
+L.marker([-28.5462903,-56.0440365],{icon:superIcon}).addTo(markersLayer).bindPopup("<b>Supermercado La Economía</b>");
+L.marker([-28.5468697,-56.0432862],{icon:busIcon}).addTo(markersLayer).bindPopup("<b>Terminal de Omnibus</b>");
+L.marker([-28.5487787,-56.0396171],{icon:policeIcon}).addTo(markersLayer).bindPopup("<b>Policía</b>");
 
-  const filtroAmb = document.getElementById("filtroAmb").value;
-  const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
-  const filtroMax = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
-  const filtroMascotas = document.getElementById("filtroMascotas").checked;
-  const filtroAmoblado = document.getElementById("filtroAmoblado").checked;
-  const filtroTipo = document.getElementById("filtroTipo").value;
+const filtroAmb = document.getElementById("filtroAmb").value;
+const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
+const filtroMax = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
+const filtroMascotas = document.getElementById("filtroMascotas").checked;
+const filtroAmoblado = document.getElementById("filtroAmoblado").checked;
+const filtroTipo = document.getElementById("filtroTipo").value;
 
-  makeRequest(withCors(webAppURL + "?action=getAlquileres"))
-    .then(res => {
-      loadingEl.style.display = "none";
-      if (!res.success || !Array.isArray(res.data)) {
-        console.error("Error en datos:", res.error || "Respuesta inválida");
-        return;
-      }
+makeRequest(webAppURL + "?action=getAlquileres")
+.then(res => {
+  loadingEl.style.display="none";
+  if(!res.success || !Array.isArray(res.data)) {
+    console.error("Error al cargar alquileres:", res.error || "Respuesta inválida");
+    return;
+  }
 
-      let cont = 0;
-      res.data.forEach(a => {
-        const plan = getField(a, ["Plan"]);
-        const fechaVencimientoStr = getField(a, ["Fecha de Vencimiento", "FechaVencimiento", "Vencimiento"]);
-        if (plan === "Prueba") {
-          const fechaVencimiento = parseDate(fechaVencimientoStr);
-          const fechaActual = new Date();
-          if (fechaVencimiento && fechaActual > fechaVencimiento) return;
-        }
+  let cont = 0;
+  res.data.forEach(a=>{
+    const plan = getField(a, ["Plan"]);
+    const fechaVencimientoStr = getField(a, ["Fecha de Vencimiento", "FechaVencimiento", "Vencimiento"]);
+    if (plan === "Prueba") {
+      const fechaVencimiento = parseDate(fechaVencimientoStr);
+      const fechaActual = new Date();
+      if (fechaVencimiento && fechaActual > fechaVencimiento) return;
+    }
 
-        const lat = parseFloat(getField(a, ["Latitud", "lat", "LAT", "Lat"]));
-        const lng = parseFloat(getField(a, ["Longitud", "lng", "LNG", "Long"]));
-        if (isNaN(lat) || isNaN(lng)) return;
+    const lat = parseFloat(getField(a, ["Latitud","lat","LAT","Lat"]));
+    const lng = parseFloat(getField(a, ["Longitud","lng","LNG","Long"]));
+    if(isNaN(lat) || isNaN(lng)) return;
 
-        const tipo = getField(a, ["Tipo"]);
-        if (filtroTipo && tipo !== filtroTipo) return;
+    const tipo = getField(a, ["Tipo"]);
+    if(filtroTipo && tipo !== filtroTipo) return;
 
-        const ambVal = getField(a, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]);
-        const nroAmb = toInt(ambVal, 0);
-        const precioVal = getField(a, ["Precio", "precio", "$"]);
-        const precio = toNumber(precioVal);
-        const formattedPrecio = formatPrice(precioVal);
+    const ambVal = getField(a, ["Nro Ambientes","Ambientes","Nro de Ambientes","Nro"]);
+    const nroAmb = toInt(ambVal, 0);
 
-        if (filtroAmb && nroAmb !== toInt(filtroAmb)) return;
-        if (precio < filtroMin || precio > filtroMax) return;
-        const mascotas = getField(a, ["Mascotas"]);
-        if (filtroMascotas && (!mascotas || mascotas.toLowerCase() !== "sí")) return;
-        const amoblado = getField(a, ["Amoblado"]);
-        if (filtroAmoblado && (!amoblado || amoblado.toLowerCase() !== "sí")) return;
+    const precioVal = getField(a, ["Precio","precio","$"]);
+    const precio = toNumber(precioVal);
+    const formattedPrecio = formatPrice(precioVal);
 
-        const direccion = getField(a, ["Direccion", "Dirección", "Domicilio"]);
-        const infoIngreso = getField(a, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso", "Informacion de ingreso"]);
-        const detalles = getField(a, ["Detalles", "Detalle", "Descripcion", "Descripción"]);
-        const contacto = getField(a, ["Contacto", "Whatsapp", "WhatsApp", "Tel", "Telefono", "Teléfono"]);
-        const enlace = getField(a, ["Enlace para compartir"]);
-        const idPropiedad = getField(a, ["N", "ID", "id", "IdPropiedad", "idPropiedad"]);
+    if(filtroAmb && nroAmb !== toInt(filtroAmb)) return;
+    if(precio < filtroMin || precio > filtroMax) return;
+    const mascotas = getField(a, ["Mascotas"]);
+    if(filtroMascotas && (!mascotas || mascotas.toLowerCase() !== "sí")) return;
+    const amoblado = getField(a, ["Amoblado"]);
+    if(filtroAmoblado && (!amoblado || amoblado.toLowerCase() !== "sí")) return;
 
-        let iconHtml = tipo === "Temporario" ? 'Hourglass' : tipo === "Local" ? 'Shopping Bag' : `House<span style="font-size:12px;margin-left:2px;">${nroAmb || "-"}</span>`;
-        const icon = L.divIcon({ className: 'marker-icon', html: iconHtml, iconSize: [30, 30], iconAnchor: [15, 15] });
-        const marker = L.marker([lat, lng], { icon }).addTo(markersLayer);
+    const direccion = getField(a, ["Direccion","Dirección","Domicilio"]);
+    const infoIngreso = getField(a, ["Informacion ingreso","Información ingreso","InformacionIngreso","InfoIngreso","Informacion de ingreso"]);
+    const detalles = getField(a, ["Detalles","Detalle","Descripcion","Descripción"]);
+    const contacto = getField(a, ["Contacto","Whatsapp","WhatsApp","Tel","Telefono","Teléfono"]);
+    const enlace = getField(a, ["Enlace para compartir"]);
+    const idPropiedad = getField(a, ["N", "ID", "id", "IdPropiedad", "idPropiedad"]);
 
-        const popupDiv = document.createElement('div');
-        popupDiv.innerHTML = `<b>Dirección:</b> ${direccion || ""}`;
-        if (tipo !== "Temporario" && tipo !== "Local") {
-          popupDiv.innerHTML += `<br><b>Ambientes:</b> ${nroAmb || ""}<br><b>Precio:</b> ${formattedPrecio || ""}`;
-        }
+    let iconHtml;
+    if (tipo === "Temporario") {
+      iconHtml = '⌛';
+    } else if (tipo === "Local") {
+      iconHtml = '🛍️';
+    } else {
+      iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">'+(nroAmb||"-")+'</span>';
+    }
 
-        const verBtn = document.createElement('button');
-        verBtn.className = 'popup-button';
-        verBtn.textContent = 'Ver Alquiler';
-        verBtn.onclick = async () => {
-          if (idPropiedad) await actualizarMetricas(idPropiedad, "vistas");
-          const detalle = document.getElementById('alquiler-detalle');
-          detalle.innerHTML = `<h2>Alquiler: ${direccion || ''}</h2>`;
+    const icon = L.divIcon({
+      className:'marker-icon',
+      html: iconHtml,
+      iconSize:[30,30],
+      iconAnchor:[15,15]
+    });
+    const marker = L.marker([lat,lng], {icon: icon}).addTo(markersLayer);
 
-          const rows = (tipo === "Temp" || tipo === "Local") ? [
-            ['Dirección', direccion || ''],
-            ['Información de ingreso', infoIngreso || ''],
-            ['Detalles', detalles || '']
-          ] : [
-            ['Dirección', direccion || ''],
-            ['Ambientes', nroAmb || ''],
-            ['Precio', formattedPrecio || ''],
-            ['Información de ingreso', infoIngreso || ''],
-            ['Detalles', detalles || ''],
-            ['Mascotas', mascotas || ''],
-            ['Amoblado', amoblado || '']
-          ];
-          rows.forEach(([label, val]) => {
-            const p = document.createElement('p');
-            p.innerHTML = `<b>${label}:</b> ${val}`;
-            detalle.appendChild(p);
-          });
+    const popupDiv = document.createElement('div');
+    popupDiv.innerHTML = `<b>Dirección:</b> ${direccion||""}`;
+    if (tipo !== "Temporario" && tipo !== "Local") {
+      popupDiv.innerHTML += `<br><b>Ambientes:</b> ${nroAmb||""}<br><b>Precio:</b> ${formattedPrecio||""}`;
+    }
 
-          const imgContainer = document.createElement('div');
-          imgContainer.id = 'imagenes-container';
-          const fotos = getField(a, ["Fotos", "Imagenes", "Imágenes", "images"]);
-          let imageUrls = [];
-          if (fotos) {
-            imageUrls = fotos.split(',').map(f => driveUrlDirect(f.trim())).filter(url => url);
-            imageUrls.forEach((url, index) => {
-              const img = document.createElement('img');
-              img.src = url;
-              img.alt = "Imagen del alquiler";
-              img.referrerPolicy = "no-referrer";
-              img.onclick = () => abrirModal(url, imageUrls, index);
-              imgContainer.appendChild(img);
-            });
-          }
-          detalle.appendChild(imgContainer);
+    const verBtn = document.createElement('button');
+    verBtn.className = 'popup-button';
+    verBtn.textContent = 'Ver Alquiler';
+    verBtn.onclick = async () => {
+      if (idPropiedad) await actualizarMetricas(idPropiedad, "vistas");
+      const detalle = document.getElementById('alquiler-detalle');
+      detalle.innerHTML = `<h2>Alquiler: ${direccion||''}</h2>`;
 
-          if (contacto) {
-            const waBtn = document.createElement('button');
-            waBtn.textContent = 'Contactar por WhatsApp';
-            waBtn.style.background = '#25D366';
-            waBtn.style.color = 'white';
-            waBtn.style.marginTop = '10px';
-            waBtn.onclick = async () => {
-              if (idPropiedad) await actualizarMetricas(idPropiedad, "contactos");
-              const mensaje = `Hola, vengo desde AlquiYa y quiero consultar por el alquiler de ${direccion}`;
-              window.open(`https://wa.me/${contacto}?text=${encodeURIComponent(mensaje)}`, '_blank');
-            };
-            detalle.appendChild(waBtn);
-          }
-
-          if (enlace) {
-            const linkContainer = document.createElement('div');
-            linkContainer.id = 'link-container';
-            const linkInput = document.createElement('input');
-            linkInput.type = 'text';
-            linkInput.value = enlace;
-            const copyText = document.createElement('span');
-            copyText.textContent = 'Seleccioná y copiá para compartir';
-            linkContainer.appendChild(linkInput);
-            linkContainer.appendChild(copyText);
-            detalle.appendChild(linkContainer);
-          }
-
-          const copyMsg = document.createElement('p');
-          copyMsg.id = 'copy-msg';
-          detalle.appendChild(copyMsg);
-
-          detalle.style.display = 'block';
-          detalle.classList.add("highlight");
-          detalle.scrollIntoView({ behavior: "smooth", block: "start" });
-          setTimeout(() => detalle.classList.remove("highlight"), 1200);
-          map.invalidateSize();
-        };
-        popupDiv.appendChild(verBtn);
-        marker.bindPopup(popupDiv);
-        cont++;
+      const rows = (tipo === "Temporario" || tipo === "Local") ? [
+        ['Dirección', direccion||''],
+        ['Información de ingreso', infoIngreso||''],
+        ['Detalles', detalles||'']
+      ] : [
+        ['Dirección', direccion||''],
+        ['Ambientes', nroAmb||''],
+        ['Precio', formattedPrecio||''],
+        ['Información de ingreso', infoIngreso||''],
+        ['Detalles', detalles||''],
+        ['Mascotas', mascotas||''],
+        ['Amoblado', amoblado||'']
+      ];
+      rows.forEach(([label,val])=>{
+        const p=document.createElement('p');
+        p.innerHTML=`<b>${label}:</b> ${val}`;
+        detalle.appendChild(p);
       });
 
-      if (cont === 0) console.warn("No se encontraron alquileres.");
-    })
-    .catch(err => {
-      loadingEl.style.display = "none";
-      console.error("Error al conectar:", err);
-    });
+      const imgContainer = document.createElement('div');
+      imgContainer.id = 'imagenes-container';
+
+      const fotos = getField(a, ["Fotos","Imagenes","Imágenes","images"]);
+      let imageUrls = [];
+      if(fotos){
+        imageUrls = fotos.split(',').map(f => driveUrlDirect(f.trim())).filter(url => url);
+        imageUrls.forEach((url, index) => {
+          const img = document.createElement('img');
+          img.src = url;
+          img.alt = "Imagen del alquiler";
+          img.referrerPolicy = "no-referrer";
+          img.onclick = () => abrirModal(url, imageUrls, index);
+          imgContainer.appendChild(img);
+        });
+      }
+      detalle.appendChild(imgContainer);
+
+      if(contacto){
+        const waBtn = document.createElement('button');
+        waBtn.textContent = 'Contactar por WhatsApp';
+        waBtn.style.background = '#25D366';
+        waBtn.style.color = 'white';
+        waBtn.style.marginTop = '10px';
+        waBtn.onclick = async () => {
+          if (idPropiedad) await actualizarMetricas(idPropiedad, "contactos");
+          const mensaje = `Hola, vengo desde AlquiYa y quiero consultar por el alquiler de ${direccion}`;
+          window.open(`https://wa.me/${contacto}?text=${encodeURIComponent(mensaje)}`,'_blank');
+        };
+        detalle.appendChild(waBtn);
+      }
+
+      if(enlace){
+        const linkContainer = document.createElement('div');
+        linkContainer.id = 'link-container';
+        const linkInput = document.createElement('input');
+        linkInput.type = 'text';
+        linkInput.value = enlace;
+        const copyText = document.createElement('span');
+        copyText.textContent = 'Seleccioná y copiá para compartir';
+        linkContainer.appendChild(linkInput);
+        linkContainer.appendChild(copyText);
+        detalle.appendChild(linkContainer);
+      }
+
+      const copyMsg = document.createElement('p');
+      copyMsg.id = 'copy-msg';
+      detalle.appendChild(copyMsg);
+
+      detalle.style.display='block';
+      detalle.classList.add("highlight");
+      detalle.scrollIntoView({behavior:"smooth", block:"start"});
+      setTimeout(()=>detalle.classList.remove("highlight"),1200);
+      map.invalidateSize();
+    };
+    popupDiv.appendChild(verBtn);
+    marker.bindPopup(popupDiv);
+    cont++;
+  });
+
+  if (cont === 0){
+    console.warn("No se encontraron alquileres para los filtros actuales.");
+  }
+})
+.catch(err=>{
+  document.getElementById("loading-msg").style.display="none";
+  console.error("Error al conectar con WebApp:",err)
+});
 }
 
 /* =========================
-PASSWORD TOGGLE
+PASSWORD VISIBILITY TOGGLE
 */
 function togglePassword(inputId) {
-  const input = document.getElementById(inputId);
-  const eyeIcon = input.nextElementSibling;
-  if (input.type === "password") {
-    input.type = "text";
-    eyeIcon.style.backgroundImage = "url('https://img.icons8.com/ios/50/000000/invisible.png')";
-  } else {
-    input.type = "password";
-    eyeIcon.style.backgroundImage = "url('https://img.icons8.com/ios/50/000000/visible.png')";
-  }
+const input = document.getElementById(inputId);
+const eyeIcon = input.nextElementSibling;
+if (input.type === "password") {
+input.type = "text";
+eyeIcon.style.backgroundImage = "url('https://img.icons8.com/ios/50/000000/invisible.png')";
+} else {
+input.type = "password";
+eyeIcon.style.backgroundImage = "url('https://img.icons8.com/ios/50/000000/visible.png')";
+}
 }
 
 /* =========================
 INIT
 */
-window.onload = () => {
-  mostrarTerminos();
-  mostrarMapa();
+window.onload = ()=>{
+mostrarTerminos();
+mostrarMapa();
 };
 </script>
 <footer>
