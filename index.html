@@ -16,7 +16,6 @@ gtag('config', 'G-SSJ5DG33JK');
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
 <style>
-/* === TODOS LOS ESTILOS ORIGINALES (sin cambios) === */
 body{margin:0;font-family:Arial,sans-serif}
 header{background:white;color:white;padding:15px;text-align:center}
 nav{display:flex;justify-content:center;gap:20px;background:#f4f4f4;padding:10px}
@@ -309,6 +308,13 @@ z-index: 10002;
 font-weight: bold;
 display: none;
 }
+#error-msg {
+display: none;
+text-align: center;
+font-weight: bold;
+margin: 10px;
+color: red;
+}
 </style>
 </head>
 <body>
@@ -377,8 +383,7 @@ En caso de reclamo de terceros, el Dueño mantendrá indemne a la Plataforma.</p
 <p>La Plataforma podrá modificar los presentes Términos y Condiciones en cualquier momento, notificando a los Usuarios mediante su publicación en el sitio.</p>
 
 <h3>9. Ley Aplicable y Jurisdicción</h3>
-<p>Los presentes Términos se rigen por las leyes de la República Th
-<p>Argentina.<br>
+<p>Los presentes Términos se rigen por las leyes de la República Argentina.<br>
 Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé, Corrientes, renunciando expresamente a cualquier otro fuero.</p>
 <button onclick="aceptarTerminos()">Aceptar Términos y Condiciones</button>
 </div>
@@ -418,6 +423,7 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 </div>
 
 <div id="loading-msg">Cargando alquileres disponibles...</div>
+<div id="error-msg"></div>
 
 <div id="map"></div>
 
@@ -458,7 +464,7 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 <div class="eye-icon" onclick="togglePassword('reg_password')"></div>
 </div>
 <div id="reg_contacto-container">
-<select id="reg_codigo_pais clothe">
+<select id="reg_codigo_pais">
 <option value="+54">+54 (Argentina)</option>
 <option value="+55">+55 (Brasil)</option>
 <option value="+56">+56 (Chile)</option>
@@ -628,6 +634,7 @@ document.getElementById("avisos-panel").style.display="none";
 document.getElementById("alquiler-detalle").style.display="none";
 document.getElementById("boton-filtros-container").style.display = "flex";
 document.getElementById("loading-msg").style.display = "none";
+document.getElementById("error-msg").style.display = "none";
 document.getElementById("rapiclean-img-container").style.display = "block";
 map.invalidateSize();
 cargarAlquileres();
@@ -642,6 +649,7 @@ document.getElementById("avisos-panel").style.display="none";
 document.getElementById("alquiler-detalle").style.display="none";
 document.getElementById("boton-filtros-container").style.display = "none";
 document.getElementById("loading-msg").style.display = "none";
+document.getElementById("error-msg").style.display = "none";
 document.getElementById("rapiclean-img-container").style.display = "none";
 document.getElementById("login-loading").style.display = "none";
 }
@@ -655,6 +663,7 @@ document.getElementById("avisos-panel").style.display="none";
 document.getElementById("alquiler-detalle").style.display="none";
 document.getElementById("boton-filtros-container").style.display = "none";
 document.getElementById("loading-msg").style.display = "none";
+document.getElementById("error-msg").style.display = "none";
 document.getElementById("rapiclean-img-container").style.display = "none";
 }
 function mostrarAvisos(){
@@ -667,6 +676,7 @@ document.getElementById("avisos-panel").style.display="block";
 document.getElementById("alquiler-detalle").style.display="none";
 document.getElementById("boton-filtros-container").style.display = "none";
 document.getElementById("loading-msg").style.display = "none";
+document.getElementById("error-msg").style.display = "none";
 document.getElementById("rapiclean-img-container").style.display = "none";
 }
 
@@ -912,7 +922,9 @@ CARGA DE ALQUILERES
 */
 function cargarAlquileres(){
 const loadingEl = document.getElementById("loading-msg");
+const errorEl = document.getElementById("error-msg");
 loadingEl.style.display="block";
+errorEl.style.display="none";
 markersLayer.clearLayers();
 
 const uniIcon = L.divIcon({className:'marker-icon', html:'University', iconSize:[30,30], iconAnchor:[15,15]});
@@ -936,12 +948,17 @@ const filtroMascotas = document.getElementById("filtroMascotas").checked;
 const filtroAmoblado = document.getElementById("filtroAmoblado").checked;
 const filtroTipo = document.getElementById("filtroTipo").value;
 
-// CAMBIO CLAVE: Usar JSONP para evitar CORS
 makeRequest(webAppURL + "?action=getAlquileresPublicos", { method: "GET" })
 .then(res => {
   loadingEl.style.display="none";
   if(!res.success || !Array.isArray(res.data)) {
-    console.error("Error al cargar alquileres:", res.error || "Respuesta inválida");
+    console.error("Error al cargar alquileres:", {
+      message: res.error || "Respuesta inválida",
+      response: res,
+      url: webAppURL + "?action=getAlquileresPublicos"
+    });
+    errorEl.style.display = "block";
+    errorEl.textContent = res.error || "No se pudieron cargar los alquileres. Intenta de nuevo más tarde.";
     return;
   }
 
@@ -1096,11 +1113,19 @@ makeRequest(webAppURL + "?action=getAlquileresPublicos", { method: "GET" })
 
   if (cont === 0){
     console.warn("No se encontraron alquileres para los filtros actuales.");
+    errorEl.style.display = "block";
+    errorEl.textContent = "No se encontraron alquileres que coincidan con los filtros seleccionados.";
   }
 })
 .catch(err=>{
-  document.getElementById("loading-msg").style.display="none";
-  console.error("Error al conectar con WebApp:",err)
+  loadingEl.style.display="none";
+  errorEl.style.display="block";
+  errorEl.textContent = "Error al conectar con el servidor. Por favor, intenta de nuevo.";
+  console.error("Error al conectar con WebApp:", {
+    message: err.message,
+    url: webAppURL + "?action=getAlquileresPublicos",
+    stack: err.stack
+  });
 });
 }
 
