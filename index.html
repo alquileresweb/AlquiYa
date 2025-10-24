@@ -634,7 +634,6 @@ document.getElementById("avisos-panel").style.display="none";
 document.getElementById("alquiler-detalle").style.display="none";
 document.getElementById("boton-filtros-container").style.display = "flex";
 document.getElementById("loading-msg").style.display = "none";
-document.getElementById("error-msg").style.display = "none";
 document.getElementById("rapiclean-img-container").style.display = "block";
 map.invalidateSize();
 cargarAlquileres();
@@ -649,7 +648,6 @@ document.getElementById("avisos-panel").style.display="none";
 document.getElementById("alquiler-detalle").style.display="none";
 document.getElementById("boton-filtros-container").style.display = "none";
 document.getElementById("loading-msg").style.display = "none";
-document.getElementById("error-msg").style.display = "none";
 document.getElementById("rapiclean-img-container").style.display = "none";
 document.getElementById("login-loading").style.display = "none";
 }
@@ -663,7 +661,6 @@ document.getElementById("avisos-panel").style.display="none";
 document.getElementById("alquiler-detalle").style.display="none";
 document.getElementById("boton-filtros-container").style.display = "none";
 document.getElementById("loading-msg").style.display = "none";
-document.getElementById("error-msg").style.display = "none";
 document.getElementById("rapiclean-img-container").style.display = "none";
 }
 function mostrarAvisos(){
@@ -676,7 +673,6 @@ document.getElementById("avisos-panel").style.display="block";
 document.getElementById("alquiler-detalle").style.display="none";
 document.getElementById("boton-filtros-container").style.display = "none";
 document.getElementById("loading-msg").style.display = "none";
-document.getElementById("error-msg").style.display = "none";
 document.getElementById("rapiclean-img-container").style.display = "none";
 }
 
@@ -1113,19 +1109,11 @@ makeRequest(webAppURL + "?action=getAlquileresPublicos", { method: "GET" })
 
   if (cont === 0){
     console.warn("No se encontraron alquileres para los filtros actuales.");
-    errorEl.style.display = "block";
-    errorEl.textContent = "No se encontraron alquileres que coincidan con los filtros seleccionados.";
   }
 })
 .catch(err=>{
-  loadingEl.style.display="none";
-  errorEl.style.display="block";
-  errorEl.textContent = "Error al conectar con el servidor. Por favor, intenta de nuevo.";
-  console.error("Error al conectar con WebApp:", {
-    message: err.message,
-    url: webAppURL + "?action=getAlquileresPublicos",
-    stack: err.stack
-  });
+  document.getElementById("loading-msg").style.display="none";
+  console.error("Error al conectar con WebApp:",err)
 });
 }
 
