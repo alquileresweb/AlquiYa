@@ -833,6 +833,49 @@ function cambiarImagen(direction) {
 }
 
 /* =========================
+ACTUALIZAR CONTADORES
+*/
+async function incrementView(rowId) {
+  const params = new URLSearchParams();
+  params.append("action", "incrementView");
+  params.append("rowId", rowId);
+
+  try {
+    await makeRequest(webAppURL, {
+      method: "POST",
+      body: params,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      mode: "no-cors"
+    });
+    console.log(`View incremented for row ${rowId}`);
+  } catch (error) {
+    console.error("Error incrementing view:", error);
+  }
+}
+
+async function incrementContact(rowId) {
+  const params = new URLSearchParams();
+  params.append("action", "incrementContact");
+  params.append("rowId", rowId);
+
+  try {
+    await makeRequest(webAppURL, {
+      method: "POST",
+      body: params,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      mode: "no-cors"
+    });
+    console.log(`Contact incremented for row ${rowId}`);
+  } catch (error) {
+    console.error("Error incrementing contact:", error);
+  }
+}
+
+/* =========================
 CARGA DE ALQUILERES
 */
 function cargarAlquileres() {
@@ -849,7 +892,7 @@ function cargarAlquileres() {
 
   markersLayer.clearLayers();
 
-  const uniIcon = L.divIcon({ className: 'markerongan-icon', html: '🎓', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const uniIcon = L.divIcon({ className: 'marker-icon', html: '🎓', iconSize: [30, 30], iconAnchor: [15, 15] });
   const hospIcon = L.divIcon({ className: 'marker-icon', html: '🏥', iconSize: [30, 30], iconAnchor: [15, 15] });
   const superIcon = L.divIcon({ className: 'marker-icon', html: '🛒', iconSize: [30, 30], iconAnchor: [15, 15] });
   const busIcon = L.divIcon({ className: 'marker-icon', html: '🚌', iconSize: [30, 30], iconAnchor: [15, 15] });
@@ -928,6 +971,7 @@ function cargarAlquileres() {
         const detalles = getField(a, ["Detalles", "Detalle", "Descripcion", "Descripción"]);
         const contacto = getField(a, ["Contacto", "Whatsapp", "WhatsApp", "Tel", "Telefono", "Teléfono"]);
         const enlace = getField(a, ["Enlace para compartir"]);
+        const rowId = getField(a, ["Id", "Row", "rowId"]); // Assuming the rental has a unique identifier
 
         let iconHtml;
         if (tipo === "Temporario") {
@@ -956,6 +1000,13 @@ function cargarAlquileres() {
         verBtn.className = 'popup-button';
         verBtn.textContent = 'Ver Alquiler';
         verBtn.onclick = () => {
+          // Increment view count
+          if (rowId) {
+            incrementView(rowId);
+          } else {
+            console.warn("No rowId found for view increment");
+          }
+
           const detalle = document.getElementById('alquiler-detalle');
           detalle.innerHTML = `<h2>Alquiler: ${direccion || ''}</h2>`;
 
@@ -1003,6 +1054,13 @@ function cargarAlquileres() {
             waBtn.style.color = 'white';
             waBtn.style.marginTop = '10px';
             waBtn.onclick = () => {
+              // Increment contact count
+              if (rowId) {
+                incrementContact(rowId);
+              } else {
+                console.warn("No rowId found for contact increment");
+              }
+
               const mensaje = `Hola, vengo desde AlquiYa y quiero consultar por el alquiler de ${direccion}`;
               window.open(`https://wa.me/${contacto}?text=${encodeURIComponent(mensaje)}`, '_blank');
             };
