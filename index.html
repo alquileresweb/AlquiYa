@@ -11,7 +11,7 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-SSJ5DG33JK');
 </script>
-<title>AlquiYA - Alquileres en Santo Tomé</title>
+<title>AlquiYA - Mantenimiento</title>
 <link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
@@ -168,7 +168,13 @@ background-size: contain;
 margin-left: 10px;
 }
 #reg_contacto-container {
+body {
+margin: 0;
+font-family: Arial, sans-serif;
+background: #f9f9f9;
+color: #333;
 display: flex;
+flex-direction: row;
 gap: 10px;
 max-width: 300px;
 margin-left: auto;
@@ -201,6 +207,8 @@ min-height: 100vh;
 text-align: center;
 }
 #modal-terminos-content {
+header {
+background: white;
 max-width: 90%;
 max-height: 80%;
 overflow-y: auto;
@@ -210,10 +218,12 @@ padding: 20px;
 border-radius: 8px;
 box-shadow: 0 0 10px rgba(0,0,0,0.3);
 text-align: left;
-background: white;
+box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 #modal-terminos-content h2 {
 margin-top: 0;
+header img {
+max-width: 250px;
 }
 #modal-terminos-content button {
 width: auto;
@@ -221,12 +231,15 @@ padding: 10px 20px;
 margin-top: 20px;
 }
 #publicidad-container {
+main {
 max-width: 600px;
-margin: 10px auto;
+margin: 40px auto;
 background: white;
 border: 1px solid #ccc;
 border-radius: 8px;
 padding: 20px;
+margin: 10px auto;
+max-width: 700px;
 text-align: center;
 cursor: pointer;
 }
@@ -247,6 +260,9 @@ flex: 1;
 padding: 8px;
 border-radius: 6px;
 border: 1px solid #ccc;
+padding: 40px 20px;
+border-radius: 10px;
+box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 #link-container span {
 font-size: 14px;
@@ -262,6 +278,9 @@ color: green;
 #copy-msg.error {
 color: red;
 }
+/* =========================
+ESTILO DEBUG MÉTRICAS (MANTENIDO PERO OCULTO POR DEFECTO)
+*/
 #debug-metricas {
 position: fixed;
 top: 10px;
@@ -281,6 +300,7 @@ box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 #debug-metricas h3 {
 margin: 0 0 10px 0;
+h1 {
 color: #3483fa;
 font-size: 14px;
 }
@@ -293,6 +313,33 @@ margin-bottom: 5px;
 padding: 2px 5px;
 background: #f0f8ff;
 border-left: 3px solid #3483fa;
+margin-bottom: 15px;
+}
+p {
+font-size: 1.1em;
+line-height: 1.5;
+}
+.spinner {
+margin: 30px auto;
+border: 5px solid #eee;
+border-top: 5px solid #3483fa;
+border-radius: 50%;
+width: 50px;
+height: 50px;
+animation: spin 1s linear infinite;
+}
+@keyframes spin {
+0% { transform: rotate(0deg); }
+100% { transform: rotate(360deg); }
+}
+footer {
+margin-top: 40px;
+font-size: 0.9em;
+color: #555;
+}
+footer a {
+color: #3483fa;
+text-decoration: none;
 }
 #toggle-debug {
 position: fixed;
@@ -306,26 +353,26 @@ border-radius: 5px;
 cursor: pointer;
 z-index: 10002;
 font-weight: bold;
-display: none;
-}
-#error-msg {
-display: none;
-text-align: center;
-font-weight: bold;
-margin: 10px;
-color: red;
+display: none; /* BOTÓN OCULTO POR DEFECTO */
+footer a:hover {
+text-decoration: underline;
 }
 </style>
 </head>
 <body>
 
+<body>
 <header>
 <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya" style="max-width:250px;margin-bottom:10px;">
+<img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo AlquiYa">
 </header>
 
-<button id="toggle-debug" onclick="toggleDebugMetricas()" style="display:none;">Debug Métricas</button>
+<!-- =========================
+PANEL DEBUG MÉTRICAS (MANTENIDO PERO SIN BOTÓN VISIBLE)
+-->
+<button id="toggle-debug" onclick="toggleDebugMetricas()" style="display:none;">🔍 Debug Métricas</button>
 <div id="debug-metricas">
-<h3>Métricas Enviadas</h3>
+<h3>📊 Métricas Enviadas</h3>
 <ul id="debug-list"></ul>
 <button onclick="clearDebugMetricas()" style="background:red;color:white;border:none;padding:5px 10px;border-radius:3px;margin-top:10px;">Limpiar</button>
 </div>
@@ -423,10 +470,8 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 </div>
 
 <div id="loading-msg">Cargando alquileres disponibles...</div>
-<div id="error-msg"></div>
 
 <div id="map"></div>
-
 <div id="rapiclean-img-container">
 <a href="https://wa.me/5493756617167?text=Hola" target="_blank">
 <img src="https://i.postimg.cc/9MWzRqbF/M-s-de-40-estudiantes-ya-confiaron-en-Rapiclean-3.png" alt="Más de 40 estudiantes confiaron en Rapiclean" style="max-width:100%;margin:10px auto;display:block;">
@@ -438,7 +483,6 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 </div>
 </a>
 </div>
-
 <div id="alquiler-detalle"></div>
 
 <div id="login">
@@ -488,8 +532,8 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 <div id="modal-img">
 <img id="img-grande">
 <button class="close-btn" onclick="cerrarModal()">X</button>
-<button class="nav-btn prev-btn" onclick="cambiarImagen(-1)">Previous</button>
-<button class="nav-btn next-btn" onclick="cambiarImagen(1)">Next</button>
+<button class="nav-btn prev-btn" onclick="cambiarImagen(-1)">&lt;</button>
+<button class="nav-btn next-btn" onclick="cambiarImagen(1)">&gt;</button>
 </div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -504,7 +548,7 @@ let currentImages = [];
 let currentImageIndex = 0;
 
 /* =========================
-SOLUCIÓN DEBUG MÉTRICAS
+SOLUCIÓN DEBUG MÉTRICAS (MANTENIDA COMPLETA)
 */
 let metricasEnviadas = [];
 function logMetrica(idPropiedad, tipo, timestamp) {
@@ -515,7 +559,11 @@ function logMetrica(idPropiedad, tipo, timestamp) {
     hora: new Date(timestamp).toLocaleTimeString()
   };
   metricasEnviadas.push(metrica);
-  console.log(`MÉTRICA ENVIADA: ID=${idPropiedad} | TIPO=${tipo} | ${new Date(timestamp).toLocaleString()}`);
+  
+  // Mostrar en consola
+  console.log(`📊 MÉTRICA ENVIADA: ID=${idPropiedad} | TIPO=${tipo} | ${new Date(timestamp).toLocaleString()}`);
+  
+  // Mostrar en panel debug (solo si está visible)
   if (document.getElementById('debug-metricas').style.display !== 'none') {
     const li = document.createElement('li');
     li.innerHTML = `<strong>${tipo.toUpperCase()}</strong>: ID ${idPropiedad} <small>(${new Date(timestamp).toLocaleTimeString()})</small>`;
@@ -523,40 +571,49 @@ function logMetrica(idPropiedad, tipo, timestamp) {
     document.getElementById('debug-metricas').scrollTop = document.getElementById('debug-metricas').scrollHeight;
   }
 }
+
 function toggleDebugMetricas() {
   const panel = document.getElementById('debug-metricas');
   if (panel.style.display === 'none') {
     panel.style.display = 'block';
-    document.getElementById('toggle-debug').textContent = 'Cerrar Debug';
+    document.getElementById('toggle-debug').textContent = '❌ Cerrar Debug';
   } else {
     panel.style.display = 'none';
-    document.getElementById('toggle-debug').textContent = 'Debug Métricas';
+    document.getElementById('toggle-debug').textContent = '🔍 Debug Métricas';
   }
 }
+
 function clearDebugMetricas() {
   metricasEnviadas = [];
   document.getElementById('debug-list').innerHTML = '';
 }
 
 /* =========================
-FUNCIÓN NUEVA: CONTROL DE MÉTRICAS
+FUNCIÓN NUEVA: CONTROL DE MÉTRICAS (MODIFICADA CON DEBUG)
 */
 async function actualizarMetricas(idPropiedad, tipo) {
   const timestamp = Date.now();
   const params = new URLSearchParams();
   params.append("action", "actualizarMetricas");
   params.append("idPropiedad", idPropiedad);
-  params.append("tipo", tipo);
+  params.append("tipo", tipo); // "vistas" o "contactos"
+  
+  // LOG MÉTRICA ANTES DE ENVIAR
   logMetrica(idPropiedad, tipo, timestamp);
+  
   try {
-    await makeRequest(webAppURL, {
+    const response = await makeRequest(webAppURL, {
       method: "POST",
       body: params,
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
       mode: "no-cors"
     });
+    console.log(`✅ MÉTRICA CONFIRMADA: ${tipo} para ID ${idPropiedad}`);
   } catch (error) {
-    console.error(`Error actualizando ${tipo} ID ${idPropiedad}:`, error);
+    console.error(`❌ Error actualizando ${tipo} ID ${idPropiedad}:`, error);
+    // No interrumpir el flujo principal, solo loguear el error
   }
 }
 
@@ -593,6 +650,14 @@ const [day, month, year] = dateStr.split('/').map(Number);
 if (!day || !month || !year) return null;
 return new Date(year, month - 1, day);
 }
+<main>
+<h1>Estamos realizando tareas de mantenimiento 🔧</h1>
+<p>Estamos mejorando AlquiYA para ofrecerte una experiencia más rápida y completa.<br>
+Volveremos a estar en línea muy pronto. Gracias por tu paciencia 💙</p>
+
+/* =========================
+FORMATO MONEDA
+*/
 function formatCurrency(el){
 let selectionStart = el.selectionStart;
 let raw = String(el.value || "");
@@ -675,6 +740,7 @@ document.getElementById("boton-filtros-container").style.display = "none";
 document.getElementById("loading-msg").style.display = "none";
 document.getElementById("rapiclean-img-container").style.display = "none";
 }
+<div class="spinner"></div>
 
 /* =========================
 TÉRMINOS Y CONDICIONES
@@ -691,46 +757,23 @@ document.getElementById("modal-terminos").style.display = "none";
 }
 
 /* =========================
-FETCH HELPER - SOLUCIÓN CORS con JSONP
+FETCH HELPER
 */
-async function makeRequest(url, options = {}) {
-  return new Promise((resolve, reject) => {
-    if (options.method === "GET" && url.includes("action=getAlquileresPublicos")) {
-      const callbackName = 'jsonp_' + Date.now() + Math.random().toString(36).substr(2, 5);
-      window[callbackName] = function(data) {
-        delete window[callbackName];
-        document.body.removeChild(script);
-        resolve(data);
-      };
-
-      const script = document.createElement('script');
-      const separator = url.includes('?') ? '&' : '?';
-      script.src = url + separator + 'callback=' + callbackName;
-      script.onerror = () => {
-        delete window[callbackName];
-        document.body.removeChild(script);
-        reject(new Error("Error cargando datos (JSONP)"));
-      };
-      document.body.appendChild(script);
-    } else {
-      fetch(url, {
-        ...options,
-        mode: options.mode || (options.method === "POST" ? "no-cors" : "cors")
-      })
-      .then(response => {
-        if (!response.ok && options.mode !== 'no-cors') {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        if (options.mode === 'no-cors') return null;
-        return response.json();
-      })
-      .then(resolve)
-      .catch(err => {
-        console.error("Fetch error:", err);
-        reject(new Error("No se pudo conectar con el servidor. Por favor, intenta de nuevo."));
-      });
+async function makeRequest(url, options) {
+  try {
+    const response = await fetch(url, options);
+    if (!response.ok && options.mode !== 'no-cors') {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-  });
+    // For no-cors mode, we can't read the response, so return null
+    if (options.mode === 'no-cors') {
+      return null;
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Fetch error:", error);
+    throw new Error("No se pudo conectar con el servidor. Por favor, intenta de nuevo.");
+  }
 }
 
 /* =========================
@@ -748,7 +791,9 @@ document.getElementById("login-loading").style.display = "block";
 document.getElementById("login-msg").textContent = "";
 makeRequest(webAppURL+"?action=verificarLogin&email="+encodeURIComponent(email)+"&password="+encodeURIComponent(password), {
   method: "GET",
-  headers: { "Content-Type": "application/x-www-form-urlencoded" }
+  headers: {
+    "Content-Type": "application/x-www-form-urlencoded"
+  }
 })
 .then(data => {
   document.getElementById("login-loading").style.display = "none";
@@ -757,7 +802,13 @@ makeRequest(webAppURL+"?action=verificarLogin&email="+encodeURIComponent(email)+
     localStorage.setItem("dueno_email", email);
     window.location.href = "dueños.html";
   } else {
-    document.getElementById("login-msg").textContent = data.error || "Error en el inicio de sesión";
+    if (data.error === "Usuario no registrado") {
+      document.getElementById("login-msg").textContent = "Usuario no registrado";
+    } else if (data.error === "Contraseña incorrecta") {
+      document.getElementById("login-msg").textContent = "Contraseña incorrecta";
+    } else {
+      document.getElementById("login-msg").textContent = "Error en el inicio de sesión";
+    }
   }
 })
 .catch(error => {
@@ -808,10 +859,14 @@ function registrarDueno() {
   params.append("password", password);
   params.append("contacto", codigoPais + contacto);
 
+  console.log("Enviando URLSearchParams:", params.toString());
+
   makeRequest(webAppURL, {
     method: "POST",
     body: params,
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
     mode: "no-cors"
   })
     .then(() => {
@@ -820,6 +875,7 @@ function registrarDueno() {
       setTimeout(() => mostrarLogin(), 2000);
     })
     .catch(error => {
+      console.error("Error en registro:", error);
       document.getElementById("registro-msg").style.color = "red";
       document.getElementById("registro-msg").textContent = `Error: ${error.message}`;
     });
@@ -850,7 +906,9 @@ function registrarEmailAvisos() {
   makeRequest(webAppURL, {
     method: "POST",
     body: params,
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
     mode: "no-cors"
   })
   .then(() => {
@@ -914,20 +972,18 @@ document.getElementById("img-grande").src = currentImages[currentImageIndex];
 }
 
 /* =========================
-CARGA DE ALQUILERES
+CARGA DE ALQUILERES (MODIFICADA SOLO EN LOS onclick)
 */
 function cargarAlquileres(){
 const loadingEl = document.getElementById("loading-msg");
-const errorEl = document.getElementById("error-msg");
 loadingEl.style.display="block";
-errorEl.style.display="none";
 markersLayer.clearLayers();
 
-const uniIcon = L.divIcon({className:'marker-icon', html:'University', iconSize:[30,30], iconAnchor:[15,15]});
-const hospIcon = L.divIcon({className:'marker-icon', html:'Hospital', iconSize:[30,30], iconAnchor:[15,15]});
-const superIcon = L.divIcon({className:'marker-icon', html:'Shopping', iconSize:[30,30], iconAnchor:[15,15]});
-const busIcon = L.divIcon({className:'marker-icon', html:'Bus', iconSize:[30,30], iconAnchor:[15,15]});
-const policeIcon = L.divIcon({className:'marker-icon', html:'Police', iconSize:[30,30], iconAnchor:[15,15]});
+const uniIcon = L.divIcon({className:'marker-icon', html:'🎓', iconSize:[30,30], iconAnchor:[15,15]});
+const hospIcon = L.divIcon({className:'marker-icon', html:'🏥', iconSize:[30,30], iconAnchor:[15,15]});
+const superIcon = L.divIcon({className:'marker-icon', html:'🛒', iconSize:[30,30], iconAnchor:[15,15]});
+const busIcon = L.divIcon({className:'marker-icon', html:'🚌', iconSize:[30,30], iconAnchor:[15,15]});
+const policeIcon = L.divIcon({className:'marker-icon', html:'👮', iconSize:[30,30], iconAnchor:[15,15]});
 
 L.marker([-28.5509978,-56.0409727],{icon:uniIcon}).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
 L.marker([-28.5551127,-56.0389282],{icon:hospIcon}).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
@@ -944,29 +1000,31 @@ const filtroMascotas = document.getElementById("filtroMascotas").checked;
 const filtroAmoblado = document.getElementById("filtroAmoblado").checked;
 const filtroTipo = document.getElementById("filtroTipo").value;
 
-makeRequest(webAppURL + "?action=getAlquileresPublicos", { method: "GET" })
+makeRequest(webAppURL + "?action=getAlquileres", {
+  method: "GET",
+  headers: {
+    "Content-Type": "application/x-www-form-urlencoded"
+  }
+})
 .then(res => {
   loadingEl.style.display="none";
   if(!res.success || !Array.isArray(res.data)) {
-    console.error("Error al cargar alquileres:", {
-      message: res.error || "Respuesta inválida",
-      response: res,
-      url: webAppURL + "?action=getAlquileresPublicos"
-    });
-    errorEl.style.display = "block";
-    errorEl.textContent = res.error || "No se pudieron cargar los alquileres. Intenta de nuevo más tarde.";
+    console.error("Error al cargar alquileres:", res.error || "Respuesta inválida");
     return;
   }
 
   let cont = 0;
 
   res.data.forEach(a=>{
+    // Verificar plan y fecha de vencimiento
     const plan = getField(a, ["Plan"]);
     const fechaVencimientoStr = getField(a, ["Fecha de Vencimiento", "FechaVencimiento", "Vencimiento"]);
     if (plan === "Prueba") {
       const fechaVencimiento = parseDate(fechaVencimientoStr);
       const fechaActual = new Date();
-      if (fechaVencimiento && fechaActual > fechaVencimiento) return;
+      if (fechaVencimiento && fechaActual > fechaVencimiento) {
+        return; // Saltar si el plan es "Prueba" y está vencido
+      }
     }
 
     const lat = parseFloat(getField(a, ["Latitud","lat","LAT","Lat"]));
@@ -995,15 +1053,17 @@ makeRequest(webAppURL + "?action=getAlquileresPublicos", { method: "GET" })
     const detalles = getField(a, ["Detalles","Detalle","Descripcion","Descripción"]);
     const contacto = getField(a, ["Contacto","Whatsapp","WhatsApp","Tel","Telefono","Teléfono"]);
     const enlace = getField(a, ["Enlace para compartir"]);
+    
+    // OBTENER ID PROPIEDAD DE COLUMNA N
     const idPropiedad = getField(a, ["N", "ID", "id", "IdPropiedad", "idPropiedad"]);
 
     let iconHtml;
     if (tipo === "Temporario") {
-      iconHtml = 'Clock';
+      iconHtml = '⌛';
     } else if (tipo === "Local") {
-      iconHtml = 'Store';
+      iconHtml = '🛍️';
     } else {
-      iconHtml = 'House<span style="font-size:12px;margin-left:2px;">'+(nroAmb||"-")+'</span>';
+      iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">'+(nroAmb||"-")+'</span>';
     }
 
     const icon = L.divIcon({
@@ -1023,8 +1083,13 @@ makeRequest(webAppURL + "?action=getAlquileresPublicos", { method: "GET" })
     const verBtn = document.createElement('button');
     verBtn.className = 'popup-button';
     verBtn.textContent = 'Ver Alquiler';
+    // MODIFICADO: AÑADIDO CONTROL MÉTRICAS VISTAS
     verBtn.onclick = async () => {
-      if (idPropiedad) await actualizarMetricas(idPropiedad, "vistas");
+      // PRIMERO: Actualizar métrica de vistas
+      if (idPropiedad) {
+        await actualizarMetricas(idPropiedad, "vistas");
+      }
+      // DESPUÉS: Mostrar detalle normalmente
       const detalle = document.getElementById('alquiler-detalle');
       detalle.innerHTML = `<h2>Alquiler: ${direccion||''}</h2>`;
 
@@ -1039,7 +1104,7 @@ makeRequest(webAppURL + "?action=getAlquileresPublicos", { method: "GET" })
         ['Información de ingreso', infoIngreso||''],
         ['Detalles', detalles||''],
         ['Mascotas', mascotas||''],
-        ['Amoblado',(amoblado||'')]
+        ['Amoblado', amoblado||'']
       ];
       rows.forEach(([label,val])=>{
         const p=document.createElement('p');
@@ -1071,8 +1136,13 @@ makeRequest(webAppURL + "?action=getAlquileresPublicos", { method: "GET" })
         waBtn.style.background = '#25D366';
         waBtn.style.color = 'white';
         waBtn.style.marginTop = '10px';
+        // MODIFICADO: AÑADIDO CONTROL MÉTRICAS CONTACTOS
         waBtn.onclick = async () => {
-          if (idPropiedad) await actualizarMetricas(idPropiedad, "contactos");
+          // PRIMERO: Actualizar métrica de contactos
+          if (idPropiedad) {
+            await actualizarMetricas(idPropiedad, "contactos");
+          }
+          // DESPUÉS: Abrir WhatsApp normalmente
           const mensaje = `Hola, vengo desde AlquiYa y quiero consultar por el alquiler de ${direccion}`;
           window.open(`https://wa.me/${contacto}?text=${encodeURIComponent(mensaje)}`,'_blank');
         };
@@ -1121,26 +1191,28 @@ makeRequest(webAppURL + "?action=getAlquileresPublicos", { method: "GET" })
 PASSWORD VISIBILITY TOGGLE
 */
 function togglePassword(inputId) {
-  const input = document.getElementById(inputId);
-  const eyeIcon = input.nextElementSibling;
-  if (input.type === "password") {
-    input.type = "text";
-    eyeIcon.style.backgroundImage = "url('https://img.icons8.com/ios/50/000000/invisible.png')";
-  } else {
-    input.type = "password";
-    eyeIcon.style.backgroundImage = "url('https://img.icons8.com/ios/50/000000/visible.png')";
-  }
+const input = document.getElementById(inputId);
+const eyeIcon = input.nextElementSibling;
+if (input.type === "password") {
+input.type = "text";
+eyeIcon.style.backgroundImage = "url('https://img.icons8.com/ios/50/000000/invisible.png')";
+} else {
+input.type = "password";
+eyeIcon.style.backgroundImage = "url('https://img.icons8.com/ios/50/000000/visible.png')";
 }
+}
+<p>Si necesitás contactarnos, escribinos a<br>
+<strong><a href="mailto:alquiya@gmail.com">alquiya@gmail.com</a></strong></p>
+</main>
 
 /* =========================
 INIT
 */
 window.onload = ()=>{
-  mostrarTerminos();
-  mostrarMapa();
+mostrarTerminos();
+mostrarMapa();
 };
 </script>
-
 <footer>
 © 2025 AlquiYA — Todos los derechos reservados
 </footer>
