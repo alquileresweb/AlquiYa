@@ -390,7 +390,7 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 <h2>Registro Dueños</h2>
 <input type="text" id="reg_email" placeholder="Email">
 <input type="text" id="reg_nombre" placeholder="Nombre">
-<div class="password-container">
+<div "password-container">
 <input type="password" id="reg_password" placeholder="Contraseña">
 <div class="eye-icon" onclick="togglePassword('reg_password')"></div>
 </div>
@@ -458,7 +458,9 @@ function initializeMap() {
     return true;
   } catch (error) {
     console.error("Error initializing map:", error);
-    document.getElementById("loading-msg").textContent = "Error al cargar el mapa. Por favor, intenta de nuevo.";
+    document.getElementById("loading-msg").textContent = "Error al cargar el mapa.
+
+ Por favor, intenta de nuevo.";
     return false;
   }
 }
@@ -630,6 +632,30 @@ async function makeRequest(url, options) {
   } catch (error) {
     console.error("Fetch error:", error);
     throw new Error("No se pudo conectar con el servidor. Por favor, intenta de nuevo.");
+  }
+}
+
+/* =========================
+METRICAS
+*/
+async function incrementarMetrica(idPropiedad, metrica) {
+  const params = new URLSearchParams();
+  params.append("action", "incrementarMetrica");
+  params.append("idPropiedad", idPropiedad);
+  params.append("metrica", metrica);
+
+  try {
+    await makeRequest(webAppURL, {
+      method: "POST",
+      body: params,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      mode: "no-cors"
+    });
+    console.log(`Métrica ${metrica} incrementada para ID ${idPropiedad}`);
+  } catch (error) {
+    console.error(`Error al incrementar métrica ${metrica} para ID ${idPropiedad}:`, error);
   }
 }
 
@@ -833,49 +859,6 @@ function cambiarImagen(direction) {
 }
 
 /* =========================
-ACTUALIZAR CONTADORES
-*/
-async function incrementView(rowId) {
-  const params = new URLSearchParams();
-  params.append("action", "incrementView");
-  params.append("rowId", rowId);
-
-  try {
-    await makeRequest(webAppURL, {
-      method: "POST",
-      body: params,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      mode: "no-cors"
-    });
-    console.log(`View incremented for row ${rowId}`);
-  } catch (error) {
-    console.error("Error incrementing view:", error);
-  }
-}
-
-async function incrementContact(rowId) {
-  const params = new URLSearchParams();
-  params.append("action", "incrementContact");
-  params.append("rowId", rowId);
-
-  try {
-    await makeRequest(webAppURL, {
-      method: "POST",
-      body: params,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      mode: "no-cors"
-    });
-    console.log(`Contact incremented for row ${rowId}`);
-  } catch (error) {
-    console.error("Error incrementing contact:", error);
-  }
-}
-
-/* =========================
 CARGA DE ALQUILERES
 */
 function cargarAlquileres() {
@@ -971,7 +954,7 @@ function cargarAlquileres() {
         const detalles = getField(a, ["Detalles", "Detalle", "Descripcion", "Descripción"]);
         const contacto = getField(a, ["Contacto", "Whatsapp", "WhatsApp", "Tel", "Telefono", "Teléfono"]);
         const enlace = getField(a, ["Enlace para compartir"]);
-        const rowId = getField(a, ["Id", "Row", "rowId"]); // Assuming the rental has a unique identifier
+        const idPropiedad = getField(a, ["ID Propiedad", "IdPropiedad", "ID", "Id"]);
 
         let iconHtml;
         if (tipo === "Temporario") {
@@ -1000,13 +983,11 @@ function cargarAlquileres() {
         verBtn.className = 'popup-button';
         verBtn.textContent = 'Ver Alquiler';
         verBtn.onclick = () => {
-          // Increment view count
-          if (rowId) {
-            incrementView(rowId);
-          } else {
-            console.warn("No rowId found for view increment");
+          // Incrementar métrica de vistas
+          if (idPropiedad) {
+            incrementarMetrica(idPropiedad, "vistas");
           }
-
+          
           const detalle = document.getElementById('alquiler-detalle');
           detalle.innerHTML = `<h2>Alquiler: ${direccion || ''}</h2>`;
 
@@ -1020,7 +1001,7 @@ function cargarAlquileres() {
             ['Precio', formattedPrecio || ''],
             ['Información de ingreso', infoIngreso || ''],
             ['Detalles', detalles || ''],
-            ['Mascotas', mascotas || ''],
+            ['MascotasCenotas', mascotas || ''],
             ['Amoblado', amoblado || '']
           ];
           rows.forEach(([label, val]) => {
@@ -1054,13 +1035,10 @@ function cargarAlquileres() {
             waBtn.style.color = 'white';
             waBtn.style.marginTop = '10px';
             waBtn.onclick = () => {
-              // Increment contact count
-              if (rowId) {
-                incrementContact(rowId);
-              } else {
-                console.warn("No rowId found for contact increment");
+              // Incrementar métrica de contactos
+              if (idPropiedad) {
+                incrementarMetrica(idPropiedad, "contactos");
               }
-
               const mensaje = `Hola, vengo desde AlquiYa y quiero consultar por el alquiler de ${direccion}`;
               window.open(`https://wa.me/${contacto}?text=${encodeURIComponent(mensaje)}`, '_blank');
             };
