@@ -833,12 +833,13 @@ function cambiarImagen(direction) {
 }
 
 /* =========================
-ACTUALIZAR CONTADORES
+MÉTRICAS
 */
-async function incrementView(rowId) {
+async function incrementarMetrica(idPropiedad, metrica) {
   const params = new URLSearchParams();
-  params.append("action", "incrementView");
-  params.append("rowId", rowId);
+  params.append("action", "incrementarMetrica");
+  params.append("idPropiedad", idPropiedad);
+  params.append("metrica", metrica); // "vistas" o "contactos"
 
   try {
     await makeRequest(webAppURL, {
@@ -847,31 +848,11 @@ async function incrementView(rowId) {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded"
       },
-      mode: "no-cors"
+      mode: "no-cors" // Usamos no-cors para mantener consistencia con otras solicitudes
     });
-    console.log(`View incremented for row ${rowId}`);
+    console.log(`Métrica ${metrica} incrementada para ID ${idPropiedad}`);
   } catch (error) {
-    console.error("Error incrementing view:", error);
-  }
-}
-
-async function incrementContact(rowId) {
-  const params = new URLSearchParams();
-  params.append("action", "incrementContact");
-  params.append("rowId", rowId);
-
-  try {
-    await makeRequest(webAppURL, {
-      method: "POST",
-      body: params,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      mode: "no-cors"
-    });
-    console.log(`Contact incremented for row ${rowId}`);
-  } catch (error) {
-    console.error("Error incrementing contact:", error);
+    console.error(`Error al incrementar ${metrica} para ID ${idPropiedad}:`, error);
   }
 }
 
@@ -892,7 +873,7 @@ function cargarAlquileres() {
 
   markersLayer.clearLayers();
 
-  const uniIcon = L.divIcon({ className: 'marker-icon', html: '🎓', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const uniIcon = L.divIcon({ className: 'markerongan-icon', html: '🎓', iconSize: [30, 30], iconAnchor: [15, 15] });
   const hospIcon = L.divIcon({ className: 'marker-icon', html: '🏥', iconSize: [30, 30], iconAnchor: [15, 15] });
   const superIcon = L.divIcon({ className: 'marker-icon', html: '🛒', iconSize: [30, 30], iconAnchor: [15, 15] });
   const busIcon = L.divIcon({ className: 'marker-icon', html: '🚌', iconSize: [30, 30], iconAnchor: [15, 15] });
@@ -966,12 +947,12 @@ function cargarAlquileres() {
         const amoblado = getField(a, ["Amoblado"]);
         if (filtroAmoblado && (!amoblado || amoblado.toLowerCase() !== "sí")) return;
 
+        const idPropiedad = getField(a, ["ID Propiedad", "idPropiedad", "ID", "Id"]);
         const direccion = getField(a, ["Direccion", "Dirección", "Domicilio"]);
         const infoIngreso = getField(a, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso", "Informacion de ingreso"]);
         const detalles = getField(a, ["Detalles", "Detalle", "Descripcion", "Descripción"]);
         const contacto = getField(a, ["Contacto", "Whatsapp", "WhatsApp", "Tel", "Telefono", "Teléfono"]);
         const enlace = getField(a, ["Enlace para compartir"]);
-        const rowId = getField(a, ["Id", "Row", "rowId"]); // Assuming the rental has a unique identifier
 
         let iconHtml;
         if (tipo === "Temporario") {
@@ -1000,11 +981,11 @@ function cargarAlquileres() {
         verBtn.className = 'popup-button';
         verBtn.textContent = 'Ver Alquiler';
         verBtn.onclick = () => {
-          // Increment view count
-          if (rowId) {
-            incrementView(rowId);
+          // Incrementar vistas antes de mostrar detalles
+          if (idPropiedad) {
+            incrementarMetrica(idPropiedad, "vistas");
           } else {
-            console.warn("No rowId found for view increment");
+            console.warn("ID de propiedad no encontrado para incrementar vistas");
           }
 
           const detalle = document.getElementById('alquiler-detalle');
@@ -1054,13 +1035,12 @@ function cargarAlquileres() {
             waBtn.style.color = 'white';
             waBtn.style.marginTop = '10px';
             waBtn.onclick = () => {
-              // Increment contact count
-              if (rowId) {
-                incrementContact(rowId);
+              // Incrementar contactos antes de abrir WhatsApp
+              if (idPropiedad) {
+                incrementarMetrica(idPropiedad, "contactos");
               } else {
-                console.warn("No rowId found for contact increment");
+                console.warn("ID de propiedad no encontrado para incrementar contactos");
               }
-
               const mensaje = `Hola, vengo desde AlquiYa y quiero consultar por el alquiler de ${direccion}`;
               window.open(`https://wa.me/${contacto}?text=${encodeURIComponent(mensaje)}`, '_blank');
             };
