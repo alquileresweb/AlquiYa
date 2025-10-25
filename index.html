@@ -458,6 +458,24 @@ function initializeMap() {
     return false;
   }
   try {
+    map = L.map('map').setView([-28.550roommates = [];
+let currentImageIndex = 0;
+
+/* =========================
+MAPA
+*/
+let map = null;
+let markersLayer = null;
+
+function initializeMap() {
+  if (map) return; // Prevent reinitialization
+  const mapElement = document.getElementById('map');
+  if (!mapElement) {
+    console.error("Map element not found");
+    document.getElementById("loading-msg").textContent = "Error: No se encontró el contenedor del mapa.";
+    return false;
+  }
+  try {
     map = L.map('map').setView([-28.5503, -56.0406], 14);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
@@ -621,6 +639,7 @@ FETCH HELPER
 */
 async function makeRequest(url, options) {
   try {
+    console.log("Enviando solicitud a:", url, "con opciones:", options); // Log para depuración
     const response = await fetch(url, options);
     if (!response.ok && options.mode !== 'no-cors') {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -629,7 +648,7 @@ async function makeRequest(url, options) {
       return null;
     }
     const text = await response.text();
-    console.log("Raw response:", text);
+    console.log("Raw response:", text); // Log para depuración
     try {
       return JSON.parse(text);
     } catch (e) {
@@ -648,38 +667,77 @@ AUTH
 function login() {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
+  
+  // Validar campos
   if (!email || !password) {
     document.getElementById("login-msg").textContent = "Ingrese email y contraseña";
     document.getElementById("login-loading").style.display = "none";
     return;
   }
+
+  // Validar formato de email
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    document.getElementById("login-msg").textContent = "Ingrese un email válido";
+    document.getElementById("login-loading").style.display = "none";
+    return;
+  }
+
   document.getElementById("login-loading").style.display = "block";
   document.getElementById("login-msg").textContent = "";
-  makeRequest(webAppURL + "?action=verificarLogin&email=" + encodeURIComponent(email) + "&password=" + encodeURIComponent(password), {
+
+  // Construir la URL con parámetros correctamente codificados
+  const params = new URLSearchParams({
+    action: "verificarLogin",
+    email: email,
+    password: password
+  });
+  const url = `${webAppURL}?${params.toString()}`;
+  
+  console.log("Datos enviados al login:", { email, password }); // Log para depuración
+  console.log("URL de la solicitud:", url); // Log para inspección
+
+  makeRequest(url, {
     method: "GET",
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded"
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Accept": "application/json" // Asegura que esperamos JSON
     }
   })
     .then(data => {
       document.getElementById("login-loading").style.display = "none";
-      if (data.success) {
+      console.log("Respuesta del servidor:", data); // Log para depuración
+
+      if (data && data.success) {
         localStorage.setItem("dueno", email);
         localStorage.setItem("dueno_email", email);
-        window.location.href = "dueños.html";
+        document.getElementById("login-msg").style.color = "green";
+        document.getElementById("login-msg").textContent = "Inicio de sesión exitoso. Redirigiendo...";
+        setTimeout(() => {
+          window.location.href = "dueños.html";
+        }, 1000);
       } else {
-        if (data.error === "Usuario no registrado") {
-          document.getElementById("login-msg").textContent = "Usuario no registrado";
-        } else if (data.error === "Contraseña incorrecta") {
-          document.getElementById("login-msg").textContent = "Contraseña incorrecta";
-        } else {
-          document.getElementById("login-msg").textContent = "Error en el inicio de sesión";
+        let errorMsg = "Error en el inicio de sesión";
+        if (data && data.error) {
+          if (data.error === "Usuario no registrado") {
+            errorMsg = "Usuario no registrado";
+          } else if (data.error === "Contraseña incorrecta") {
+            errorMsg = "Contraseña incorrecta";
+          } else if (data.error === "Acción no reconocida") {
+            errorMsg = "Error del servidor: Acción no reconocida. Contacte al soporte.";
+          } else {
+            errorMsg = `Error del servidor: ${data.error}`;
+          }
         }
+        document.getElementById("login-msg").style.color = "red";
+        document.getElementById("login-msg").textContent = errorMsg;
       }
     })
     .catch(error => {
       document.getElementById("login-loading").style.display = "none";
-      document.getElementById("login-msg").textContent = error.message;
+      document.getElementById("login-msg").style.color = "red";
+      document.getElementById("login-msg").textContent = `Error: ${error.message}`;
+      console.error("Error en la solicitud de login:", error); // Log para depuración
     });
 }
 
@@ -933,6 +991,30 @@ function cargarAlquileres() {
   })
     .then(res => {
       loadingEl.style.display = "none";
+      if (!res.success || !Array.isArray(res.data ponds = [];
+  L.marker([-28.5509978, -56.0409727], { icon: uniIcon }).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
+  L.marker([-28.5551127, -56.0389282], { icon: hospIcon }).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
+  L.marker([-28.5519443, -56.0401962], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado La Bomba</b>");
+  L.marker([-28.5472635, -56.0438082], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado El Super</b>");
+  L.marker([-28.5462903, -56.0440365], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado La Economía</b>");
+  L.marker([-28.5468697, -56.0432862], { icon: busIcon }).addTo(markersLayer).bindPopup("<b>Terminal de Omnibus</b>");
+  L.marker([-28.5487787, -56.0396171], { icon: policeIcon }).addTo(markersLayer).bindPopup("<b>Policía</b>");
+
+  const filtroAmb = document.getElementById("filtroAmb").value;
+  const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
+  const filtroMax = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
+  const filtroMascotas = document.getElementById("filtroMascotas").checked;
+  const filtroAmoblado = document.getElementById("filtroAmoblado").checked;
+  const filtroTipo = document.getElementById("filtroTipo").value;
+
+  makeRequest(webAppURL + "?action=getAlquileres", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    }
+  })
+    .then(res => {
+      loadingEl.style.display = "none";
       if (!res.success || !Array.isArray(res.data)) {
         console.error("Error al cargar alquileres:", res.error || "Respuesta inválida");
         loadingEl.textContent = "Error al cargar alquileres. Por favor, intenta de nuevo.";
@@ -1104,6 +1186,7 @@ function cargarAlquileres() {
             copyText.textContent = 'Seleccioná y copiá para compartir';
             linkContainer.appendChild(linkInput);
             linkContainer.appendChild(copyText);
+
             detalle.appendChild(linkContainer);
           }
 
