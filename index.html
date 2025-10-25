@@ -256,6 +256,13 @@ color: green;
 #copy-msg.error {
 color: red;
 }
+#metricas-error {
+display: none;
+text-align: center;
+margin-top: 10px;
+color: red;
+font-weight: bold;
+}
 </style>
 </head>
 <body>
@@ -370,7 +377,9 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 </div>
 </a>
 </div>
-<div id="alquiler-detalle"></div>
+<div id="alquiler-detalle">
+<p id="metricas-error"></p>
+</div>
 
 <div id="login">
 <h2>Login Dueños</h2>
@@ -836,23 +845,43 @@ function cambiarImagen(direction) {
 MÉTRICAS
 */
 async function incrementarMetrica(idPropiedad, metrica) {
+  // Validar idPropiedad
+  if (!idPropiedad || typeof idPropiedad !== 'string' || idPropiedad.trim() === '') {
+    console.error(`Error: ID de propiedad inválido para incrementar ${metrica}:`, idPropiedad);
+    document.getElementById('metricas-error').style.display = 'block';
+    document.getElementById('metricas-error').textContent = 'Error: ID de propiedad no válido';
+    return;
+  }
+
   const params = new URLSearchParams();
   params.append("action", "incrementarMetrica");
-  params.append("idPropiedad", idPropiedad);
-  params.append("metrica", metrica); // "vistas" o "contactos"
+  params.append("idPropiedad", idPropiedad.trim());
+  params.append("metrica", metrica);
+
+  console.log(`Enviando solicitud para incrementar ${metrica} para ID: ${idPropiedad}`);
 
   try {
-    await makeRequest(webAppURL, {
+    const response = await makeRequest(webAppURL, {
       method: "POST",
       body: params,
       headers: {
         "Content-Type": "application/x-www-form-urlencoded"
       },
-      mode: "no-cors" // Usamos no-cors para mantener consistencia con otras solicitudes
+      mode: "cors" // Cambiado a cors para leer la respuesta del servidor
     });
-    console.log(`Métrica ${metrica} incrementada para ID ${idPropiedad}`);
+
+    if (response && response.success) {
+      console.log(`✅ Métrica ${metrica} incrementada para ID ${idPropiedad}: Nuevo valor = ${response.data.nuevoValor}`);
+      document.getElementById('metricas-error').style.display = 'none';
+    } else {
+      console.error(`Error del servidor al incrementar ${metrica} para ID ${idPropiedad}:`, response ? response.error : 'No se recibió respuesta');
+      document.getElementById('metricas-error').style.display = 'block';
+      document.getElementById('metricas-error').textContent = response ? response.error : 'Error: No se pudo conectar con el servidor';
+    }
   } catch (error) {
-    console.error(`Error al incrementar ${metrica} para ID ${idPropiedad}:`, error);
+    console.error(`Error al incrementar ${metrica} para ID ${idPropiedad}:`, error.message);
+    document.getElementById('metricas-error').style.display = 'block';
+    document.getElementById('metricas-error').textContent = `Error: ${error.message}`;
   }
 }
 
@@ -981,11 +1010,17 @@ function cargarAlquileres() {
         verBtn.className = 'popup-button';
         verBtn.textContent = 'Ver Alquiler';
         verBtn.onclick = () => {
+          // Limpiar mensaje de error anterior
+          document.getElementById('metricas-error').style.display = 'none';
+          
           // Incrementar vistas antes de mostrar detalles
           if (idPropiedad) {
+            console.log("Datos del alquiler:", JSON.stringify(a, null, 2));
             incrementarMetrica(idPropiedad, "vistas");
           } else {
             console.warn("ID de propiedad no encontrado para incrementar vistas");
+            document.getElementById('metricas-error').style.display = 'block';
+            document.getElementById('metricas-error').textContent = 'Error: No se encontró el ID de la propiedad';
           }
 
           const detalle = document.getElementById('alquiler-detalle');
@@ -1040,6 +1075,8 @@ function cargarAlquileres() {
                 incrementarMetrica(idPropiedad, "contactos");
               } else {
                 console.warn("ID de propiedad no encontrado para incrementar contactos");
+                document.getElementById('metricas-error').style.display = 'block';
+                document.getElementById('metricas-error').textContent = 'Error: No se encontró el ID de la propiedad';
               }
               const mensaje = `Hola, vengo desde AlquiYa y quiero consultar por el alquiler de ${direccion}`;
               window.open(`https://wa.me/${contacto}?text=${encodeURIComponent(mensaje)}`, '_blank');
