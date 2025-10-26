@@ -655,38 +655,31 @@ function login() {
   }
   document.getElementById("login-loading").style.display = "block";
   document.getElementById("login-msg").textContent = "";
-
-  const params = new URLSearchParams();
-  params.append("action", "login"); // Cambiado de 'verificarLogin' a 'login'
-  params.append("email", email);
-  params.append("password", password);
-
-  makeRequest(webAppURL, {
-    method: "POST", // Cambiado de GET a POST para mayor consistencia y seguridad
-    body: params,
+  makeRequest(webAppURL + "?action=verificarLogin&email=" + encodeURIComponent(email) + "&password=" + encodeURIComponent(password), {
+    method: "GET",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded"
     }
   })
     .then(data => {
       document.getElementById("login-loading").style.display = "none";
-      if (data && data.success) {
+      if (data.success) {
         localStorage.setItem("dueno", email);
         localStorage.setItem("dueno_email", email);
         window.location.href = "dueños.html";
       } else {
-        document.getElementById("login-msg").textContent = 
-          data && data.error 
-            ? (data.error === "Usuario no registrado" ? "Usuario no registrado" : 
-               data.error === "Contraseña incorrecta" ? "Contraseña incorrecta" : 
-               `Error: ${data.error}`)
-            : "Error en el inicio de sesión. Por favor, verifica la acción en el servidor.";
+        if (data.error === "Usuario no registrado") {
+          document.getElementById("login-msg").textContent = "Usuario no registrado";
+        } else if (data.error === "Contraseña incorrecta") {
+          document.getElementById("login-msg").textContent = "Contraseña incorrecta";
+        } else {
+          document.getElementById("login-msg").textContent = "Error en el inicio de sesión";
+        }
       }
     })
     .catch(error => {
       document.getElementById("login-loading").style.display = "none";
-      document.getElementById("login-msg").textContent = `Error: ${error.message}`;
-      console.error("Error en login:", error);
+      document.getElementById("login-msg").textContent = error.message;
     });
 }
 
