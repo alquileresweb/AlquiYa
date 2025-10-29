@@ -464,7 +464,6 @@ let planActual = null;
 let limiteDeptos = 0;
 let deptosActivos = 0;
 let preciosPlanes = {Basico: 0, Plus: 0, Full: 0};
-
 // === INICIALIZAR GOOGLE CHARTS AL CARGA DE PÁGINA ===
 function initGoogleCharts() {
     console.log('Inicializando Google Charts...');
@@ -473,29 +472,27 @@ function initGoogleCharts() {
         setTimeout(initGoogleCharts, 500);
         return;
     }
-  
+ 
     google.charts.load('current', {
         packages: ['corechart']
     });
-  
+ 
     google.charts.setOnLoadCallback(() => {
         console.log('GOOGLE CHARTS CARGADO COMPLETAMENTE');
         window.googleChartsReady = true;
     });
 }
-
 // === CALLBACK PARA ESTADÍSTICAS DE ALQUILERES ===
 window.mostrarModalEstadisticasCallback = function(data, idPropiedad) {
   console.log("Callback ejecutado:", data);
   let datosParaModal;
-  if (data && data.success && data.data && data.data.length > 0) {
-    console.log("Datos REALES de hoja Alquileres:", data.data);
-    const alquiler = data.data[0];
+  if (data && data.success && data.vistas !== undefined && data.consultas !== undefined) {
+    console.log("Datos REALES de hoja Alquileres:", data);
     datosParaModal = {
-      propiedad: { direccion: alquiler.Direccion || `Propiedad ID: ${idPropiedad}` },
+      propiedad: { direccion: `Propiedad ID: ${idPropiedad}` },
       metricas: {
-        vistas: parseInt(alquiler.Vistas) || 0,
-        contactos: parseInt(alquiler.Consultas) || 0
+        vistas: parseInt(data.vistas) || 0,
+        contactos: parseInt(data.consultas) || 0
       }
     };
   } else {
@@ -508,8 +505,7 @@ window.mostrarModalEstadisticasCallback = function(data, idPropiedad) {
   console.log("Abriendo modal con:", datosParaModal);
   mostrarModalEstadisticas(datosParaModal);
 };
-
-// === SOLUCIÓN: FUNCIÓN JSONP CON action=obtenerEstadisticasAlquileres + id= ===
+// === SOLUCIÓN FINAL: JSONP CON action=getVistasConsultas + id= + callback= ===
 function usarJSONP(idPropiedad, callbackName) {
   return new Promise((resolve, reject) => {
     callbackName = callbackName || 'jsonp_' + Date.now();
@@ -520,8 +516,8 @@ function usarJSONP(idPropiedad, callbackName) {
       resolve(data);
     };
     const script = document.createElement('script');
-    // === SOLUCIÓN: Usa action + id + callback ===
-    script.src = `${API_URL}?action=obtenerEstadisticasAlquileres&id=${idPropiedad}&callback=${callbackName}`;
+    // === SOLUCIÓN: Usa action=getVistasConsultas + id= + callback= ===
+    script.src = `${API_URL}?accion=getVistasConsultas&id=${idPropiedad}&callback=${callbackName}`;
     script.onerror = () => {
       delete window[callbackName];
       script.remove();
@@ -530,11 +526,10 @@ function usarJSONP(idPropiedad, callbackName) {
     document.body.appendChild(script);
   });
 }
-
 // === SOLICITAR MÉTRICAS CON JSONP (SIN CORS) ===
 function solicitarMetricas(idPropiedad, propId, retryCount = 0) {
     console.log(`Solicitando VISTAS(S) y CONSULTAS(T) para ID: ${idPropiedad}`);
-  
+ 
     if (typeof google === 'undefined' || !google.charts || !window.googleChartsReady) {
         if (retryCount < 10) {
             console.log(`Esperando Google Charts... (Intento ${retryCount + 1}/10)`);
@@ -546,7 +541,7 @@ function solicitarMetricas(idPropiedad, propId, retryCount = 0) {
             return;
         }
     }
-  
+ 
     console.log('Google Charts listo - Llamando a Apps Script vía JSONP (sin CORS)');
     const callbackName = 'metricasCallback_' + Date.now();
     usarJSONP(idPropiedad, callbackName)
@@ -559,7 +554,6 @@ function solicitarMetricas(idPropiedad, propId, retryCount = 0) {
         mostrarErrorMetricas(propId);
       });
 }
-
 // === FUNCIÓN DE ERROR PARA MÉTRICAS ===
 function mostrarErrorMetricas(propId) {
     const datosParaModal = {
@@ -571,7 +565,6 @@ function mostrarErrorMetricas(propId) {
     msgEl.style.color = "orange";
     msgEl.textContent = "Sin datos aún - ¡Comparte tu propiedad!";
 }
-
 // === MOSTRAR MODAL DE ESTADÍSTICAS ===
 function mostrarModalEstadisticas(data) {
   console.log("Datos recibidos:", data);
@@ -585,13 +578,11 @@ function mostrarModalEstadisticas(data) {
   msgEl.textContent = "Estadísticas cargadas correctamente";
   console.log("Modal de estadísticas abierto exitosamente");
 }
-
 // === CERRAR MODAL DE ESTADÍSTICAS ===
 function cerrarModalEstadisticas() {
 document.getElementById("modalEstadisticas").style.display = "none";
 document.getElementById("msgEstadisticas").textContent = "";
 }
-
 // === FORMATO DE PRECIO PARA ALQUILERES ===
 function formatoPrecio(valor) {
 if (!valor) return "";
@@ -611,7 +602,6 @@ this.selectionStart = cursorPos + diff;
 this.selectionEnd = cursorPos + diff;
 });
 }
-
 // === FORMATO DE PRECIO PARA PLANES ($X.XXX,XX) ===
 function formatoPrecioPlan(valor) {
 if (!valor) return "$0,00";
@@ -622,7 +612,6 @@ const decimal = Math.round((numero - entero) * 100).toString().padStart(2, "0");
 const enteroFormateado = entero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 return `$${enteroFormateado},${decimal}`;
 }
-
 // === FORMATO DE FECHA (DD/M/AAAA) ===
 function formatoFecha(fecha) {
 if (fecha === "N/D") return fecha;
@@ -631,7 +620,6 @@ if (partes.length !== 3) return fecha;
 const [dia, mes, anio] = partes;
 return `${parseInt(dia, 10)}/${parseInt(mes, 10)}/${anio}`;
 }
-
 // === PREVIEW IMÁGENES ===
 function actualizarPreview(tipo) {
 const previewContainer = document.getElementById(`previewContainer${tipo}`);
@@ -664,7 +652,6 @@ reader.readAsDataURL(file);
 });
 });
 }
-
 // === PREVIEW VIDEOS ===
 function actualizarVideoPreview(tipo) {
 const videoPreviewContainer = document.getElementById(`videoPreviewContainer${tipo}`);
@@ -698,7 +685,6 @@ reader.readAsDataURL(file);
 });
 });
 }
-
 // === SUBIR IMÁGENES ===
 async function subirImagenCloudinary(file) {
 const formData = new FormData();
@@ -713,7 +699,6 @@ console.error("Error subiendo imagen a Cloudinary:", err);
 return null;
 }
 }
-
 // === SUBIR VIDEO A MUX ===
 async function subirVideoMux(videoFile, row, tipo) {
   const msgEl = document.getElementById(`msg${tipo}`);
@@ -749,7 +734,6 @@ async function subirVideoMux(videoFile, row, tipo) {
     throw error;
   }
 }
-
 // === CONVERTIR ARCHIVO A BASE64 ===
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
@@ -759,13 +743,11 @@ function fileToBase64(file) {
     reader.readAsDataURL(file);
   });
 }
-
 // === MENÚ HAMBURGUESA ===
 function toggleMenu() {
 const menu = document.getElementById("menu");
 menu.classList.toggle("active");
 }
-
 // === TOGGLE OPCIONES PROPIEDAD ===
 function toggleOpcionesPropiedad() {
 const opciones = document.getElementById("opcionesPropiedad");
@@ -784,7 +766,6 @@ btn.textContent = "Cerrar Opciones";
 window.scrollTo(0, document.getElementById("opcionesPropiedad").offsetTop);
 }
 }
-
 // === MOSTRAR OPCIONES SEGÚN TIPO DE OPERACIÓN ===
 function mostrarOpcionesPorOperacion() {
 const tipoOperacion = document.getElementById("tipoOperacion").value;
@@ -800,7 +781,6 @@ opcionesVenta.classList.remove("active");
 window.scrollTo(0, document.getElementById("opcionesAlquiler").offsetTop);
 }
 }
-
 // === MOSTRAR FORMULARIO SEGÚN TIPO ===
 function mostrarFormulario(tipo) {
 const formularios = ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'];
@@ -813,11 +793,10 @@ form.classList.add("active");
 document.getElementById("btnAgregarPropiedad").textContent = "Cerrar Opciones";
 window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
 }
-
 // === INICIALIZAR EVENTOS ===
 window.onload = function() {
     initGoogleCharts();
-  
+ 
     const email = localStorage.getItem("dueno");
     if (!email) { window.location.href = "index.html"; return; }
     cargarEstadoPlan();
@@ -832,7 +811,6 @@ window.onload = function() {
     });
     document.getElementById("tipoOperacion").addEventListener("change", mostrarOpcionesPorOperacion);
 }
-
 // === VERIFICAR PAGO AL REGRESAR ===
 async function checkPaymentOnReturn() {
 const urlParams = new URLSearchParams(window.location.search);
@@ -864,7 +842,6 @@ setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
 window.history.replaceState({}, document.title, window.location.pathname);
 }
 }
-
 // === CARGAR PRECIOS PLANES ===
 function cargarPreciosPlanes() {
 const script = document.createElement("script");
@@ -883,7 +860,6 @@ document.getElementById("precioFull").textContent = formatoPrecioPlan(preciosPla
 console.error("Error al cargar precios de planes:", res);
 }
 }
-
 // === CARGAR ESTADO DE PLAN ===
 function cargarEstadoPlan() {
 const email = localStorage.getItem("dueno");
@@ -928,7 +904,6 @@ planStatusEl.innerHTML = planStatusHTML;
 document.getElementById("limiteAlquileres").textContent = planActual === "Prueba" ? `${deptosActivos} propiedades activas` : `${deptosActivos}/${limiteDeptos} propiedades activas`;
 document.getElementById("btnPlan").textContent = planActual ? "Mejorar Plan" : "Elegir Plan";
 }
-
 // === MODAL PLAN ===
 function abrirModalPlan() { document.getElementById("modalPlan").style.display = "block"; }
 function cerrarModalPlan() {
@@ -1001,7 +976,6 @@ planStatusEl.innerHTML = `<span class="estado-msg error">Error al actualizar el 
 setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
 }
 }
-
 // === CARGAR ALQUILERES ===
 function cargarAlquileres() {
 const email = localStorage.getItem("dueno");
@@ -1036,7 +1010,6 @@ ${btnEstadisticas} ${btnEstado} ${btnEditar} ${btnEliminar}
 </div>`;
 });
 }
-
 // === AGREGAR / EDITAR ALQUILER ===
 async function agregarAlquiler(tipo) {
 const msgEl = document.getElementById(`msg${tipo}`);
@@ -1120,7 +1093,6 @@ script.src = query;
 document.body.appendChild(script);
 }
 }
-
 // === RESET FORMULARIOS ===
 function resetAllForms() {
 ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'].forEach(tipo => {
@@ -1160,7 +1132,6 @@ document.getElementById("btnAgregarPropiedad").textContent = "Agregar Propiedad"
 document.getElementById("tipoOperacion").value = "Vender";
 mostrarOpcionesPorOperacion();
 }
-
 // === EDITAR ALQUILER ===
 function editarAlquiler(row, datos) {
 const tipo = datos.Tipo || "Departamento";
@@ -1194,7 +1165,6 @@ actualizarPreview(tipo);
 actualizarVideoPreview(tipo);
 window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
 }
-
 // === FUNCIONES RESTANTES ===
 async function cambiarEstado(row, estadoActual) {
 const msgEl = document.getElementById(`estadoMsg-${row}`);
@@ -1274,7 +1244,6 @@ setTimeout(() => { msgEl.textContent = ""; }, 5000);
 }
 });
 }
-
 // === EDITAR CUENTA ===
 function abrirModalEditarCuenta() {
 document.getElementById("modalEditarCuenta").style.display = "block";
@@ -1298,7 +1267,6 @@ const script = document.createElement("script");
 script.src = `${API_URL}?action=getLoginInfo&email=${encodeURIComponent(email)}&callback=mostrarDatosCuenta`;
 document.body.appendChild(script);
 }
-
 // === SOLUCIÓN 1: contacto.startsWith is not a function ===
 function mostrarDatosCuenta(res) {
   const msgEl = document.getElementById("msgEditarCuenta");
@@ -1308,11 +1276,10 @@ function mostrarDatosCuenta(res) {
     document.getElementById("emailEditar").value = login.Email || "";
     document.getElementById("nombreEditar").value = login.Nombre || "";
     document.getElementById("passwordEditar").value = login.Password || "";
-   
+  
     let contacto = login.Contacto || "";
     let codigoPais = "+549";
     let numero = "";
-    // SOLUCIÓN: Solo usar startsWith si es string
     if (typeof contacto === "string" && contacto.trim() !== "") {
       for (const code of countryCodes) {
         if (contacto.startsWith(code)) {
