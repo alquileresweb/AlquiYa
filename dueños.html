@@ -514,7 +514,6 @@ function usarJSONP(idPropiedad, callbackName) {
       resolve(data);
     };
     const script = document.createElement('script');
-    // CORREGIDO: Usa action= (no accion=) y nombre correcto
     script.src = `${API_URL}?action=getvistasconsultas&id=${idPropiedad}&callback=${callbackName}`;
     script.onerror = () => {
       delete window[callbackName];
@@ -1271,7 +1270,6 @@ function mostrarDatosCuenta(res) {
     document.getElementById("emailEditar").value = login.Email || "";
     document.getElementById("nombreEditar").value = login.Nombre || "";
     document.getElementById("passwordEditar").value = login.Password || "";
- 
     let contacto = login.Contacto || "";
     let codigoPais = "+549";
     let numero = "";
