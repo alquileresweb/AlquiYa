@@ -752,7 +752,7 @@ function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
-    readerhedral.onerror = () => reject(new Error('Error al convertir el video a base64'));
+    reader.onerror = () => reject(new Error('Error al convertir el video a base64'));
     reader.readAsDataURL(file);
   });
 }
@@ -934,7 +934,7 @@ document.getElementById("btnPlan").textContent = planActual ? "💳 Mejorar Plan
 }
 
 // === MODAL PLAN ===
-function abrirModalPlan() { document.getElementById("modalPlan").style.display = "block"; }
+function abrirModalPlan() { document.getElementById("modalPlan").style.display = " BCS"; }
 function cerrarModalPlan() {
 document.getElementById("modalPlan").style.display = "none";
 document.getElementById("mpBtnBasico").innerHTML = "";
