@@ -472,11 +472,9 @@ function initGoogleCharts() {
         setTimeout(initGoogleCharts, 500);
         return;
     }
- 
     google.charts.load('current', {
         packages: ['corechart']
     });
- 
     google.charts.setOnLoadCallback(() => {
         console.log('GOOGLE CHARTS CARGADO COMPLETAMENTE');
         window.googleChartsReady = true;
@@ -505,7 +503,7 @@ window.mostrarModalEstadisticasCallback = function(data, idPropiedad) {
   console.log("Abriendo modal con:", datosParaModal);
   mostrarModalEstadisticas(datosParaModal);
 };
-// === SOLUCIÓN FINAL: JSONP CON action=getVistasConsultas + id= + callback= ===
+// === SOLUCIÓN FINAL: JSONP CON action=getvistasconsultas + id= + callback= ===
 function usarJSONP(idPropiedad, callbackName) {
   return new Promise((resolve, reject) => {
     callbackName = callbackName || 'jsonp_' + Date.now();
@@ -516,8 +514,8 @@ function usarJSONP(idPropiedad, callbackName) {
       resolve(data);
     };
     const script = document.createElement('script');
-    // === SOLUCIÓN: Usa action=getVistasConsultas + id= + callback= ===
-    script.src = `${API_URL}?accion=getVistasConsultas&id=${idPropiedad}&callback=${callbackName}`;
+    // CORREGIDO: Usa action= (no accion=) y nombre correcto
+    script.src = `${API_URL}?action=getvistasconsultas&id=${idPropiedad}&callback=${callbackName}`;
     script.onerror = () => {
       delete window[callbackName];
       script.remove();
@@ -529,7 +527,6 @@ function usarJSONP(idPropiedad, callbackName) {
 // === SOLICITAR MÉTRICAS CON JSONP (SIN CORS) ===
 function solicitarMetricas(idPropiedad, propId, retryCount = 0) {
     console.log(`Solicitando VISTAS(S) y CONSULTAS(T) para ID: ${idPropiedad}`);
- 
     if (typeof google === 'undefined' || !google.charts || !window.googleChartsReady) {
         if (retryCount < 10) {
             console.log(`Esperando Google Charts... (Intento ${retryCount + 1}/10)`);
@@ -541,7 +538,6 @@ function solicitarMetricas(idPropiedad, propId, retryCount = 0) {
             return;
         }
     }
- 
     console.log('Google Charts listo - Llamando a Apps Script vía JSONP (sin CORS)');
     const callbackName = 'metricasCallback_' + Date.now();
     usarJSONP(idPropiedad, callbackName)
@@ -796,7 +792,6 @@ window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
 // === INICIALIZAR EVENTOS ===
 window.onload = function() {
     initGoogleCharts();
- 
     const email = localStorage.getItem("dueno");
     if (!email) { window.location.href = "index.html"; return; }
     cargarEstadoPlan();
@@ -1276,7 +1271,7 @@ function mostrarDatosCuenta(res) {
     document.getElementById("emailEditar").value = login.Email || "";
     document.getElementById("nombreEditar").value = login.Nombre || "";
     document.getElementById("passwordEditar").value = login.Password || "";
-  
+ 
     let contacto = login.Contacto || "";
     let codigoPais = "+549";
     let numero = "";
