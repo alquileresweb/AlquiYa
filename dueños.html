@@ -425,14 +425,14 @@ box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 <label>Contraseña</label>
 <div class="password-container">
 <input type="password" id="passwordEditar" placeholder="Dejar en blanco para mantener actual">
-<button class="toggle-password" onclick="togglePasswordVisibility()">Ver</button>
+<button class="toggle-password" onclick="togglePasswordVisibility()">Mostrar</button>
 </div>
 <button onclick="editarCuenta()">Guardar Cambios</button>
 <button onclick="cerrarModalEditarCuenta()">Cerrar</button>
 <p id="msgEditarCuenta" style="color:green"></p>
 </div>
 </div>
-<!-- MODAL DE ESTADÍSTICAS SIMPLIFICADO (SOLO VISTAS Y CONTACTOS) -->
+<!-- === MODAL DE ESTADÍSTICAS SIMPLIFICADO (SOLO VISTAS Y CONTACTOS) === -->
 <div id="modalEstadisticas">
 <div class="modal-content">
 <h3 id="modal-titulo">Estadísticas</h3>
@@ -509,7 +509,7 @@ window.mostrarModalEstadisticasCallback = function(data, idPropiedad) {
   console.log("Abriendo modal con:", datosParaModal);
   mostrarModalEstadisticas(datosParaModal);
 };
-// === SOLICITAR MÉTRICAS DE ALQUILERES ===
+// === SOLICITAR MÉTRICAS DE ALQUILERES (CORREGIDO: usa fetch) ===
 function solicitarMetricas(idPropiedad, propId, retryCount = 0) {
     console.log(`Solicitando VISTAS(S) y CONSULTAS(T) para ID: ${idPropiedad}`);
    
@@ -527,19 +527,19 @@ function solicitarMetricas(idPropiedad, propId, retryCount = 0) {
    
     console.log('Google Charts listo - Llamando a Apps Script vía fetch()');
 
-    // SOLUCIÓN: Usar fetch() en lugar de google.script.run
+    // === SOLUCIÓN: Reemplazado google.script.run por fetch() ===
     fetch(`${API_URL}?action=getAlquilerPorId&id=${idPropiedad}`, {
-      method: 'GET',
-      cache: 'no-cache'
+        method: 'GET',
+        cache: 'no-cache'
     })
     .then(response => response.json())
     .then(datos => {
-      console.log("Datos recibidos:", datos);
-      mostrarModalEstadisticasCallback(datos, propId);
+        console.log("Datos recibidos:", datos);
+        mostrarModalEstadisticasCallback(datos, propId);
     })
     .catch(error => {
-      console.error('Error métricas:', error);
-      mostrarErrorMetricas(propId);
+        console.error('Error métricas:', error);
+        mostrarErrorMetricas(propId);
     });
 }
 // === FUNCIÓN DE ERROR PARA MÉTRICAS ===
@@ -1246,7 +1246,7 @@ document.getElementById("passwordEditar").value = "";
 document.getElementById("codigoPaisEditar").value = "+549";
 document.getElementById("msgEditarCuenta").textContent = "";
 document.getElementById("passwordEditar").type = "password";
-document.querySelector(".toggle-password").textContent = "Ver";
+document.querySelector(".toggle-password").textContent = "Mostrar";
 }
 function cargarDatosCuenta() {
 const email = localStorage.getItem("dueno");
@@ -1256,7 +1256,7 @@ script.src = `${API_URL}?action=getLoginInfo&email=${encodeURIComponent(email)}&
 document.body.appendChild(script);
 }
 
-// === CORRECCIÓN 1: contacto.startsWith is not a function ===
+// === SOLUCIÓN 1: contacto.startsWith is not a function ===
 function mostrarDatosCuenta(res) {
   const msgEl = document.getElementById("msgEditarCuenta");
   const countryCodes = ["+549", "+55", "+598", "+56", "+595"];
@@ -1270,7 +1270,7 @@ function mostrarDatosCuenta(res) {
     let codigoPais = "+549";
     let numero = "";
 
-    // SOLUCIÓN: Solo usar startsWith si contacto es string
+    // SOLUCIÓN: Solo usar startsWith si es string
     if (typeof contacto === "string" && contacto.trim() !== "") {
       for (const code of countryCodes) {
         if (contacto.startsWith(code)) {
@@ -1299,7 +1299,7 @@ passwordInput.type = "text";
 toggleButton.textContent = "Ocultar";
 } else {
 passwordInput.type = "password";
-toggleButton.textContent = "Ver";
+toggleButton.textContent = "Mostrar";
 }
 }
 async function editarCuenta() {
