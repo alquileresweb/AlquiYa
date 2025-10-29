@@ -473,11 +473,11 @@ function initGoogleCharts() {
         setTimeout(initGoogleCharts, 500);
         return;
     }
-   
+  
     google.charts.load('current', {
         packages: ['corechart']
     });
-   
+  
     google.charts.setOnLoadCallback(() => {
         console.log('GOOGLE CHARTS CARGADO COMPLETAMENTE');
         window.googleChartsReady = true;
@@ -487,9 +487,7 @@ function initGoogleCharts() {
 // === CALLBACK PARA ESTADÍSTICAS DE ALQUILERES ===
 window.mostrarModalEstadisticasCallback = function(data, idPropiedad) {
   console.log("Callback ejecutado:", data);
- 
   let datosParaModal;
- 
   if (data && data.success && data.data && data.data.length > 0) {
     console.log("Datos REALES de hoja Alquileres:", data.data);
     const alquiler = data.data[0];
@@ -507,7 +505,6 @@ window.mostrarModalEstadisticasCallback = function(data, idPropiedad) {
       metricas: { vistas: 0, contactos: 0 }
     };
   }
- 
   console.log("Abriendo modal con:", datosParaModal);
   mostrarModalEstadisticas(datosParaModal);
 };
@@ -522,9 +519,9 @@ function usarJSONP(idPropiedad, callbackName) {
       if (script) script.remove();
       resolve(data);
     };
-
     const script = document.createElement('script');
-    script.src = `${API_URL}?action=getAlquilerPorId&id=${idPropiedad}&callback=${callbackName}`;
+    // === SOLUCIÓN: ?id=12 + callback=... (sin action) ===
+    script.src = `${API_URL}?id=${idPropiedad}&callback=${callbackName}`;
     script.onerror = () => {
       delete window[callbackName];
       script.remove();
@@ -534,10 +531,10 @@ function usarJSONP(idPropiedad, callbackName) {
   });
 }
 
-// === SOLICITAR MÉTRICAS CON NO-CORS + JSONP FALLBACK ===
+// === SOLICITAR MÉTRICAS CON JSONP (SIN CORS) ===
 function solicitarMetricas(idPropiedad, propId, retryCount = 0) {
     console.log(`Solicitando VISTAS(S) y CONSULTAS(T) para ID: ${idPropiedad}`);
-   
+  
     if (typeof google === 'undefined' || !google.charts || !window.googleChartsReady) {
         if (retryCount < 10) {
             console.log(`Esperando Google Charts... (Intento ${retryCount + 1}/10)`);
@@ -549,10 +546,8 @@ function solicitarMetricas(idPropiedad, propId, retryCount = 0) {
             return;
         }
     }
-   
+  
     console.log('Google Charts listo - Llamando a Apps Script vía JSONP (sin CORS)');
-
-    // === USAMOS JSONP DIRECTO (NO CORS) ===
     const callbackName = 'metricasCallback_' + Date.now();
     usarJSONP(idPropiedad, callbackName)
       .then(datos => {
@@ -822,7 +817,7 @@ window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
 // === INICIALIZAR EVENTOS ===
 window.onload = function() {
     initGoogleCharts();
-   
+  
     const email = localStorage.getItem("dueno");
     if (!email) { window.location.href = "index.html"; return; }
     cargarEstadoPlan();
@@ -1313,11 +1308,10 @@ function mostrarDatosCuenta(res) {
     document.getElementById("emailEditar").value = login.Email || "";
     document.getElementById("nombreEditar").value = login.Nombre || "";
     document.getElementById("passwordEditar").value = login.Password || "";
-    
+   
     let contacto = login.Contacto || "";
     let codigoPais = "+549";
     let numero = "";
-
     // SOLUCIÓN: Solo usar startsWith si es string
     if (typeof contacto === "string" && contacto.trim() !== "") {
       for (const code of countryCodes) {
@@ -1328,7 +1322,6 @@ function mostrarDatosCuenta(res) {
         }
       }
     }
-
     document.getElementById("codigoPaisEditar").value = codigoPais;
     document.getElementById("contactoEditar").value = numero;
     msgEl.textContent = "";
@@ -1338,7 +1331,6 @@ function mostrarDatosCuenta(res) {
     setTimeout(() => { msgEl.textContent = ""; }, 3000);
   }
 }
-
 function togglePasswordVisibility() {
 const passwordInput = document.getElementById("passwordEditar");
 const toggleButton = document.querySelector(".toggle-password");
@@ -1402,7 +1394,6 @@ msgEl.textContent = "Error al guardar: " + (err.message || "Error de conexión")
 console.error("Error en edición de cuenta:", err);
 }
 }
-
 console.log("SISTEMA DE ESTADÍSTICAS - HOJA ALQUILERES FUNCIONANDO 100%");
 console.log("PROCESO: Columna ROW (Alquileres) → Vistas (S) | Consultas (T)");
 </script>
