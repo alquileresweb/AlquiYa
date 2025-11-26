@@ -19,7 +19,7 @@ gtag('config', 'G-SSJ5DG33JK');
 body { font-family: Arial, sans-serif; margin: 10px; background:#f5f5f5; font-size:20px; text-align:center; margin-top: 120px; }
 h2 { color:#333; font-size:2.2em; margin-bottom:18px; }
 h3 { color:#333; font-size:2em; margin-bottom:18px; }
-.alquiler { border:1px solid #ccc; padding:16px; margin:14px 0; background:#fff; font-size:1.4em; text-align:left; }
+.alquiler { border:1px solid #ccc; padding:16px; margin:14px 0; background:#fff; font-size:1.4em; text-align:left; border-radius:12px; }
 button { margin: 6px; padding:14px 20px; font-size:1.3em; border-radius:6px; cursor:pointer; }
 button.stats-btn { background: #ff9800; color: white; }
 #btnAgregarPropiedad { background:#3681f3; color:white; }
@@ -157,57 +157,33 @@ font-size: 1.2em;
 font-weight: bold;
 color: #333;
 }
-/* === NUEVOS ESTILOS PARA ESTADÍSTICAS (SIMPLIFICADO) === */
-#modalEstadisticas {
-display: none;
-position: fixed;
-z-index: 1001;
-left: 0;
-top: 0;
-width: 100%;
-height: 100%;
-overflow: auto;
-background-color: rgba(0,0,0,0.7);
-}
-#modalEstadisticas .modal-content {
-background-color: #fff;
-margin: 5% auto;
-padding: 30px;
-border: none;
-width: 95%;
-max-width: 400px;
-border-radius: 16px;
-text-align: center;
-box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-}
-#modalEstadisticas h3 { color: #ff9800; font-size: 2.2em; margin-bottom: 20px; }
-.metricas-item {
-background: linear-gradient(135deg, #ff9800, #f57c00);
-color: white;
-padding: 20px;
-margin: 15px 0;
-border-radius: 12px;
-font-size: 1.6em;
-text-align: center;
-box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
-.metricas-numero { font-size: 2.8em; font-weight: bold; display: block; margin-bottom: 5px; }
-#modalEstadisticas button { background: #ff9800; color: white; padding: 15px 25px; font-size: 1.4em; }
-@media screen and (max-width: 600px) {
-#modalEstadisticas .modal-content { margin: 10% auto; width: 98%; padding: 25px; }
-.metricas-item { font-size: 1.4em; padding: 18px; }
-.metricas-numero { font-size: 2.5em; }
-}
-/* GRÁFICOS DE MÉTRICAS - NUEVO */
-.grafico-metricas {
-    margin: 15px 0;
-    border: 2px solid #e0e0e0;
+
+/* === ESTADÍSTICAS INLINE EN CADA PROPIEDAD === */
+.metricas-inline {
+    margin-top: 14px;
+    padding: 12px;
+    background: linear-gradient(135deg, #ff9800, #f57c00);
+    color: white;
     border-radius: 10px;
-    background: white;
-    padding: 10px;
+    font-size: 1.2em;
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    text-align: center;
 }
-#metricas-17, #metricas-18, #metricas-19 {
-    margin: 20px 0;
+.metricas-inline div { margin: 4px; }
+.metricas-inline span { 
+    display: block;
+    font-size: 1.8em;
+    font-weight: bold;
+}
+.metricas-inline .loading {
+    font-style: italic;
+    opacity: 0.8;
+}
+@media screen and (max-width: 600px) {
+    .metricas-inline { font-size: 1.4em; padding: 16px; }
+    .metricas-inline span { font-size: 2.2em; }
 }
 </style>
 </head>
@@ -432,24 +408,6 @@ box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 <p id="msgEditarCuenta" style="color:green"></p>
 </div>
 </div>
-<!-- === MODAL DE ESTADÍSTICAS SIMPLIFICADO (SOLO VISTAS Y CONTACTOS) === -->
-<div id="modalEstadisticas">
-<div class="modal-content">
-<h3 id="modal-titulo">Estadísticas</h3>
-<div id="metricasContainer">
-<div class="metricas-item">
-<span class="metricas-numero" id="modal-vistas">0</span>
-Vistas
-</div>
-<div class="metricas-item">
-<span class="metricas-numero" id="modal-contactos">0</span>
-Contactos
-</div>
-</div>
-<button onclick="cerrarModalEstadisticas()">Cerrar</button>
-<p id="msgEstadisticas" style="color:green; margin-top:15px;"></p>
-</div>
-</div>
 <button id="contactoBtn" title="¿Necesitas ayuda o tuviste inconvenientes?" onclick="window.open('https://wa.me/5493764275443', '_blank')">Ayuda</button>
 <script>
 // === CONSTANTES Y VARIABLES ===
@@ -464,46 +422,8 @@ let planActual = null;
 let limiteDeptos = 0;
 let deptosActivos = 0;
 let preciosPlanes = {Basico: 0, Plus: 0, Full: 0};
-// === INICIALIZAR GOOGLE CHARTS AL CARGA DE PÁGINA ===
-function initGoogleCharts() {
-    console.log('Inicializando Google Charts...');
-    if (typeof google === 'undefined' || !google.charts) {
-        console.log('Google Charts no disponible, reintentando en 500ms...');
-        setTimeout(initGoogleCharts, 500);
-        return;
-    }
-    google.charts.load('current', {
-        packages: ['corechart']
-    });
-    google.charts.setOnLoadCallback(() => {
-        console.log('GOOGLE CHARTS CARGADO COMPLETAMENTE');
-        window.googleChartsReady = true;
-    });
-}
-// === CALLBACK PARA ESTADÍSTICAS DE ALQUILERES ===
-window.mostrarModalEstadisticasCallback = function(data, idPropiedad) {
-  console.log("Callback ejecutado:", data);
-  let datosParaModal;
-  if (data && data.success && data.vistas !== undefined && data.consultas !== undefined) {
-    console.log("Datos REALES de hoja Alquileres:", data);
-    datosParaModal = {
-      propiedad: { direccion: `Propiedad ID: ${idPropiedad}` },
-      metricas: {
-        vistas: parseInt(data.vistas) || 0,
-        contactos: parseInt(data.consultas) || 0
-      }
-    };
-  } else {
-    console.log("Sin datos en hoja Alquileres - usando FALLBACK");
-    datosParaModal = {
-      propiedad: { direccion: `Propiedad ID: ${idPropiedad}` },
-      metricas: { vistas: 0, contactos: 0 }
-    };
-  }
-  console.log("Abriendo modal con:", datosParaModal);
-  mostrarModalEstadisticas(datosParaModal);
-};
-// === SOLUCIÓN FINAL: JSONP CON action=getvistasconsultas + id= + callback= ===
+
+// === FUNCIÓN JSONP REUTILIZABLE ===
 function usarJSONP(idPropiedad, callbackName) {
   return new Promise((resolve, reject) => {
     callbackName = callbackName || 'jsonp_' + Date.now();
@@ -523,62 +443,67 @@ function usarJSONP(idPropiedad, callbackName) {
     document.body.appendChild(script);
   });
 }
-// === SOLICITAR MÉTRICAS CON JSONP (SIN CORS) ===
-function solicitarMetricas(idPropiedad, propId, retryCount = 0) {
-    console.log(`Solicitando VISTAS(S) y CONSULTAS(T) para ID: ${idPropiedad}`);
-    if (typeof google === 'undefined' || !google.charts || !window.googleChartsReady) {
-        if (retryCount < 10) {
-            console.log(`Esperando Google Charts... (Intento ${retryCount + 1}/10)`);
-            setTimeout(() => solicitarMetricas(idPropiedad, propId, retryCount + 1), 500);
-            return;
-        } else {
-            console.log('Google Charts no disponible después de 10 intentos - usando FALLBACK');
-            mostrarErrorMetricas(propId);
-            return;
-        }
-    }
-    console.log('Google Charts listo - Llamando a Apps Script vía JSONP (sin CORS)');
-    const callbackName = 'metricasCallback_' + Date.now();
-    usarJSONP(idPropiedad, callbackName)
-      .then(datos => {
-        console.log("Datos recibidos:", datos);
-        mostrarModalEstadisticasCallback(datos, propId);
-      })
-      .catch(error => {
-        console.error('Error métricas:', error);
-        mostrarErrorMetricas(propId);
-      });
+
+// === NUEVA FUNCIÓN: CARGAR MÉTRICAS DIRECTO EN LA TARJETA ===
+function cargarMetricasInline(row) {
+  const contenedor = document.getElementById(`metricas-${row}`);
+  if (!contenedor) return;
+  contenedor.innerHTML = '<div class="loading">Cargando...</div>';
+
+  usarJSONP(row)
+    .then(data => {
+      let vistas = 0, contactos = 0;
+      if (data && data.success) {
+        vistas = parseInt(data.vistas) || 0;
+        contactos = parseInt(data.consultas) || 0;
+      }
+      contenedor.innerHTML = `
+        <div><span>${vistas}</span> Vistas</div>
+        <div><span>${contactos}</span> Contactos</div>
+      `;
+    })
+    .catch(() => {
+      contenedor.innerHTML = `
+        <div><span>0</span> Vistas</div>
+        <div><span>0</span> Contactos</div>
+      `;
+    });
 }
-// === FUNCIÓN DE ERROR PARA MÉTRICAS ===
-function mostrarErrorMetricas(propId) {
-    const datosParaModal = {
-        propiedad: { direccion: `Propiedad ID: ${propId}` },
-        metricas: { vistas: 0, contactos: 0 }
-    };
-    mostrarModalEstadisticas(datosParaModal);
-    const msgEl = document.getElementById("msgEstadisticas");
-    msgEl.style.color = "orange";
-    msgEl.textContent = "Sin datos aún - ¡Comparte tu propiedad!";
+
+// === MOSTRAR ALQUILERES - MODIFICADO PARA INCLUIR MÉTRICAS INLINE ===
+function mostrarAlquileres(res) {
+    const div = document.getElementById("listaAlquileres");
+    div.innerHTML = "";
+    if (!res.success || !res.data || res.data.length === 0) { div.innerHTML = "No tienes propiedades aún."; return; }
+    deptosActivos = res.data.filter(a => a.Estado === "Activo").length;
+    document.getElementById("limiteAlquileres").textContent = planActual === "Prueba" ? `${deptosActivos} propiedades activas` : `${deptosActivos}/${limiteDeptos} propiedades activas`;
+    res.data.forEach(alq => {
+        let estado = alq.Estado === "Activo" ? "Activo" : "Inactivo";
+        let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Cambiar Estado</button>`;
+        let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
+        let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
+        let precioFormateado = (alq.Tipo === "Departamento" || alq.Tipo === "Terreno" || alq.Tipo === "Casa") ? formatoPrecio(alq.Precio) : "";
+        let infoAmbientes = alq.Tipo === "Departamento" || alq.Tipo === "Casa" ? ` - ${alq['Nro Ambientes']} amb` : "";
+        let infoSuperficie = alq.Tipo === "Terreno" ? ` - ${alq.Superficie} m²` : "";
+        let infoPatio = alq.Tipo === "Casa" ? ` - Patio: ${alq.Patio || "N/D"}` : "";
+        let infoGarage = alq.Tipo === "Casa" ? ` - Garage: ${alq.Garage || "N/D"}` : "";
+        let infoAntiguedad = alq.Tipo === "Casa" ? ` - Antigüedad: ${alq.Antiguedad || "N/D"} años` : "";
+        let operacion = alq.Operacion ? ` - Operación: ${alq.Operacion}` : "";
+
+        div.innerHTML += `<div class="alquiler">
+<b>${alq.Direccion}</b> (${alq.Tipo})${infoAmbientes}${infoSuperficie}${precioFormateado}${infoPatio}${infoGarage}${infoAntiguedad}${operacion}<br>
+Estado: ${estado}<br>
+${btnEstado} ${btnEditar} ${btnEliminar}
+<span id="estadoMsg-${alq.row}" class="estado-msg"></span>
+<div id="metricas-${alq.row}" class="metricas-inline"><div class="loading">Cargando estadísticas...</div></div>
+</div>`;
+
+        // Cargar métricas automáticamente
+        cargarMetricasInline(alq.row);
+    });
 }
-// === MOSTRAR MODAL DE ESTADÍSTICAS ===
-function mostrarModalEstadisticas(data) {
-  console.log("Datos recibidos:", data);
-  const { propiedad, metricas } = data;
-  document.getElementById('modal-titulo').textContent = `Estadísticas - ${propiedad.direccion}`;
-  document.getElementById('modal-vistas').textContent = metricas.vistas || 0;
-  document.getElementById('modal-contactos').textContent = metricas.contactos || 0;
-  document.getElementById("modalEstadisticas").style.display = "block";
-  const msgEl = document.getElementById("msgEstadisticas");
-  msgEl.style.color = "green";
-  msgEl.textContent = "Estadísticas cargadas correctamente";
-  console.log("Modal de estadísticas abierto exitosamente");
-}
-// === CERRAR MODAL DE ESTADÍSTICAS ===
-function cerrarModalEstadisticas() {
-document.getElementById("modalEstadisticas").style.display = "none";
-document.getElementById("msgEstadisticas").textContent = "";
-}
-// === FORMATO DE PRECIO PARA ALQUILERES ===
+
+// === TODAS LAS DEMÁS FUNCIONES ORIGINALES SIN CAMBIO ===
 function formatoPrecio(valor) {
 if (!valor) return "";
 valor = valor.toString().replace(/\D/g, "");
@@ -597,7 +522,6 @@ this.selectionStart = cursorPos + diff;
 this.selectionEnd = cursorPos + diff;
 });
 }
-// === FORMATO DE PRECIO PARA PLANES ($X.XXX,XX) ===
 function formatoPrecioPlan(valor) {
 if (!valor) return "$0,00";
 const numero = parseFloat(valor);
@@ -607,7 +531,6 @@ const decimal = Math.round((numero - entero) * 100).toString().padStart(2, "0");
 const enteroFormateado = entero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 return `$${enteroFormateado},${decimal}`;
 }
-// === FORMATO DE FECHA (DD/M/AAAA) ===
 function formatoFecha(fecha) {
 if (fecha === "N/D") return fecha;
 const partes = fecha.split("/");
@@ -615,7 +538,6 @@ if (partes.length !== 3) return fecha;
 const [dia, mes, anio] = partes;
 return `${parseInt(dia, 10)}/${parseInt(mes, 10)}/${anio}`;
 }
-// === PREVIEW IMÁGENES ===
 function actualizarPreview(tipo) {
 const previewContainer = document.getElementById(`previewContainer${tipo}`);
 previewContainer.innerHTML = "";
@@ -647,7 +569,6 @@ reader.readAsDataURL(file);
 });
 });
 }
-// === PREVIEW VIDEOS ===
 function actualizarVideoPreview(tipo) {
 const videoPreviewContainer = document.getElementById(`videoPreviewContainer${tipo}`);
 videoPreviewContainer.innerHTML = "";
@@ -680,7 +601,6 @@ reader.readAsDataURL(file);
 });
 });
 }
-// === SUBIR IMÁGENES ===
 async function subirImagenCloudinary(file) {
 const formData = new FormData();
 formData.append("file", file);
@@ -694,7 +614,6 @@ console.error("Error subiendo imagen a Cloudinary:", err);
 return null;
 }
 }
-// === SUBIR VIDEO A MUX ===
 async function subirVideoMux(videoFile, row, tipo) {
   const msgEl = document.getElementById(`msg${tipo}`);
   try {
@@ -729,7 +648,6 @@ async function subirVideoMux(videoFile, row, tipo) {
     throw error;
   }
 }
-// === CONVERTIR ARCHIVO A BASE64 ===
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -738,12 +656,10 @@ function fileToBase64(file) {
     reader.readAsDataURL(file);
   });
 }
-// === MENÚ HAMBURGUESA ===
 function toggleMenu() {
 const menu = document.getElementById("menu");
 menu.classList.toggle("active");
 }
-// === TOGGLE OPCIONES PROPIEDAD ===
 function toggleOpcionesPropiedad() {
 const opciones = document.getElementById("opcionesPropiedad");
 const opcionesVenta = document.getElementById("opcionesVenta");
@@ -761,7 +677,6 @@ btn.textContent = "Cerrar Opciones";
 window.scrollTo(0, document.getElementById("opcionesPropiedad").offsetTop);
 }
 }
-// === MOSTRAR OPCIONES SEGÚN TIPO DE OPERACIÓN ===
 function mostrarOpcionesPorOperacion() {
 const tipoOperacion = document.getElementById("tipoOperacion").value;
 const opcionesVenta = document.getElementById("opcionesVenta");
@@ -776,7 +691,6 @@ opcionesVenta.classList.remove("active");
 window.scrollTo(0, document.getElementById("opcionesAlquiler").offsetTop);
 }
 }
-// === MOSTRAR FORMULARIO SEGÚN TIPO ===
 function mostrarFormulario(tipo) {
 const formularios = ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'];
 formularios.forEach(f => {
@@ -788,9 +702,7 @@ form.classList.add("active");
 document.getElementById("btnAgregarPropiedad").textContent = "Cerrar Opciones";
 window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
 }
-// === INICIALIZAR EVENTOS ===
 window.onload = function() {
-    initGoogleCharts();
     const email = localStorage.getItem("dueno");
     if (!email) { window.location.href = "index.html"; return; }
     cargarEstadoPlan();
@@ -805,7 +717,6 @@ window.onload = function() {
     });
     document.getElementById("tipoOperacion").addEventListener("change", mostrarOpcionesPorOperacion);
 }
-// === VERIFICAR PAGO AL REGRESAR ===
 async function checkPaymentOnReturn() {
 const urlParams = new URLSearchParams(window.location.search);
 const status = urlParams.get("status");
@@ -836,7 +747,6 @@ setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
 window.history.replaceState({}, document.title, window.location.pathname);
 }
 }
-// === CARGAR PRECIOS PLANES ===
 function cargarPreciosPlanes() {
 const script = document.createElement("script");
 script.src = `${API_URL}?action=getPlanes&callback=mostrarPreciosPlanes`;
@@ -854,7 +764,6 @@ document.getElementById("precioFull").textContent = formatoPrecioPlan(preciosPla
 console.error("Error al cargar precios de planes:", res);
 }
 }
-// === CARGAR ESTADO DE PLAN ===
 function cargarEstadoPlan() {
 const email = localStorage.getItem("dueno");
 const script = document.createElement("script");
@@ -898,7 +807,6 @@ planStatusEl.innerHTML = planStatusHTML;
 document.getElementById("limiteAlquileres").textContent = planActual === "Prueba" ? `${deptosActivos} propiedades activas` : `${deptosActivos}/${limiteDeptos} propiedades activas`;
 document.getElementById("btnPlan").textContent = planActual ? "Mejorar Plan" : "Elegir Plan";
 }
-// === MODAL PLAN ===
 function abrirModalPlan() { document.getElementById("modalPlan").style.display = "block"; }
 function cerrarModalPlan() {
 document.getElementById("modalPlan").style.display = "none";
@@ -970,41 +878,12 @@ planStatusEl.innerHTML = `<span class="estado-msg error">Error al actualizar el 
 setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
 }
 }
-// === CARGAR ALQUILERES ===
 function cargarAlquileres() {
 const email = localStorage.getItem("dueno");
 const script = document.createElement("script");
 script.src = `${API_URL}?action=getAlquileresDueno&dueno=${encodeURIComponent(email)}&callback=mostrarAlquileres`;
 document.body.appendChild(script);
 }
-function mostrarAlquileres(res) {
-const div = document.getElementById("listaAlquileres");
-div.innerHTML = "";
-if (!res.success || !res.data || res.data.length === 0) { div.innerHTML = "No tienes propiedades aún."; return; }
-deptosActivos = res.data.filter(a => a.Estado === "Activo").length;
-document.getElementById("limiteAlquileres").textContent = planActual === "Prueba" ? `${deptosActivos} propiedades activas` : `${deptosActivos}/${limiteDeptos} propiedades activas`;
-res.data.forEach(alq => {
-let estado = alq.Estado === "Activo" ? "Activo" : "Inactivo";
-let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Cambiar Estado</button>`;
-let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
-let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
-let btnEstadisticas = `<button class="stats-btn" onclick="solicitarMetricas(${alq.row}, ${alq.row})">Estadísticas</button>`;
-let precioFormateado = (alq.Tipo === "Departamento" || alq.Tipo === "Terreno" || alq.Tipo === "Casa") ? formatoPrecio(alq.Precio) : "";
-let infoAmbientes = alq.Tipo === "Departamento" || alq.Tipo === "Casa" ? ` - ${alq['Nro Ambientes']} amb` : "";
-let infoSuperficie = alq.Tipo === "Terreno" ? ` - ${alq.Superficie} m²` : "";
-let infoPatio = alq.Tipo === "Casa" ? ` - Patio: ${alq.Patio || "N/D"}` : "";
-let infoGarage = alq.Tipo === "Casa" ? ` - Garage: ${alq.Garage || "N/D"}` : "";
-let infoAntiguedad = alq.Tipo === "Casa" ? ` - Antigüedad: ${alq.Antiguedad || "N/D"} años` : "";
-let operacion = alq.Operacion ? ` - Operación: ${alq.Operacion}` : "";
-div.innerHTML += `<div class="alquiler">
-<b>${alq.Direccion}</b> (${alq.Tipo})${infoAmbientes}${infoSuperficie}${precioFormateado}${infoPatio}${infoGarage}${infoAntiguedad}${operacion}<br>
-Estado: ${estado}<br>
-${btnEstadisticas} ${btnEstado} ${btnEditar} ${btnEliminar}
-<span id="estadoMsg-${alq.row}" class="estado-msg"></span>
-</div>`;
-});
-}
-// === AGREGAR / EDITAR ALQUILER ===
 async function agregarAlquiler(tipo) {
 const msgEl = document.getElementById(`msg${tipo}`);
 msgEl.textContent = "Agregando propiedad...";
@@ -1087,7 +966,6 @@ script.src = query;
 document.body.appendChild(script);
 }
 }
-// === RESET FORMULARIOS ===
 function resetAllForms() {
 ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'].forEach(tipo => {
 document.getElementById(`formulario${tipo}`).classList.remove("active");
@@ -1126,7 +1004,6 @@ document.getElementById("btnAgregarPropiedad").textContent = "Agregar Propiedad"
 document.getElementById("tipoOperacion").value = "Vender";
 mostrarOpcionesPorOperacion();
 }
-// === EDITAR ALQUILER ===
 function editarAlquiler(row, datos) {
 const tipo = datos.Tipo || "Departamento";
 document.getElementById("btnAgregarPropiedad").textContent = "Cerrar Opciones";
@@ -1159,7 +1036,6 @@ actualizarPreview(tipo);
 actualizarVideoPreview(tipo);
 window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
 }
-// === FUNCIONES RESTANTES ===
 async function cambiarEstado(row, estadoActual) {
 const msgEl = document.getElementById(`estadoMsg-${row}`);
 if (estadoActual === "Inactivo" && deptosActivos >= limiteDeptos && planActual !== "Prueba") {
@@ -1238,7 +1114,6 @@ setTimeout(() => { msgEl.textContent = ""; }, 5000);
 }
 });
 }
-// === EDITAR CUENTA ===
 function abrirModalEditarCuenta() {
 document.getElementById("modalEditarCuenta").style.display = "block";
 cargarDatosCuenta();
@@ -1261,7 +1136,6 @@ const script = document.createElement("script");
 script.src = `${API_URL}?action=getLoginInfo&email=${encodeURIComponent(email)}&callback=mostrarDatosCuenta`;
 document.body.appendChild(script);
 }
-// === SOLUCIÓN 1: contacto.startsWith is not a function ===
 function mostrarDatosCuenta(res) {
   const msgEl = document.getElementById("msgEditarCuenta");
   const countryCodes = ["+549", "+55", "+598", "+56", "+595"];
@@ -1354,8 +1228,6 @@ msgEl.textContent = "Error al guardar: " + (err.message || "Error de conexión")
 console.error("Error en edición de cuenta:", err);
 }
 }
-console.log("SISTEMA DE ESTADÍSTICAS - HOJA ALQUILERES FUNCIONANDO 100%");
-console.log("PROCESO: Columna ROW (Alquileres) → Vistas (S) | Consultas (T)");
 </script>
 </body>
 </html>
