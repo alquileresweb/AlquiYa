@@ -15,150 +15,63 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
 <style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-  }
-  header {
-    background: white;
-    color: white;
-    padding: 15px;
-    text-align: center;
-  }
+  body { margin: 0; font-family: Arial, sans-serif; }
+  header { background: white; padding: 15px; text-align: center; }
+  header img { max-width: 250px; }
   #propiedad-detalle {
-    max-width: 700px;
-    margin: 20px auto;
-    padding: 15px;
-    border: 2px solid #3483fa;
-    border-radius: 8px;
-    background: #f9f9f9;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    max-width: 700px; margin: 20px auto; padding: 20px;
+    border: 2px solid #3483fa; border-radius: 10px;
+    background: #f9f9f9; box-shadow: 0 0 15px rgba(0,0,0,0.1);
   }
-  #propiedad-detalle img {
-    max-width: 100%;
-    border-radius: 6px;
-    margin-top: 10px;
-  }
-  #propiedad-detalle p {
-    margin: 10px 0;
-  }
+  #propiedad-detalle h2 { color: #3483fa; margin-top: 0; }
+  #propiedad-detalle h3 { color: #3483fa; margin: 5px 0 15px; font-weight: normal; }
+  #propiedad-detalle p { margin: 12px 0; line-height: 1.5; }
   #propiedad-detalle button {
-    background: #25D366;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-top: 10px;
-    margin-right: 10px;
+    background: #25D366; color: white; border: none;
+    padding: 12px 20px; border-radius: 8px; cursor: pointer;
+    font-size: 16px; margin: 10px 10px 0 0;
   }
-  #propiedad-detalle button:hover {
-    background: #1ebe57;
-  }
+  #propiedad-detalle button:hover { background: #1ebe57; }
   #loading-msg {
-    display: none;
-    text-align: center;
-    font-weight: bold;
-    margin: 10px;
-    color: #3483fa;
+    text-align: center; font-weight: bold; color: #3483fa;
+    padding: 20px; font-size: 18px; display: none;
+  }
+  #debug-info {
+    background: #f0f0f0; padding: 15px; margin: 20px auto;
+    max-width: 700px; border-radius: 8px; font-family: monospace;
+    white-space: pre-wrap; font-size: 14px; border: 1px solid #ccc;
   }
   #imagenes-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 10px;
+    display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;
   }
   #imagenes-container img {
-    max-width: 120px;
-    height: 90px;
-    margin: 5px;
-    border-radius: 6px;
-    object-fit: cover;
-    cursor: pointer;
+    max-width: 120px; height: 90px; object-fit: cover;
+    border-radius: 8px; cursor: pointer; transition: transform 0.2s;
   }
-  #map {
-    height: 400px;
-    width: 100%;
-    margin-top: 20px;
-    border-radius: 6px;
-    border: 1px solid #3483fa;
-  }
+  #imagenes-container img:hover { transform: scale(1.1); }
+  #map { height: 400px; width: 100%; margin-top: 20px; border-radius: 10px; border: 2px solid #3483fa; }
   #modal-img {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.8);
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center;
   }
-  #modal-img img {
-    max-width: 90%;
-    max-height: 90%;
-    border-radius: 8px;
-    box-shadow: 0 0 15px #000;
-    cursor: pointer;
+  #modal-img img { max-width: 90%; max-height: 90%; border-radius: 10px; }
+  #modal-img .close-btn, #modal-img .nav-btn {
+    position: absolute; background: rgba(255,255,255,0.8); color: #000;
+    border: none; border-radius: 50%; width: 40px; height: 40px;
+    font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;
   }
-  #modal-img .close-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: red;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    font-size: 20px;
-    font-weight: bold;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  #modal-img .nav-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: #3483fa;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    font-size: 24px;
-    font-weight: bold;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  #modal-img .prev-btn { left: 10px; }
-  #modal-img .next-btn { right: 10px; }
-  .marker-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #3483fa;
-    color: white;
-    font-weight: bold;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    border: 2px solid white;
-    box-shadow: 0 0 2px #000;
-  }
+  #modal-img .close-btn { top: 15px; right: 15px; background: red; color: white; }
+  #modal-img .prev-btn { left: 15px; }
+  #modal-img .next-btn { right: 15px; }
 </style>
 </head>
 <body>
 <header>
-  <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya" style="max-width:250px;margin-bottom:10px;">
+  <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya">
 </header>
 
 <div id="loading-msg">Cargando datos de la propiedad...</div>
+<div id="debug-info"></div>
 <div id="propiedad-detalle"></div>
 
 <div id="modal-img">
@@ -168,42 +81,50 @@
   <button class="nav-btn next-btn" onclick="cambiarImagen(1)">Next</button>
 </div>
 
-<!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
+// TU URL DEL WEB APP (¡REEMPLAZA CON LA NUEVA DESPUÉS DE CADA DEPLOY!)
 const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
+
 let currentImages = [];
 let currentImageIndex = 0;
 
+function log(msg) {
+  console.log(msg);
+  const debug = document.getElementById("debug-info");
+  debug.textContent += msg + "\n";
+  debug.scrollTop = debug.scrollHeight;
+}
+
 function getField(obj, keys) {
   for (const k of keys) {
-    if (Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null && obj[k] !== "") {
+    if (obj && Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null && obj[k] !== "") {
       return obj[k];
     }
   }
   return "";
 }
-function toInt(val, def=0) {
+
+function toInt(val, def = 0) {
   const n = parseInt(val, 10);
   return isNaN(n) ? def : n;
 }
+
 function driveUrlDirect(url) {
+  if (!url) return url;
   let fileId = null;
-  if (url && url.includes("drive.google.com")) {
-    let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (url.includes("drive.google.com")) {
+    let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
     if (match) fileId = match[1];
-    else {
-      match = url.match(/id=([a-zA-Z0-9_-]+)/);
-      if (match) fileId = match[1];
-    }
   }
   return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
 }
+
 function formatPrice(num) {
-  if (!num) return "";
+  if (!num) return "No disponible";
   const clean = String(num).replace(/[^\d]/g, "");
-  const formatted = parseInt(clean, 10).toLocaleString('es-AR');
-  return "$" + formatted.replace(/,/g, ".");
+  const n = parseInt(clean, 10);
+  return isNaN(n) ? "No disponible" : "$" + n.toLocaleString('es-AR');
 }
 
 function abrirModal(src, images, index) {
@@ -216,194 +137,170 @@ function abrirModal(src, images, index) {
   document.querySelector(".prev-btn").style.display = images.length > 1 ? "block" : "none";
   document.querySelector(".next-btn").style.display = images.length > 1 ? "block" : "none";
 }
+
 function cerrarModal() {
   document.getElementById("modal-img").style.display = "none";
-  currentImages = [];
-  currentImageIndex = 0;
 }
-function cambiarImagen(direction) {
-  currentImageIndex = (currentImageIndex + direction + currentImages.length) % currentImages.length;
+
+function cambiarImagen(dir) {
+  currentImageIndex = (currentImageIndex + dir + currentImages.length) % currentImages.length;
   document.getElementById("img-grande").src = currentImages[currentImageIndex];
 }
 
 function initMap(lat, lng, direccion, nroAmb, tipo) {
-  console.log(`Initializing map with lat: ${lat}, lng: ${lng}, address: ${direccion}, rooms: ${nroAmb}, tipo: ${tipo}`);
-  const mapContainer = document.getElementById("map");
-  if (!mapContainer) {
-    console.error("Map container not found");
-    return;
-  }
-  const map = L.map(mapContainer).setView([lat, lng], 15);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    maxZoom: 19
-  }).addTo(map);
-
-  const markersLayer = L.layerGroup().addTo(map);
-
-  let iconHtml;
-  if (tipo === "Temporario") {
-    iconHtml = 'Clock';
-  } else if (tipo === "Local") {
-    iconHtml = 'Shopping';
-  } else {
-    iconHtml = `House<span style="font-size:12px;margin-left:2px;">${nroAmb || "-"}</span>`;
-  }
-  const rentalIcon = L.divIcon({
-    className: 'marker-icon',
-    html: iconHtml,
-    iconSize: [30, 30],
-    iconAnchor: [15, 15],
-    popupAnchor: [0, -15]
-  });
-  L.marker([lat, lng], { icon: rentalIcon })
-    .addTo(markersLayer)
-    .bindPopup(`<b>${tipo === "Temporario" ? "Alquiler Temporario" : tipo === "Local" ? "Local Comercial" : "Alquiler Permanente"}: ${direccion}</b>`)
+  const container = document.getElementById("map");
+  if (!container) return log("Error: No se encontró el contenedor del mapa");
+  
+  const map = L.map(container).setView([lat, lng], 16);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+  
+  const iconHtml = tipo === "Temporario" ? 'Clock' : tipo === "Local" ? 'Shopping' : `House<span style="font-size:10px;">${nroAmb}</span>`;
+  const icon = L.divIcon({ className: 'marker-icon', html: iconHtml, iconSize: [30,30], iconAnchor: [15,30] });
+  
+  L.marker([lat, lng], { icon })
+    .addTo(map)
+    .bindPopup(`<b>${tipo === "Temporario" ? "Temporario" : tipo === "Local" ? "Local" : "Depto"}: ${direccion}</b>`)
     .openPopup();
-
-  // Puntos de interés (sin cambios)
-  const uniIcon = L.divIcon({className:'marker-icon',html:'Graduation',iconSize:[30,30],iconAnchor:[15,15]});
-  L.marker([-28.5509978, -56.0409727], {icon: uniIcon}).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
-
-  const hospIcon = L.divIcon({className:'marker-icon',html:'Hospital',iconSize:[30,30],iconAnchor:[15,15]});
-  L.marker([-28.5551127, -56.0389282], {icon: hospIcon}).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
-
-  const superIcon = L.divIcon({className:'marker-icon',html:'Shopping Cart',iconSize:[30,30],iconAnchor:[15,15]});
-  L.marker([-28.5519443, -56.0401962], {icon: superIcon}).addTo(markersLayer).bindPopup("<b>Supermercado La Bomba</b>");
-  L.marker([-28.5472635, -56.0438082], {icon: superIcon}).addTo(markersLayer).bindPopup("<b>Supermercado El Super</b>");
-  L.marker([-28.5462903, -56.0440365], {icon: superIcon}).addTo(markersLayer).bindPopup("<b>Supermercado La Economía</b>");
-
-  const busIcon = L.divIcon({className:'marker-icon',html:'Bus',iconSize:[30,30],iconAnchor:[15,15]});
-  L.marker([-28.5468697, -56.0432862], {icon: busIcon}).addTo(markersLayer).bindPopup("<b>Terminal de Ómnibus</b>");
-
-  const policeIcon = L.divIcon({className:'marker-icon',html:'Police',iconSize:[30,30],iconAnchor:[15,15]});
-  L.marker([-28.5487787, -56.0396171], {icon: policeIcon}).addTo(markersLayer).bindPopup("<b>Policía</b>");
 }
 
 window.onload = () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const propiedadId = urlParams.get("id");
-  const loadingEl = document.getElementById("loading-msg");
+  const id = urlParams.get("id");
+  const loading = document.getElementById("loading-msg");
   const detalle = document.getElementById("propiedad-detalle");
+  const debug = document.getElementById("debug-info");
 
-  if (!propiedadId) {
-    detalle.innerHTML = "<h2>Error: No se proporcionó un ID de propiedad</h2>";
-    loadingEl.style.display = "none";
+  log("Iniciando carga de propiedad...");
+  log("URL: " + window.location.href);
+  log("ID extraído: " + id);
+
+  if (!id) {
+    loading.style.display = "none";
+    detalle.innerHTML = "<h2>Error: No se proporcionó ID</h2>";
+    log("ERROR: Falta el parámetro id en la URL");
     return;
   }
 
-  loadingEl.style.display = "block";
+  loading.style.display = "block";
+  const url = `${webAppURL}?action=getPropiedad&id=${encodeURIComponent(id)}`;
+  log("Llamando al backend: " + url);
 
-  fetch(`${webAppURL}?action=getPropiedad&id=${encodeURIComponent(propiedadId)}`)
-    .then(res => res.json())
+  fetch(url, { cache: "no-store" })
+    .then(res => {
+      log(`Respuesta recibida. Status: ${res.status} ${res.statusText}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    })
     .then(data => {
-      loadingEl.style.display = "none";
-      console.log("Backend response:", data);
+      loading.style.display = "none";
+      log("Datos recibidos del backend:");
+      log(JSON.stringify(data, null, 2));
 
-      if (data.success && data.alquiler) {
-        const alquiler = data.alquiler;
-        const tipo = getField(alquiler, ["Tipo"]);
-        const precio = (alquiler.Precio && !isNaN(alquiler.Precio)) ? formatPrice(alquiler.Precio) : "No disponible";
-        const direccion = getField(alquiler, ["Direccion", "Dirección", "Domicilio"]) || "Sin dirección";
-
-        // Título principal más limpio y profesional
-        detalle.innerHTML = `
-          <h2>${direccion}</h2>
-          <h3 style="margin-top:5px; color:#3483fa;">
-            ${tipo === "Temporario" ? "Alquiler Temporario" : tipo === "Local" ? "Local Comercial" : "Alquiler Permanente"}
-          </h3>
-          <hr style="border:0; border-top:1px solid #ddd; margin:15px 0;">
-        `;
-
-        const rows = (tipo === "Temporario" || tipo === "Local") ? [
-          ["Dirección", direccion],
-          ["Información de ingreso", getField(alquiler, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso"]) || "No especificada"],
-          ["Detalles", getField(alquiler, ["Detalles", "Detalle", "Descripcion", "Descripción"]) || "Sin detalles adicionales"]
-        ] : [
-          ["Dirección", direccion],
-          ["Ambientes", getField(alquiler, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]) || "-"],
-          ["Precio", precio],
-          ["Información de ingreso", getField(alquiler, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso"]) || "No especificada"],
-          ["Detalles", getField(alquiler, ["Detalles", "Detalle", "Descripcion", "Descripción"]) || "Sin detalles adicionales"],
-          ["Mascotas", getField(alquiler, ["Mascotas"]) || "Consultar"]
-        ];
-
-        rows.forEach(([label, val]) => {
-          if (val && val !== "No disponible" && val !== "-" && val !== "Consultar" || label === "Precio") {
-            const p = document.createElement("p");
-            p.innerHTML = `<b>${label}:</b> ${val}`;
-            detalle.appendChild(p);
-          }
-        });
-
-        // Imágenes
-        const imgContainer = document.createElement("div");
-        imgContainer.id = "imagenes-container";
-        let imageUrls = [];
-        const fotos = getField(alquiler, ["Fotos", "Imagenes", "Imágenes", "images", "Imagen", "fotos", "FOTOS"]);
-
-        if (fotos) {
-          const rawUrls = fotos.split(",").map(u => u.trim()).filter(u => u);
-          imageUrls = rawUrls.map(url => url.includes("drive.google.com") ? driveUrlDirect(url) : url)
-                            .filter(url => url.startsWith("http"));
-          
-          if (imageUrls.length === 0) {
-            imgContainer.innerHTML = "<p>No hay imágenes disponibles.</p>";
-          } else {
-            imageUrls.forEach((url, index) => {
-              const img = document.createElement("img");
-              img.src = url;
-              img.alt = `Imagen ${index + 1}`;
-              img.referrerPolicy = "no-referrer";
-              img.onclick = () => abrirModal(url, imageUrls, index);
-              imgContainer.appendChild(img);
-            });
-          }
-        } else {
-          imgContainer.innerHTML = "<p>No hay imágenes disponibles.</p>";
-        }
-        detalle.appendChild(imgContainer);
-
-        // Mapa
-        const lat = parseFloat(getField(alquiler, ["Lat", "Latitude", "Latitud"]));
-        const lng = parseFloat(getField(alquiler, ["Lng", "Longitude", "Longitud"]));
-        const nroAmb = toInt(getField(alquiler, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]), "-");
-
-        if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
-          const mapDiv = document.createElement("div");
-          mapDiv.id = "map";
-          detalle.appendChild(mapDiv);
-          setTimeout(() => initMap(lat, lng, direccion, nroAmb, tipo), 100);
-        } else {
-          const p = document.createElement("p");
-          p.innerHTML = "<b>Ubicación:</b> No disponible";
-          detalle.appendChild(p);
-        }
-
-        // Botones
-        if (alquiler.Contacto) {
-          const waBtn = document.createElement("button");
-          waBtn.textContent = "Contactar por WhatsApp";
-          waBtn.onclick = () => {
-            const mensaje = `Hola, vengo desde AlquiYa y quiero consultar por la propiedad de ${direccion}`;
-            window.open(`https://wa.me/${alquiler.Contacto}?text=${encodeURIComponent(mensaje)}`, "_blank");
-          };
-          detalle.appendChild(waBtn);
-        }
-
-        const mapBtn = document.createElement("button");
-        mapBtn.textContent = "Volver al Mapa";
-        mapBtn.onclick = () => window.location.href = "index.html";
-        detalle.appendChild(mapBtn);
-
-      } else {
-        detalle.innerHTML = "<h2>Esta propiedad no existe o fue dada de baja</h2>";
+      if (!data.success) {
+        detalle.innerHTML = `<h2>Error del servidor</h2><p>${data.error || "Error desconocido"}</p>`;
+        return;
       }
+
+      if (!data.alquiler) {
+        detalle.innerHTML = "<h2>Propiedad no encontrada</h2>";
+        log("El backend devolvió success:true pero sin data.alquiler");
+        return;
+      }
+
+      const a = data.alquiler;
+      const tipo = getField(a, ["Tipo"]) || "Sin tipo";
+      const direccion = getField(a, ["Direccion", "Dirección", "Domicilio"]) || "Sin dirección";
+      const precio = formatPrice(a.Precio);
+
+      detalle.innerHTML = `
+        <h2>${direccion}</h2>
+        <h3 style="color:#3483fa;">
+          ${tipo === "Temporario" ? "Alquiler Temporario" : tipo === "Local" ? "Local Comercial" : "Alquiler Permanente"}
+        </h3>
+        <hr style="border:0;border-top:1px solid #ddd;margin:15px 0;">
+      `;
+
+      const campos = tipo === "Temporario" || tipo === "Local" ? [
+        ["Dirección", direccion],
+        ["Información de ingreso", getField(a, ["Informacion ingreso", "Información ingreso"]) || "No especificada"],
+        ["Detalles", getField(a, ["Detalles", "Detalle", "Descripcion"]) || "Sin detalles"]
+      ] : [
+        ["Dirección", direccion],
+        ["Ambientes", getField(a, ["Nro Ambientes", "Ambientes", "Nro"]) || "-"],
+        ["Precio", precio],
+        ["Información de ingreso", getField(a, ["Informacion ingreso", "Información ingreso"]) || "No especificada"],
+        ["Detalles", getField(a, ["Detalles", "Detalle", "Descripcion"]) || "Sin detalles"],
+        ["Mascotas", getField(a, ["Mascotas"]) || "Consultar"]
+      ];
+
+      campos.forEach(([label, valor]) => {
+        if (valor && valor !== "No disponible" && valor !== "-" && valor !== "Consultar" || label === "Precio") {
+          detalle.innerHTML += `<p><b>${label}:</b> ${valor}</p>`;
+        }
+      });
+
+      // Fotos
+      const fotos = getField(a, ["Fotos", "Imagenes", "Imágenes", "images", "FOTOS"]);
+      if (fotos) {
+        const urls = fotos.split(",").map(u => u.trim()).filter(Boolean)
+          .map(url => url.includes("drive.google.com") ? driveUrlDirect(url) : url)
+          .filter(url => url.startsWith("http"));
+
+        if (urls.length > 0) {
+          const container = document.createElement("div");
+          container.id = "imagenes-container";
+          urls.forEach((url, i) => {
+            const img = document.createElement("img");
+            img.src = url;
+            img.alt = `Foto ${i+1}`;
+            img.onclick = () => abrirModal(url, urls, i);
+            container.appendChild(img);
+          });
+          detalle.appendChild(container);
+        } else {
+          detalle.innerHTML += "<p>No se pudieron cargar las imágenes.</p>";
+        }
+      } else {
+        detalle.innerHTML += "<p>No hay imágenes disponibles.</p>";
+      }
+
+      // Mapa
+      const lat = parseFloat(getField(a, ["Lat", "Latitude", "Latitud"]));
+      const lng = parseFloat(getField(a, ["Lng", "Longitude", "Longitud"]));
+      const nroAmb = toInt(getField(a, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]));
+
+      if (!isNaN(lat) && !isNaN(lng)) {
+        const mapDiv = document.createElement("div");
+        mapDiv.id = "map";
+        detalle.appendChild(mapDiv);
+        setTimeout(() => initMap(lat, lng, direccion, nroAmb, tipo), 200);
+      } else {
+        detalle.innerHTML += "<p><b>Ubicación:</b> No disponible</p>";
+      }
+
+      // Botones
+      if (a.Contacto) {
+        const btn = document.createElement("button");
+        btn.textContent = "Contactar por WhatsApp";
+        btn.onclick = () => {
+          const msg = `Hola, vengo desde AlquiYa y quiero consultar por la propiedad de ${direccion}`;
+          window.open(`https://wa.me/${a.Contacto}?text=${encodeURIComponent(msg)}`, "_blank");
+        };
+        detalle.appendChild(btn);
+      }
+
+      const btnVolver = document.createElement("button");
+      btnVolver.textContent = "Volver al Mapa";
+      btnVolver.onclick = () => window.location.href = "index.html";
+      detalle.appendChild(btnVolver);
+
+      log("Propiedad cargada exitosamente!");
     })
     .catch(err => {
-      loadingEl.style.display = "none";
-      document.getElementById("propiedad-detalle").innerHTML = "<h2>Error al cargar los datos de la propiedad</h2>";
-      console.error("Fetch error:", err);
+      loading.style.display = "none";
+      detalle.innerHTML = `<h2>Error de conexión</h2><p>${err.message}</p>`;
+      log("ERROR DE RED: " + err.message);
+      console.error(err);
     });
 };
 </script>
