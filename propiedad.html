@@ -182,7 +182,7 @@ window.onload = () => {
   }
 
   loading.style.display = "block";
-  const url = `${webAppURL}?action=getPropiedad&id=${encodeURIComponent(id)}`;
+  const url = `${webAppURL}?action=getAlquiler&id=${encodeURIComponent(id)}`;
   log("Llamando al backend: " + url);
 
   fetch(url, { cache: "no-store" })
