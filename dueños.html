@@ -507,44 +507,34 @@ let preciosPlanes = {Basico: 0, Plus: 0, Full: 0};
 function mostrarAlquileres(res) {
     const div = document.getElementById("listaAlquileres");
     div.innerHTML = "";
-    if (!res.success || !res.data || res.data.length === 0) { 
-        div.innerHTML = "No tienes propiedades aún."; 
-        return; 
-    }
+    if (!res.success || !res.data || res.data.length===0) { div.innerHTML = "No tienes propiedades aún."; return; }
 
     deptosActivos = res.data.filter(a => a.Estado === "Activo").length;
     document.getElementById("limiteAlquileres").textContent = 
-        planActual === "Prueba" ? `${deptosActivos} propiedades activas` 
-                                : `${deptosActivos}/${limiteDeptos} propiedades activas`;
+        planActual==="Prueba" ? `${deptosActivos} propiedades activas` : `${deptosActivos}/${limiteDeptos} propiedades activas`;
 
     res.data.forEach(alq => {
-        let estado = alq.Estado === "Activo" ? "Activo" : "Inactivo";
-        let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Cambiar Estado</button>`;
-        let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
+        let estado = alq.Estado==="Activo" ? "Activo" : "Inactivo";
+        let btnEstado = `<button onclick="cambiarEstado(${alq.row},'${alq.Estado}')">Cambiar Estado</button>`;
+        let btnEditar = `<button onclick='editarAlquiler(${alq.row},${JSON.stringify(alq)})'>Editar</button>`;
         let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
 
-        let precioFormateado = (alq.Tipo === "Departamento" || alq.Tipo === "Terreno" || alq.Tipo === "Casa") ? formatoPrecio(alq.Precio) : "";
-        let infoAmbientes = (alq.Tipo === "Departamento" || alq.Tipo === "Casa") ? ` - ${alq['Nro Ambientes']} amb` : "";
-        let infoSuperficie = alq.Tipo === "Terreno" ? ` - ${alq.Superficie} m²` : "";
-        let infoPatio = alq.Tipo === "Casa" ? ` - Patio: ${alq.Patio || "N/D"}` : "";
-        let infoGarage = alq.Tipo === "Casa" ? ` - Garage: ${alq.Garage || "N/D"}` : "";
-        let infoAntiguedad = alq.Tipo === "Casa" ? ` - Antigüedad: ${alq.Antiguedad || "N/D"} años` : "";
+        let precioFormateado = (alq.Tipo==="Departamento"||alq.Tipo==="Terreno"||alq.Tipo==="Casa") ? formatoPrecio(alq.Precio) : "";
+        let infoAmbientes = (alq.Tipo==="Departamento"||alq.Tipo==="Casa") ? ` - ${alq['Nro Ambientes']} amb` : "";
+        let infoSuperficie = alq.Tipo==="Terreno" ? ` - ${alq.Superficie} m²` : "";
+        let infoPatio = alq.Tipo==="Casa" ? ` - Patio: ${alq.Patio||"N/D"}` : "";
+        let infoGarage = alq.Tipo==="Casa" ? ` - Garage: ${alq.Garage||"N/D"}` : "";
+        let infoAntiguedad = alq.Tipo==="Casa" ? ` - Antigüedad: ${alq.Antiguedad||"N/D"} años` : "";
         let operacion = alq.Operacion ? ` - Operación: ${alq.Operacion}` : "";
 
-        // Vistas y contactos (busca en columnas Vistas y Consultas)
-        let vistas = alq.Vistas !== undefined ? alq.Vistas : "0";
-        let contactos = alq.Consultas !== undefined ? alq.Consultas : "0";
+        // CORRECTO: columna S = Vistas, columna T = Consultas (contactos)
+        let vistas = (alq.Vistas !== undefined && alq.Vistas !== "") ? alq.Vistas : "0";
+        let contactos = (alq.Consultas !== undefined && alq.Consultas !== "") ? alq.Consultas : "0";
 
         const statsHTML = `
             <div class="stats-inline">
-                <div class="stats-item">
-                    <i class="fa-solid fa-eye"></i>
-                    <span class="stats-number">${vistas}</span> vistas
-                </div>
-                <div class="stats-item">
-                    <i class="fa-solid fa-phone"></i>
-                    <span class="stats-number">${contactos}</span> contactos
-                </div>
+                <div class="stats-item"><i class="fa-solid fa-eye"></i><span class="stats-number">${vistas}</span> vistas</div>
+                <div class="stats-item"><i class="fa-solid fa-phone"></i><span class="stats-number">${contactos}</span> contactos</div>
             </div>`;
 
         div.innerHTML += `
@@ -558,17 +548,12 @@ function mostrarAlquileres(res) {
     });
 }
 
-// === TODAS LAS DEMÁS FUNCIONES ORIGINALES (sin cambios) ===
 function cargarAlquileres() {
     const email = localStorage.getItem("dueno");
     const script = document.createElement("script");
     script.src = `${API_URL}?action=getAlquileresDueno&dueno=${encodeURIComponent(email)}&callback=mostrarAlquileres`;
     document.body.appendChild(script);
 }
-
-// ... [TODO EL RESTO DEL SCRIPT ORIGINAL EXACTAMENTE IGUAL] ...
-
-// (Se pega aquí todo el script original desde initGoogleCharts hasta el final, sin modificar nada más)
 
 function initGoogleCharts() {
     console.log('Inicializando Google Charts...');
