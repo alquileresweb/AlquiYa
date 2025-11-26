@@ -175,6 +175,7 @@ header {
 const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 let currentImages = [];
 let currentImageIndex = 0;
+
 function getField(obj, keys) {
   for (const k of keys) {
     if (Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null && obj[k] !== "") {
@@ -183,10 +184,12 @@ function getField(obj, keys) {
   }
   return "";
 }
+
 function toInt(val, def=0) {
   const n = parseInt(val, 10);
   return isNaN(n) ? def : n;
 }
+
 function driveUrlDirect(url) {
   let fileId = null;
   if (url && url.includes("drive.google.com")) {
@@ -199,12 +202,14 @@ function driveUrlDirect(url) {
   }
   return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
 }
+
 function formatPrice(num) {
   if (!num) return "";
   const clean = String(num).replace(/[^\d]/g, "");
   const formatted = parseInt(clean, 10).toLocaleString('es-AR');
   return "$" + formatted.replace(/,/g, ".");
 }
+
 function abrirModal(src, images, index) {
   currentImages = images;
   currentImageIndex = index;
@@ -215,15 +220,18 @@ function abrirModal(src, images, index) {
   document.querySelector(".prev-btn").style.display = images.length > 1 ? "block" : "none";
   document.querySelector(".next-btn").style.display = images.length > 1 ? "block" : "none";
 }
+
 function cerrarModal() {
   document.getElementById("modal-img").style.display = "none";
   currentImages = [];
   currentImageIndex = 0;
 }
+
 function cambiarImagen(direction) {
   currentImageIndex = (currentImageIndex + direction + currentImages.length) % currentImages.length;
   document.getElementById("img-grande").src = currentImages[currentImageIndex];
 }
+
 function initMap(lat, lng, direccion, nroAmb, tipo) {
   console.log(`Initializing map with lat: ${lat}, lng: ${lng}, address: ${direccion}, rooms: ${nroAmb}, tipo: ${tipo}`);
   const mapContainer = document.getElementById("map");
@@ -231,19 +239,19 @@ function initMap(lat, lng, direccion, nroAmb, tipo) {
     console.error("Map container not found");
     return;
   }
- 
+
   // Initialize Leaflet map
   const map = L.map(mapContainer).setView([lat, lng], 15);
- 
+
   // Add OpenStreetMap tiles
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19
   }).addTo(map);
- 
+
   // Create layer group for markers
   const markersLayer = L.layerGroup().addTo(map);
- 
+
   // Rental marker
   let iconHtml;
   if (tipo === "Temporario") {
@@ -262,9 +270,10 @@ function initMap(lat, lng, direccion, nroAmb, tipo) {
   });
   L.marker([lat, lng], { icon: rentalIcon })
     .addTo(markersLayer)
+    .bindPopup(`<b>Alquiler: ${direccion}</b>`)
     .bindPopup(`<b>${tipo === "Temporario" ? "Alquiler Temporario" : tipo === "Local" ? "Local Comercial" : "Alquiler"}: ${direccion}</b>`)
     .openPopup();
- 
+
   // Facultad Fundación Barceló marker
   const uniIcon = L.divIcon({
     className: 'marker-icon',
@@ -275,7 +284,7 @@ function initMap(lat, lng, direccion, nroAmb, tipo) {
   L.marker([-28.5509978, -56.0409727], { icon: uniIcon })
     .addTo(markersLayer)
     .bindPopup("<b>Facultad Fundación Barceló</b>");
- 
+
   // Hospital Universitario San Juan Bautista marker
   const hospIcon = L.divIcon({
     className: 'marker-icon',
@@ -286,7 +295,7 @@ function initMap(lat, lng, direccion, nroAmb, tipo) {
   L.marker([-28.5551127, -56.0389282], { icon: hospIcon })
     .addTo(markersLayer)
     .bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
- 
+
   // Supermarket markers with shopping cart emoji
   const superIcon = L.divIcon({
     className: 'marker-icon',
@@ -303,7 +312,7 @@ function initMap(lat, lng, direccion, nroAmb, tipo) {
   L.marker([-28.5462903, -56.0440365], { icon: superIcon })
     .addTo(markersLayer)
     .bindPopup("<b>Supermercado La Economía</b>");
- 
+
   // Terminal de Omnibus marker
   const busIcon = L.divIcon({
     className: 'marker-icon',
@@ -314,7 +323,7 @@ function initMap(lat, lng, direccion, nroAmb, tipo) {
   L.marker([-28.5468697, -56.0432862], { icon: busIcon })
     .addTo(markersLayer)
     .bindPopup("<b>Terminal de Omnibus</b>");
- 
+  
   // Policía marker
   const policeIcon = L.divIcon({
     className: 'marker-icon',
@@ -325,20 +334,24 @@ function initMap(lat, lng, direccion, nroAmb, tipo) {
   L.marker([-28.5487787, -56.0396171], { icon: policeIcon })
     .addTo(markersLayer)
     .bindPopup("<b>Policía</b>");
- 
+  
   console.log("Map initialized successfully");
 }
+
 window.onload = () => {
   const urlParams = new URLSearchParams(window.location.search);
   const alquilerId = urlParams.get("id");
   const loadingEl = document.getElementById("loading-msg");
   const detalle = document.getElementById("alquiler-detalle");
+
   if (!alquilerId) {
     detalle.innerHTML = "<h2>Error: No se proporcionó un ID de alquiler</h2>";
     loadingEl.style.display = "none";
     return;
   }
+
   loadingEl.style.display = "block";
+
   fetch(`${webAppURL}?action=getAlquiler&id=${encodeURIComponent(alquilerId)}`)
     .then(res => res.json())
     .then(data => {
@@ -347,9 +360,11 @@ window.onload = () => {
       if (data.success && data.alquiler) {
         const alquiler = data.alquiler;
         const tipo = getField(alquiler, ["Tipo"]);
+        const precio = (alquiler.Precio && !isNaN(alquiler.Precio)) ? formatPrice(alquiler.Precio) : "No disponible";
         const direccion = getField(alquiler, ["Direccion", "Dirección", "Domicilio"]) || "Sin dirección";
         const precio = (alquiler.Precio && !isNaN(alquiler.Precio)) ? formatPrice(alquiler.Precio) : "No disponible";
         detalle.innerHTML = `
+          <h2>Alquiler: ${direccion}</h2>
           <h2>${tipo === "Temporario" ? "Alquiler Temporario" : tipo === "Local" ? "Local Comercial" : "Alquiler"}: ${direccion}</h2>
         `;
         const rows = (tipo === "Temporario" || tipo === "Local") ? [
@@ -369,6 +384,7 @@ window.onload = () => {
           p.innerHTML = `<b>${label}:</b> ${val}`;
           detalle.appendChild(p);
         });
+
         const imgContainer = document.createElement("div");
         imgContainer.id = "imagenes-container";
         let imageUrls = [];
@@ -398,6 +414,7 @@ window.onload = () => {
           imgContainer.appendChild(p);
         }
         detalle.appendChild(imgContainer);
+
         // Initialize map if valid coordinates are available
         const lat = parseFloat(getField(alquiler, ["Lat", "Latitude", "Latitud"]));
         const lng = parseFloat(getField(alquiler, ["Lng", "Longitude", "Longitud"]));
@@ -413,6 +430,7 @@ window.onload = () => {
           p.innerHTML = "<b>Ubicación:</b> No disponible";
           detalle.appendChild(p);
         }
+
         if (alquiler.Contacto) {
           const waBtn = document.createElement("button");
           waBtn.textContent = "Contactar por WhatsApp";
@@ -425,6 +443,7 @@ window.onload = () => {
           };
           detalle.appendChild(waBtn);
         }
+
         const mapBtn = document.createElement("button");
         mapBtn.textContent = "Ir al Mapa";
         mapBtn.style.background = "#25D366";
