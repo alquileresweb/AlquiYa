@@ -789,42 +789,26 @@ function cambiarImagen(direction) {
 MÉTRICAS
 */
 async function incrementarMetrica(idPropiedad, metrica) {
-  // Validar idPropiedad
-  if (!idPropiedad || typeof idPropiedad !== 'string' || idPropiedad.trim() === '') {
-    console.error(`Error: ID de propiedad inválido para incrementar ${metrica}:`, idPropiedad);
-    const errorEl = document.getElementById('metricas-error');
-    if (errorEl) {
-      errorEl.style.display = 'block';
-      errorEl.textContent = 'Error: ID de propiedad no válido';
-    }
-    return;
-  }
-  const params = new URLSearchParams();
-  params.append("action", "incrementarMetrica");
-  params.append("idPropiedad", idPropiedad.trim());
-  params.append("metrica", metrica);
-  console.log(`Enviando solicitud para incrementar ${metrica} para ID: ${idPropiedad}`);
+  if (!idPropiedad) return;
+
+  const url = `${webAppURL}?action=incrementarmetrica&idPropiedad=${encodeURIComponent(idPropiedad)}&metrica=${metrica}&t=${Date.now()}`;
+
   try {
-    await makeRequest(webAppURL, {
-      method: "POST",
-      body: params,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      mode: "no-cors" // Usar no-cors para evitar bloqueo por CORS
+    // Usamos GET + cache busting, así funciona 100% con CORS configurado
+    const res = await fetch(url, {
+      method: "GET",
+      cache: "no-cache"
     });
-    console.log(`Solicitud enviada para incrementar ${metrica} para ID ${idPropiedad} (no-cors, sin respuesta)`);
-    const errorEl = document.getElementById('metricas-error');
-    if (errorEl) {
-      errorEl.style.display = 'none'; // Limpiar mensaje de error
+    
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    
+    if (data.success) {
+      console.log(`✓ ${metrica} incrementada para ${idPropiedad} → ${data.nuevoValor}`);
     }
-  } catch (error) {
-    console.error(`Error al incrementar ${metrica} para ID ${idPropiedad}:`, error.message);
-    const errorEl = document.getElementById('metricas-error');
-    if (errorEl) {
-      errorEl.style.display = 'block';
-      errorEl.textContent = `Error: No se pudo conectar con el servidor`;
-    }
+  } catch (err) {
+    console.warn("No se pudo registrar métrica (puede ser normal en algunos navegadores):", err);
+    // No rompemos la experiencia del usuario si falla el contador
   }
 }
 /* =========================
