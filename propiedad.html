@@ -12,7 +12,6 @@
     gtag('js', new Date());
     gtag('config', 'G-SSJ5DG33JK');
   </script>
-  <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
   <style>
@@ -43,6 +42,14 @@
     button:hover { background:#1ebe57; transform:translateY(-2px); }
     #loading-msg { text-align:center; padding:30px; font-size:18px; color:#3483fa; font-weight:bold; }
     #error-msg { color:#d32f2f; background:#ffebee; padding:20px; border-radius:8px; text-align:center; margin:20px; }
+    #debug-panel {
+      position:fixed; bottom:10px; right:10px; background:#1e1e1e; color:#0f0; padding:12px;
+      border-radius:8px; font-family:monospace; font-size:12px; max-width:380px; z-index:99999;
+      box-shadow:0 4px 20px rgba(0,0,0,0.5); border:1px solid #0f0; opacity:0.9;
+    }
+    #debug-panel button {
+      background:#0f0; color:black; font-weight:bold; margin-top:8px;
+    }
     #modal-img {
       display:none; position:fixed; top:0; left:0; width:100%; height:100%;
       background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center;
@@ -71,42 +78,64 @@
 <div id="loading-msg">Cargando propiedad...</div>
 <div id="alquiler-detalle" style="display:none;"></div>
 
+<!-- Panel de depuración (solo visible al inspeccionar o si hay error) -->
+<div id="debug-panel" style="display:none;">
+  <strong>Inspector AlquiYa</strong><br>
+  <span id="debug-id">ID: detectando...</span><br>
+  <span id="debug-status">Estado: inicializando...</span><br>
+  <span id="debug-error" style="color:#f66;"></span><br>
+  <button onclick="location.reload()">Recargar página</button>
+  <button onclick="document.getElementById('debug-panel').style.display='none'">Ocultar</button>
+</div>
+
 <div id="modal-img">
   <img id="img-grande" src="" alt="Imagen ampliada">
   <button class="close-btn" onclick="cerrarModal()">X</button>
-  <button class="nav-btn prev-btn" onclick="cambiarImagen(-1)">❮</button>
-  <button class="nav-btn next-btn" onclick="cambiarImagen(1)">❯</button>
+  <button class="nav-btn prev-btn" onclick="cambiarImagen(-1)">Left</button>
+  <button class="nav-btn next-btn" onclick="cambiarImagen(1)">Right</button>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
-  let currentImages = [];
-  let currentImageIndex = 0;
   let propiedadId = "";
+  const debug = {
+    id: document.getElementById("debug-id"),
+    status: document.getElementById("debug-status"),
+    error: document.getElementById("debug-error"),
+    panel: document.getElementById("debug-panel")
+  };
 
-  // Extraer ID del enlace compartido (columna O)
-  function extraerIdDeEnlace() {
+  // Mostrar panel de depuración
+  debug.panel.style.display = "block";
+  debug.status.textContent = "Estado: extrayendo ID...";
+
+  // Extraer ID de cualquier enlace compartido
+  function extraerId() {
     const url = new URL(window.location.href);
-    const idFromParam = url.searchParams.get("id");
-    if (idFromParam) return idFromParam.trim();
+    const idParam = url.searchParams.get("id");
+    if (idParam) return idParam.trim();
 
-    // Si el enlace fue compartido directamente (ej: https://www.alquiya.com.ar/propiedad.html?id=abc123)
-    const pathname = url.pathname;
-    const match = url.href.match(/id[=\/]([a-zA-Z0-9_-]+)/i);
+    const match = window.location.href.match(/id[=\/]([a-zA-Z0-9_-]{20,})/i);
     return match ? match[1] : null;
   }
 
-  propiedadId = extraerIdDeEnlace();
+  propiedadId = extraerId();
+  debug.id.textContent = `ID: ${propiedadId || "NO DETECTADO"}`;
 
-  // Contar vista al cargar
-  if (propiedadId) {
-    fetch(`${WEB_APP_URL}?action=incrementarmetrica&metrica=vistas&idPropiedad=${propiedadId}`)
-      .catch(() => {}); // Silencioso
+  if (!propiedadId) {
+    debug.status.textContent = "ERROR: No se encontró ID";
+    debug.error.textContent = "No hay 'id=' en la URL";
+    document.getElementById("loading-msg").innerHTML = `<div id="error-msg"><h2>Error</h2><p>No se pudo detectar el ID de la propiedad</p></div>`;
+    return;
   }
 
+  // Contar vista
+  fetch(`${WEB_APP_URL}?action=incrementarmetrica&metrica=vistas&idPropiedad=${propiedadId}`)
+    .then(() => debug.status.textContent = "Vista contada")
+    .catch(() => debug.status.textContent = "Vista (posible duplicada)");
+
   function contarConsulta() {
-    if (!propiedadId) return;
     fetch(`${WEB_APP_URL}?action=incrementarmetrica&metrica=contactos&idPropiedad=${propiedadId}`)
       .then(() => console.log("Consulta contada"))
       .catch(() => {});
@@ -134,47 +163,36 @@
       attribution: '&copy; OpenStreetMap'
     }).addTo(map);
 
-    let iconText = "";
-    if (tipo === "Temporario") iconText = "Temporario";
-    else if (tipo === "Local") iconText = "Local";
-    else iconText = ambientes ? `${ambientes} amb` : "Casa";
-
-    const icon = L.divIcon({
-      className: "marker-icon",
-      html: iconText,
-      iconSize: [40, 40],
-      iconAnchor: [20, 40]
-    });
-
-    L.marker([lat, lng], { icon })
-      .addTo(map)
-      .bindPopup(`<b>${direccion}</b>`)
-      .openPopup();
+    const iconText = tipo === "Temporario" ? "Temporario" : tipo === "Local" ? "Local" : ambientes ? `${ambientes} amb` : "Casa";
+    const icon = L.divIcon({ className: "marker-icon", html: iconText, iconSize: [40, 40] });
+    L.marker([lat, lng], { icon }).addTo(map).bindPopup(`<b>${direccion}</b>`).openPopup();
   }
 
   // Carga principal
   window.onload = async () => {
-    if (!propiedadId) {
-      document.getElementById("loading-msg").innerHTML = `<div id="error-msg"><h2>Error</h2><p>No se encontró el ID de la propiedad</p></div>`;
-      return;
-    }
+    debug.status.textContent = "Consultando backend...";
 
     try {
       const res = await fetch(`${WEB_APP_URL}?action=getAlquiler&id=${propiedadId}`);
       const data = await res.json();
 
-      document.getElementById("loading-msg").style.display = "none";
+      console.log("Respuesta completa del backend:", data); // Para ver en Consola
 
       if (!data.success || !data.alquiler) {
+        debug.status.textContent = "ERROR: Propiedad no disponible";
+        debug.error.textContent = data.error || "Sin datos";
         document.getElementById("alquiler-detalle").innerHTML = `
           <div id="error-msg">
             <h2>Propiedad no disponible</h2>
-            <p>Este anuncio fue dado de baja o el dueño tiene el plan vencido.</p>
+            <p>${data.error || "El anuncio fue dado de baja o el plan está vencido."}</p>
             <button onclick="location.href='index.html'" style="background:#3483fa;">Volver al mapa</button>
           </div>`;
         document.getElementById("alquiler-detalle").style.display = "block";
+        document.getElementById("loading-msg").style.display = "none";
         return;
       }
+
+      debug.status.textContent = "Propiedad cargada correctamente";
 
       const a = data.alquiler;
       const tipo = a.Tipo || "Alquiler";
@@ -236,17 +254,19 @@
         </button>
       </div>`;
 
-      const detalle = document.getElementById("alquiler-detalle");
-      detalle.innerHTML = html;
-      detalle.style.display = "block";
+      document.getElementById("alquiler-detalle").innerHTML = html;
+      document.getElementById("alquiler-detalle").style.display = "block";
+      document.getElementById("loading-msg").style.display = "none";
 
       if (lat && lng && lat !== 0) {
         setTimeout(() => initMap(lat, lng, direccion, ambientes, tipo), 500);
       }
 
     } catch (err) {
-      console.error("Error:", err);
-      document.getElementById("loading-msg").innerHTML = `<div id="error-msg"><h2>Error de conexión</h2><p>Intenta más tarde</p></div>`;
+      console.error("Error fatal:", err);
+      debug.status.textContent = "ERROR CRÍTICO";
+      debug.error.textContent = err.message;
+      document.getElementById("loading-msg").innerHTML = `<div id="error-msg"><h2>Error de conexión</h2><p>Revisa tu internet o intenta más tarde</p></div>`;
     }
   };
 </script>
