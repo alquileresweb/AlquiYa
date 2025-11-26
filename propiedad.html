@@ -3,240 +3,147 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AlquiYa - Detalle de Propiedad</title>
-
-<!-- Google Analytics -->
+<title>AlquiYa - Propiedad</title>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-SSJ5DG33JK"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-SSJ5DG33JK');
-</script>
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
-
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-SSJ5DG33JK');</script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="icon" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
 <style>
-  body { margin:0; font-family:Arial,sans-serif; background:#f4f4f4; }
-  header { background:white; padding:15px; text-align:center; box-shadow:0 2px 10px rgba(0,0,0,0.1); }
-  header img { max-width:250px; }
-  #loading { text-align:center; padding:50px; font-size:18px; color:#3483fa; font-weight:bold; }
-  #detalle {
-    max-width:720px; margin:20px auto; padding:20px;
-    background:white; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.1);
-  }
-  h2 { margin:0 0 15px; color:#3483fa; font-size:24px; }
-  p { margin:10px 0; line-height:1.6; }
-  b { color:#333; }
-  #galeria { display:flex; flex-wrap:wrap; gap:12px; margin:20px 0; }
-  #galeria img {
-    width:130px; height:100px; object-fit:cover; border-radius:10px;
-    cursor:pointer; border:3px solid #eee; transition:0.3s;
-  }
-  #galeria img:hover { border-color:#3483fa; transform:scale(1.05); }
-  #map { height:400px; margin:20px 0; border-radius:12px; border:2px solid #3483fa; }
-  button {
-    background:#25D366; color:white; border:none; padding:12px 24px;
-    margin:10px 10px 0 0; border-radius:8px; cursor:pointer; font-size:16px; font-weight:bold;
-  }
-  button:hover { background:#1ebe57; }
-  button.mapa { background:#3483fa; }
-  button.mapa:hover { background:#2d70d5; }
-  #modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; justify-content:center; align-items:center; }
-  #modal img { max-width:94%; max-height:94%; border-radius:12px; }
-  .btn-close, .btn-nav {
-    position:absolute; background:rgba(0,0,0,0.7); color:white; border:none;
-    width:50px; height:50px; border-radius:50%; font-size:28px; cursor:pointer;
-  }
-  .btn-close { top:20px; right:20px; }
-  .btn-nav { top:50%; transform:translateY(-50%); }
-  .prev { left:20px; }
-  .next { right:20px; }
+  body{margin:0;font-family:Arial;background:#f4f4f4}
+  header{background:#fff;padding:15px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+  header img{max-width:250px}
+  #loading{text-align:center;padding:50px;font-size:18px;color:#3483fa;font-weight:bold}
+  #detalle{max-width:720px;margin:20px auto;padding:20px;background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.1)}
+  h2{margin:0 0 15px;color:#3483fa;font-size:24px}
+  p{margin:10px 0;line-height:1.6}
+  b{color:#333}
+  #galeria{display:flex;flex-wrap:wrap;gap:12px;margin:20px 0}
+  #galeria img{width:130px;height:100px;object-fit:cover;border-radius:10px;cursor:pointer;border:3px solid #eee;transition:.3s}
+  #galeria img:hover{border-color:#3483fa;transform:scale(1.05)}
+  #map{height:400px;margin:20px 0;border-radius:12px;border:2px solid #3483fa}
+  button{background:#25D366;color:#fff;border:none;padding:12px 24px;margin:10px 10px 0 0;border-radius:8px;cursor:pointer;font-size:16px;font-weight:bold}
+  button:hover{background:#1ebe57}
+  button.mapa{background:#3483fa}
+  button.mapa:hover{background:#2d70d5}
+  #modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.95);z-index:9999;justify-content:center;align-items:center}
+  #modal img{max-width:94%;max-height:94%;border-radius:12px}
+  .btn{position:absolute;background:rgba(0,0,0,.7);color:#fff;border:none;width:50px;height:50px;border-radius:50%;font-size:28px;cursor:pointer}
+  .btn-close{top:20px;right:20px}
+  .prev{left:20px;top:50%;transform:translateY(-50%)}
+  .next{right:20px;top:50%;transform:translateY(-50%)}
 </style>
 </head>
 <body>
-
-<header>
-  <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="AlquiYa">
-</header>
-
+<header><img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="AlquiYa"></header>
 <div id="loading">Cargando propiedad...</div>
 <div id="detalle" style="display:none;"></div>
-
 <div id="modal">
   <img id="grande" src="" alt="">
-  <button class="btn-close" onclick="cerrar()">X</button>
-  <button class="btn-nav prev" onclick="cambiar(-1)">Previous</button>
-  <button class="btn-nav next" onclick="cambiar(1)">Next</button>
+  <button class="btn btn-close" onclick="cerrar()">X</button>
+  <button class="btn prev" onclick="cambiar(-1)">Previous</button>
+  <button class="btn next" onclick="cambiar(1)">Next</button>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// CAMBIA ESTA URL POR LA NUEVA DE TU WEB APP (después de hacer el deploy)
-const URL_BACKEND = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
+// CAMBIA ESTA URL POR LA NUEVA QUE OBTENGAS AL HACER EL DEPLOY
+const BACKEND = "PEGA_AQUÍ_LA_NUEVA_URL_DE_TU_WEB_APP";
 
-let fotos = [];
-let idx = 0;
+let fotos = [], idx = 0;
 
-function getId() {
-  return new URLSearchParams(location.search).get("id")?.trim();
-}
+function getId() { return new URLSearchParams(location.search).get("id")?.trim(); }
 
-function driveDirect(url) {
+function drive(url) {
   if (!url) return "";
   const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
   return m ? `https://drive.google.com/uc?export=view&id=${m[1]}` : url;
 }
 
-function abrir(img, arr, i) {
-  fotos = arr;
-  idx = i;
-  document.getElementById("grande").src = img;
-  document.getElementById("modal").style.display = "flex";
-}
+function abrir(src, arr, i) { fotos = arr; idx = i; document.getElementById("grande").src = src; document.getElementById("modal").style.display = "flex"; }
 function cerrar() { document.getElementById("modal").style.display = "none"; }
-function cambiar(d) {
-  idx = (idx + d + fotos.length) % fotos.length;
-  document.getElementById("grande").src = fotos[idx];
-}
+function cambiar(d) { idx = (idx + d + fotos.length) % fotos.length; document.getElementById("grande").src = fotos[idx]; }
 
 function initMap(lat, lng, dir) {
   const map = L.map("map").setView([lat, lng], 16);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-  L.marker([lat, lng], {
-    icon: L.divIcon({
-      className: "marker",
-      html: '<div style="background:#3483fa;color:white;padding:8px 12px;border-radius:50px;font-weight:bold;">Aquí</div>',
-      iconSize: [100, 40]
-    })
-  }).addTo(map).bindPopup(`<b>${dir}</b>`).openPopup();
+  L.marker([lat, lng], {icon: L.divIcon({className:"m",html:'<div style="background:#3483fa;color:#fff;padding:8px 12px;border-radius:50px;font-weight:bold">Aquí</div>',iconSize:[100,40]})})
+    .addTo(map).bindPopup(`<b>${dir}</b>`).openPopup();
 }
 
-// ======================= CARGA DE PROPIEDAD =======================
 window.onload = () => {
-  const idBuscado = getId();
+  const id = getId();
   const loading = document.getElementById("loading");
   const cont = document.getElementById("detalle");
 
-  if (!idBuscado) {
-    loading.style.display = "none";
-    cont.innerHTML = "<h2>Error: No se indicó ID</h2>";
-    cont.style.display = "block";
-    return;
-  }
+  if (!id) { loading.style.display="none"; cont.innerHTML="<h2>Error: falta ID</h2>"; cont.style.display="block"; return; }
 
-  // ESTA ES LA CLAVE: forzamos que reconozca getAlquiler
-  const url = `${URL_BACKEND}?action=getAlquiler&id=${encodeURIComponent(idBuscado)}&v=${Date.now()}`;
-
-  fetch(url)
-    .then(r => {
-      if (!r.ok) throw new Error("Error HTTP: " + r.status);
-      return r.json();
-    })
+  fetch(`${BACKEND}?action=getAlquiler&id=${id}&t=${Date.now()}`)
+    .then(r => { if (!r.ok) throw r; return r.json(); })
     .then(res => {
       loading.style.display = "none";
-
       if (!res.success || !res.alquiler) {
-        cont.innerHTML = `
-          <h2>Propiedad no encontrada o no disponible</h2>
-          <p>ID buscado: <b>${idBuscado}</b></p>
-          <p>Posibles causas:</p>
-          <ul>
-            <li>La propiedad fue dada de baja</li>
-            <li>El dueño tiene el plan vencido</li>
-            <li>El ID no existe en la columna N</li>
-          </ul>
-        `;
+        cont.innerHTML = `<h2>Propiedad no disponible</h2><p>ID: <b>${id}</b><br>Posiblemente esté inactiva o el plan vencido.</p>`;
         cont.style.display = "block";
-        console.warn("Respuesta del backend:", res);
+        console.warn("Backend:", res);
         return;
       }
 
       const p = res.alquiler;
-
-      const tipo = (p.Tipo || "").trim();
-      const direccion = (p.Direccion || p.Dirección || "Sin dirección").trim();
-      const precio = p.Precio ? "$" + Number(p.Precio).toLocaleString("es-AR") : "Consultar";
-      const ambientes = (p["Nro Ambientes"] || p.Ambientes || "?").trim();
-      const mascotas = (p.Mascotas || "No especificado").trim();
-      const amoblado = (p.Amoblado || "No especificado").trim();
-      const info = (p["Informacion ingreso"] || p["Información ingreso"] || "").trim();
-      const detalles = (p.Detalles || "").trim();
-      const contacto = (p.Contacto || "").replace(/[^\d+]/g, "");
+      const tipo = (p.Tipo||"").trim();
+      const dir = (p.Direccion||p.Dirección||"Sin dirección").trim();
+      const precio = p.Precio ? "$"+Number(p.Precio).toLocaleString("es-AR") : "Consultar";
+      const amb = (p["Nro Ambientes"]||p.Ambientes||"").trim() || "?";
+      const masc = (p.Mascotas||"No especificado").trim();
+      const amob = (p.Amoblado||"No especificado").trim();
+      const info = (p["Informacion ingreso"]||p["Información ingreso"]||"").trim();
+      const det = (p.Detalles||"").trim();
+      const tel = (p.Contacto||"").replace(/[^\d+]/g,"");
       const lat = parseFloat(p.Lat);
       const lng = parseFloat(p.Lng);
-      const fotosRaw = (p.Fotos || "").trim();
+      const fotosRaw = (p.Fotos||"").trim();
 
-      cont.innerHTML = `<h2>${tipo || "Propiedad"} en ${direccion}</h2>`;
-
-      // Información
-      const datos = [
-        tipo !== "Temporario" && tipo !== "Local" ? ["Ambientes", ambientes] : null,
-        tipo !== "Temporario" && tipo !== "Local" ? ["Precio", precio] : null,
-        ["Mascotas", mascotas],
-        ["Amoblado", amoblado],
-        info ? ["Información de ingreso", info] : null,
-        detalles ? ["Detalles", detalles] : null
+      cont.innerHTML = `<h2>${tipo} en ${dir}</h2>`;
+      const items = [
+        tipo!=="Temporario" && tipo!=="Local" ? ["Ambientes", amb] : null,
+        tipo!=="Temporario" && tipo!=="Local" ? ["Precio", precio] : null,
+        ["Mascotas", masc], ["Amoblado", amob],
+        info ? ["Info ingreso", info] : null,
+        det ? ["Detalles", det] : null
       ].filter(Boolean);
+      items.forEach(([l,v]) => cont.innerHTML += `<p><b>${l}:</b> ${v}</p>`);
 
-      datos.forEach(([l, v]) => cont.innerHTML += `<p><b>${l}:</b> ${v}</p>`);
-
-      // Fotos
       if (fotosRaw) {
-        const urls = fotosRaw.split(",")
-          .map(u => u.trim())
-          .filter(u => u)
-          .map(driveDirect);
-
-        if (urls.length > 0) {
-          const gal = document.createElement("div");
-          gal.id = "galeria";
-          urls.forEach((url, i) => {
-            const img = document.createElement("img");
-            img.src = url;
-            img.alt = "Foto " + (i+1);
-            img.onclick = () => abrir(url, urls, i);
-            gal.appendChild(img);
-          });
+        const urls = fotosRaw.split(",").map(u=>u.trim()).filter(Boolean).map(drive);
+        if (urls.length) {
+          const gal = document.createElement("div"); gal.id="galeria";
+          urls.forEach((u,i) => { const img=document.createElement("img"); img.src=u; img.onclick=()=>abrir(u,urls,i); gal.appendChild(img); });
           cont.appendChild(gal);
         }
-      } else {
-        cont.innerHTML += "<p><i>Sin fotos</i></p>";
+      } else cont.innerHTML += "<p><i>Sin fotos</i></p>";
+
+      if (lat && lng && lat!==0 && lng!==0) {
+        const m = document.createElement("div"); m.id="map"; cont.appendChild(m);
+        setTimeout(()=>initMap(lat,lng,dir),200);
       }
 
-      // Mapa
-      if (lat && lng && lat !== 0 && lng !== 0) {
-        const mapDiv = document.createElement("div");
-        mapDiv.id = "map";
-        cont.appendChild(mapDiv);
-        setTimeout(() => initMap(lat, lng, direccion), 200);
+      if (tel) {
+        const wa = document.createElement("button");
+        wa.textContent = "Contactar por WhatsApp";
+        wa.onclick = () => window.open(`https://wa.me/${tel}?text=${encodeURIComponent("Hola! Vi tu "+tipo+" en AlquiYa: "+dir)}`,"_blank");
+        cont.appendChild(wa);
       }
-
-      // Botones
-      if (contacto) {
-        const btnWA = document.createElement("button");
-        btnWA.textContent = "Contactar por WhatsApp";
-        btnWA.onclick = () => {
-          const msg = encodeURIComponent(`Hola! Vi tu ${tipo} en AlquiYa: ${direccion}`);
-          window.open(`https://wa.me/${contacto}?text=${msg}`, "_blank");
-        };
-        cont.appendChild(btnWA);
-      }
-
-      const btnVolver = document.createElement("button");
-      btnVolver.textContent = "Volver al mapa";
-      btnVolver.className = "mapa";
-      btnVolver.onclick = () => location.href = "index.html";
-      cont.appendChild(btnVolver);
+      const volver = document.createElement("button");
+      volver.textContent = "Volver al mapa"; volver.className="mapa";
+      volver.onclick = () => location.href="index.html";
+      cont.appendChild(volver);
 
       cont.style.display = "block";
     })
-    .catch(err => {
-      loading.style.display = "none";
-      cont.innerHTML = "<h2>Error de conexión</h2><p>Revisa tu conexión o intenta más tarde.</p>";
-      cont.style.display = "block";
-      console.error("Error:", err);
+    .catch(e => {
+      loading.style.display="none";
+      cont.innerHTML="<h2>Error de conexión</h2><p>No se pudo cargar la propiedad.</p>";
+      cont.style.display="block";
+      console.error(e);
     });
 };
 </script>
