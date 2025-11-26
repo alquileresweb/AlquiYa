@@ -1,65 +1,66 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Alquiler en AlquiYa</title>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-SSJ5DG33JK"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-SSJ5DG33JK');
-</script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
-<style>
-  body { margin:0; font-family:Arial,sans-serif; background:#f4f4f4; }
-  header { background:white; padding:15px; text-align:center; box-shadow:0 2px 10px rgba(0,0,0,0.1); }
-  header img { max-width:250px; }
-  #alquiler-detalle {
-    max-width:700px; margin:20px auto; padding:20px; background:white;
-    border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.1); border:2px solid #3483fa;
-  }
-  #alquiler-detalle h2 { color:#3483fa; margin-top:0; }
-  #alquiler-detalle p { margin:12px 0; line-height:1.5; }
-  #alquiler-detalle b { color:#333; }
-  #imagenes-container {
-    display:flex; flex-wrap:wrap; gap:10px; margin:15px 0; justify-content:center;
-  }
-  #imagenes-container img {
-    width:120px; height:90px; object-fit:cover; border-radius:8px;
-    cursor:pointer; border:2px solid #ddd; transition:0.3s;
-  }
-  #imagenes-container img:hover { transform:scale(1.05); border-color:#3483fa; }
-  #map { height:400px; margin:20px 0; border-radius:12px; border:2px solid #3483fa; }
-  button {
-    background:#25D366; color:white; border:none; padding:12px 20px;
-    border-radius:8px; font-size:16px; cursor:pointer; margin:8px 8px 0 0;
-    transition:0.3s;
-  }
-  button:hover { background:#1ebe57; transform:translateY(-2px); }
-  #loading-msg { text-align:center; padding:30px; font-size:18px; color:#3483fa; font-weight:bold; }
-  #error-msg { color:#d32f2f; background:#ffebee; padding:20px; border-radius:8px; text-align:center; }
-  #modal-img {
-    display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-    background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center;
-  }
-  #modal-img img { max-width:92%; max-height:92%; border-radius:12px; }
-  .close-btn, .nav-btn {
-    position:absolute; background:rgba(0,0,0,0.7); color:white; border:none;
-    width:44px; height:44px; border-radius:50%; font-size:24px; cursor:pointer;
-  }
-  .close-btn { top:15px; right:15px; }
-  .prev-btn { left:15px; top:50%; transform:translateY(-50%); }
-  .next-btn { right:15px; top:50%; transform:translateY(-50%); }
-  .marker-icon {
-    background:#3483fa; color:white; font-weight:bold; border-radius:50%;
-    width:34px; height:34px; display:flex; align-items:center; justify-content:center;
-    border:3px solid white; box-shadow:0 2px 8px rgba(0,0,0,0.3);
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alquiler en AlquiYa</title>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-SSJ5DG33JK"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-SSJ5DG33JK');
+  </script>
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
+  <style>
+    body { margin:0; font-family:Arial,sans-serif; background:#f4f4f4; }
+    header { background:white; padding:15px; text-align:center; box-shadow:0 2px 10px rgba(0,0,0,0.1); }
+    header img { max-width:250px; }
+    #alquiler-detalle {
+      max-width:700px; margin:20px auto; padding:20px; background:white;
+      border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.1); border:2px solid #3483fa;
+    }
+    #alquiler-detalle h2 { color:#3483fa; margin-top:0; }
+    #alquiler-detalle p { margin:12px 0; line-height:1.5; }
+    #alquiler-detalle b { color:#333; }
+    #imagenes-container {
+      display:flex; flex-wrap:wrap; gap:10px; margin:15px 0; justify-content:center;
+    }
+    #imagenes-container img {
+      width:120px; height:90px; object-fit:cover; border-radius:8px;
+      cursor:pointer; border:2px solid #ddd; transition:0.3s;
+    }
+    #imagenes-container img:hover { transform:scale(1.05); border-color:#3483fa; }
+    #map { height:400px; margin:20px 0; border-radius:12px; border:2px solid #3483fa; }
+    button {
+      background:#25D366; color:white; border:none; padding:12px 20px;
+      border-radius:8px; font-size:16px; cursor:pointer; margin:8px 8px 0 0;
+      transition:0.3s;
+    }
+    button:hover { background:#1ebe57; transform:translateY(-2px); }
+    #loading-msg { text-align:center; padding:30px; font-size:18px; color:#3483fa; font-weight:bold; }
+    #error-msg { color:#d32f2f; background:#ffebee; padding:20px; border-radius:8px; text-align:center; margin:20px; }
+    #modal-img {
+      display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+      background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center;
+    }
+    #modal-img img { max-width:92%; max-height:92%; border-radius:12px; }
+    .close-btn, .nav-btn {
+      position:absolute; background:rgba(0,0,0,0.7); color:white; border:none;
+      width:44px; height:44px; border-radius:50%; font-size:24px; cursor:pointer;
+    }
+    .close-btn { top:15px; right:15px; }
+    .prev-btn { left:15px; top:50%; transform:translateY(-50%); }
+    .next-btn { right:15px; top:50%; transform:translateY(-50%); }
+    .marker-icon {
+      background:#3483fa; color:white; font-weight:bold; border-radius:50%;
+      width:34px; height:34px; display:flex; align-items:center; justify-content:center;
+      border:3px solid white; box-shadow:0 2px 8px rgba(0,0,0,0.3); font-size:14px;
+    }
+  </style>
 </head>
 <body>
 
@@ -79,26 +80,36 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-  const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
   let currentImages = [];
   let currentImageIndex = 0;
   let propiedadId = "";
 
-  // Obtener ID de la URL
-  const urlParams = new URLSearchParams(window.location.search);
-  propiedadId = urlParams.get("id")?.trim();
+  // Extraer ID del enlace compartido (columna O)
+  function extraerIdDeEnlace() {
+    const url = new URL(window.location.href);
+    const idFromParam = url.searchParams.get("id");
+    if (idFromParam) return idFromParam.trim();
 
-  // Contar vista al cargar la página
+    // Si el enlace fue compartido directamente (ej: https://www.alquiya.com.ar/propiedad.html?id=abc123)
+    const pathname = url.pathname;
+    const match = url.href.match(/id[=\/]([a-zA-Z0-9_-]+)/i);
+    return match ? match[1] : null;
+  }
+
+  propiedadId = extraerIdDeEnlace();
+
+  // Contar vista al cargar
   if (propiedadId) {
-    fetch(`${webAppURL}?action=incrementarmetrica&metrica=vistas&idPropiedad=${propiedadId}`)
-      .catch(() => console.log("Vista contada (o ya contada)"));
+    fetch(`${WEB_APP_URL}?action=incrementarmetrica&metrica=vistas&idPropiedad=${propiedadId}`)
+      .catch(() => {}); // Silencioso
   }
 
   function contarConsulta() {
     if (!propiedadId) return;
-    fetch(`${webAppURL}?action=incrementarmetrica&metrica=contactos&idPropiedad=${propiedadId}`)
+    fetch(`${WEB_APP_URL}?action=incrementarmetrica&metrica=contactos&idPropiedad=${propiedadId}`)
       .then(() => console.log("Consulta contada"))
-      .catch(err => console.warn("Error al contar consulta:", err));
+      .catch(() => {});
   }
 
   function abrirModal(src, images, index) {
@@ -123,21 +134,33 @@
       attribution: '&copy; OpenStreetMap'
     }).addTo(map);
 
-    const iconHtml = tipo === "Temporario" ? 'Temporario' : tipo === "Local" ? 'Local' : `Casa ${ambientes || ""}`;
-    const icon = L.divIcon({ className: "marker-icon", html: iconHtml, iconSize: [40,40] });
-    L.marker([lat, lng], { icon }).addTo(map)
-      .bindPopup(`<b>${direccion}</b>`).openPopup();
+    let iconText = "";
+    if (tipo === "Temporario") iconText = "Temporario";
+    else if (tipo === "Local") iconText = "Local";
+    else iconText = ambientes ? `${ambientes} amb` : "Casa";
+
+    const icon = L.divIcon({
+      className: "marker-icon",
+      html: iconText,
+      iconSize: [40, 40],
+      iconAnchor: [20, 40]
+    });
+
+    L.marker([lat, lng], { icon })
+      .addTo(map)
+      .bindPopup(`<b>${direccion}</b>`)
+      .openPopup();
   }
 
   // Carga principal
   window.onload = async () => {
     if (!propiedadId) {
-      document.getElementById("loading-msg").innerHTML = "<div id='error-msg'>Error: No se proporcionó ID</div>";
+      document.getElementById("loading-msg").innerHTML = `<div id="error-msg"><h2>Error</h2><p>No se encontró el ID de la propiedad</p></div>`;
       return;
     }
 
     try {
-      const res = await fetch(`${webAppURL}?action=getAlquiler&id=${propiedadId}`);
+      const res = await fetch(`${WEB_APP_URL}?action=getAlquiler&id=${propiedadId}`);
       const data = await res.json();
 
       document.getElementById("loading-msg").style.display = "none";
@@ -146,8 +169,8 @@
         document.getElementById("alquiler-detalle").innerHTML = `
           <div id="error-msg">
             <h2>Propiedad no disponible</h2>
-            <p>Este alquiler fue dado de baja, está inactivo o el dueño tiene el plan vencido.</p>
-            <button onclick="location.href='index.html'">Volver al mapa</button>
+            <p>Este anuncio fue dado de baja o el dueño tiene el plan vencido.</p>
+            <button onclick="location.href='index.html'" style="background:#3483fa;">Volver al mapa</button>
           </div>`;
         document.getElementById("alquiler-detalle").style.display = "block";
         return;
@@ -158,39 +181,44 @@
       const direccion = a.Direccion || "Sin dirección";
       const precio = a.Precio ? "$" + Number(a.Precio).toLocaleString("es-AR") : "Consultar";
       const ambientes = a["Nro Ambientes"] || "";
-      const mascotas = a.Mascotas || "No especificado";
-      const detalles = a.Detalles || "Sin detalles adicionales";
-      const infoIngreso = a["Informacion ingreso"] || "No especificado";
-      const contacto = a.Contacto?.replace(/[^\d+]/g, "") || "";
+      const mascotas = a.Mascotas || "";
+      const detalles = a.Detalles || "";
+      const infoIngreso = a["Informacion ingreso"] || "";
+      const contacto = (a.Contacto || "").replace(/[^\d+]/g, "");
 
       let html = `
-        <h2>${tipo === "Temporario" ? "Temporario" : tipo === "Local" ? "Local Comercial" : "Alquiler"}: ${direccion}</h2>
-        ${tipo !== "Temporario" && tipo !== "Local" ? `<p><b>Ambientes:</b> ${ambientes}</p>` : ""}
+        <h2>${tipo === "Temporario" ? "Temporario" : tipo === "Local" ? "Local Comercial" : "Alquiler"} en ${direccion}</h2>
+        ${tipo !== "Temporario" && tipo !== "Local" ? `<p><b>Ambientes:</b> ${ambientes || "No especificado"}</p>` : ""}
         <p><b>Precio:</b> ${precio}</p>
         ${mascotas ? `<p><b>Mascotas:</b> ${mascotas}</p>` : ""}
-        ${infoIngreso !== "No especificado" ? `<p><b>Información de ingreso:</b> ${infoIngreso}</p>` : ""}
-        ${detalles !== "Sin detalles adicionales" ? `<p><b>Detalles:</b> ${detalles}</p>` : ""}
+        ${infoIngreso ? `<p><b>Información de ingreso:</b> ${infoIngreso}</p>` : ""}
+        ${detalles ? `<p><b>Detalles:</b> ${detalles}</p>` : ""}
       `;
 
-      // Imágenes
-      const fotos = (a.Fotos || "").split(",").map(u => u.trim()).filter(Boolean);
-      if (fotos.length > 0) {
+      // Fotos
+      const fotosRaw = (a.Fotos || "").split(",").map(u => u.trim()).filter(Boolean);
+      const fotosUrls = fotosRaw.map(url => {
+        if (url.includes("drive.google.com")) {
+          const match = url.match(/id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+          return match ? `https://drive.google.com/uc?export=view&id=${match[1]}` : url;
+        }
+        return url;
+      });
+
+      if (fotosUrls.length > 0) {
         html += `<div id="imagenes-container">`;
-        fotos.forEach((url, i) => {
-          const finalUrl = url.includes("drive.google.com") 
-            ? url.replace(/\/open\?id=/, "/uc?export=view&id=").replace(/\/file\/d\//, "/uc?export=view&id=").split("&")[0]
-            : url;
-          html += `<img src="${finalUrl}" alt="Foto ${i+1}" onclick="abrirModal('${finalUrl}', ${JSON.stringify(fotos.map(u=>u.includes('drive.google.com') ? u.replace(/\/open\?id=/, '/uc?export=view&id=').replace(/\/file\/d\//, '/uc?export=view&id=').split('&')[0] : u))}, ${i})">`;
+        fotosUrls.forEach((url, i) => {
+          html += `<img src="${url}" alt="Foto ${i+1}" onclick="abrirModal('${url}', ${JSON.stringify(fotosUrls)}, ${i})">`;
         });
         html += `</div>`;
       } else {
-        html += `<p><i>No hay fotos disponibles</i></p>`;
+        html += `<p><i>Sin fotos disponibles</i></p>`;
       }
 
       // Mapa
       const lat = parseFloat(a.Lat);
       const lng = parseFloat(a.Lng);
-      if (lat && lng && lat !== 0 && lng !== 0) {
+      if (lat && lng && lat !== 0) {
         html += `<div id="map"></div>`;
       }
 
@@ -198,7 +226,7 @@
       html += `<div style="margin-top:20px;">`;
       if (contacto) {
         html += `
-          <button onclick="contarConsulta(); window.open('https://wa.me/${contacto}?text=${encodeURIComponent("Hola! Vi tu propiedad en AlquiYa: " + direccion + " ¿Sigue disponible?")}', '_blank')">
+          <button onclick="contarConsulta(); window.open('https://wa.me/${contacto}?text=${encodeURIComponent("Hola! Vi tu propiedad en AlquiYa: " + direccion)}', '_blank')">
             Contactar por WhatsApp
           </button>`;
       }
@@ -212,14 +240,13 @@
       detalle.innerHTML = html;
       detalle.style.display = "block";
 
-      // Inicializar mapa
-      if (lat && lng && lat !== 0 && lng !== 0) {
-        setTimeout(() => initMap(lat, lng, direccion, ambientes, tipo), 300);
+      if (lat && lng && lat !== 0) {
+        setTimeout(() => initMap(lat, lng, direccion, ambientes, tipo), 500);
       }
 
     } catch (err) {
       console.error("Error:", err);
-      document.getElementById("loading-msg").innerHTML = `<div id="error-msg"><h2>Error de conexión</h2><p>Intenta nuevamente más tarde</p></div>`;
+      document.getElementById("loading-msg").innerHTML = `<div id="error-msg"><h2>Error de conexión</h2><p>Intenta más tarde</p></div>`;
     }
   };
 </script>
