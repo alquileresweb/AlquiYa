@@ -540,11 +540,13 @@ function mostrarAlquileres(res) {
             </div>`;
 
         // BOTÓN COPIAR ENLACE - Usa el ID de la columna N (alq.row)
-        const enlacePropiedad = `https://www.alquiya.com.ar/propiedad.html?id=${alq.row}`;
-        const botonCopiar = `
-            <button class="copy-share-btn" data-url="${enlacePropiedad}">
-              Compartir enlace
-            </button>`;
+        // ID real → columna N (índice 13 en el array)
+const idReal = alq[13] || alq.ID || alq.row; // fallback seguro
+
+const botonCopiar = `
+    <button class="copy-share-btn" data-id="${idReal}">
+      Compartir enlace
+    </button>`;
 
         div.innerHTML += `
             <div class="alquiler">
