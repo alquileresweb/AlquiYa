@@ -507,21 +507,25 @@ function mostrarAlquileres(res) {
     const div = document.getElementById("listaAlquileres");
     div.innerHTML = "";
     if (!res.success || !res.data || res.data.length === 0) {
-        div.innerHTML = "No tienes propiedades aún.";
+        div.innerHTML = "<p style='font-size:1.6em; color:#666;'>No tienes propiedades aún.</p>";
         return;
     }
 
     deptosActivos = res.data.filter(a => a.Estado === "Activo").length;
     document.getElementById("limiteAlquileres").textContent =
-        planActual === "Prueba" ? `${deptosActivos} propiedades activas`
-                                : `${deptosActivos}/${limiteDeptos} propiedades activas`;
+        planActual === "Prueba" 
+            ? `${deptosActivos} propiedades activas`
+            : `${deptosActivos}/${limiteDeptos} propiedades activas`;
 
     res.data.forEach(alq => {
+        // === DATOS BÁSICOS ===
         let estado = alq.Estado === "Activo" ? "Activo" : "Inactivo";
         let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Cambiar Estado</button>`;
         let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
         let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
-        let precioFormateado = (alq.Tipo === "Departamento" || alq.Tipo === "Terreno" || alq.Tipo === "Casa") ? formatoPrecio(alq.Precio) : "";
+
+        let precioFormateado = (alq.Tipo === "Departamento" || alq.Tipo === "Terreno" || alq.Tipo === "Casa") 
+            ? formatoPrecio(alq.Precio) : "";
         let infoAmbientes = (alq.Tipo === "Departamento" || alq.Tipo === "Casa") ? ` - ${alq['Nro Ambientes']} amb` : "";
         let infoSuperficie = alq.Tipo === "Terreno" ? ` - ${alq.Superficie} m²` : "";
         let infoPatio = alq.Tipo === "Casa" ? ` - Patio: ${alq.Patio || "N/D"}` : "";
@@ -529,25 +533,32 @@ function mostrarAlquileres(res) {
         let infoAntiguedad = alq.Tipo === "Casa" ? ` - Antigüedad: ${alq.Antiguedad || "N/D"} años` : "";
         let operacion = alq.Operacion ? ` - Operación: ${alq.Operacion}` : "";
 
-        // Vistas y contactos
+        // === ESTADÍSTICAS (Vistas y Contactos) ===
         let vistas = parseInt(alq.Vistas || alq[18] || 0) || 0;
         let contactos = parseInt(alq.Consultas || alq.contactos || alq.Contactos || alq[19] || 0) || 0;
 
         const statsHTML = `
             <div class="stats-inline">
-                <div class="stats-item"><i class="fa-solid fa-eye"></i><span class="stats-number">${vistas}</span> vistas</div>
-                <div class="stats-item"><i class="fa-solid fa-phone"></i><span class="stats-number">${contactos}</span> contactos</div>
+                <div class="stats-item">
+                    <i class="fa-solid fa-eye"></i>
+                    <span class="stats-number">${vistas}</span> vistas
+                </div>
+                <div class="stats-item">
+                    <i class="fa-solid fa-phone"></i>
+                    <span class="stats-number">${contactos}</span> contactos
+                </div>
             </div>`;
 
-        // BOTÓN COPIAR ENLACE - Usa el ID de la columna N (alq.row)
-        // ID real → columna N (índice 13 en el array)
-const idReal = alq[13] || alq.ID || alq.row; // fallback seguro
+        // === ID REAL DE LA COLUMNA N (índice 13) ===
+        const idPropiedad = alq[13] || alq.ID || alq.row; // 100% seguro
 
-const botonCopiar = `
-    <button class="copy-share-btn" data-id="${idReal}">
-      Compartir enlace
-    </button>`;
+        // === BOTÓN COMPARTIR ENLACE ===
+        const botonCopiar = `
+            <button class="copy-share-btn" data-id="${idPropiedad}">
+                Compartir enlace
+            </button>`;
 
+        // === ARMAR PROPIEDAD ===
         div.innerHTML += `
             <div class="alquiler">
                 <b>${alq.Direccion || alq.direccion}</b> (${alq.Tipo})${infoAmbientes}${infoSuperficie}${precioFormateado}${infoPatio}${infoGarage}${infoAntiguedad}${operacion}<br>
@@ -559,10 +570,19 @@ const botonCopiar = `
             </div>`;
     });
 
-    // ==== EVENT LISTENER PARA TODOS LOS BOTONES DE COPIAR (delegación) ====
+    // === EVENTO: COPIAR ENLACE + CONTAR VISTA ===
     document.querySelectorAll('.copy-share-btn').forEach(btn => {
         btn.onclick = function () {
-            const url = this.getAttribute('data-url');
+            const idPropiedad = this.getAttribute('data-id');
+            const url = `https://www.alquiya.com.ar/propiedad.html?id=${idPropiedad}`;
+
+            // Contar vista en el backend (columna Vistas)
+            fetch(`${API_URL}?action=generarEnlaceCompartido&id=${idPropiedad}`, {
+                method: 'GET',
+                mode: 'no-cors'
+            }).catch(() => {});
+
+            // Copiar al portapapeles
             navigator.clipboard.writeText(url).then(() => {
                 const textoOriginal = this.innerHTML;
                 this.classList.add('copied');
@@ -573,7 +593,7 @@ const botonCopiar = `
                     this.innerHTML = textoOriginal;
                 }, 2000);
             }).catch(() => {
-                alert('No se pudo copiar automáticamente.\nEnlace: ' + url);
+                alert('Enlace (copia manual):\n' + url);
             });
         };
     });
