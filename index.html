@@ -841,55 +841,34 @@ function cambiarImagen(direction) {
   document.getElementById("img-grande").src = currentImages[currentImageIndex];
 }
 
-/* =========================
-MÉTRICAS
-*/
 async function incrementarMetrica(idPropiedad, metrica) {
-  // Validar idPropiedad
   if (!idPropiedad || typeof idPropiedad !== 'string' || idPropiedad.trim() === '') {
-    console.error(`Error: ID de propiedad inválido para incrementar ${metrica}:`, idPropiedad);
-    const errorEl = document.getElementById('metricas-error');
-    if (errorEl) {
-      errorEl.style.display = 'block';
-      errorEl.textContent = 'Error: ID de propiedad no válido';
-    }
+    console.error("ID inválido:", idPropiedad);
     return;
   }
 
-  const params = new URLSearchParams();
-  params.append("action", "incrementarMetrica");
-  params.append("idPropiedad", idPropiedad.trim());
-  params.append("metrica", metrica);
+  const url = `${webAppURL}?action=incrementarMetrica&idPropiedad=${encodeURIComponent(idPropiedad.trim())}&metrica=${metrica}`;
 
-  console.log(`Enviando solicitud para incrementar ${metrica} para ID: ${idPropiedad}`);
+  console.log(`Incrementando ${metrica} →`, url);
 
   try {
-    await makeRequest(webAppURL, {
-      method: "POST",
-      body: params,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      mode: "no-cors" // Usar no-cors para evitar bloqueo por CORS
+    const res = await fetch(url, {
+      method: "GET",
+      cache: "no-cache"
+      // ← SIN mode: "no-cors" → permite recibir respuesta
     });
-    console.log(`Solicitud enviada para incrementar ${metrica} para ID ${idPropiedad} (no-cors, sin respuesta)`);
-    const errorEl = document.getElementById('metricas-error');
-    if (errorEl) {
-      errorEl.style.display = 'none'; // Limpiar mensaje de error
+
+    const data = await res.json();
+
+    if (data.success) {
+      console.log(`✓ ${metrica.toUpperCase()} incrementada:`, data.nuevoValor);
+    } else {
+      console.warn("Error del servidor:", data.error);
     }
-  } catch (error) {
-    console.error(`Error al incrementar ${metrica} para ID ${idPropiedad}:`, error.message);
-    const errorEl = document.getElementById('metricas-error');
-    if (errorEl) {
-      errorEl.style.display = 'block';
-      errorEl.textContent = `Error: No se pudo conectar con el servidor`;
-    }
+  } catch (err) {
+    console.error("Error de red al incrementar métrica:", err);
   }
 }
-
-/* =========================
-CARGA DE ALQUILERES
-*/
 function cargarAlquileres() {
   const loadingEl = document.getElementById("loading-msg");
   loadingEl.style.display = "block";
