@@ -16,16 +16,166 @@ gtag('config', 'G-SSJ5DG33JK');
 <link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
 <!-- Font Awesome para iconos -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
 <style>
-/* --- CSS adaptado para móvil con textos más grandes y centrados --- */
-body { font-family: Arial, sans-serif; margin: 10px; background:#f5f5f5; font-size:20px; text-align:center; margin-top: 120px; }
-h2 { color:#333; font-size:2.2em; margin-bottom:18px; }
-h3 { color:#333; font-size:2em; margin-bottom:18px; }
-.alquiler { border:1px solid #ccc; padding:16px; margin:14px 0; background:#fff; font-size:1.4em; text-align:left; }
-button { margin: 6px; padding:14px 20px; font-size:1.3em; border-radius:6px; cursor:pointer; }
+/* --- ESTILO MODERNO 2025 --- */
+body { 
+    font-family: 'Segoe UI', Arial, sans-serif; 
+    margin: 10px; 
+    background:#f8f9fa; 
+    font-size:20px; 
+    text-align:center; 
+    margin-top: 100px; 
+}
+h2 { color:#333; font-size:2.4em; margin-bottom:18px; }
+h3 { color:#333; font-size:2.2em; margin-bottom:18px; }
+
+.alquiler { 
+    position:relative;
+    border-radius:16px; 
+    padding:20px; 
+    margin:16px 0; 
+    background:#fff; 
+    box-shadow:0 4px 15px rgba(0,0,0,0.08);
+    text-align:left; 
+    font-size:1.4em;
+    overflow:hidden;
+}
+
+/* Botones generales */
+button { 
+    margin: 6px 3px; 
+    padding:14px 20px; 
+    font-size:1.3em; 
+    border:none;
+    border-radius:12px; 
+    cursor:pointer; 
+    transition:all .3s ease;
+    box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+button:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(0,0,0,0.15); }
+
 button.stats-btn { background: #ff9800; color: white; }
 #btnAgregarPropiedad { background:#3681f3; color:white; }
+
+/* Header fijo moderno */
+header {
+    position: fixed;
+    top: 0; left: 0; width: 100%;
+    background: white;
+    z-index: 1000;
+    text-align: center;
+    padding: 15px;
+    box-sizing: border-box;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Flecha volver atrás */
+#back-arrow {
+    background: rgba(255,255,255,0.9);
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    font-size: 1.6em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    backdrop-filter: blur(10px);
+}
+#back-arrow:hover { background:#e0e0e0; }
+
+/* Menú hamburguesa */
+#menu-toggle {
+    background: rgba(255,255,255,0.9);
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    font-size: 1.6em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    backdrop-filter: blur(10px);
+}
+#menu-toggle:hover { background:#e0e0e0; }
+
+#menu {
+    display: none;
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    z-index: 1001;
+    overflow:hidden;
+}
+#menu.active { display: block; }
+#menu button {
+    display: block;
+    width: 100%;
+    padding: 16px 20px;
+    font-size: 1.3em;
+    text-align: left;
+    background:none;
+    border:none;
+    cursor:pointer;
+}
+#menu button:hover { background: #f0f0f0; }
+
+/* Switch de estado (esquina derecha) */
+.estado-switch {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 10;
+}
+.estado-switch input { display:none; }
+.estado-switch label {
+    display:block;
+    width:60px; height:34px;
+    background:#ccc;
+    border-radius:34px;
+    position:relative;
+    cursor:pointer;
+    transition:.3s;
+}
+.estado-switch label::after {
+    content:'';
+    position:absolute;
+    width:26px; height:26px;
+    border-radius:50%;
+    background:white;
+    top:4px; left:4px;
+    transition:.3s;
+    box-shadow:0 2px 5px rgba(0,0,0,0.2);
+}
+.estado-switch input:checked + label { background:#4caf50; }
+.estado-switch input:checked + label::after { left:30px; }
+
+/* Acciones dentro de cada propiedad */
+.alquiler-actions {
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-top:16px;
+    align-items:center;
+}
+.alquiler-actions button {
+    font-size:1.1em;
+    padding:10px 16px;
+    border-radius:10px;
+}
+
+/* Botón copiar enlace */
+.copy-share-btn {
+    background:#2196f3;
+    color:white;
+}
+.copy-share-btn i { margin-right:6px; }
+.copy-share-btn.copied { background:#4caf50; }
 #opcionesPropiedad, #opcionesVenta, #opcionesAlquiler { background:#fff; padding:20px; border:1px solid #ccc; margin-top:24px; border-radius:12px; font-size:1.3em; text-align:left; display:none; }
 #opcionesPropiedad.active, #opcionesVenta.active, #opcionesAlquiler.active { display:block; }
 #formularioDepartamento, #formularioLocal, #formularioTemporario, #formularioTerreno, #formularioCasa { background:#fff; padding:20px; border:1px solid #ccc; margin-top:24px; border-radius:12px; font-size:1.3em; text-align:left; display:none; }
@@ -510,21 +660,15 @@ function mostrarAlquileres(res) {
         div.innerHTML = "<p style='font-size:1.6em; color:#666;'>No tienes propiedades aún.</p>";
         return;
     }
-
     deptosActivos = res.data.filter(a => a.Estado === "Activo").length;
     document.getElementById("limiteAlquileres").textContent =
-        planActual === "Prueba" 
+        planActual === "Prueba"
             ? `${deptosActivos} propiedades activas`
             : `${deptosActivos}/${limiteDeptos} propiedades activas`;
 
     res.data.forEach(alq => {
-        // === DATOS BÁSICOS ===
         let estado = alq.Estado === "Activo" ? "Activo" : "Inactivo";
-        let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Cambiar Estado</button>`;
-        let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
-        let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
-
-        let precioFormateado = (alq.Tipo === "Departamento" || alq.Tipo === "Terreno" || alq.Tipo === "Casa") 
+        let precioFormateado = (alq.Tipo === "Departamento" || alq.Tipo === "Terreno" || alq.Tipo === "Casa")
             ? formatoPrecio(alq.Precio) : "";
         let infoAmbientes = (alq.Tipo === "Departamento" || alq.Tipo === "Casa") ? ` - ${alq['Nro Ambientes']} amb` : "";
         let infoSuperficie = alq.Tipo === "Terreno" ? ` - ${alq.Superficie} m²` : "";
@@ -533,43 +677,49 @@ function mostrarAlquileres(res) {
         let infoAntiguedad = alq.Tipo === "Casa" ? ` - Antigüedad: ${alq.Antiguedad || "N/D"} años` : "";
         let operacion = alq.Operacion ? ` - Operación: ${alq.Operacion}` : "";
 
-        // === ESTADÍSTICAS (Vistas y Contactos) ===
         let vistas = parseInt(alq.Vistas || alq[18] || 0) || 0;
         let contactos = parseInt(alq.Consultas || alq.contactos || alq.Contactos || alq[19] || 0) || 0;
-
         const statsHTML = `
             <div class="stats-inline">
-                <div class="stats-item">
-                    <i class="fa-solid fa-eye"></i>
-                    <span class="stats-number">${vistas}</span> vistas
-                </div>
-                <div class="stats-item">
-                    <i class="fa-solid fa-phone"></i>
-                    <span class="stats-number">${contactos}</span> contactos
-                </div>
+                <div class="stats-item"><i class="fa-solid fa-eye"></i><span class="stats-number">${vistas}</span> vistas</div>
+                <div class="stats-item"><i class="fa-solid fa-phone"></i><span class="stats-number">${contactos}</span> contactos</div>
             </div>`;
 
-        // === ID REAL DE LA COLUMNA N (índice 13) ===
-        const idPropiedad = alq[13] || alq.ID || alq.row; // 100% seguro
+        const idPropiedad = alq[13] || alq.ID || alq.row;
 
-        // === BOTÓN COMPARTIR ENLACE ===
-        const botonCopiar = `
-            <button class="copy-share-btn" data-id="${idPropiedad}">
-                Compartir enlace
-            </button>`;
-
-        // === ARMAR PROPIEDAD ===
         div.innerHTML += `
             <div class="alquiler">
-                <b>${alq.Direccion || alq.direccion}</b> (${alq.Tipo})${infoAmbientes}${infoSuperficie}${precioFormateado}${infoPatio}${infoGarage}${infoAntiguedad}${operacion}<br>
-                Estado: ${estado}<br>
-                ${btnEstado} ${btnEditar} ${btnEliminar}
-                ${statsHTML}
-                ${botonCopiar}
+                <div style="padding-bottom:50px;">
+                    <strong style="font-size:1.5em; color:#333;">${alq.Direccion || alq.direccion}</strong> 
+                    <span style="color:#666; font-size:1.2em;">(${alq.Tipo})</span>
+                    ${infoAmbientes}${infoSuperficie}${precioFormateado}${infoPatio}${infoGarage}${infoAntiguedad}${operacion}<br><br>
+                    Estado: <strong>${estado}</strong><br><br>
+                    ${statsHTML}
+                </div>
+
+                <!-- Switch de estado -->
+                <div class="estado-switch">
+                    <input type="checkbox" id="switch-${alq.row}" ${alq.Estado === 'Activo' ? 'checked' : ''} 
+                           onchange="cambiarEstado(${alq.row}, '${alq.Estado}')">
+                    <label for="switch-${alq.row}"></label>
+                </div>
+
+                <!-- Acciones -->
+                <div class="alquiler-actions">
+                    <button class="copy-share-btn" data-id="${idPropiedad}">
+                        <i class="fas fa-copy"></i> Copiar enlace
+                    </button>
+                    <button onclick="editarAlquiler(${alq.row}, ${JSON.stringify(alq)})" style="background:#ff9800;color:white;">
+                        <i class="fas fa-edit"></i> Editar
+                    </button>
+                    <button onclick="eliminarAlquiler(${alq.row})" style="background:#f44336;color:white;">
+                        <i class="fas fa-trash-alt"></i> Eliminar
+                    </button>
+                </div>
+
                 <span id="estadoMsg-${alq.row}" class="estado-msg"></span>
             </div>`;
     });
-
     // === EVENTO: COPIAR ENLACE + CONTAR VISTA ===
     document.querySelectorAll('.copy-share-btn').forEach(btn => {
         btn.onclick = function () {
