@@ -655,6 +655,15 @@ function login() {
   }
   document.getElementById("login-loading").style.display = "block";
   document.getElementById("login-msg").textContent = "";
+
+  const params = new URLSearchParams();
+  params.append("action", "login"); // Cambiado de 'verificarLogin' a 'login'
+  params.append("email", email);
+  params.append("password", password);
+
+  makeRequest(webAppURL, {
+    method: "POST", // Cambiado de GET a POST para mayor consistencia y seguridad
+    body: params,
   makeRequest(webAppURL + "?action=verificarLogin&email=" + encodeURIComponent(email) + "&password=" + encodeURIComponent(password), {
     method: "GET",
     headers: {
@@ -663,11 +672,18 @@ function login() {
   })
     .then(data => {
       document.getElementById("login-loading").style.display = "none";
+      if (data && data.success) {
       if (data.success) {
         localStorage.setItem("dueno", email);
         localStorage.setItem("dueno_email", email);
         window.location.href = "dueños.html";
       } else {
+        document.getElementById("login-msg").textContent = 
+          data && data.error 
+            ? (data.error === "Usuario no registrado" ? "Usuario no registrado" : 
+               data.error === "Contraseña incorrecta" ? "Contraseña incorrecta" : 
+               `Error: ${data.error}`)
+            : "Error en el inicio de sesión. Por favor, verifica la acción en el servidor.";
         if (data.error === "Usuario no registrado") {
           document.getElementById("login-msg").textContent = "Usuario no registrado";
         } else if (data.error === "Contraseña incorrecta") {
@@ -679,6 +695,8 @@ function login() {
     })
     .catch(error => {
       document.getElementById("login-loading").style.display = "none";
+      document.getElementById("login-msg").textContent = `Error: ${error.message}`;
+      console.error("Error en login:", error);
       document.getElementById("login-msg").textContent = error.message;
     });
 }
@@ -841,34 +859,55 @@ function cambiarImagen(direction) {
   document.getElementById("img-grande").src = currentImages[currentImageIndex];
 }
 
+/* =========================
+MÉTRICAS
+*/
 async function incrementarMetrica(idPropiedad, metrica) {
+  // Validar idPropiedad
   if (!idPropiedad || typeof idPropiedad !== 'string' || idPropiedad.trim() === '') {
-    console.error("ID inválido:", idPropiedad);
+    console.error(`Error: ID de propiedad inválido para incrementar ${metrica}:`, idPropiedad);
+    const errorEl = document.getElementById('metricas-error');
+    if (errorEl) {
+      errorEl.style.display = 'block';
+      errorEl.textContent = 'Error: ID de propiedad no válido';
+    }
     return;
   }
 
-  const url = `${webAppURL}?action=incrementarMetrica&idPropiedad=${encodeURIComponent(idPropiedad.trim())}&metrica=${metrica}`;
+  const params = new URLSearchParams();
+  params.append("action", "incrementarMetrica");
+  params.append("idPropiedad", idPropiedad.trim());
+  params.append("metrica", metrica);
 
-  console.log(`Incrementando ${metrica} →`, url);
+  console.log(`Enviando solicitud para incrementar ${metrica} para ID: ${idPropiedad}`);
 
   try {
-    const res = await fetch(url, {
-      method: "GET",
-      cache: "no-cache"
-      // ← SIN mode: "no-cors" → permite recibir respuesta
+    await makeRequest(webAppURL, {
+      method: "POST",
+      body: params,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      mode: "no-cors" // Usar no-cors para evitar bloqueo por CORS
     });
-
-    const data = await res.json();
-
-    if (data.success) {
-      console.log(`✓ ${metrica.toUpperCase()} incrementada:`, data.nuevoValor);
-    } else {
-      console.warn("Error del servidor:", data.error);
+    console.log(`Solicitud enviada para incrementar ${metrica} para ID ${idPropiedad} (no-cors, sin respuesta)`);
+    const errorEl = document.getElementById('metricas-error');
+    if (errorEl) {
+      errorEl.style.display = 'none'; // Limpiar mensaje de error
     }
-  } catch (err) {
-    console.error("Error de red al incrementar métrica:", err);
+  } catch (error) {
+    console.error(`Error al incrementar ${metrica} para ID ${idPropiedad}:`, error.message);
+    const errorEl = document.getElementById('metricas-error');
+    if (errorEl) {
+      errorEl.style.display = 'block';
+      errorEl.textContent = `Error: No se pudo conectar con el servidor`;
+    }
   }
 }
+
+/* =========================
+CARGA DE ALQUILERES
+*/
 function cargarAlquileres() {
   const loadingEl = document.getElementById("loading-msg");
   loadingEl.style.display = "block";
