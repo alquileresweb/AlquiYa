@@ -328,172 +328,121 @@ function initMap(lat, lng, direccion, nroAmb, tipo) {
  
   console.log("Map initialized successfully");
 }
-
 window.onload = () => {
   const urlParams = new URLSearchParams(window.location.search);
   const alquilerId = urlParams.get("id");
   const loadingEl = document.getElementById("loading-msg");
   const detalle = document.getElementById("alquiler-detalle");
-
   if (!alquilerId) {
     detalle.innerHTML = "<h2>Error: No se proporcionó un ID de alquiler</h2>";
     loadingEl.style.display = "none";
     return;
   }
-
   loadingEl.style.display = "block";
-
-  console.log("%cIniciando carga del alquiler ID:", "font-weight:bold; color:blue;", alquilerId);
-
   fetch(`${webAppURL}?action=getAlquiler&id=${encodeURIComponent(alquilerId)}`)
-    .then(res => {
-      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-      return res.json();
-    })
+    .then(res => res.json())
     .then(data => {
       loadingEl.style.display = "none";
-
-      // LOG COMPLETO DEL OBJETO RECIBIDO (¡importantísimo!)
-      console.log("%cRespuesta completa del backend:", "background:#222; color:#bada55; font-size:12px;", JSON.parse(JSON.stringify(data)));
-
-      if (!data.success || !data.alquiler) {
-        console.error("No se recibió alquiler válido:", data);
-        detalle.innerHTML = "<h2>Este alquiler no existe o fue dado de baja</h2>";
-        return;
-      }
-
-      const alquiler = data.alquiler;
-
-      // LOG DETALLADO DE TODAS LAS CLAVES DISPONIBLES
-      console.log("%cClaves disponibles en el objeto alquiler:", "background:#0066cc; color:white; font-weight:bold;");
-      console.table(Object.keys(alquiler));
-
-      // LOG de valores más comunes para ver exactamente cómo vienen
-      console.groupCollapsed("%cValores clave del alquiler (click para expandir)");
-      console.log("Tipo:", alquiler.Tipo);
-      console.log("Direccion/Dirección:", alquiler.Direccion || alquiler.Dirección || alquiler.Domicilio);
-      console.log("Precio:", alquiler.Precio);
-      console.log("Fotos (crudo):", alquiler.Fotos || alquiler.Imagenes || alquiler.fotos || alquiler.Imágenes);
-      console.log("Lat:", alquiler.Lat || alquiler.Latitud || alquiler.Latitude);
-      console.log("Lng:", alquiler.Lng || alquiler.Longitud || alquiler.Longitude);
-      console.log("Contacto WhatsApp:", alquiler.Contacto);
-      console.groupEnd();
-
-      const tipo = getField(alquiler, ["Tipo"]) || "Desconocido";
-      const direccion = getField(alquiler, ["Direccion", "Dirección", "Domicilio"]) || "Sin dirección";
-      const precio = (alquiler.Precio && !isNaN(alquiler.Precio)) ? formatPrice(alquiler.Precio) : "No disponible";
-
-      detalle.innerHTML = `
-        <h2>${tipo === "Temporario" ? "Alquiler Temporario" : tipo === "Local" ? "Local Comercial" : "Alquiler"}: ${direccion}</h2>
-      `;
-
-      // ... (el resto del código de filas sigue igual)
-      const rows = (tipo === "Temporario" || tipo === "Local") ? [
-        ["Dirección", direccion],
-        ["Información de ingreso", getField(alquiler, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso"]) || "No especificado"],
-        ["Detalles", getField(alquiler, ["Detalles", "Detalle", "Descripcion", "Descripción"]) || "Sin detalles"]
-      ] : [
-        ["Dirección", direccion],
-        ["Ambientes", getField(alquiler, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]) || "?"],
-        ["Precio", precio],
-        ["Información de ingreso", getField(alquiler, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso"]) || "No especificado"],
-        ["Detalles", getField(alquiler, ["Detalles", "Detalle", "Descripcion", "Descripción"]) || "Sin detalles"],
-        ["Mascotas", getField(alquiler, ["Mascotas"]) || "No especificado"]
-      ];
-
-      rows.forEach(([label, val]) => {
-        const p = document.createElement("p");
-        p.innerHTML = `<b>${label}:</b> ${val || "No disponible"}`;
-        detalle.appendChild(p);
-      });
-
-      // ============= IMÁGENES =============
-      const imgContainer = document.createElement("div");
-      imgContainer.id = "imagenes-container";
-
-      const fotosRaw = getField(alquiler, ["Fotos", "Imagenes", "Imágenes", "images", "Imagen", "fotos", "FOTOS"]);
-      console.log("%cCampo de fotos detectado:", "color:orange; font-weight:bold;", fotosRaw);
-
-      let imageUrls = [];
-      if (fotosRaw && typeof fotosRaw === "string" && fotosRaw.trim() !== "") {
-        const rawUrls = fotosRaw.split(",").map(u => u.trim()).filter(u => u);
-        console.log("URLs separadas por coma:", rawUrls);
-
-        imageUrls = rawUrls
-          .map(url => {
-            const finalUrl = url.includes("drive.google.com") ? driveUrlDirect(url) : url;
-            console.log(`URL procesada: ${url} → ${finalUrl}`);
-            return finalUrl;
-          })
-          .filter(url => url.startsWith("http"));
-
-        if (imageUrls.length === 0) {
-          console.warn("No se generaron URLs válidas después del procesamiento");
-          imgContainer.innerHTML = "<p>No hay imágenes disponibles.</p>";
-        } else {
+      console.log("Backend response:", data);
+      if (data.success && data.alquiler) {
+        const alquiler = data.alquiler;
+        const tipo = getField(alquiler, ["Tipo"]);
+        const direccion = getField(alquiler, ["Direccion", "Dirección", "Domicilio"]) || "Sin dirección";
+        const precio = (alquiler.Precio && !isNaN(alquiler.Precio)) ? formatPrice(alquiler.Precio) : "No disponible";
+        detalle.innerHTML = `
+          <h2>${tipo === "Temporario" ? "Alquiler Temporario" : tipo === "Local" ? "Local Comercial" : "Alquiler"}: ${direccion}</h2>
+        `;
+        const rows = (tipo === "Temporario" || tipo === "Local") ? [
+          ["Dirección", direccion],
+          ["Información de ingreso", getField(alquiler, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso", "Informacion de ingreso"]) || ""],
+          ["Detalles", getField(alquiler, ["Detalles", "Detalle", "Descripcion", "Descripción"]) || ""]
+        ] : [
+          ["Dirección", direccion],
+          ["Ambientes", getField(alquiler, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]) || ""],
+          ["Precio", precio],
+          ["Información de ingreso", getField(alquiler, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso", "Informacion de ingreso"]) || ""],
+          ["Detalles", getField(alquiler, ["Detalles", "Detalle", "Descripcion", "Descripción"]) || ""],
+          ["Mascotas", getField(alquiler, ["Mascotas"]) || ""]
+        ];
+        rows.forEach(([label, val]) => {
+          const p = document.createElement("p");
+          p.innerHTML = `<b>${label}:</b> ${val}`;
+          detalle.appendChild(p);
+        });
+        const imgContainer = document.createElement("div");
+        imgContainer.id = "imagenes-container";
+        let imageUrls = [];
+        const fotos = getField(alquiler, ["Fotos", "Imagenes", "Imágenes", "images", "Imagen", "fotos", "FOTOS"]);
+        console.log("Raw Fotos field:", fotos);
+        if (fotos) {
+          const rawUrls = fotos.split(",").map(url => url.trim()).filter(url => url);
+          console.log("Split URLs:", rawUrls);
+          imageUrls = rawUrls.map(url => url.includes("drive.google.com") ? driveUrlDirect(url) : url)
+                            .filter(url => url && (url.startsWith("http") || url.startsWith("https")));
+          console.log("Processed image URLs:", imageUrls);
           imageUrls.forEach((url, index) => {
+            console.log(`Creating image element for URL ${index + 1}:`, url);
             const img = document.createElement("img");
             img.src = url;
-            img.alt = `Imagen ${index + 1}`;
-            img.loading = "lazy";
+            img.alt = `Imagen del alquiler ${index + 1}`;
+            img.referrerPolicy = "no-referrer";
+            img.onerror = () => console.error(`Failed to load image ${index + 1}: ${url}`);
+            img.onload = () => console.log(`Image ${index + 1} loaded successfully: ${url}`);
             img.onclick = () => abrirModal(url, imageUrls, index);
-
-            img.onerror = () => {
-              console.error(`Error cargando imagen ${index + 1}:`, url);
-              img.src = "https://via.placeholder.com/120x90?text=Error+Imagen";
-              img.style.opacity = "0.6";
-            };
-            img.onload = () => console.log(`Imagen ${index + 1} cargada OK`);
             imgContainer.appendChild(img);
           });
+        } else {
+          console.warn("No images found in Fotos field for alquiler:", alquilerId);
+          const p = document.createElement("p");
+          p.textContent = "No hay imágenes disponibles.";
+          imgContainer.appendChild(p);
         }
-      } else {
-        console.warn("No se encontró campo de fotos o está vacío");
-        imgContainer.innerHTML = "<p>No hay imágenes disponibles.</p>";
-      }
-      detalle.appendChild(imgContainer);
-
-      // ============= MAPA =============
-      const lat = parseFloat(getField(alquiler, ["Lat", "Latitude", "Latitud"]));
-      const lng = parseFloat(getField(alquiler, ["Lng", "Longitude", "Longitud"]));
-
-      console.log("%cCoordenadas detectadas → Lat:", "color:purple; font-weight:bold;", lat, "Lng:", lng);
-
-      if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
-        const mapDiv = document.createElement("div");
-        mapDiv.id = "map";
-        detalle.appendChild(mapDiv);
-        setTimeout(() => initMap(lat, lng, direccion, toInt(getField(alquiler, ["Nro Ambientes", "Ambientes"])), tipo), 100);
-      } else {
-        console.warn("Coordenadas inválidas o no presentes → no se mostrará mapa");
-        const p = document.createElement("p");
-        p.innerHTML = "<b>Ubicación:</b> No disponible (falta Lat/Lng)";
-        detalle.appendChild(p);
-      }
-
-      // ============= BOTONES =============
-      if (alquiler.Contacto && alquiler.Contacto.trim()) {
-        const waBtn = document.createElement("button");
-        waBtn.textContent = "Contactar por WhatsApp";
-        waBtn.onclick = () => {
-          const mensaje = `Hola, vengo desde AlquiYa y quiero consultar por el alquiler de ${direccion}`;
-          window.open(`https://wa.me/${alquiler.Contacto.replace(/[^\d]/g, '')}?text=${encodeURIComponent(mensaje)}`, "_blank");
+        detalle.appendChild(imgContainer);
+        // Initialize map if valid coordinates are available
+        const lat = parseFloat(getField(alquiler, ["Lat", "Latitude", "Latitud"]));
+        const lng = parseFloat(getField(alquiler, ["Lng", "Longitude", "Longitud"]));
+        const nroAmb = toInt(getField(alquiler, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]), "-");
+        if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+          const mapDiv = document.createElement("div");
+          mapDiv.id = "map";
+          detalle.appendChild(mapDiv);
+          initMap(lat, lng, direccion, nroAmb, tipo);
+        } else {
+          console.warn("Invalid or missing coordinates for map:", { lat, lng });
+          const p = document.createElement("p");
+          p.innerHTML = "<b>Ubicación:</b> No disponible";
+          detalle.appendChild(p);
+        }
+        if (alquiler.Contacto) {
+          const waBtn = document.createElement("button");
+          waBtn.textContent = "Contactar por WhatsApp";
+          waBtn.style.background = "#25D366";
+          waBtn.style.color = "white";
+          waBtn.style.marginTop = "10px";
+          waBtn.onclick = () => {
+            const mensaje = `Hola, vengo desde AlquiYa y quiero consultar por el alquiler de ${direccion}`;
+            window.open(`https://wa.me/${alquiler.Contacto}?text=${encodeURIComponent(mensaje)}`, "_blank");
+          };
+          detalle.appendChild(waBtn);
+        }
+        const mapBtn = document.createElement("button");
+        mapBtn.textContent = "Ir al Mapa";
+        mapBtn.style.background = "#25D366";
+        mapBtn.style.color = "white";
+        mapBtn.style.marginTop = "10px";
+        mapBtn.onclick = () => {
+          window.location.href = "index.html";
         };
-        detalle.appendChild(waBtn);
+        detalle.appendChild(mapBtn);
       } else {
-        console.warn("No hay número de contacto");
+        detalle.innerHTML = "<h2>Este alquiler no existe o fue dado de baja</h2>";
+        console.warn("No data or invalid rental:", data);
       }
-
-      const mapBtn = document.createElement("button");
-      mapBtn.textContent = "Volver al Mapa";
-      mapBtn.onclick = () => window.location.href = "index.html";
-      detalle.appendChild(mapBtn);
-
     })
     .catch(err => {
       loadingEl.style.display = "none";
-      detalle.innerHTML = "<h2>Error al cargar los datos del alquiler</h2><p>Revisa la consola para más detalles.</p>";
-      console.error("%cERROR CRÍTICO en fetch:", "background:red; color:white; font-size:14px;", err);
+      detalle.innerHTML = "<h2>Error al cargar los datos del alquiler</h2>";
+      console.error("Fetch error:", err);
     });
 };
 </script>
