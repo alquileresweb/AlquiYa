@@ -12,7 +12,8 @@
   gtag('config', 'G-SSJ5DG33JK');
 </script>
 <!-- Leaflet CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
 <style>
   body { margin: 0; font-family: Arial, sans-serif; }
@@ -34,12 +35,7 @@
   #propiedad-detalle button:hover { background: #1ebe57; }
   #loading-msg {
     text-align: center; font-weight: bold; color: #3483fa;
-    padding: 20px; font-size: 18px; display: none;
-  }
-  #debug-info {
-    background: #f0f0f0; padding: 15px; margin: 20px auto;
-    max-width: 700px; border-radius: 8px; font-family: monospace;
-    white-space: pre-wrap; font-size: 14px; border: 1px solid #ccc;
+    padding: 40px; font-size: 18px;
   }
   #imagenes-container {
     display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;
@@ -71,7 +67,6 @@
 </header>
 
 <div id="loading-msg">Cargando datos de la propiedad...</div>
-<div id="debug-info"></div>
 <div id="propiedad-detalle"></div>
 
 <div id="modal-img">
@@ -81,129 +76,92 @@
   <button class="nav-btn next-btn" onclick="cambiarImagen(1)">Next</button>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
-// TU URL DEL WEB APP (¡REEMPLAZA CON LA NUEVA DESPUÉS DE CADA DEPLOY!)
+// === CONFIGURACIÓN ===
 const webAppURL = "https://script.google.com/macros/s/AKfycbyFvDRwPZoG6ChhvcxGm6B27ziD6Qkg4RcH0TI9K59b7zPz7iFxy7mgmbs5mo5T-TxD/exec";
 
 let currentImages = [];
 let currentImageIndex = 0;
 
-function log(msg) {
-  console.log(msg);
-  const debug = document.getElementById("debug-info");
-  debug.textContent += msg + "\n";
-  debug.scrollTop = debug.scrollHeight;
-}
+// Solo console.log (nada visible en la página)
+function log(...args) { console.log(...args); }
 
+// Utilidades
 function getField(obj, keys) {
   for (const k of keys) {
-    if (obj && Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null && obj[k] !== "") {
-      return obj[k];
-    }
+    if (obj && Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null && obj[k] !== "") return obj[k];
   }
   return "";
 }
-
-function toInt(val, def = 0) {
-  const n = parseInt(val, 10);
-  return isNaN(n) ? def : n;
-}
-
+function toInt(val, def = 0) { const n = parseInt(val, 10); return isNaN(n) ? def : n; }
 function driveUrlDirect(url) {
   if (!url) return url;
-  let fileId = null;
-  if (url.includes("drive.google.com")) {
-    let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
-    if (match) fileId = match[1];
-  }
-  return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
+  const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+  return match ? `https://drive.google.com/uc?export=view&id=${match[1]}` : url;
 }
-
 function formatPrice(num) {
   if (!num) return "No disponible";
-  const clean = String(num).replace(/[^\d]/g, "");
-  const n = parseInt(clean, 10);
+  const n = parseInt(String(num).replace(/[^\d]/g, ""), 10);
   return isNaN(n) ? "No disponible" : "$" + n.toLocaleString('es-AR');
 }
 
+// Modal imágenes
 function abrirModal(src, images, index) {
   currentImages = images;
   currentImageIndex = index;
   const modal = document.getElementById("modal-img");
-  const img = document.getElementById("img-grande");
-  img.src = src;
+  document.getElementById("img-grande").src = src;
   modal.style.display = "flex";
   document.querySelector(".prev-btn").style.display = images.length > 1 ? "block" : "none";
   document.querySelector(".next-btn").style.display = images.length > 1 ? "block" : "none";
 }
-
-function cerrarModal() {
-  document.getElementById("modal-img").style.display = "none";
-}
-
+function cerrarModal() { document.getElementById("modal-img").style.display = "none"; }
 function cambiarImagen(dir) {
   currentImageIndex = (currentImageIndex + dir + currentImages.length) % currentImages.length;
   document.getElementById("img-grande").src = currentImages[currentImageIndex];
 }
 
+// Mapa
 function initMap(lat, lng, direccion, nroAmb, tipo) {
-  const container = document.getElementById("map");
-  if (!container) return log("Error: No se encontró el contenedor del mapa");
-  
-  const map = L.map(container).setView([lat, lng], 16);
+  const map = L.map("map").setView([lat, lng], 16);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-  
+
   const iconHtml = tipo === "Temporario" ? 'Clock' : tipo === "Local" ? 'Shopping' : `House<span style="font-size:10px;">${nroAmb}</span>`;
   const icon = L.divIcon({ className: 'marker-icon', html: iconHtml, iconSize: [30,30], iconAnchor: [15,30] });
-  
+
   L.marker([lat, lng], { icon })
     .addTo(map)
-    .bindPopup(`<b>${tipo === "Temporario" ? "Temporario" : tipo === "Local" ? "Local" : "Depto"}: ${direccion}</b>`)
+    .bindPopup(`<b>${direccion}</b>`)
     .openPopup();
 }
 
+// Carga principal
 window.onload = () => {
   const urlParams = new URLSearchParams(window.location.search);
   const id = urlParams.get("id");
   const loading = document.getElementById("loading-msg");
   const detalle = document.getElementById("propiedad-detalle");
-  const debug = document.getElementById("debug-info");
-
-  log("Iniciando carga de propiedad...");
-  log("URL: " + window.location.href);
-  log("ID extraído: " + id);
 
   if (!id) {
     loading.style.display = "none";
     detalle.innerHTML = "<h2>Error: No se proporcionó ID</h2>";
-    log("ERROR: Falta el parámetro id en la URL");
+    console.error("Falta parámetro id en la URL");
     return;
   }
 
-  loading.style.display = "block";
   const url = `${webAppURL}?action=getAlquiler&id=${encodeURIComponent(id)}`;
-  log("Llamando al backend: " + url);
+  log("Solicitando datos →", url);
 
   fetch(url, { cache: "no-store" })
-    .then(res => {
-      log(`Respuesta recibida. Status: ${res.status} ${res.statusText}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    })
+    .then(r => { log("Status:", r.status); return r.json(); })
     .then(data => {
       loading.style.display = "none";
-      log("Datos recibidos del backend:");
-      log(JSON.stringify(data, null, 2));
+      log("Datos recibidos:", data);
 
-      if (!data.success) {
-        detalle.innerHTML = `<h2>Error del servidor</h2><p>${data.error || "Error desconocido"}</p>`;
-        return;
-      }
-
-      if (!data.alquiler) {
+      if (!data.success || !data.alquiler) {
         detalle.innerHTML = "<h2>Propiedad no encontrada</h2>";
-        log("El backend devolvió success:true pero sin data.alquiler");
         return;
       }
 
@@ -220,6 +178,7 @@ window.onload = () => {
         <hr style="border:0;border-top:1px solid #ddd;margin:15px 0;">
       `;
 
+      // Campos según tipo
       const campos = tipo === "Temporario" || tipo === "Local" ? [
         ["Dirección", direccion],
         ["Información de ingreso", getField(a, ["Informacion ingreso", "Información ingreso"]) || "No especificada"],
@@ -234,73 +193,58 @@ window.onload = () => {
       ];
 
       campos.forEach(([label, valor]) => {
-        if (valor && valor !== "No disponible" && valor !== "-" && valor !== "Consultar" || label === "Precio") {
+        if (valor && valor !== "-" && valor !== "Consultar" && valor !== "No disponible" || label === "Precio") {
           detalle.innerHTML += `<p><b>${label}:</b> ${valor}</p>`;
         }
       });
 
-      // Fotos
-      const fotos = getField(a, ["Fotos", "Imagenes", "Imágenes", "images", "FOTOS"]);
-      if (fotos) {
-        const urls = fotos.split(",").map(u => u.trim()).filter(Boolean)
-          .map(url => url.includes("drive.google.com") ? driveUrlDirect(url) : url)
-          .filter(url => url.startsWith("http"));
+      // Imágenes
+      const fotosRaw = getField(a, ["Fotos", "Imagenes", "Imágenes", "images", "FOTOS"]);
+      if (fotosRaw) {
+        const urls = fotosRaw.split(",").map(u => u.trim()).filter(Boolean)
+          .map(driveUrlDirect)
+          .filter(u => u.startsWith("http"));
 
-        if (urls.length > 0) {
-          const container = document.createElement("div");
-          container.id = "imagenes-container";
+        if (urls.length) {
+          const cont = document.createElement("div");
+          cont.id = "imagenes-container";
           urls.forEach((url, i) => {
             const img = document.createElement("img");
-            img.src = url;
-            img.alt = `Foto ${i+1}`;
+            img.src = url; img.alt = `Foto ${i+1}`;
             img.onclick = () => abrirModal(url, urls, i);
-            container.appendChild(img);
+            cont.appendChild(img);
           });
-          detalle.appendChild(container);
-        } else {
-          detalle.innerHTML += "<p>No se pudieron cargar las imágenes.</p>";
+          detalle.appendChild(cont);
         }
-      } else {
-        detalle.innerHTML += "<p>No hay imágenes disponibles.</p>";
       }
 
       // Mapa
       const lat = parseFloat(getField(a, ["Lat", "Latitude", "Latitud"]));
       const lng = parseFloat(getField(a, ["Lng", "Longitude", "Longitud"]));
-      const nroAmb = toInt(getField(a, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]));
-
       if (!isNaN(lat) && !isNaN(lng)) {
         const mapDiv = document.createElement("div");
         mapDiv.id = "map";
         detalle.appendChild(mapDiv);
-        setTimeout(() => initMap(lat, lng, direccion, nroAmb, tipo), 200);
-      } else {
-        detalle.innerHTML += "<p><b>Ubicación:</b> No disponible</p>";
+        setTimeout(() => initMap(lat, lng, direccion, toInt(getField(a, ["Nro Ambientes", "Ambientes"])), tipo), 300);
       }
 
       // Botones
       if (a.Contacto) {
-        const btn = document.createElement("button");
-        btn.textContent = "Contactar por WhatsApp";
-        btn.onclick = () => {
-          const msg = `Hola, vengo desde AlquiYa y quiero consultar por la propiedad de ${direccion}`;
-          window.open(`https://wa.me/${a.Contacto}?text=${encodeURIComponent(msg)}`, "_blank");
-        };
-        detalle.appendChild(btn);
+        const btnWA = document.createElement("button");
+        btnWA.textContent = "Contactar por WhatsApp";
+        btnWA.onclick = () => window.open(`https://wa.me/${a.Contacto}?text=${encodeURIComponent("Hola, vengo desde AlquiYa y quiero consultar por la propiedad de " + direccion)}`, "_blank");
+        detalle.appendChild(btnWA);
       }
 
       const btnVolver = document.createElement("button");
       btnVolver.textContent = "Volver al Mapa";
-      btnVolver.onclick = () => window.location.href = "index.html";
+      btnVolver.onclick = () => location.href = "index.html";
       detalle.appendChild(btnVolver);
-
-      log("Propiedad cargada exitosamente!");
     })
     .catch(err => {
       loading.style.display = "none";
-      detalle.innerHTML = `<h2>Error de conexión</h2><p>${err.message}</p>`;
-      log("ERROR DE RED: " + err.message);
-      console.error(err);
+      detalle.innerHTML = "<h2>Error de conexión</h2><p>No se pudo cargar la propiedad.</p>";
+      console.error("Error:", err);
     });
 };
 </script>
