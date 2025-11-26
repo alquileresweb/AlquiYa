@@ -48,7 +48,7 @@
       box-shadow:0 4px 20px rgba(0,0,0,0.5); border:1px solid #0f0; opacity:0.9;
     }
     #debug-panel button {
-      background:#0f0; color:black; font-weight:bold; margin-top:8px;
+      background:#0f0; color:black; font-weight:bold; margin-top:8px; padding:6px 10px; font-size:11px;
     }
     #modal-img {
       display:none; position:fixed; top:0; left:0; width:100%; height:100%;
@@ -78,14 +78,14 @@
 <div id="loading-msg">Cargando propiedad...</div>
 <div id="alquiler-detalle" style="display:none;"></div>
 
-<!-- Panel de depuración (solo visible al inspeccionar o si hay error) -->
-<div id="debug-panel" style="display:none;">
+<!-- Panel de depuración -->
+<div id="debug-panel">
   <strong>Inspector AlquiYa</strong><br>
   <span id="debug-id">ID: detectando...</span><br>
   <span id="debug-status">Estado: inicializando...</span><br>
   <span id="debug-error" style="color:#f66;"></span><br>
-  <button onclick="location.reload()">Recargar página</button>
-  <button onclick="document.getElementById('debug-panel').style.display='none'">Ocultar</button>
+  <button onclick="location.reload()">Recargar</button>
+  <button onclick="this.parentElement.style.display='none'">Ocultar</button>
 </div>
 
 <div id="modal-img">
@@ -99,22 +99,20 @@
 <script>
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
   let propiedadId = "";
+  let currentImages = [];
+  let currentImageIndex = 0;
+
   const debug = {
     id: document.getElementById("debug-id"),
     status: document.getElementById("debug-status"),
-    error: document.getElementById("debug-error"),
-    panel: document.getElementById("debug-panel")
+    error: document.getElementById("debug-error")
   };
 
-  // Mostrar panel de depuración
-  debug.panel.style.display = "block";
-  debug.status.textContent = "Estado: extrayendo ID...";
-
-  // Extraer ID de cualquier enlace compartido
+  // Extraer ID de cualquier formato de enlace
   function extraerId() {
     const url = new URL(window.location.href);
-    const idParam = url.searchParams.get("id");
-    if (idParam) return idParam.trim();
+    const param = url.searchParams.get("id");
+    if (param) return param.trim();
 
     const match = window.location.href.match(/id[=\/]([a-zA-Z0-9_-]{20,})/i);
     return match ? match[1] : null;
@@ -124,10 +122,10 @@
   debug.id.textContent = `ID: ${propiedadId || "NO DETECTADO"}`;
 
   if (!propiedadId) {
-    debug.status.textContent = "ERROR: No se encontró ID";
-    debug.error.textContent = "No hay 'id=' en la URL";
+    debug.status.textContent = "ERROR: ID no encontrado";
+    debug.error.textContent = "Revisa el enlace";
     document.getElementById("loading-msg").innerHTML = `<div id="error-msg"><h2>Error</h2><p>No se pudo detectar el ID de la propiedad</p></div>`;
-    return;
+    throw new Error("ID no encontrado"); // Detiene ejecución
   }
 
   // Contar vista
@@ -136,13 +134,14 @@
     .catch(() => debug.status.textContent = "Vista (posible duplicada)");
 
   function contarConsulta() {
+    if (!propiedadId) return;
     fetch(`${WEB_APP_URL}?action=incrementarmetrica&metrica=contactos&idPropiedad=${propiedadId}`)
       .then(() => console.log("Consulta contada"))
       .catch(() => {});
   }
 
   function abrirModal(src, images, index) {
-    currentImages = images;
+    currentImages = Array.isArray(images) ? images : [];
     currentImageIndex = index;
     document.getElementById("img-grande").src = src;
     document.getElementById("modal-img").style.display = "flex";
@@ -153,6 +152,7 @@
   }
 
   function cambiarImagen(dir) {
+    if (currentImages.length === 0) return;
     currentImageIndex = (currentImageIndex + dir + currentImages.length) % currentImages.length;
     document.getElementById("img-grande").src = currentImages[currentImageIndex];
   }
@@ -176,15 +176,15 @@
       const res = await fetch(`${WEB_APP_URL}?action=getAlquiler&id=${propiedadId}`);
       const data = await res.json();
 
-      console.log("Respuesta completa del backend:", data); // Para ver en Consola
+      console.log("Respuesta del backend:", data);
 
       if (!data.success || !data.alquiler) {
-        debug.status.textContent = "ERROR: Propiedad no disponible";
+        debug.status.textContent = "Propiedad no disponible";
         debug.error.textContent = data.error || "Sin datos";
         document.getElementById("alquiler-detalle").innerHTML = `
           <div id="error-msg">
             <h2>Propiedad no disponible</h2>
-            <p>${data.error || "El anuncio fue dado de baja o el plan está vencido."}</p>
+            <p>${data.error || "El anuncio fue dado de baja o el dueño tiene el plan vencido."}</p>
             <button onclick="location.href='index.html'" style="background:#3483fa;">Volver al mapa</button>
           </div>`;
         document.getElementById("alquiler-detalle").style.display = "block";
@@ -193,6 +193,7 @@
       }
 
       debug.status.textContent = "Propiedad cargada correctamente";
+      debug.error.textContent = "";
 
       const a = data.alquiler;
       const tipo = a.Tipo || "Alquiler";
@@ -263,10 +264,10 @@
       }
 
     } catch (err) {
-      console.error("Error fatal:", err);
-      debug.status.textContent = "ERROR CRÍTICO";
+      console.error("Error:", err);
+      debug.status.textContent = "ERROR DE RED";
       debug.error.textContent = err.message;
-      document.getElementById("loading-msg").innerHTML = `<div id="error-msg"><h2>Error de conexión</h2><p>Revisa tu internet o intenta más tarde</p></div>`;
+      document.getElementById("loading-msg").innerHTML = `<div id="error-msg"><h2>Error de conexión</h2><p>Revisa tu internet</p></div>`;
     }
   };
 </script>
