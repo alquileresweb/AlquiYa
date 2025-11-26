@@ -503,18 +503,16 @@ let limiteDeptos = 0;
 let deptosActivos = 0;
 let preciosPlanes = {Basico: 0, Plus: 0, Full: 0};
 
-// === FUNCIÓN FINAL CORREGIDA: mostrarAlquileres (VISTAS + CONTACTOS 100% FUNCIONALES) ===
 function mostrarAlquileres(res) {
     const div = document.getElementById("listaAlquileres");
     div.innerHTML = "";
-    if (!res.success || !res.data || res.data.length === 0) { 
-        div.innerHTML = "No tienes propiedades aún."; 
-        return; 
+    if (!res.success || !res.data || res.data.length === 0) {
+        div.innerHTML = "No tienes propiedades aún.";
+        return;
     }
-
     deptosActivos = res.data.filter(a => a.Estado === "Activo").length;
-    document.getElementById("limiteAlquileres").textContent = 
-        planActual === "Prueba" ? `${deptosActivos} propiedades activas` 
+    document.getElementById("limiteAlquileres").textContent =
+        planActual === "Prueba" ? `${deptosActivos} propiedades activas`
                                 : `${deptosActivos}/${limiteDeptos} propiedades activas`;
 
     res.data.forEach(alq => {
@@ -522,7 +520,6 @@ function mostrarAlquileres(res) {
         let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Cambiar Estado</button>`;
         let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
         let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
-
         let precioFormateado = (alq.Tipo === "Departamento" || alq.Tipo === "Terreno" || alq.Tipo === "Casa") ? formatoPrecio(alq.Precio) : "";
         let infoAmbientes = (alq.Tipo === "Departamento" || alq.Tipo === "Casa") ? ` - ${alq['Nro Ambientes']} amb` : "";
         let infoSuperficie = alq.Tipo === "Terreno" ? ` - ${alq.Superficie} m²` : "";
@@ -531,34 +528,22 @@ function mostrarAlquileres(res) {
         let infoAntiguedad = alq.Tipo === "Casa" ? ` - Antigüedad: ${alq.Antiguedad || "N/D"} años` : "";
         let operacion = alq.Operacion ? ` - Operación: ${alq.Operacion}` : "";
 
-        // VISTAS (columna S) y CONTACTOS (columna T) - DOBLE VERIFICACIÓN
-        let vistas = 0;
-        let contactos = 0;
-
-        // Opción 1: por nombre normalizado
-        if (alq.Vistas !== undefined) vistas = parseInt(alq.Vistas) || 0;
-        if (alq.Consultas !== undefined) contactos = parseInt(alq.Consultas) || 0;
-        if (alq.contactos !== undefined) contactos = parseInt(alq.contactos) || 0;
-        if (alq.Contactos !== undefined) contactos = parseInt(alq.Contactos) || 0;
-
-        // Opción 2: por posición fija (columna S=18, T=19 → 0-based index)
-        // Esto es lo más confiable si el backend envía el array crudo
-        if (Array.isArray(alq) && alq.length > 19) {
-            vistas = parseInt(alq[18]) || vistas;     // Columna S
-            contactos = parseInt(alq[19]) || contactos; // Columna T
-        }
+        // Vistas y contactos
+        let vistas = parseInt(alq.Vistas || alq[18] || 0) || 0;
+        let contactos = parseInt(alq.Consultas || alq.contactos || alq.Contactos || alq[19] || 0) || 0;
 
         const statsHTML = `
             <div class="stats-inline">
-                <div class="stats-item">
-                    <i class="fa-solid fa-eye"></i>
-                    <span class="stats-number">${vistas}</span> vistas
-                </div>
-                <div class="stats-item">
-                    <i class="fa-solid fa-phone"></i>
-                    <span class="stats-number">${contactos}</span> contactos
-                </div>
+                <div class="stats-item"><i class="fa-solid fa-eye"></i><span class="stats-number">${vistas}</span> vistas</div>
+                <div class="stats-item"><i class="fa-solid fa-phone"></i><span class="stats-number">${contactos}</span> contactos</div>
             </div>`;
+
+        // === BOTÓN COPIAR ENLACE (usa el ID de la fila = columna N) ===
+        const enlacePropiedad = `https://tudominio.com/propiedad.html?id=${alq.row}`; // Cambia tudominio.com si es necesario
+        const botonCopiar = `
+            <button class="copy-share-btn" data-url="${enlacePropiedad}">
+              Compartir enlace
+            </button>`;
 
         div.innerHTML += `
             <div class="alquiler">
@@ -566,8 +551,28 @@ function mostrarAlquileres(res) {
                 Estado: ${estado}<br>
                 ${btnEstado} ${btnEditar} ${btnEliminar}
                 ${statsHTML}
+                ${botonCopiar}
                 <span id="estadoMsg-${alq.row}" class="estado-msg"></span>
             </div>`;
+    });
+
+    // === EVENTO DE COPIAR ENLACE (delegación de eventos) ===
+    document.querySelectorAll('.copy-share-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const url = this.getAttribute('data-url');
+            navigator.clipboard.writeText(url).then(() => {
+                const textoOriginal = this.innerHTML;
+                this.classList.add('copied');
+                this.innerHTML = 'Enlace copiado';
+
+                setTimeout(() => {
+                    this.classList.remove('copied');
+                    this.innerHTML = textoOriginal;
+                }, 2000);
+            }).catch(() => {
+                alert('No se pudo copiar. Enlace: ' + url);
+            });
+        });
     });
 }
 
