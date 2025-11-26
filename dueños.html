@@ -510,6 +510,7 @@ function mostrarAlquileres(res) {
         div.innerHTML = "No tienes propiedades aún.";
         return;
     }
+
     deptosActivos = res.data.filter(a => a.Estado === "Activo").length;
     document.getElementById("limiteAlquileres").textContent =
         planActual === "Prueba" ? `${deptosActivos} propiedades activas`
@@ -538,8 +539,8 @@ function mostrarAlquileres(res) {
                 <div class="stats-item"><i class="fa-solid fa-phone"></i><span class="stats-number">${contactos}</span> contactos</div>
             </div>`;
 
-        // === BOTÓN COPIAR ENLACE (usa el ID de la fila = columna N) ===
-        const enlacePropiedad = `https://tudominio.com/propiedad.html?id=${alq.row}`; // Cambia tudominio.com si es necesario
+        // BOTÓN COPIAR ENLACE - Usa el ID de la columna N (alq.row)
+        const enlacePropiedad = `https://www.alquiya.com.ar/propiedad.html?id=${alq.row}`;
         const botonCopiar = `
             <button class="copy-share-btn" data-url="${enlacePropiedad}">
               Compartir enlace
@@ -556,23 +557,23 @@ function mostrarAlquileres(res) {
             </div>`;
     });
 
-    // === EVENTO DE COPIAR ENLACE (delegación de eventos) ===
+    // ==== EVENT LISTENER PARA TODOS LOS BOTONES DE COPIAR (delegación) ====
     document.querySelectorAll('.copy-share-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.onclick = function () {
             const url = this.getAttribute('data-url');
             navigator.clipboard.writeText(url).then(() => {
                 const textoOriginal = this.innerHTML;
                 this.classList.add('copied');
-                this.innerHTML = 'Enlace copiado';
+                this.innerHTML = `Enlace copiado`;
 
                 setTimeout(() => {
                     this.classList.remove('copied');
                     this.innerHTML = textoOriginal;
                 }, 2000);
             }).catch(() => {
-                alert('No se pudo copiar. Enlace: ' + url);
+                alert('No se pudo copiar automáticamente.\nEnlace: ' + url);
             });
-        });
+        };
     });
 }
 
