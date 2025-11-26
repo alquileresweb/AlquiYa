@@ -789,26 +789,32 @@ function cambiarImagen(direction) {
 MÉTRICAS
 */
 async function incrementarMetrica(idPropiedad, metrica) {
-  if (!idPropiedad) return;
+  if (!idPropiedad) {
+    console.warn("ID de propiedad vacío, no se incrementa métrica");
+    return;
+  }
 
   const url = `${webAppURL}?action=incrementarmetrica&idPropiedad=${encodeURIComponent(idPropiedad)}&metrica=${metrica}&t=${Date.now()}`;
 
+  console.log("Intentando incrementar:", url); // ← Esto te va a salvar la vida
+
   try {
-    // Usamos GET + cache busting, así funciona 100% con CORS configurado
     const res = await fetch(url, {
       method: "GET",
       cache: "no-cache"
     });
-    
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    const data = await res.json();
-    
-    if (data.success) {
-      console.log(`✓ ${metrica} incrementada para ${idPropiedad} → ${data.nuevoValor}`);
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("Error HTTP:", res.status, text);
+      throw new Error("HTTP " + res.status);
     }
+
+    const data = await res.json();
+    console.log(`Métrica ${metrica} incrementada →`, data);
   } catch (err) {
-    console.warn("No se pudo registrar métrica (puede ser normal en algunos navegadores):", err);
-    // No rompemos la experiencia del usuario si falla el contador
+    console.error("Falló incrementarMetrica:", err);
+    // No rompemos la UX
   }
 }
 /* =========================
