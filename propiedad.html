@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AlquiYa - Detalle de Propiedad</title>
 
-<!-- Analytics -->
+<!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-SSJ5DG33JK"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -21,7 +21,7 @@
   body { margin:0; font-family:Arial,sans-serif; background:#f4f4f4; }
   header { background:white; padding:15px; text-align:center; box-shadow:0 2px 10px rgba(0,0,0,0.1); }
   header img { max-width:250px; }
-  #loading { text-align:center; padding:40px; font-size:18px; color:#3483fa; font-weight:bold; }
+  #loading { text-align:center; padding:50px; font-size:18px; color:#3483fa; font-weight:bold; }
   #detalle {
     max-width:720px; margin:20px auto; padding:20px;
     background:white; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.1);
@@ -43,8 +43,6 @@
   button:hover { background:#1ebe57; }
   button.mapa { background:#3483fa; }
   button.mapa:hover { background:#2d70d5; }
-
-  /* Modal */
   #modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; justify-content:center; align-items:center; }
   #modal img { max-width:94%; max-height:94%; border-radius:12px; }
   .btn-close, .btn-nav {
@@ -75,7 +73,7 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// URL del Web App (cámbiala si cambiaste el despliegue)
+// CAMBIA ESTA URL POR LA NUEVA DE TU WEB APP (después de hacer el deploy)
 const URL_BACKEND = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 
 let fotos = [];
@@ -83,10 +81,6 @@ let idx = 0;
 
 function getId() {
   return new URLSearchParams(location.search).get("id")?.trim();
-}
-
-function normalizar(str) {
-  return String(str || "").trim();
 }
 
 function driveDirect(url) {
@@ -132,57 +126,63 @@ window.onload = () => {
     return;
   }
 
-  fetch(`${URL_BACKEND}?action=getAlquiler&id=${encodeURIComponent(idBuscado)}`)
-    .then(r => r.json())
+  // ESTA ES LA CLAVE: forzamos que reconozca getAlquiler
+  const url = `${URL_BACKEND}?action=getAlquiler&id=${encodeURIComponent(idBuscado)}&v=${Date.now()}`;
+
+  fetch(url)
+    .then(r => {
+      if (!r.ok) throw new Error("Error HTTP: " + r.status);
+      return r.json();
+    })
     .then(res => {
       loading.style.display = "none";
 
       if (!res.success || !res.alquiler) {
-        cont.innerHTML = `<h2>Propiedad no encontrada o no disponible</h2>
+        cont.innerHTML = `
+          <h2>Propiedad no encontrada o no disponible</h2>
+          <p>ID buscado: <b>${idBuscado}</b></p>
           <p>Posibles causas:</p>
           <ul>
-            <li>No existe el ID en la columna N</li>
-            <li>La propiedad está inactiva</li>
+            <li>La propiedad fue dada de baja</li>
             <li>El dueño tiene el plan vencido</li>
-          </ul>`;
+            <li>El ID no existe en la columna N</li>
+          </ul>
+        `;
         cont.style.display = "block";
-        console.warn("No se pudo cargar la propiedad:", res);
+        console.warn("Respuesta del backend:", res);
         return;
       }
 
       const p = res.alquiler;
 
-      // === DATOS PRINCIPALES ===
-      const tipo = normalizar(p.Tipo);
-      const direccion = normalizar(p.Direccion || p.Dirección) || "Sin dirección";
+      const tipo = (p.Tipo || "").trim();
+      const direccion = (p.Direccion || p.Dirección || "Sin dirección").trim();
       const precio = p.Precio ? "$" + Number(p.Precio).toLocaleString("es-AR") : "Consultar";
-      const ambientes = normalizar(p["Nro Ambientes"] || p.Ambientes) || "?";
-      const mascotas = normalizar(p.Mascotas);
-      const amoblado = normalizar(p.Amoblado);
-      const info = normalizar(p["Informacion ingreso"] || p["Información ingreso"]);
-      const detalles = normalizar(p.Detalles);
-      const contacto = normalizar(p.Contacto);
+      const ambientes = (p["Nro Ambientes"] || p.Ambientes || "?").trim();
+      const mascotas = (p.Mascotas || "No especificado").trim();
+      const amoblado = (p.Amoblado || "No especificado").trim();
+      const info = (p["Informacion ingreso"] || p["Información ingreso"] || "").trim();
+      const detalles = (p.Detalles || "").trim();
+      const contacto = (p.Contacto || "").replace(/[^\d+]/g, "");
       const lat = parseFloat(p.Lat);
       const lng = parseFloat(p.Lng);
-      const fotosRaw = normalizar(p.Fotos);
+      const fotosRaw = (p.Fotos || "").trim();
 
-      cont.innerHTML = `<h2>${tipo} en ${direccion}</h2>`;
+      cont.innerHTML = `<h2>${tipo || "Propiedad"} en ${direccion}</h2>`;
 
-      // Información básica
-      const infoList = [
+      // Información
+      const datos = [
         tipo !== "Temporario" && tipo !== "Local" ? ["Ambientes", ambientes] : null,
         tipo !== "Temporario" && tipo !== "Local" ? ["Precio", precio] : null,
-        ["Mascotas", mascotas || "No especificado"],
-        ["Amoblado", amoblado || "No especificado"],
+        ["Mascotas", mascotas],
+        ["Amoblado", amoblado],
         info ? ["Información de ingreso", info] : null,
         detalles ? ["Detalles", detalles] : null
       ].filter(Boolean);
 
-      infoList.forEach(([lbl, val]) => {
-        cont.innerHTML += `<p><b>${lbl}:</b> ${val}</p>`;
-      });
+      datos.forEach(([l, v]) => cont.innerHTML += `<p><b>${l}:</b> ${v}</p>`);
 
-      // === FOTOS ===
+      // Fotos
       if (fotosRaw) {
         const urls = fotosRaw.split(",")
           .map(u => u.trim())
@@ -205,23 +205,21 @@ window.onload = () => {
         cont.innerHTML += "<p><i>Sin fotos</i></p>";
       }
 
-      // === MAPA ===
+      // Mapa
       if (lat && lng && lat !== 0 && lng !== 0) {
         const mapDiv = document.createElement("div");
         mapDiv.id = "map";
         cont.appendChild(mapDiv);
         setTimeout(() => initMap(lat, lng, direccion), 200);
-      } else {
-        cont.innerHTML += "<p><b>Ubicación:</b> No disponible</p>";
       }
 
-      // === BOTONES ===
+      // Botones
       if (contacto) {
         const btnWA = document.createElement("button");
         btnWA.textContent = "Contactar por WhatsApp";
         btnWA.onclick = () => {
           const msg = encodeURIComponent(`Hola! Vi tu ${tipo} en AlquiYa: ${direccion}`);
-          window.open(`https://wa.me/${contacto.replace(/[^\d+]/g,"")}?text=${msg}`, "_blank");
+          window.open(`https://wa.me/${contacto}?text=${msg}`, "_blank");
         };
         cont.appendChild(btnWA);
       }
@@ -236,9 +234,9 @@ window.onload = () => {
     })
     .catch(err => {
       loading.style.display = "none";
-      cont.innerHTML = "<h2>Error de conexión</h2><p>No se pudo cargar la propiedad.</p>";
+      cont.innerHTML = "<h2>Error de conexión</h2><p>Revisa tu conexión o intenta más tarde.</p>";
       cont.style.display = "block";
-      console.error(err);
+      console.error("Error:", err);
     });
 };
 </script>
