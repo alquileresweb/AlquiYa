@@ -415,56 +415,6 @@ function mostrarAlquileres(res) {
         });
       }
 
-// === ID REAL DE LA COLUMNA N (índice 13) ===
-const idPropiedad = alq[13] || alq.ID || alq.row; // 100% seguro
-
-// === BOTÓN COMPARTIR ENLACE ===
-const botonCopiar = `
-<button class="copy-share-btn" data-id="${idPropiedad}">
-Compartir enlace
-</button>`;
-
-// === ARMAR PROPIEDAD ===
-div.innerHTML += `
-<div class="alquiler">
-<b>${alq.Direccion || alq.direccion}</b> (${alq.Tipo})${infoAmbientes}${infoSuperficie}${precioFormateado}${infoPatio}${infoGarage}${infoAntiguedad}${operacion}<br>
-Estado: ${estado}<br>
-${btnEstado} ${btnEditar} ${btnEliminar}
-${statsHTML}
-${botonCopiar}
-<span id="estadoMsg-${alq.row}" class="estado-msg"></span>
-</div>`;
-});
-
-// === EVENTO: COPIAR ENLACE + CONTAR VISTA ===
-document.querySelectorAll('.copy-share-btn').forEach(btn => {
-btn.onclick = function () {
-const idPropiedad = this.getAttribute('data-id');
-const url = `https://www.alquiya.com.ar/propiedad.html?id=${idPropiedad}`;
-
-// Contar vista en el backend (columna Vistas)
-fetch(`${API_URL}?action=generarEnlaceCompartido&id=${idPropiedad}`, {
-method: 'GET',
-mode: 'no-cors'
-}).catch(() => {});
-
-// Copiar al portapapeles
-navigator.clipboard.writeText(url).then(() => {
-const textoOriginal = this.innerHTML;
-this.classList.add('copied');
-this.innerHTML = `Enlace copiado`;
-
-setTimeout(() => {
-this.classList.remove('copied');
-this.innerHTML = textoOriginal;
-}, 2000);
-}).catch(() => {
-alert('Enlace (copia manual):\n' + url);
-});
-};
-});
-}
-
 function cargarAlquileres() {
 const email = localStorage.getItem("dueno");
 const script = document.createElement("script");
