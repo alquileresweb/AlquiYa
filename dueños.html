@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Panel de Dueños</title>
+<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-SSJ5DG33JK"></script>
 <script>
 window.dataLayer = window.dataLayer || [];
@@ -10,334 +11,21 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-SSJ5DG33JK');
 </script>
+<!-- GOOGLE CHARTS API -->
 <script src="https://www.gstatic.com/charts/loader.js"></script>
 <link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
+<!-- Font Awesome para iconos -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 <style>
-/* ESTILO MODERNO 2025 - FIJO Y LIMPIO */
-body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background: #f8f9fa;
-    font-size: 20px;
-    text-align: center;
-    padding-top: 90px; /* espacio para header fijo */
-}
-
-/* HEADER FIJO */
-header {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    height: 80px;
-    background: white;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 20px;
-    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
-    box-sizing: border-box;
-}
-
-/* Flecha volver - esquina superior izquierda */
-#back-arrow {
-    width: 56px; height: 56px;
-    background: rgba(255,255,255,0.95);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    color: #333;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    cursor: pointer;
-    transition: all 0.3s;
-}
-#back-arrow:hover { background: #eee; transform: scale(1.05); }
-
-/* Logo centrado */
-header img {
-    max-height: 60px;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-/* Menú hamburguesa - esquina superior derecha */
-#menu-toggle {
-    width: 56px; height: 56px;
-    background: rgba(255,255,255,0.95);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    color: #333;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    cursor: pointer;
-    transition: all 0.3s;
-}
-#menu-toggle:hover { background: #eee; transform: scale(1.05); }
-
-/* Menú desplegable */
-#menu {
-    display: none;
-    position: fixed;
-    top: 90px;
-    right: 20px;
-    background: white;
-    border-radius: 14px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-    overflow: hidden;
-    z-index: 1001;
-    min-width: 200px;
-}
-#menu.active { display: block; }
-#menu button {
-    display: block;
-    width: 100%;
-    padding: 16px 20px;
-    background: none;
-    border: none;
-    text-align: left;
-    font-size: 1.3em;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-#menu button:hover { background: #f0f0f0; }
-
-/* Tarjeta de propiedad */
-.alquiler {
-    position: relative;
-    background: white;
-    border-radius: 18px;
-    padding: 20px;
-    margin: 20px auto;
-    max-width: 700px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-    text-align: left;
-    overflow: hidden;
-}
-
-/* Solo la dirección como título grande */
-.alquiler h2 {
-    margin: 0 0 12px 0;
-    font-size: 1.8em;
-    color: #222;
-    font-weight: 600;
-}
-
-/* Información secundaria */
-.alquiler-info {
-    color: #555;
-    font-size: 1.3em;
-    line-height: 1.6;
-    margin-bottom: 16px;
-}
-
-/* Estadísticas inline */
-.stats-inline {
-    background: #fff8e1;
-    padding: 14px;
-    border-radius: 12px;
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    flex-wrap: wrap;
-    font-size: 1.3em;
-    margin: 16px 0;
-    box-shadow: 0 2px 8px rgba(255,152,0,0.1);
-}
-.stats-item i { color: #ff9800; margin-right: 8px; }
-.stats-number { color: #ff9800; font-weight: bold; }
-
-/* Switch de estado (arriba derecha) */
-.estado-switch {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    z-index: 10;
-}
-.estado-switch input { display: none; }
-.estado-switch label {
-    width: 64px; height: 36px;
-    background: #ccc;
-    border-radius: 36px;
-    position: relative;
-    display: block;
-    cursor: pointer;
-    transition: 0.3s;
-}
-.estado-switch label::after {
-    content: '';
-    width: 28px; height: 28px;
-    background: white;
-    border-radius: 50%;
-    position: absolute;
-    top: 4px; left: 4px;
-    transition: 0.3s;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-}
-.estado-switch input:checked + label { background: #4caf50; }
-.estado-switch input:checked + label::after { left: 32px; }
-
-/* Botones de acción */
-.alquiler-actions {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-top: 20px;
-}
-.alquiler-actions button {
-    padding: 12px 20px;
-    font-size: 1.2em;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-.copy-share-btn { background: #2196f3; color: white; }
-.copy-share-btn i { margin-right: 8px; }
-.copy-share-btn.copied { background: #4caf50; }
-button[onclick^="editar"] { background: #ff9800; color: white; }
-button[onclick^="eliminar"] { background: #f44336; color: white; }
-
-/* Resto de estilos (formularios, modales, etc.) se mantienen igual */
-h3 { font-size: 2.2em; margin: 30px 0 20px; color: #333; }
-button { transition: all 0.3s; }
-button:hover { transform: translateY(-2px); }
-#btnAgregarPropiedad { 
-    background: #3681f3; 
-    color: white; 
-    padding: 16px 32px; 
-    font-size: 1.4em; 
-    border-radius: 14px; 
-    margin: 20px 0;
-}
-
-/* Mobile */
-@media (max-width: 600px) {
-    header { height: 70px; padding: 0 15px; }
-    #back-arrow, #menu-toggle { width: 50px; height: 50px; font-size: 24px; }
-    header img { max-height: 50px; }
-    body { padding-top: 80px; }
-    .alquiler h2 { font-size: 1.6em; }
-}
-</style>
-</head>
-<body>
-
-<!-- HEADER FIJO -->
-<header>
-    <button id="back-arrow" onclick="window.location.href='index.html'">
-        <i class="fas fa-arrow-left"></i>
-    </button>
-    <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Alqui Ya">
-    <button id="menu-toggle" onclick="toggleMenu()">
-        <i class="fas fa-bars"></i>
-    </button>
-
-    <div id="menu">
-        <button onclick="abrirModalEditarCuenta()">Editar Cuenta</button>
-        <button onclick="logout()">Cerrar Sesión</button>
-    </div>
-</header>
-
-<div id="planContainer">
-    <b>Mi plan</b>
-    <div id="planStatus"></div>
-    <span id="limiteAlquileres"></span>
-    <button id="btnPlan" onclick="abrirModalPlan()">Mejorar Plan</button>
-</div>
-
-<h3>Mis Propiedades</h3>
-<div id="listaAlquileres">Cargando...</div>
-
-<button id="btnAgregarPropiedad" onclick="toggleOpcionesPropiedad()">Agregar Propiedad</button>
-
-<!-- === SOLO CAMBIO EN mostrarAlquileres() === -->
-<script>
-// Reemplaza COMPLETAMENTE tu función mostrarAlquileres por esta:
-function mostrarAlquileres(res) {
-    const div = document.getElementById("listaAlquileres");
-    div.innerHTML = "";
-    if (!res.success || !res.data || res.data.length === 0) {
-        div.innerHTML = "<p style='font-size:1.6em; color:#666;'>No tienes propiedades aún.</p>";
-        return;
-    }
-
-    deptosActivos = res.data.filter(a => a.Estado === "Activo").length;
-    document.getElementById("limiteAlquileres").textContent =
-        planActual === "Prueba"
-            ? `${deptosActivos} propiedades activas`
-            : `${deptosActivos}/${limiteDeptos} propiedades activas`;
-
-    res.data.forEach(alq => {
-        const direccion = alq.Direccion || alq.direccion || "Sin dirección";
-        const tipo = alq.Tipo || "Propiedad";
-        const estado = alq.Estado === "Activo" ? "Activo" : "Inactivo";
-
-        // Info secundaria
-        let info = [];
-        if (alq['Nro Ambientes']) info.push(`${alq['Nro Ambientes']} amb`);
-        if (alq.Precio) info.push(formatoPrecio(alq.Precio));
-        if (alq.Superficie) info.push(`${alq.Superficie} m²`);
-        if (alq.Patio) info.push(`Patio: ${alq.Patio}`);
-        if (alq.Garage) info.push(`Garage: ${alq.Garage}`);
-        if (alq.Antiguedad) info.push(`Antigüedad: ${alq.Antiguedad} años`);
-        if (alq.Operacion) info.push(`Operación: ${alq.Operacion}`);
-
-        const vistas = parseInt(alq.Vistas || alq[18] || 0) || 0;
-        const contactos = parseInt(alq.Consultas || alq.contactos || alq.Contactos || alq[19] || 0) || 0;
-        const idPropiedad = alq[13] || alq.ID || alq.row;
-
-        div.innerHTML += `
-            <div class="alquiler">
-                <h2>${direccion}</h2>
-                <div class="alquiler-info">
-                    <strong>(${tipo})</strong><br>
-                    ${info.length ? info.join(" • ") + "<br>" : ""}
-                    Estado: <strong>${estado}</strong>
-                </div>
-
-                <div class="stats-inline">
-                    <div class="stats-item"><i class="fa-solid fa-eye"></i><span class="stats-number">${vistas}</span> vistas</div>
-                    <div class="stats-item"><i class="fa-solid fa-phone"></i><span class="stats-number">${contactos}</span> contactos</div>
-                </div>
-
-                <!-- Switch de estado -->
-                <div class="estado-switch">
-                    <input type="checkbox" id="switch-${alq.row}" ${alq.Estado === 'Activo' ? 'checked' : ''}
-                           onchange="cambiarEstado(${alq.row}, '${alq.Estado}')">
-                    <label for="switch-${alq.row}"></label>
-                </div>
-
-                <!-- Acciones -->
-                <div class="alquiler-actions">
-                    <button class="copy-share-btn" data-id="${idPropiedad}">
-                        <i class="fas fa-copy"></i> Copiar enlace
-                    </button>
-                    <button onclick="editarAlquiler(${alq.row}, ${JSON.stringify(alq)})">
-                        <i class="fas fa-edit"></i> Editar
-                    </button>
-                    <button onclick="eliminarAlquiler(${alq.row})">
-                        <i class="fas fa-trash-alt"></i> Eliminar
-                    </button>
-                </div>
-
-                <span id="estadoMsg-${alq.row}" class="estado-msg"></span>
-            </div>`;
-    });
-
-/* Botón copiar enlace */
-.copy-share-btn {
-    background:#2196f3;
-    color:white;
-}
-.copy-share-btn i { margin-right:6px; }
-.copy-share-btn.copied { background:#4caf50; }
+/* --- CSS adaptado para móvil con textos más grandes y centrados --- */
+body { font-family: Arial, sans-serif; margin: 10px; background:#f5f5f5; font-size:20px; text-align:center; margin-top: 120px; }
+h2 { color:#333; font-size:2.2em; margin-bottom:18px; }
+h3 { color:#333; font-size:2em; margin-bottom:18px; }
+.alquiler { border:1px solid #ccc; padding:16px; margin:14px 0; background:#fff; font-size:1.4em; text-align:left; }
+button { margin: 6px; padding:14px 20px; font-size:1.3em; border-radius:6px; cursor:pointer; }
+button.stats-btn { background: #ff9800; color: white; }
+#btnAgregarPropiedad { background:#3681f3; color:white; }
 #opcionesPropiedad, #opcionesVenta, #opcionesAlquiler { background:#fff; padding:20px; border:1px solid #ccc; margin-top:24px; border-radius:12px; font-size:1.3em; text-align:left; display:none; }
 #opcionesPropiedad.active, #opcionesVenta.active, #opcionesAlquiler.active { display:block; }
 #formularioDepartamento, #formularioLocal, #formularioTemporario, #formularioTerreno, #formularioCasa { background:#fff; padding:20px; border:1px solid #ccc; margin-top:24px; border-radius:12px; font-size:1.3em; text-align:left; display:none; }
@@ -475,31 +163,31 @@ color: #333;
 
 /* === ESTADÍSTICAS INLINE (VISTAS Y CONTACTOS DIRECTOS) === */
 .stats-inline {
-    margin-top: 14px;
-    padding: 12px;
-    background: #fff8e1;
-    border-radius: 10px;
-    font-size: 1.3em;
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    flex-wrap: wrap;
-    box-shadow: 0 2px 8px rgba(255,152,0,0.1);
+margin-top: 14px;
+padding: 12px;
+background: #fff8e1;
+border-radius: 10px;
+font-size: 1.3em;
+display: flex;
+justify-content: center;
+gap: 30px;
+flex-wrap: wrap;
+box-shadow: 0 2px 8px rgba(255,152,0,0.1);
 }
 .stats-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: bold;
-    color: #333;
+display: flex;
+align-items: center;
+gap: 10px;
+font-weight: bold;
+color: #333;
 }
 .stats-item i {
-    color: #ff9800;
-    font-size: 1.5em;
+color: #ff9800;
+font-size: 1.5em;
 }
 .stats-number {
-    color: #ff9800;
-    font-size: 1.4em;
+color: #ff9800;
+font-size: 1.4em;
 }
 
 /* === MODAL DE ESTADÍSTICAS (se mantiene por compatibilidad) === */
@@ -636,13 +324,13 @@ box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 <input type="number" id="ambientesCasa">
 <label>Patio</label>
 <select id="patioCasa">
- <option value="Sí">Sí</option>
- <option value="No">No</option>
+<option value="Sí">Sí</option>
+<option value="No">No</option>
 </select>
 <label>Garage</label>
 <select id="garageCasa">
- <option value="Sí">Sí</option>
- <option value="No">No</option>
+<option value="Sí">Sí</option>
+<option value="No">No</option>
 </select>
 <label>Antigüedad (años)</label>
 <input type="number" id="antiguedadCasa">
@@ -816,391 +504,398 @@ let deptosActivos = 0;
 let preciosPlanes = {Basico: 0, Plus: 0, Full: 0};
 
 function mostrarAlquileres(res) {
-    const div = document.getElementById("listaAlquileres");
-    div.innerHTML = "";
-    if (!res.success || !res.data || res.data.length === 0) {
-        div.innerHTML = "<p style='font-size:1.6em;color:#666;'>No tienes propiedades aún.</p>";
-        return;
-    }
+const div = document.getElementById("listaAlquileres");
+div.innerHTML = "";
+if (!res.success || !res.data || res.data.length === 0) {
+div.innerHTML = "<p style='font-size:1.6em; color:#666;'>No tienes propiedades aún.</p>";
+return;
+}
 
-    deptosActivos = res.data.filter(a => a.Estado === "Activo").length;
-    document.getElementById("limiteAlquileres").textContent =
-        planActual === "Prueba"
-            ? `${deptosActivos} propiedades activas`
-            : `${deptosActivos}/${limiteDeptos} propiedades activas`;
+deptosActivos = res.data.filter(a => a.Estado === "Activo").length;
+document.getElementById("limiteAlquileres").textContent =
+planActual === "Prueba"
+? `${deptosActivos} propiedades activas`
+: `${deptosActivos}/${limiteDeptos} propiedades activas`;
 
-    res.data.forEach(alq => {
-        const direccion = alq.Direccion || alq.direccion || "Sin dirección";
-        const tipo = alq.Tipo || "";
-        const estado = alq.Estado === "Activo" ? "Activo" : "Inactivo";
+res.data.forEach(alq => {
+// === DATOS BÁSICOS ===
+let estado = alq.Estado === "Activo" ? "Activo" : "Inactivo";
+let btnEstado = `<button onclick="cambiarEstado(${alq.row}, '${alq.Estado}')">Cambiar Estado</button>`;
+let btnEditar = `<button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>`;
+let btnEliminar = `<button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>`;
 
-        // Construcción de detalles (todo lo que NO es título)
-        let detalles = `<strong>Tipo:</strong> ${tipo}<br>`;
-        detalles += `<strong>Estado:</strong> ${estado}<br><br>`;
+let precioFormateado = (alq.Tipo === "Departamento" || alq.Tipo === "Terreno" || alq.Tipo === "Casa")
+? formatoPrecio(alq.Precio) : "";
+let infoAmbientes = (alq.Tipo === "Departamento" || alq.Tipo === "Casa") ? ` - ${alq['Nro Ambientes']} amb` : "";
+let infoSuperficie = alq.Tipo === "Terreno" ? ` - ${alq.Superficie} m²` : "";
+let infoPatio = alq.Tipo === "Casa" ? ` - Patio: ${alq.Patio || "N/D"}` : "";
+let infoGarage = alq.Tipo === "Casa" ? ` - Garage: ${alq.Garage || "N/D"}` : "";
+let infoAntiguedad = alq.Tipo === "Casa" ? ` - Antigüedad: ${alq.Antiguedad || "N/D"} años` : "";
+let operacion = alq.Operacion ? ` - Operación: ${alq.Operacion}` : "";
 
-        if (alq.Precio) detalles += `<strong>Precio:</strong> ${formatoPrecio(alq.Precio)}<br>`;
-        if (alq['Nro Ambientes']) detalles += `<strong>Ambientes:</strong> ${alq['Nro Ambientes']}<br>`;
-        if (alq.Superficie) detalles += `<strong>Superficie:</strong> ${alq.Superficie} m²<br>`;
-        if (alq.Patio) detalles += `<strong>Patio:</strong> ${alq.Patio}<br>`;
-        if (alq.Garage) detalles += `<strong>Garage:</strong> ${alq.Garage}<br>`;
-        if (alq.Antiguedad) detalles += `<strong>Antigüedad:</strong> ${alq.Antiguedad} años<br>`;
-        if (alq.Operacion) detalles += `<strong>Operación:</strong> ${alq.Operacion}<br>`;
+// === ESTADÍSTICAS (Vistas y Contactos) ===
+let vistas = parseInt(alq.Vistas || alq[18] || 0) || 0;
+let contactos = parseInt(alq.Consultas || alq.contactos || alq.Contactos || alq[19] || 0) || 0;
 
-        const vistas = parseInt(alq.Vistas || alq[18] || 0) || 0;
-        const contactos = parseInt(alq.Consultas || alq.contactos || alq.Contactos || alq[19] || 0) || 0;
-        const statsHTML = `
-            <div class="stats-inline">
-                <div class="stats-item"><i class="fa-solid fa-eye"></i><span class="stats-number">${vistas}</span> vistas</div>
-                <div class="stats-item"><i class="fa-solid fa-phone"></i><span class="stats-number">${contactos}</span> contactos</div>
-            </div>`;
+const statsHTML = `
+<div class="stats-inline">
+<div class="stats-item">
+<i class="fa-solid fa-eye"></i>
+<span class="stats-number">${vistas}</span> vistas
+</div>
+<div class="stats-item">
+<i class="fa-solid fa-phone"></i>
+<span class="stats-number">${contactos}</span> contactos
+</div>
+</div>`;
 
-        const idPropiedad = alq[13] || alq.ID || alq.row;
+// === ID REAL DE LA COLUMNA N (índice 13) ===
+const idPropiedad = alq[13] || alq.ID || alq.row; // 100% seguro
 
-        div.innerHTML += `
-            <div class="alquiler">
-                <div class="alquiler-titulo">${direccion}</div>
-                <div class="alquiler-detalles">${detalles}${statsHTML}</div>
+// === BOTÓN COMPARTIR ENLACE ===
+const botonCopiar = `
+<button class="copy-share-btn" data-id="${idPropiedad}">
+Compartir enlace
+</button>`;
 
-                <!-- Switch estado -->
-                <div class="estado-switch">
-                    <input type="checkbox" id="switch-${alq.row}" ${alq.Estado==='Activo'?'checked':''}
-                           onchange="cambiarEstado(${alq.row}, '${alq.Estado}')">
-                    <label for="switch-${alq.row}"></label>
-                </div>
+// === ARMAR PROPIEDAD ===
+div.innerHTML += `
+<div class="alquiler">
+<b>${alq.Direccion || alq.direccion}</b> (${alq.Tipo})${infoAmbientes}${infoSuperficie}${precioFormateado}${infoPatio}${infoGarage}${infoAntiguedad}${operacion}<br>
+Estado: ${estado}<br>
+${btnEstado} ${btnEditar} ${btnEliminar}
+${statsHTML}
+${botonCopiar}
+<span id="estadoMsg-${alq.row}" class="estado-msg"></span>
+</div>`;
+});
 
-                <!-- Acciones -->
-                <div class="alquiler-actions">
-                    <button class="copy-share-btn" data-id="${idPropiedad}">
-                        <i class="fas fa-copy"></i> Copiar enlace
-                    </button>
-                    <button onclick="editarAlquiler(${alq.row}, ${JSON.stringify(alq)})">
-                        <i class="fas fa-edit"></i> Editar
-                    </button>
-                    <button onclick="eliminarAlquiler(${alq.row})">
-                        <i class="fas fa-trash-alt"></i> Eliminar
-                    </button>
-                </div>
+// === EVENTO: COPIAR ENLACE + CONTAR VISTA ===
+document.querySelectorAll('.copy-share-btn').forEach(btn => {
+btn.onclick = function () {
+const idPropiedad = this.getAttribute('data-id');
+const url = `https://www.alquiya.com.ar/propiedad.html?id=${idPropiedad}`;
 
-                <span id="estadoMsg-${alq.row}" class="estado-msg"></span>
-            </div>`;
-    });
+// Contar vista en el backend (columna Vistas)
+fetch(`${API_URL}?action=generarEnlaceCompartido&id=${idPropiedad}`, {
+method: 'GET',
+mode: 'no-cors'
+}).catch(() => {});
 
-    // Copiar enlace (funciona igual)
-    document.querySelectorAll('.copy-share-btn').forEach(btn => {
-        btn.onclick = function () {
-            const id = this.getAttribute('data-id');
-            const url = `https://www.alquiya.com.ar/propiedad.html?id=${id}`;
-            fetch(`${API_URL}?action=generarEnlaceCompartido&id=${id}`, {method:'GET',mode:'no-cors'}).catch(()=>{});
-            navigator.clipboard.writeText(url).then(() => {
-                const orig = this.innerHTML;
-                this.classList.add('copied');
-                this.innerHTML = `<i class="fas fa-check"></i> ¡Copiado!`;
-                setTimeout(() => {
-                    this.classList.remove('copied');
-                    this.innerHTML = orig;
-                }, 2000);
-            });
-        };
-    });
+// Copiar al portapapeles
+navigator.clipboard.writeText(url).then(() => {
+const textoOriginal = this.innerHTML;
+this.classList.add('copied');
+this.innerHTML = `Enlace copiado`;
+
+setTimeout(() => {
+this.classList.remove('copied');
+this.innerHTML = textoOriginal;
+}, 2000);
+}).catch(() => {
+alert('Enlace (copia manual):\n' + url);
+});
+};
+});
 }
 
 function cargarAlquileres() {
-    const email = localStorage.getItem("dueno");
-    const script = document.createElement("script");
-    script.src = `${API_URL}?action=getAlquileresDueno&dueno=${encodeURIComponent(email)}&callback=mostrarAlquileres`;
-    document.body.appendChild(script);
+const email = localStorage.getItem("dueno");
+const script = document.createElement("script");
+script.src = `${API_URL}?action=getAlquileresDueno&dueno=${encodeURIComponent(email)}&callback=mostrarAlquileres`;
+document.body.appendChild(script);
 }
 
 function initGoogleCharts() {
-    console.log('Inicializando Google Charts...');
-    if (typeof google === 'undefined' || !google.charts) {
-        console.log('Google Charts no disponible, reintentando en 500ms...');
-        setTimeout(initGoogleCharts, 500);
-        return;
-    }
-    google.charts.load('current', { packages: ['corechart'] });
-    google.charts.setOnLoadCallback(() => {
-        console.log('GOOGLE CHARTS CARGADO COMPLETAMENTE');
-        window.googleChartsReady = true;
-    });
+console.log('Inicializando Google Charts...');
+if (typeof google === 'undefined' || !google.charts) {
+console.log('Google Charts no disponible, reintentando en 500ms...');
+setTimeout(initGoogleCharts, 500);
+return;
+}
+google.charts.load('current', { packages: ['corechart'] });
+google.charts.setOnLoadCallback(() => {
+console.log('GOOGLE CHARTS CARGADO COMPLETAMENTE');
+window.googleChartsReady = true;
+});
 }
 
 window.mostrarModalEstadisticasCallback = function(data, idPropiedad) {
-  let datosParaModal = { propiedad: { direccion: `Propiedad ID: ${idPropiedad}` }, metricas: { vistas: 0, contactos: 0 } };
-  if (data && data.success && data.vistas !== undefined && data.consultas !== undefined) {
-    datosParaModal.metricas.vistas = parseInt(data.vistas) || 0;
-    datosParaModal.metricas.contactos = parseInt(data.consultas) || 0;
-  }
-  mostrarModalEstadisticas(datosParaModal);
+let datosParaModal = { propiedad: { direccion: `Propiedad ID: ${idPropiedad}` }, metricas: { vistas: 0, contactos: 0 } };
+if (data && data.success && data.vistas !== undefined && data.consultas !== undefined) {
+datosParaModal.metricas.vistas = parseInt(data.vistas) || 0;
+datosParaModal.metricas.contactos = parseInt(data.consultas) || 0;
+}
+mostrarModalEstadisticas(datosParaModal);
 };
 
 function usarJSONP(idPropiedad, callbackName) {
-  return new Promise((resolve, reject) => {
-    callbackName = callbackName || 'jsonp_' + Date.now();
-    window[callbackName] = function(data) {
-      delete window[callbackName];
-      const script = document.querySelector(`script[src*="${callbackName}"]`);
-      if (script) script.remove();
-      resolve(data);
-    };
-    const script = document.createElement('script');
-    script.src = `${API_URL}?action=getvistasconsultas&id=${idPropiedad}&callback=${callbackName}`;
-    script.onerror = () => {
-      delete window[callbackName];
-      script.remove();
-      reject(new Error('JSONP falló'));
-    };
-    document.body.appendChild(script);
-  });
+return new Promise((resolve, reject) => {
+callbackName = callbackName || 'jsonp_' + Date.now();
+window[callbackName] = function(data) {
+delete window[callbackName];
+const script = document.querySelector(`script[src*="${callbackName}"]`);
+if (script) script.remove();
+resolve(data);
+};
+const script = document.createElement('script');
+script.src = `${API_URL}?action=getvistasconsultas&id=${idPropiedad}&callback=${callbackName}`;
+script.onerror = () => {
+delete window[callbackName];
+script.remove();
+reject(new Error('JSONP falló'));
+};
+document.body.appendChild(script);
+});
 }
 
 function solicitarMetricas(idPropiedad, propId, retryCount = 0) {
-    if (typeof google === 'undefined' || !google.charts || !window.googleChartsReady) {
-        if (retryCount < 10) {
-            setTimeout(() => solicitarMetricas(idPropiedad, propId, retryCount + 1), 500);
-            return;
-        } else {
-            mostrarErrorMetricas(propId);
-            return;
-        }
-    }
-    const callbackName = 'metricasCallback_' + Date.now();
-    usarJSONP(idPropiedad, callbackName)
-      .then(datos => mostrarModalEstadisticasCallback(datos, propId))
-      .catch(() => mostrarErrorMetricas(propId));
+if (typeof google === 'undefined' || !google.charts || !window.googleChartsReady) {
+if (retryCount < 10) {
+setTimeout(() => solicitarMetricas(idPropiedad, propId, retryCount + 1), 500);
+return;
+} else {
+mostrarErrorMetricas(propId);
+return;
+}
+}
+const callbackName = 'metricasCallback_' + Date.now();
+usarJSONP(idPropiedad, callbackName)
+.then(datos => mostrarModalEstadisticasCallback(datos, propId))
+.catch(() => mostrarErrorMetricas(propId));
 }
 
 function mostrarErrorMetricas(propId) {
-    const datosParaModal = { propiedad: { direccion: `Propiedad ID: ${propId}` }, metricas: { vistas: 0, contactos: 0 } };
-    mostrarModalEstadisticas(datosParaModal);
-    document.getElementById("msgEstadisticas").style.color = "orange";
-    document.getElementById("msgEstadisticas").textContent = "Sin datos aún - ¡Comparte tu propiedad!";
+const datosParaModal = { propiedad: { direccion: `Propiedad ID: ${propId}` }, metricas: { vistas: 0, contactos: 0 } };
+mostrarModalEstadisticas(datosParaModal);
+document.getElementById("msgEstadisticas").style.color = "orange";
+document.getElementById("msgEstadisticas").textContent = "Sin datos aún - ¡Comparte tu propiedad!";
 }
 
 function mostrarModalEstadisticas(data) {
-  document.getElementById('modal-titulo').textContent = `Estadísticas - ${data.propiedad.direccion}`;
-  document.getElementById('modal-vistas').textContent = data.metricas.vistas || 0;
-  document.getElementById('modal-contactos').textContent = data.metricas.contactos || 0;
-  document.getElementById("modalEstadisticas").style.display = "block";
-  document.getElementById("msgEstadisticas").style.color = "green";
-  document.getElementById("msgEstadisticas").textContent = "Estadísticas cargadas correctamente";
+document.getElementById('modal-titulo').textContent = `Estadísticas - ${data.propiedad.direccion}`;
+document.getElementById('modal-vistas').textContent = data.metricas.vistas || 0;
+document.getElementById('modal-contactos').textContent = data.metricas.contactos || 0;
+document.getElementById("modalEstadisticas").style.display = "block";
+document.getElementById("msgEstadisticas").style.color = "green";
+document.getElementById("msgEstadisticas").textContent = "Estadísticas cargadas correctamente";
 }
 
 function cerrarModalEstadisticas() {
-    document.getElementById("modalEstadisticas").style.display = "none";
-    document.getElementById("msgEstadisticas").textContent = "";
+document.getElementById("modalEstadisticas").style.display = "none";
+document.getElementById("msgEstadisticas").textContent = "";
 }
 
 function formatoPrecio(valor) {
-    if (!valor) return "";
-    valor = valor.toString().replace(/\D/g, "");
-    return "$" + valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+if (!valor) return "";
+valor = valor.toString().replace(/\D/g, "");
+return "$" + valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 
 function inicializarFormatoPrecio(tipo) {
-    document.getElementById(`precio${tipo}`).addEventListener("input", function(e) {
-        const cursorPos = this.selectionStart;
-        const valorSinSimbolo = this.value.replace(/\D/g, '');
-        const formattedValue = formatoPrecio(valorSinSimbolo);
-        const prevLength = this.value.length;
-        this.value = formattedValue;
-        const newLength = formattedValue.length;
-        const diff = newLength - prevLength;
-        this.selectionStart = cursorPos + diff;
-        this.selectionEnd = cursorPos + diff;
-    });
+document.getElementById(`precio${tipo}`).addEventListener("input", function(e) {
+const cursorPos = this.selectionStart;
+const valorSinSimbolo = this.value.replace(/\D/g, '');
+const formattedValue = formatoPrecio(valorSinSimbolo);
+const prevLength = this.value.length;
+this.value = formattedValue;
+const newLength = formattedValue.length;
+const diff = newLength - prevLength;
+this.selectionStart = cursorPos + diff;
+this.selectionEnd = cursorPos + diff;
+});
 }
 
 function formatoPrecioPlan(valor) {
-    if (!valor) return "$0,00";
-    const numero = parseFloat(valor);
-    if (isNaN(numero)) return "$0,00";
-    const entero = Math.floor(numero);
-    const decimal = Math.round((numero - entero) * 100).toString().padStart(2, "0");
-    const enteroFormateado = entero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    return `$${enteroFormateado},${decimal}`;
+if (!valor) return "$0,00";
+const numero = parseFloat(valor);
+if (isNaN(numero)) return "$0,00";
+const entero = Math.floor(numero);
+const decimal = Math.round((numero - entero) * 100).toString().padStart(2, "0");
+const enteroFormateado = entero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+return `$${enteroFormateado},${decimal}`;
 }
 
 function formatoFecha(fecha) {
-    if (fecha === "N/D") return fecha;
-    const partes = fecha.split("/");
-    if (partes.length !== 3) return fecha;
-    const [dia, mes, anio] = partes;
-    return `${parseInt(dia, 10)}/${parseInt(mes, 10)}/${anio}`;
+if (fecha === "N/D") return fecha;
+const partes = fecha.split("/");
+if (partes.length !== 3) return fecha;
+const [dia, mes, anio] = partes;
+return `${parseInt(dia, 10)}/${parseInt(mes, 10)}/${anio}`;
 }
 
 function actualizarPreview(tipo) {
-    const previewContainer = document.getElementById(`previewContainer${tipo}`);
-    previewContainer.innerHTML = "";
-    imagenesBase64[tipo].forEach((imgBase64, index) => {
-        const container = document.createElement("div");
-        container.className = "preview-img-container";
-        const img = document.createElement("img");
-        img.src = imgBase64;
-        img.className = "preview-img";
-        const btnDel = document.createElement("button");
-        btnDel.className = "delete-img";
-        btnDel.textContent = "x";
-        btnDel.onclick = () => { imagenesBase64[tipo].splice(index, 1); actualizarPreview(tipo); };
-        container.appendChild(img);
-        container.appendChild(btnDel);
-        previewContainer.appendChild(container);
-    });
+const previewContainer = document.getElementById(`previewContainer${tipo}`);
+previewContainer.innerHTML = "";
+imagenesBase64[tipo].forEach((imgBase64, index) => {
+const container = document.createElement("div");
+container.className = "preview-img-container";
+const img = document.createElement("img");
+img.src = imgBase64;
+img.className = "preview-img";
+const btnDel = document.createElement("button");
+btnDel.className = "delete-img";
+btnDel.textContent = "x";
+btnDel.onclick = () => { imagenesBase64[tipo].splice(index, 1); actualizarPreview(tipo); };
+container.appendChild(img);
+container.appendChild(btnDel);
+previewContainer.appendChild(container);
+});
 }
 
 function inicializarPreviewImagenes(tipo) {
-    document.getElementById(`imagenFile${tipo}`).addEventListener("change", function() {
-        const files = Array.from(this.files);
-        files.forEach(file => {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                imagenesBase64[tipo].push(e.target.result);
-                actualizarPreview(tipo);
-            }
-            reader.readAsDataURL(file);
-        });
-    });
+document.getElementById(`imagenFile${tipo}`).addEventListener("change", function() {
+const files = Array.from(this.files);
+files.forEach(file => {
+const reader = new FileReader();
+reader.onload = function(e) {
+imagenesBase64[tipo].push(e.target.result);
+actualizarPreview(tipo);
+}
+reader.readAsDataURL(file);
+});
+});
 }
 
 function actualizarVideoPreview(tipo) {
-    const videoPreviewContainer = document.getElementById(`videoPreviewContainer${tipo}`);
-    videoPreviewContainer.innerHTML = "";
-    videosBase64[tipo].forEach((videoBase64, index) => {
-        const container = document.createElement("div");
-        container.className = "preview-video-container";
-        const video = document.createElement("video");
-        video.src = videoBase64;
-        video.className = "preview-video";
-        video.controls = true;
-        const btnDel = document.createElement("button");
-        btnDel.className = "delete-video";
-        btnDel.textContent = "x";
-        btnDel.onclick = () => { videosBase64[tipo].splice(index, 1); actualizarVideoPreview(tipo); };
-        container.appendChild(video);
-        container.appendChild(btnDel);
-        videoPreviewContainer.appendChild(container);
-    });
+const videoPreviewContainer = document.getElementById(`videoPreviewContainer${tipo}`);
+videoPreviewContainer.innerHTML = "";
+videosBase64[tipo].forEach((videoBase64, index) => {
+const container = document.createElement("div");
+container.className = "preview-video-container";
+const video = document.createElement("video");
+video.src = videoBase64;
+video.className = "preview-video";
+video.controls = true;
+const btnDel = document.createElement("button");
+btnDel.className = "delete-video";
+btnDel.textContent = "x";
+btnDel.onclick = () => { videosBase64[tipo].splice(index, 1); actualizarVideoPreview(tipo); };
+container.appendChild(video);
+container.appendChild(btnDel);
+videoPreviewContainer.appendChild(container);
+});
 }
 
 function inicializarPreviewVideos(tipo) {
-    document.getElementById(`videoFile${tipo}`).addEventListener("change", function() {
-        const files = Array.from(this.files);
-        files.forEach(file => {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                videosBase64[tipo].push(e.target.result);
-                actualizarVideoPreview(tipo);
-            }
-            reader.readAsDataURL(file);
-        });
-    });
+document.getElementById(`videoFile${tipo}`).addEventListener("change", function() {
+const files = Array.from(this.files);
+files.forEach(file => {
+const reader = new FileReader();
+reader.onload = function(e) {
+videosBase64[tipo].push(e.target.result);
+actualizarVideoPreview(tipo);
+}
+reader.readAsDataURL(file);
+});
+});
 }
 
 async function subirImagenCloudinary(file) {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-    try {
-        const res = await fetch(CLOUDINARY_URL, { method: "POST", body: formData });
-        const json = await res.json();
-        return json.secure_url;
-    } catch (err) {
-        console.error("Error subiendo imagen a Cloudinary:", err);
-        return null;
-    }
+const formData = new FormData();
+formData.append("file", file);
+formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+try {
+const res = await fetch(CLOUDINARY_URL, { method: "POST", body: formData });
+const json = await res.json();
+return json.secure_url;
+} catch (err) {
+console.error("Error subiendo imagen a Cloudinary:", err);
+return null;
+}
 }
 
 async function subirVideoMux(videoFile, row, tipo) {
-  const msgEl = document.getElementById(`msg${tipo}`);
-  try {
-    const base64Video = await fileToBase64(videoFile);
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      mode: 'cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'uploadVideoMux', video: base64Video, row: row })
-    });
-    if (!response.ok) throw new Error(`Error HTTP! Estado: ${response.status}`);
-    const result = await response.json();
-    if (result.success) return result.videoUrl;
-    else throw new Error(result.error || 'Error desconocido al subir el video');
-  } catch (error) {
-    console.error('Error subiendo video a Mux:', error.message);
-    msgEl.className = "estado-msg error";
-    msgEl.textContent = `Error al subir video: ${error.message}`;
-    setTimeout(() => { msgEl.textContent = ""; }, 5000);
-    throw error;
-  }
+const msgEl = document.getElementById(`msg${tipo}`);
+try {
+const base64Video = await fileToBase64(videoFile);
+const response = await fetch(API_URL, {
+method: 'POST',
+mode: 'cors',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ action: 'uploadVideoMux', video: base64Video, row: row })
+});
+if (!response.ok) throw new Error(`Error HTTP! Estado: ${response.status}`);
+const result = await response.json();
+if (result.success) return result.videoUrl;
+else throw new Error(result.error || 'Error desconocido al subir el video');
+} catch (error) {
+console.error('Error subiendo video a Mux:', error.message);
+msgEl.className = "estado-msg error";
+msgEl.textContent = `Error al subir video: ${error.message}`;
+setTimeout(() => { msgEl.textContent = ""; }, 5000);
+throw error;
+}
 }
 
 function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error('Error al convertir el video a base64'));
-    reader.readAsDataURL(file);
-  });
+return new Promise((resolve, reject) => {
+const reader = new FileReader();
+reader.onload = () => resolve(reader.result);
+reader.onerror = () => reject(new Error('Error al convertir el video a base64'));
+reader.readAsDataURL(file);
+});
 }
 
 function toggleMenu() {
-    const menu = document.getElementById("menu");
-    menu.classList.toggle("active");
+const menu = document.getElementById("menu");
+menu.classList.toggle("active");
 }
 
 function toggleOpcionesPropiedad() {
-    const opciones = document.getElementById("opcionesPropiedad");
-    const opcionesVenta = document.getElementById("opcionesVenta");
-    const opcionesAlquiler = document.getElementById("opcionesAlquiler");
-    const btn = document.getElementById("btnAgregarPropiedad");
-    if (opciones.classList.contains("active")) {
-        opciones.classList.remove("active");
-        opcionesVenta.classList.remove("active");
-        opcionesAlquiler.classList.remove("active");
-        btn.textContent = "Agregar Propiedad";
-        resetAllForms();
-    } else {
-        opciones.classList.add("active");
-        btn.textContent = "Cerrar Opciones";
-        window.scrollTo(0, document.getElementById("opcionesPropiedad").offsetTop);
-    }
+const opciones = document.getElementById("opcionesPropiedad");
+const opcionesVenta = document.getElementById("opcionesVenta");
+const opcionesAlquiler = document.getElementById("opcionesAlquiler");
+const btn = document.getElementById("btnAgregarPropiedad");
+if (opciones.classList.contains("active")) {
+opciones.classList.remove("active");
+opcionesVenta.classList.remove("active");
+opcionesAlquiler.classList.remove("active");
+btn.textContent = "Agregar Propiedad";
+resetAllForms();
+} else {
+opciones.classList.add("active");
+btn.textContent = "Cerrar Opciones";
+window.scrollTo(0, document.getElementById("opcionesPropiedad").offsetTop);
+}
 }
 
 function mostrarOpcionesPorOperacion() {
-    const tipoOperacion = document.getElementById("tipoOperacion").value;
-    const opcionesVenta = document.getElementById("opcionesVenta");
-    const opcionesAlquiler = document.getElementById("opcionesAlquiler");
-    if (tipoOperacion === "Vender") {
-        opcionesVenta.classList.add("active");
-        opcionesAlquiler.classList.remove("active");
-    } else {
-        opcionesAlquiler.classList.add("active");
-        opcionesVenta.classList.remove("active");
-    }
+const tipoOperacion = document.getElementById("tipoOperacion").value;
+const opcionesVenta = document.getElementById("opcionesVenta");
+const opcionesAlquiler = document.getElementById("opcionesAlquiler");
+if (tipoOperacion === "Vender") {
+opcionesVenta.classList.add("active");
+opcionesAlquiler.classList.remove("active");
+} else {
+opcionesAlquiler.classList.add("active");
+opcionesVenta.classList.remove("active");
+}
 }
 
 function mostrarFormulario(tipo) {
-    const formularios = ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'];
-    formularios.forEach(f => document.getElementById(`formulario${f}`).classList.remove("active"));
-    document.getElementById(`formulario${tipo}`).classList.add("active");
-    document.getElementById("btnAgregarPropiedad").textContent = "Cerrar Opciones";
-    window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
+const formularios = ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'];
+formularios.forEach(f => document.getElementById(`formulario${f}`).classList.remove("active"));
+document.getElementById(`formulario${tipo}`).classList.add("active");
+document.getElementById("btnAgregarPropiedad").textContent = "Cerrar Opciones";
+window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
 }
 
 window.onload = function() {
-    initGoogleCharts();
-    const email = localStorage.getItem("dueno");
-    if (!email) { window.location.href = "index.html"; return; }
-    cargarEstadoPlan();
-    cargarAlquileres();
-    cargarPreciosPlanes();
-    cargarDatosCuenta();
-    checkPaymentOnReturn();
-    ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'].forEach(tipo => {
-        inicializarPreviewImagenes(tipo);
-        inicializarPreviewVideos(tipo);
-        if (tipo === 'Departamento' || tipo === 'Terreno' || tipo === 'Casa') inicializarFormatoPrecio(tipo);
-    });
-    document.getElementById("tipoOperacion").addEventListener("change", mostrarOpcionesPorOperacion);
+initGoogleCharts();
+const email = localStorage.getItem("dueno");
+if (!email) { window.location.href = "index.html"; return; }
+cargarEstadoPlan();
+cargarAlquileres();
+cargarPreciosPlanes();
+cargarDatosCuenta();
+checkPaymentOnReturn();
+['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'].forEach(tipo => {
+inicializarPreviewImagenes(tipo);
+inicializarPreviewVideos(tipo);
+if (tipo === 'Departamento' || tipo === 'Terreno' || tipo === 'Casa') inicializarFormatoPrecio(tipo);
+});
+document.getElementById("tipoOperacion").addEventListener("change", mostrarOpcionesPorOperacion);
 }
 async function checkPaymentOnReturn() {
 const urlParams = new URLSearchParams(window.location.search);
@@ -1387,9 +1082,9 @@ let row = document.getElementById(`editRow${tipo}`).value || new Date().getTime(
 const enlaceCompartir = document.getElementById(`editRow${tipo}`).value ? document.getElementById(`enlaceCompartir${tipo}`).value : "";
 const email = localStorage.getItem("dueno");
 if (!direccion ||
-    (tipo === "Departamento" && (!ambientes || !precio)) ||
-    (tipo === "Terreno" && (!superficie || !precio)) ||
-    (tipo === "Casa" && (!ambientes || !precio))) {
+(tipo === "Departamento" && (!ambientes || !precio)) ||
+(tipo === "Terreno" && (!superficie || !precio)) ||
+(tipo === "Casa" && (!ambientes || !precio))) {
 msgEl.className = "estado-msg error";
 msgEl.textContent = "Completa todos los campos obligatorios.";
 setTimeout(() => { msgEl.textContent = ""; }, 5000);
@@ -1622,33 +1317,33 @@ script.src = `${API_URL}?action=getLoginInfo&email=${encodeURIComponent(email)}&
 document.body.appendChild(script);
 }
 function mostrarDatosCuenta(res) {
-  const msgEl = document.getElementById("msgEditarCuenta");
-  const countryCodes = ["+549", "+55", "+598", "+56", "+595"];
-  if (res.success && res.data && res.data[0]) {
-    const login = res.data[0];
-    document.getElementById("emailEditar").value = login.Email || "";
-    document.getElementById("nombreEditar").value = login.Nombre || "";
-    document.getElementById("passwordEditar").value = login.Password || "";
-    let contacto = login.Contacto || "";
-    let codigoPais = "+549";
-    let numero = "";
-    if (typeof contacto === "string" && contacto.trim() !== "") {
-      for (const code of countryCodes) {
-        if (contacto.startsWith(code)) {
-          codigoPais = code;
-          numero = contacto.slice(code.length).trim();
-          break;
-        }
-      }
-    }
-    document.getElementById("codigoPaisEditar").value = codigoPais;
-    document.getElementById("contactoEditar").value = numero;
-    msgEl.textContent = "";
-  } else {
-    msgEl.style.color = "red";
-    msgEl.textContent = "Error al cargar los datos de la cuenta";
-    setTimeout(() => { msgEl.textContent = ""; }, 3000);
-  }
+const msgEl = document.getElementById("msgEditarCuenta");
+const countryCodes = ["+549", "+55", "+598", "+56", "+595"];
+if (res.success && res.data && res.data[0]) {
+const login = res.data[0];
+document.getElementById("emailEditar").value = login.Email || "";
+document.getElementById("nombreEditar").value = login.Nombre || "";
+document.getElementById("passwordEditar").value = login.Password || "";
+let contacto = login.Contacto || "";
+let codigoPais = "+549";
+let numero = "";
+if (typeof contacto === "string" && contacto.trim() !== "") {
+for (const code of countryCodes) {
+if (contacto.startsWith(code)) {
+codigoPais = code;
+numero = contacto.slice(code.length).trim();
+break;
+}
+}
+}
+document.getElementById("codigoPaisEditar").value = codigoPais;
+document.getElementById("contactoEditar").value = numero;
+msgEl.textContent = "";
+} else {
+msgEl.style.color = "red";
+msgEl.textContent = "Error al cargar los datos de la cuenta";
+setTimeout(() => { msgEl.textContent = ""; }, 3000);
+}
 }
 function togglePasswordVisibility() {
 const passwordInput = document.getElementById("passwordEditar");
@@ -1713,6 +1408,68 @@ msgEl.textContent = "Error al guardar: " + (err.message || "Error de conexión")
 console.error("Error en edición de cuenta:", err);
 }
 }
+</script>
+</body>
+</html>
+
+async function editarCuenta() {
+const email = localStorage.getItem("dueno");
+const newEmail = document.getElementById("emailEditar").value;
+const nombre = document.getElementById("nombreEditar").value;
+const codigoPais = document.getElementById("codigoPaisEditar").value;
+const contacto = document.getElementById("contactoEditar").value;
+const password = document.getElementById("passwordEditar").value;
+const msgEl = document.getElementById("msgEditarCuenta");
+
+if (!newEmail && !nombre && !contacto && !password) {
+msgEl.style.color = "red";
+msgEl.textContent = "Debes completar al menos un campo para actualizar.";
+return;
+}
+if (newEmail && !newEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+msgEl.style.color = "red";
+msgEl.textContent = "Ingresa un email válido.";
+return;
+}
+if (password && password.length < 6) {
+msgEl.style.color = "red";
+msgEl.textContent = "La contraseña debe tener al menos 6 caracteres.";
+return;
+}
+if (contacto && !contacto.match(/^\d{6,}$/)) {
+msgEl.style.color = "red";
+msgEl.textContent = "El número de teléfono debe contener solo dígitos y al menos 6 caracteres.";
+return;
+}
+
+msgEl.textContent = "Guardando cambios...";
+try {
+let query = `${API_URL}?action=editarDueno&email=${encodeURIComponent(email)}`;
+if (newEmail) query += `&newEmail=${encodeURIComponent(newEmail)}`;
+if (nombre) query += `&nombre=${encodeURIComponent(nombre)}`;
+if (contacto) query += `&contacto=${encodeURIComponent(codigoPais + contacto)}`;
+if (password) query += `&password=${encodeURIComponent(password)}`;
+const response = await fetch(query);
+const res = await response.json();
+if (res.success) {
+msgEl.style.color = "green";
+msgEl.textContent = "✅ Cambios guardados con éxito";
+if (newEmail) localStorage.setItem("dueno", newEmail);
+setTimeout(cerrarModalEditarCuenta, 1000);
+} else {
+msgEl.style.color = "red";
+msgEl.textContent = "❌ Error al guardar: " + (res.error || "desconocido");
+}
+} catch (err) {
+msgEl.style.color = "red";
+msgEl.textContent = "❌ Error al guardar: " + (err.message || "Error de conexión");
+console.error("Error en edición de cuenta:", err);
+}
+}
+
+console.log("✅ SISTEMA DE ESTADÍSTICAS - HOJA MÉTRICAS FUNCIONANDO 100% ✅");
+console.log("🔍 PROCESO: Columna N (Alquileres) → Columna A (Métricas)");
+console.log("📊 OBTIENE: Vistas (C) | Contactos (D)");
 </script>
 </body>
 </html>
