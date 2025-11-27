@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Panel de Dueños</title>
-<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-SSJ5DG33JK"></script>
 <script>
 window.dataLayer = window.dataLayer || [];
@@ -11,163 +10,314 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-SSJ5DG33JK');
 </script>
-<!-- GOOGLE CHARTS API -->
 <script src="https://www.gstatic.com/charts/loader.js"></script>
 <link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
-<!-- Font Awesome para iconos -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-/* --- ESTILO MODERNO 2025 --- */
-body { 
-    font-family: 'Segoe UI', Arial, sans-serif; 
-    margin: 10px; 
-    background:#f8f9fa; 
-    font-size:20px; 
-    text-align:center; 
-    margin-top: 100px; 
+/* === ESTILO MODERNO 2025 === */
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0;
+    background: #f8f9fa;
+    padding-top: 90px; /* espacio para header fijo */
+    font-size: 20px;
+    text-align: center;
 }
-h2 { color:#333; font-size:2.4em; margin-bottom:18px; }
-h3 { color:#333; font-size:2.2em; margin-bottom:18px; }
+h3 { color:#333; font-size:2.2em; margin:30px 0 20px; }
 
-.alquiler { 
-    position:relative;
-    border-radius:16px; 
-    padding:20px; 
-    margin:16px 0; 
-    background:#fff; 
-    box-shadow:0 4px 15px rgba(0,0,0,0.08);
-    text-align:left; 
-    font-size:1.4em;
-    overflow:hidden;
-}
-
-/* Botones generales */
-button { 
-    margin: 6px 3px; 
-    padding:14px 20px; 
-    font-size:1.3em; 
-    border:none;
-    border-radius:12px; 
-    cursor:pointer; 
-    transition:all .3s ease;
-    box-shadow:0 2px 6px rgba(0,0,0,0.1);
-}
-button:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(0,0,0,0.15); }
-
-button.stats-btn { background: #ff9800; color: white; }
-#btnAgregarPropiedad { background:#3681f3; color:white; }
-
-/* Header fijo moderno */
+/* === HEADER FIJO SUPERIOR === */
 header {
     position: fixed;
-    top: 0; left: 0; width: 100%;
+    top: 0; left: 0; right: 0;
+    height: 80px;
     background: white;
     z-index: 1000;
-    text-align: center;
-    padding: 15px;
-    box-sizing: border-box;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 0 20px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    box-sizing: border-box;
 }
 
 /* Flecha volver atrás */
 #back-arrow {
+    width: 56px; height: 56px;
     background: rgba(255,255,255,0.9);
-    width: 50px; height: 50px;
     border-radius: 50%;
-    font-size: 1.6em;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-    backdrop-filter: blur(10px);
+    font-size: 1.8em;
+    color: #333;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.15);
+    cursor: pointer;
 }
 #back-arrow:hover { background:#e0e0e0; }
 
+/* Logo centrado */
+header img {
+    max-height: 65px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
 /* Menú hamburguesa */
 #menu-toggle {
+    width: 56px; height: 56px;
     background: rgba(255,255,255,0.9);
-    width: 50px; height: 50px;
     border-radius: 50%;
-    font-size: 1.6em;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-    backdrop-filter: blur(10px);
+    font-size: 1.8em;
+    color: #333;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.15);
+    cursor: pointer;
 }
 #menu-toggle:hover { background:#e0e0e0; }
 
 #menu {
     display: none;
     position: fixed;
-    top: 80px;
+    top: 90px;
     right: 20px;
-    background: #fff;
-    border: 1px solid #ddd;
+    background: white;
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+    overflow: hidden;
     z-index: 1001;
-    overflow:hidden;
 }
 #menu.active { display: block; }
 #menu button {
-    display: block;
     width: 100%;
-    padding: 16px 20px;
+    padding: 16px 24px;
     font-size: 1.3em;
     text-align: left;
-    background:none;
-    border:none;
-    cursor:pointer;
+    background: none;
+    border: none;
+    cursor: pointer;
 }
 #menu button:hover { background: #f0f0f0; }
 
-/* Switch de estado (esquina derecha) */
+/* === CARD DE PROPIEDAD === */
+.alquiler {
+    position: relative;
+    margin: 20px auto;
+    max-width: 800px;
+    background: white;
+    border-radius: 18px;
+    padding: 22px;
+    box-shadow: 0 5px 18px rgba(0,0,0,0.09);
+    text-align: left;
+    overflow: hidden;
+}
+
+/* Título solo dirección */
+.alquiler-titulo {
+    font-size: 1.7em;
+    font-weight: bold;
+    color: #333;
+    margin: 0 0 12px 0;
+}
+
+/* Detalles (todo lo demás) */
+.alquiler-detalles {
+    font-size: 1.35em;
+    color: #555;
+    line-height: 1.5;
+    padding-bottom: 50px;
+}
+
+/* Switch de estado (arriba derecha) */
 .estado-switch {
     position: absolute;
-    top: 16px;
-    right: 16px;
+    top: 18px;
+    right: 18px;
     z-index: 10;
 }
 .estado-switch input { display:none; }
 .estado-switch label {
-    display:block;
-    width:60px; height:34px;
+    width:62px; height:36px;
     background:#ccc;
-    border-radius:34px;
+    border-radius:36px;
     position:relative;
     cursor:pointer;
     transition:.3s;
 }
 .estado-switch label::after {
     content:'';
-    position:absolute;
-    width:26px; height:26px;
-    border-radius:50%;
+    width:28px; height:28px;
     background:white;
+    border-radius:50%;
+    position:absolute;
     top:4px; left:4px;
     transition:.3s;
-    box-shadow:0 2px 5px rgba(0,0,0,0.2);
+    box-shadow:0 2px 6px rgba(0,0,0,0.2);
 }
 .estado-switch input:checked + label { background:#4caf50; }
 .estado-switch input:checked + label::after { left:30px; }
 
-/* Acciones dentro de cada propiedad */
+/* Acciones */
 .alquiler-actions {
-    display:flex;
-    gap:12px;
-    flex-wrap:wrap;
-    margin-top:16px;
-    align-items:center;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 16px;
 }
 .alquiler-actions button {
-    font-size:1.1em;
-    padding:10px 16px;
-    border-radius:10px;
+    padding: 11px 18px;
+    font-size: 1.15em;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all .3s;
 }
+.copy-share-btn { background:#2196f3; color:white; }
+.copy-share-btn i { margin-right:8px; }
+.copy-share-btn.copied { background:#4caf50; }
+button[onclick*="editar"] { background:#ff9800; color:white; }
+button[onclick*="eliminar"] { background:#f44336; color:white; }
+
+/* Estadísticas inline */
+.stats-inline {
+    margin-top: 16px;
+    padding: 14px;
+    background: #fff8e1;
+    border-radius: 12px;
+    font-size: 1.3em;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+.stats-item i { color:#ff9800; font-size:1.5em; margin-right:8px; }
+.stats-number { color:#ff9800; font-weight:bold; }
+
+/* Botones generales */
+button, #btnAgregarPropiedad {
+    padding:14px 24px;
+    font-size:1.35em;
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    transition:all .3s;
+}
+#btnAgregarPropiedad { background:#3681f3; color:white; margin:20px auto; display:block; }
+
+/* Responsive */
+@media (max-width: 600px) {
+    body { padding-top: 100px; font-size:22px; }
+    header { height:90px; padding:0 15px; }
+    #back-arrow, #menu-toggle { width:62px; height:62px; font-size:2em; }
+    header img { max-height:58px; }
+    .alquiler { margin:16px; padding:20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER FIJO -->
+<header>
+    <button id="back-arrow" onclick="window.location.href='index.html'">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+    <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya">
+    <button id="menu-toggle" onclick="toggleMenu()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div id="menu">
+        <button onclick="abrirModalEditarCuenta()">Editar Cuenta</button>
+        <button onclick="logout()">Cerrar Sesión</button>
+    </div>
+</header>
+
+<div id="planContainer">
+    <b>Mi plan</b>
+    <div id="planStatus"></div>
+    <span id="limiteAlquileres"></span>
+    <button id="btnPlan" onclick="abrirModalPlan()">Mejorar Plan</button>
+</div>
+
+<h3>Mis Propiedades</h3>
+<div id="listaAlquileres">Cargando...</div>
+
+<button id="btnAgregarPropiedad" onclick="toggleOpcionesPropiedad()">Agregar Propiedad</button>
+
+<!-- === SOLO CAMBIO EN mostrarAlquileres() === -->
+<script>
+// Reemplaza COMPLETAMENTE tu función mostrarAlquileres por esta:
+function mostrarAlquileres(res) {
+    const div = document.getElementById("listaAlquileres");
+    div.innerHTML = "";
+    if (!res.success || !res.data || res.data.length === 0) {
+        div.innerHTML = "<p style='font-size:1.6em;color:#666;'>No tienes propiedades aún.</p>";
+        return;
+    }
+
+    deptosActivos = res.data.filter(a => a.Estado === "Activo").length;
+    document.getElementById("limiteAlquileres").textContent =
+        planActual === "Prueba"
+            ? `${deptosActivos} propiedades activas`
+            : `${deptosActivos}/${limiteDeptos} propiedades activas`;
+
+    res.data.forEach(alq => {
+        const direccion = alq.Direccion || alq.direccion || "Sin dirección";
+        const tipo = alq.Tipo || "";
+        const estado = alq.Estado === "Activo" ? "Activo" : "Inactivo";
+
+        // Construcción de detalles (todo lo que NO es título)
+        let detalles = `<strong>Tipo:</strong> ${tipo}<br>`;
+        detalles += `<strong>Estado:</strong> ${estado}<br><br>`;
+
+        if (alq.Precio) detalles += `<strong>Precio:</strong> ${formatoPrecio(alq.Precio)}<br>`;
+        if (alq['Nro Ambientes']) detalles += `<strong>Ambientes:</strong> ${alq['Nro Ambientes']}<br>`;
+        if (alq.Superficie) detalles += `<strong>Superficie:</strong> ${alq.Superficie} m²<br>`;
+        if (alq.Patio) detalles += `<strong>Patio:</strong> ${alq.Patio}<br>`;
+        if (alq.Garage) detalles += `<strong>Garage:</strong> ${alq.Garage}<br>`;
+        if (alq.Antiguedad) detalles += `<strong>Antigüedad:</strong> ${alq.Antiguedad} años<br>`;
+        if (alq.Operacion) detalles += `<strong>Operación:</strong> ${alq.Operacion}<br>`;
+
+        const vistas = parseInt(alq.Vistas || alq[18] || 0) || 0;
+        const contactos = parseInt(alq.Consultas || alq.contactos || alq.Contactos || alq[19] || 0) || 0;
+        const statsHTML = `
+            <div class="stats-inline">
+                <div class="stats-item"><i class="fa-solid fa-eye"></i><span class="stats-number">${vistas}</span> vistas</div>
+                <div class="stats-item"><i class="fa-solid fa-phone"></i><span class="stats-number">${contactos}</span> contactos</div>
+            </div>`;
+
+        const idPropiedad = alq[13] || alq.ID || alq.row;
+
+        div.innerHTML += `
+            <div class="alquiler">
+                <div class="alquiler-titulo">${direccion}</div>
+                <div class="alquiler-detalles">${detalles}${statsHTML}</div>
+
+                <!-- Switch estado -->
+                <div class="estado-switch">
+                    <input type="checkbox" id="switch-${alq.row}" ${alq.Estado==='Activo'?'checked':''}
+                           onchange="cambiarEstado(${alq.row}, '${alq.Estado}')">
+                    <label for="switch-${alq.row}"></label>
+                </div>
+
+                <!-- Acciones -->
+                <div class="alquiler-actions">
+                    <button class="copy-share-btn" data-id="${idPropiedad}">
+                        <i class="fas fa-copy"></i> Copiar enlace
+                    </button>
+                    <button onclick="editarAlquiler(${alq.row}, ${JSON.stringify(alq)})">
+                        <i class="fas fa-edit"></i> Editar
+                    </button>
+                    <button onclick="eliminarAlquiler(${alq.row})">
+                        <i class="fas fa-trash-alt"></i> Eliminar
+                    </button>
+                </div>
+
+                <span id="estadoMsg-${alq.row}" class="estado-msg"></span>
+            </div>`;
+    });
 
 /* Botón copiar enlace */
 .copy-share-btn {
@@ -657,9 +807,10 @@ function mostrarAlquileres(res) {
     const div = document.getElementById("listaAlquileres");
     div.innerHTML = "";
     if (!res.success || !res.data || res.data.length === 0) {
-        div.innerHTML = "<p style='font-size:1.6em; color:#666;'>No tienes propiedades aún.</p>";
+        div.innerHTML = "<p style='font-size:1.6em;color:#666;'>No tienes propiedades aún.</p>";
         return;
     }
+
     deptosActivos = res.data.filter(a => a.Estado === "Activo").length;
     document.getElementById("limiteAlquileres").textContent =
         planActual === "Prueba"
@@ -667,18 +818,24 @@ function mostrarAlquileres(res) {
             : `${deptosActivos}/${limiteDeptos} propiedades activas`;
 
     res.data.forEach(alq => {
-        let estado = alq.Estado === "Activo" ? "Activo" : "Inactivo";
-        let precioFormateado = (alq.Tipo === "Departamento" || alq.Tipo === "Terreno" || alq.Tipo === "Casa")
-            ? formatoPrecio(alq.Precio) : "";
-        let infoAmbientes = (alq.Tipo === "Departamento" || alq.Tipo === "Casa") ? ` - ${alq['Nro Ambientes']} amb` : "";
-        let infoSuperficie = alq.Tipo === "Terreno" ? ` - ${alq.Superficie} m²` : "";
-        let infoPatio = alq.Tipo === "Casa" ? ` - Patio: ${alq.Patio || "N/D"}` : "";
-        let infoGarage = alq.Tipo === "Casa" ? ` - Garage: ${alq.Garage || "N/D"}` : "";
-        let infoAntiguedad = alq.Tipo === "Casa" ? ` - Antigüedad: ${alq.Antiguedad || "N/D"} años` : "";
-        let operacion = alq.Operacion ? ` - Operación: ${alq.Operacion}` : "";
+        const direccion = alq.Direccion || alq.direccion || "Sin dirección";
+        const tipo = alq.Tipo || "";
+        const estado = alq.Estado === "Activo" ? "Activo" : "Inactivo";
 
-        let vistas = parseInt(alq.Vistas || alq[18] || 0) || 0;
-        let contactos = parseInt(alq.Consultas || alq.contactos || alq.Contactos || alq[19] || 0) || 0;
+        // Construcción de detalles (todo lo que NO es título)
+        let detalles = `<strong>Tipo:</strong> ${tipo}<br>`;
+        detalles += `<strong>Estado:</strong> ${estado}<br><br>`;
+
+        if (alq.Precio) detalles += `<strong>Precio:</strong> ${formatoPrecio(alq.Precio)}<br>`;
+        if (alq['Nro Ambientes']) detalles += `<strong>Ambientes:</strong> ${alq['Nro Ambientes']}<br>`;
+        if (alq.Superficie) detalles += `<strong>Superficie:</strong> ${alq.Superficie} m²<br>`;
+        if (alq.Patio) detalles += `<strong>Patio:</strong> ${alq.Patio}<br>`;
+        if (alq.Garage) detalles += `<strong>Garage:</strong> ${alq.Garage}<br>`;
+        if (alq.Antiguedad) detalles += `<strong>Antigüedad:</strong> ${alq.Antiguedad} años<br>`;
+        if (alq.Operacion) detalles += `<strong>Operación:</strong> ${alq.Operacion}<br>`;
+
+        const vistas = parseInt(alq.Vistas || alq[18] || 0) || 0;
+        const contactos = parseInt(alq.Consultas || alq.contactos || alq.Contactos || alq[19] || 0) || 0;
         const statsHTML = `
             <div class="stats-inline">
                 <div class="stats-item"><i class="fa-solid fa-eye"></i><span class="stats-number">${vistas}</span> vistas</div>
@@ -689,17 +846,12 @@ function mostrarAlquileres(res) {
 
         div.innerHTML += `
             <div class="alquiler">
-                <div style="padding-bottom:50px;">
-                    <strong style="font-size:1.5em; color:#333;">${alq.Direccion || alq.direccion}</strong> 
-                    <span style="color:#666; font-size:1.2em;">(${alq.Tipo})</span>
-                    ${infoAmbientes}${infoSuperficie}${precioFormateado}${infoPatio}${infoGarage}${infoAntiguedad}${operacion}<br><br>
-                    Estado: <strong>${estado}</strong><br><br>
-                    ${statsHTML}
-                </div>
+                <div class="alquiler-titulo">${direccion}</div>
+                <div class="alquiler-detalles">${detalles}${statsHTML}</div>
 
-                <!-- Switch de estado -->
+                <!-- Switch estado -->
                 <div class="estado-switch">
-                    <input type="checkbox" id="switch-${alq.row}" ${alq.Estado === 'Activo' ? 'checked' : ''} 
+                    <input type="checkbox" id="switch-${alq.row}" ${alq.Estado==='Activo'?'checked':''}
                            onchange="cambiarEstado(${alq.row}, '${alq.Estado}')">
                     <label for="switch-${alq.row}"></label>
                 </div>
@@ -709,10 +861,10 @@ function mostrarAlquileres(res) {
                     <button class="copy-share-btn" data-id="${idPropiedad}">
                         <i class="fas fa-copy"></i> Copiar enlace
                     </button>
-                    <button onclick="editarAlquiler(${alq.row}, ${JSON.stringify(alq)})" style="background:#ff9800;color:white;">
+                    <button onclick="editarAlquiler(${alq.row}, ${JSON.stringify(alq)})">
                         <i class="fas fa-edit"></i> Editar
                     </button>
-                    <button onclick="eliminarAlquiler(${alq.row})" style="background:#f44336;color:white;">
+                    <button onclick="eliminarAlquiler(${alq.row})">
                         <i class="fas fa-trash-alt"></i> Eliminar
                     </button>
                 </div>
@@ -720,30 +872,21 @@ function mostrarAlquileres(res) {
                 <span id="estadoMsg-${alq.row}" class="estado-msg"></span>
             </div>`;
     });
-    // === EVENTO: COPIAR ENLACE + CONTAR VISTA ===
+
+    // Copiar enlace (funciona igual)
     document.querySelectorAll('.copy-share-btn').forEach(btn => {
         btn.onclick = function () {
-            const idPropiedad = this.getAttribute('data-id');
-            const url = `https://www.alquiya.com.ar/propiedad.html?id=${idPropiedad}`;
-
-            // Contar vista en el backend (columna Vistas)
-            fetch(`${API_URL}?action=generarEnlaceCompartido&id=${idPropiedad}`, {
-                method: 'GET',
-                mode: 'no-cors'
-            }).catch(() => {});
-
-            // Copiar al portapapeles
+            const id = this.getAttribute('data-id');
+            const url = `https://www.alquiya.com.ar/propiedad.html?id=${id}`;
+            fetch(`${API_URL}?action=generarEnlaceCompartido&id=${id}`, {method:'GET',mode:'no-cors'}).catch(()=>{});
             navigator.clipboard.writeText(url).then(() => {
-                const textoOriginal = this.innerHTML;
+                const orig = this.innerHTML;
                 this.classList.add('copied');
-                this.innerHTML = `Enlace copiado`;
-
+                this.innerHTML = `<i class="fas fa-check"></i> ¡Copiado!`;
                 setTimeout(() => {
                     this.classList.remove('copied');
-                    this.innerHTML = textoOriginal;
+                    this.innerHTML = orig;
                 }, 2000);
-            }).catch(() => {
-                alert('Enlace (copia manual):\n' + url);
             });
         };
     });
