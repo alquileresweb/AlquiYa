@@ -1,3 +1,10 @@
+* el seleccionador tipo de operacion debe aparecer una vez se presiona el boton agregar propiedad
+
+* en lugar de botones, tipo de propiedad debe ser seleccionador
+
+ 
+Dame el codigo completo añadiendo la solucione, sin editar ni eliminar las demas funciones. Te dejjo el codigo original a continuacion:
+ 
 <!DOCTYPE html>
 <html lang="es">
   <head>
@@ -196,7 +203,6 @@
         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         z-index: 999;
       }
-
       /* ==== FORMULARIOS MODERNOS ==== */
       [id^="formulario"] {
         display: none;
@@ -209,9 +215,7 @@
         animation: fadeIn 0.4s;
       }
       [id^="formulario"].active { display: block; }
-
       @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
       .form-group {
         position: relative;
         margin-bottom: 28px;
@@ -249,7 +253,6 @@
         font-size: 18px;
       }
       .form-group textarea { resize: vertical; min-height: 100px; }
-
       .file-upload {
         border: 2px dashed #cbd5e1;
         border-radius: 12px;
@@ -264,7 +267,6 @@
         background: #eef2ff;
       }
       .file-upload input { display: none; }
-
       .preview-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -295,7 +297,6 @@
         cursor: pointer;
         font-size: 16px;
       }
-
       .btn-guardar {
         width: 100%;
         padding: 18px;
@@ -314,7 +315,6 @@
         background: #3651d4;
         transform: translateY(-3px);
       }
-
       .msg-estado {
         text-align: center;
         font-weight: bold;
@@ -326,7 +326,6 @@
       .estado-msg.success { background: #d1fae5; color: #065f46; }
       .estado-msg.error { background: #fee2e2; color: #991b1b; }
       .estado-msg.loading { background: #dbeafe; color: #1e40af; }
-
       .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
       .modal.active { display: flex; }
       .modal-content {
@@ -343,7 +342,6 @@
       }
       .close-modal { position: absolute; top: 12px; right: 16px; font-size: 28px; font-weight: bold; cursor: pointer; color: #aaa; }
       .close-modal:hover { color: var(--danger); }
-
       @media (max-width: 600px) {
         body { font-size: 20px; padding-top: 100px; }
         [id^="formulario"] { padding: 20px; }
@@ -359,7 +357,6 @@
       <button onclick="logout()">Cerrar Sesión</button>
     </div>
     <header><div></div><img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya"><div></div></header>
-
     <div id="planContainer">
       <b>Mi plan</b>
       <div id="planStatus"></div>
@@ -369,7 +366,6 @@
     <h3>Mis Propiedades</h3>
     <div id="listaAlquileres">Cargando...</div>
     <button id="btnAgregarPropiedad" onclick="toggleOpcionesPropiedad()">Agregar Propiedad</button>
-
     <div id="opcionesPropiedad">
       <label for="tipoOperacion">Tipo de Operación</label>
       <select id="tipoOperacion">
@@ -388,9 +384,7 @@
         <button onclick="mostrarFormulario('Temporario')">Temporario</button>
       </div>
     </div>
-
     <!-- ==================== TODOS LOS FORMULARIOS CON DISEÑO MODERNO ==================== -->
-
     <!-- TERRENO -->
     <div id="formularioTerreno">
       <input type="hidden" id="editRowTerreno"><input type="hidden" id="enlaceCompartirTerreno"><input type="hidden" id="existingVideosTerreno">
@@ -405,7 +399,6 @@
       <button class="btn-guardar" id="btnGuardarTerreno" onclick="agregarAlquiler('Terreno')"><i class="fas fa-paper-plane"></i> Publicar Terreno</button>
       <p id="msgTerreno" class="msg-estado"></p>
     </div>
-
     <!-- CASA -->
     <div id="formularioCasa">
       <input type="hidden" id="editRowCasa"><input type="hidden" id="enlaceCompartirCasa"><input type="hidden" id="existingVideosCasa">
@@ -423,7 +416,6 @@
       <button class="btn-guardar" id="btnGuardarCasa" onclick="agregarAlquiler('Casa')"><i class="fas fa-paper-plane"></i> Publicar Casa</button>
       <p id="msgCasa" class="msg-estado"></p>
     </div>
-
     <!-- DEPARTAMENTO -->
     <div id="formularioDepartamento">
       <input type="hidden" id="editRowDepartamento"><input type="hidden" id="enlaceCompartirDepartamento"><input type="hidden" id="existingVideosDepartamento">
@@ -438,7 +430,6 @@
       <button class="btn-guardar" id="btnGuardarDepartamento" onclick="agregarAlquiler('Departamento')"><i class="fas fa-paper-plane"></i> Publicar Departamento</button>
       <p id="msgDepartamento" class="msg-estado"></p>
     </div>
-
     <!-- LOCAL COMERCIAL -->
     <div id="formularioLocal">
       <input type="hidden" id="editRowLocal"><input type="hidden" id="enlaceCompartirLocal"><input type="hidden" id="existingVideosLocal">
@@ -451,7 +442,6 @@
       <button class="btn-guardar" id="btnGuardarLocal" onclick="agregarAlquiler('Local')"><i class="fas fa-paper-plane"></i> Publicar Local</button>
       <p id="msgLocal" class="msg-estado"></p>
     </div>
-
     <!-- TEMPORARIO -->
     <div id="formularioTemporario">
       <input type="hidden" id="editRowTemporario"><input type="hidden" id="enlaceCompartirTemporario"><input type="hidden" id="existingVideosTemporario">
@@ -464,7 +454,7 @@
       <button class="btn-guardar" id="btnGuardarTemporario" onclick="agregarAlquiler('Temporario')"><i class="fas fa-paper-plane"></i> Publicar Temporario</button>
       <p id="msgTemporario" class="msg-estado"></p>
     </div>
-    
+   
     <!-- MODAL DE PLANES (AHORA COMPLETO Y FUNCIONAL) -->
     <div id="modalPlan" class="modal">
       <div class="modal-content">
@@ -505,7 +495,6 @@
         </div>
       </div>
     </div>
-
     <!-- MODAL EDITAR CUENTA - AHORA COMPLETO Y FUNCIONAL -->
     <div id="modalEditarCuenta" class="modal">
       <div class="modal-content">
@@ -513,10 +502,8 @@
         <h2 style="text-align:center; margin-bottom:20px;">Editar mi cuenta</h2>
         <label>Email</label>
         <input type="email" id="emailEditar" placeholder="Nuevo email (opcional)">
-
         <label>Nombre</label>
         <input type="text" id="nombreEditar" placeholder="Tu nombre">
-
         <label>Teléfono</label>
         <div style="display:flex; gap:5px;">
           <select id="codigoPaisEditar" style="width:100px;">
@@ -527,7 +514,6 @@
           </select>
           <input type="text" id="contactoEditar" placeholder="Número sin 15 ni 0">
         </div>
-
         <label>Contraseña</label>
         <div style="position:relative;">
           <input type="password" id="passwordEditar" placeholder="Nueva contraseña (mín. 6 caracteres)">
@@ -535,7 +521,6 @@
             Mostrar
           </button>
         </div>
-
         <button onclick="editarCuenta()" style="margin-top:20px; width:100%; padding:14px; background:var(--primary); color:white; border:none; border-radius:50px; font-size:1.1em; cursor:pointer;">
           Guardar Cambios
         </button>
@@ -543,11 +528,9 @@
       </div>
     </div>
     <div id="modalEstadisticas"><div class="modal-content">...</div></div>
-
     <button id="contactoBtn" title="¿Necesitas ayuda?" onclick="window.open('https://wa.me/5493764275443', '_blank')">
       <i class="fab fa-whatsapp"></i>
     </button>
-
 <script>
 // === CONSTANTES Y VARIABLES ===
 const API_URL = "https://script.google.com/macros/s/AKfycbyFvDRwPZoG6ChhvcxGm6B27ziD6Qkg4RcH0TI9K59b7zPz7iFxy7mgmbs5mo5T-TxD/exec";
@@ -561,7 +544,6 @@ let planActual = null;
 let limiteDeptos = 0;
 let deptosActivos = 0;
 let preciosPlanes = {Basico: 0, Plus: 0, Full: 0};
-
 function mostrarAlquileres(res) {
   const div = document.getElementById("listaAlquileres");
   div.innerHTML = "";
@@ -573,26 +555,21 @@ function mostrarAlquileres(res) {
   document.getElementById("limiteAlquileres").textContent =
     planActual === "Prueba" ? `${deptosActivos} propiedades activas` :
     `${deptosActivos}/${limiteDeptos} propiedades activas`;
-
   res.data.forEach(alq => {
     let estado = alq.Estado === "Activo";
     let idPropiedad = alq[13] || alq.ID || alq.row;
-
     // Solo mostramos Precio y Tipo (A) / Subtipo (R)
-    let precioFormateado = (alq.Tipo === "Departamento" || alq.Tipo === "Terreno" || alq.Tipo === "Casa") 
+    let precioFormateado = (alq.Tipo === "Departamento" || alq.Tipo === "Terreno" || alq.Tipo === "Casa")
       ? formatoPrecio(alq.Precio) : "";
     let tipoDisplay = alq.Tipo;
     if (alq.Operacion === "Alquilar") tipoDisplay += " (A)";
     if (alq.Operacion === "Vender") tipoDisplay += " (R)";
-
     let vistas = parseInt(alq.Vistas || alq[18] || 0) || 0;
     let contactos = parseInt(alq.Consultas || alq.contactos || alq.Contactos || alq[19] || 0) || 0;
-
     const statsHTML = `<div class="stats-inline">
       <div class="stats-item"><i class="fa-solid fa-eye"></i><span class="stats-number">${vistas}</span> vistas</div>
       <div class="stats-item"><i class="fa-solid fa-phone"></i><span class="stats-number">${contactos}</span> contactos</div>
     </div>`;
-
     div.innerHTML += `<div class="alquiler">
       <b>${alq.Direccion || alq.direccion}</b><br>
       ${tipoDisplay}${precioFormateado ? " - " + precioFormateado : ""}<br>
@@ -614,7 +591,6 @@ function mostrarAlquileres(res) {
       <span id="estadoMsg-${alq.row}" class="estado-msg"></span>
     </div>`;
   });
-
   document.querySelectorAll('.copy-share-btn').forEach(btn => {
     btn.onclick = function () {
       const idPropiedad = this.getAttribute('data-id');
@@ -629,7 +605,6 @@ function mostrarAlquileres(res) {
     };
   });
 }
-
 function cargarAlquileres() {
   const email = localStorage.getItem("dueno");
   const script = document.createElement("script");
@@ -853,111 +828,122 @@ function toggleMenu() {
   const menu = document.getElementById("menu");
   menu.classList.toggle("active");
 }
+/* =======================================================
+   TODAS LAS FUNCIONES DE "AGREGAR PROPIEDAD" JUNTAS
+   (Reemplazá las funciones antiguas por estas)
+   ======================================================= */
+
+// 1. Al hacer clic en "Agregar Propiedad" → muestra el selector moderno
 function toggleOpcionesPropiedad() {
-  const opciones = document.getElementById("opcionesPropiedad");
-  const opcionesVenta = document.getElementById("opcionesVenta");
-  const opcionesAlquiler = document.getElementById("opcionesAlquiler");
+  const selector = document.getElementById("selectorPropiedad");
   const btn = document.getElementById("btnAgregarPropiedad");
-  if (opciones.classList.contains("active")) {
-    opciones.classList.remove("active");
-    opcionesVenta.classList.remove("active");
-    opcionesAlquiler.classList.remove("active");
+
+  if (selector.classList.contains("active")) {
+    // Cerrar todo
+    selector.classList.remove("active");
     btn.textContent = "Agregar Propiedad";
     resetAllForms();
   } else {
-    opciones.classList.add("active");
-    btn.textContent = "Cerrar Opciones";
-    window.scrollTo(0, document.getElementById("opcionesPropiedad").offsetTop);
+    // Abrir selector
+    selector.classList.add("active");
+    btn.textContent = "Cerrar";
+    actualizarOpcionesPropiedad(); // ← llena el <select> de tipos
+    window.scrollTo({ top: selector.offsetTop - 100, behavior: "smooth" });
   }
 }
-function mostrarOpcionesPorOperacion() {
-  const tipoOperacion = document.getElementById("tipoOperacion").value;
-  const opcionesVenta = document.getElementById("opcionesVenta");
-  const opcionesAlquiler = document.getElementById("opcionesAlquiler");
-  if (tipoOperacion === "Vender") {
-    opcionesVenta.classList.add("active");
-    opcionesAlquiler.classList.remove("active");
-  } else {
-    opcionesAlquiler.classList.add("active");
-    opcionesVenta.classList.remove("active");
-  }
+
+// 2. Actualiza las opciones de "Tipo de Propiedad" según "Tipo de Operación"
+function actualizarOpcionesPropiedad() {
+  const operacion = document.getElementById("tipoOperacion").value;
+  const select = document.getElementById("tipoPropiedadSelect");
+  select.innerHTML = "<option value=''>Seleccioná el tipo de propiedad</option>";
+
+  const opciones = operacion === "Vender"
+    ? ["Terreno", "Casa", "Departamento", "Local Comercial"]
+    : ["Departamento", "Local Comercial", "Temporario"];
+
+  opciones.forEach(tipo => {
+    const opt = document.createElement("option");
+    opt.value = tipo;
+    opt.textContent = tipo;
+    select.appendChild(opt);
+  });
 }
+
+// 3. Al presionar "Continuar" → abre el formulario correcto
+function mostrarFormularioSegunSelect() {
+  const tipo = document.getElementById("tipoPropiedadSelect").value;
+  if (!tipo) {
+    alert("Por favor seleccioná un tipo de propiedad");
+    return;
+  }
+
+  // Cerrar el selector y abrir el formulario elegido
+  document.getElementById("selectorPropiedad").classList.remove("active");
+  document.getElementById("btnAgregarPropiedad").textContent = "Cerrar Opciones";
+  mostrarFormulario(tipo);
+}
+
+// 4. Función universal para mostrar cualquier formulario (mantiene compatibilidad)
 function mostrarFormulario(tipo) {
   const formularios = ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'];
   formularios.forEach(f => document.getElementById(`formulario${f}`).classList.remove("active"));
   document.getElementById(`formulario${tipo}`).classList.add("active");
   document.getElementById("btnAgregarPropiedad").textContent = "Cerrar Opciones";
-  window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
+  window.scrollTo({ top: document.getElementById(`formulario${tipo}`).offsetTop - 100, behavior: "smooth" });
 }
-  function toggleOpcionesPropiedad() {
-        const selector = document.getElementById("selectorPropiedad");
-        const btn = document.getElementById("btnAgregarPropiedad");
-        const selectOperacion = document.getElementById("tipoOperacion");
-        const selectPropiedad = document.getElementById("tipoPropiedadSelect");
 
-        if (selector.classList.contains("active")) {
-          selector.classList.remove("active");
-          btn.textContent = "Agregar Propiedad";
-          resetAllForms();
-        } else {
-          selector.classList.add("active");
-          btn.textContent = "Cerrar";
-          actualizarOpcionesPropiedad();
-        }
-      }
-
-      function actualizarOpcionesPropiedad() {
-        const operacion = document.getElementById("tipoOperacion").value;
-        const select = document.getElementById("tipoPropiedadSelect");
-        select.innerHTML = "<option value=''>Seleccioná el tipo de propiedad</option>";
-
-        const opciones = operacion === "Vender" 
-          ? ["Terreno", "Casa", "Departamento", "Local Comercial"]
-          : ["Departamento", "Local Comercial", "Temporario"];
-
-        opciones.forEach(tipo => {
-          const opt = document.createElement("option");
-          opt.value = tipo;
-          opt.textContent = tipo;
-          select.appendChild(opt);
-        });
-      }
-
-      function mostrarFormularioSegunSelect() {
-        const tipo = document.getElementById("tipoPropiedadSelect").value;
-        if (!tipo) {
-          alert("Por favor seleccioná un tipo de propiedad");
-          return;
-        }
-        document.getElementById("selectorPropiedad").classList.remove("active");
-        document.getElementById("btnAgregarPropiedad").textContent = "Cerrar Opciones";
-        mostrarFormulario(tipo);
-      }
-
-      // Mantener compatibilidad con la función antigua
-      function mostrarFormulario(tipo) {
-        const formularios = ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'];
-        formularios.forEach(f => document.getElementById(`formulario${f}`).classList.remove("active"));
-        document.getElementById(`formulario${tipo}`).classList.add("active");
-        document.getElementById("btnAgregarPropiedad").textContent = "Cerrar Opciones";
-        window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop - 100);
-      }
-window.onload = function() {
-  initGoogleCharts();
-  const email = localStorage.getItem("dueno");
-  if (!email) { window.location.href = "index.html"; return; }
-  cargarEstadoPlan();
-  cargarAlquileres();
-  cargarPreciosPlanes();
-  cargarDatosCuenta();
-  checkPaymentOnReturn();
+// 5. Resetear todos los formularios (cuando se cierra sin guardar)
+function resetAllForms() {
   ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'].forEach(tipo => {
-    inicializarPreviewImagenes(tipo);
-    inicializarPreviewVideos(tipo);
-    if (tipo === 'Departamento' || tipo === 'Terreno' || tipo === 'Casa') inicializarFormatoPrecio(tipo);
+    const form = document.getElementById(`formulario${tipo}`);
+    if (form) form.classList.remove("active");
+
+    // Limpiar campos ocultos
+    document.getElementById(`editRow${tipo}`).value = "";
+    document.getElementById(`enlaceCompartir${tipo}`).value = "";
+    document.getElementById(`existingVideos${tipo}`).value = "";
+
+    // Limpiar campos visibles
+    document.getElementById(`direccion${tipo}`).value = "";
+    if (tipo === "Departamento" || tipo === "Casa") {
+      document.getElementById(`ambientes${tipo}`).value = "";
+      document.getElementById(`precio${tipo}`).value = "";
+    }
+    if (tipo === "Terreno") {
+      document.getElementById(`superficie${tipo}`).value = "";
+      document.getElementById(`precio${tipo}`).value = "";
+    }
+    if (tipo === "Casa") {
+      document.getElementById(`patio${tipo}`).value = "Sí";
+      document.getElementById(`garage${tipo}`).value = "Sí";
+      document.getElementById(`antiguedad${tipo}`).value = "";
+    }
+    document.getElementById(`infoIngreso${tipo}`).value = "";
+    document.getElementById(`detalles${tipo}`).value = "";
+    document.getElementById(`imagenFile${tipo}`).value = "";
+    document.getElementById(`videoFile${tipo}`).value = "";
+
+    // Limpiar previsualizaciones
+    imagenesBase64[tipo] = [];
+    videosBase64[tipo] = [];
+    actualizarPreview(tipo);
+    actualizarVideoPreview(tipo);
+
+    // Resetear mensajes y botón
+    document.getElementById(`msg${tipo}`).textContent = "";
+    document.getElementById(`btnGuardar${tipo}`).textContent = "Publicar " + tipo;
   });
-  document.getElementById("tipoOperacion").addEventListener("change", mostrarOpcionesPorOperacion);
+
+  // Resetear selectores
+  document.getElementById("tipoOperacion").value = "Vender";
+  document.getElementById("tipoPropiedadSelect").innerHTML = "<option value=''>Seleccioná el tipo de propiedad</option>";
+  document.getElementById("selectorPropiedad").classList.remove("active");
+  document.getElementById("btnAgregarPropiedad").textContent = "Agregar Propiedad";
 }
+
+// 6. Escuchar cambio en "Tipo de Operación" para actualizar el segundo select
+document.getElementById("tipoOperacion").addEventListener("change", actualizarOpcionesPropiedad);
 async function checkPaymentOnReturn() {
 const urlParams = new URLSearchParams(window.location.search);
 const status = urlParams.get("status");
@@ -1048,10 +1034,9 @@ planStatusEl.innerHTML = planStatusHTML;
 document.getElementById("limiteAlquileres").textContent = planActual === "Prueba" ? `${deptosActivos} propiedades activas` : `${deptosActivos}/${limiteDeptos} propiedades activas`;
 document.getElementById("btnPlan").textContent = planActual ? "Mejorar Plan" : "Elegir Plan";
 }
-function abrirModalPlan() { 
-  document.getElementById("modalPlan").style.display = "flex"; 
+function abrirModalPlan() {
+  document.getElementById("modalPlan").style.display = "flex";
 }
-
 function cerrarModalPlan() {
   document.getElementById("modalPlan").style.display = "none";
   document.getElementById("mpBtnBasico").innerHTML = "";
@@ -1359,10 +1344,9 @@ setTimeout(() => { msgEl.textContent = ""; }, 5000);
 });
 }
 function abrirModalEditarCuenta() {
-  document.getElementById("modalEditarCuenta").style.display = "flex";  // ← CORREGIDO: era "block"
+  document.getElementById("modalEditarCuenta").style.display = "flex"; // ← CORREGIDO: era "block"
   cargarDatosCuenta();
 }
-
 function cerrarModalEditarCuenta() {
   document.getElementById("modalEditarCuenta").style.display = "none";
   document.getElementById("emailEditar").value = "";
@@ -1398,6 +1382,7 @@ if (contacto.startsWith(code)) {
 codigoPais = code;
 numero = contacto.slice(code.length).trim();
 break;
+}
 }
 }
 document.getElementById("codigoPaisEditar").value = codigoPais;
