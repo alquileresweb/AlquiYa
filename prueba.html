@@ -444,8 +444,42 @@
       </div>
     </div>
 
-    <!-- Otros modales -->
-    <div id="modalEditarCuenta" class="modal"><div class="modal-content">...</div></div>
+    <!-- MODAL EDITAR CUENTA - AHORA COMPLETO Y FUNCIONAL -->
+    <div id="modalEditarCuenta" class="modal">
+      <div class="modal-content">
+        <span class="close-modal" onclick="cerrarModalEditarCuenta()">&times;</span>
+        <h2 style="text-align:center; margin-bottom:20px;">Editar mi cuenta</h2>
+        <label>Email</label>
+        <input type="email" id="emailEditar" placeholder="Nuevo email (opcional)">
+
+        <label>Nombre</label>
+        <input type="text" id="nombreEditar" placeholder="Tu nombre">
+
+        <label>Teléfono</label>
+        <div style="display:flex; gap:5px;">
+          <select id="codigoPaisEditar" style="width:100px;">
+            <option value="+549">+549</option>
+            <option value="+54">+54</option>
+            <option value="+55">+55</option>
+            <option value="+598">+598</option>
+          </select>
+          <input type="text" id="contactoEditar" placeholder="Número sin 15 ni 0">
+        </div>
+
+        <label>Contraseña</label>
+        <div style="position:relative;">
+          <input type="password" id="passwordEditar" placeholder="Nueva contraseña (mín. 6 caracteres)">
+          <button type="button" class="toggle-password" onclick="togglePasswordVisibility()" style="position:absolute; right:10px; top:10px; background:none; border:none; cursor:pointer; color:var(--primary);">
+            Mostrar
+          </button>
+        </div>
+
+        <button onclick="editarCuenta()" style="margin-top:20px; width:100%; padding:14px; background:var(--primary); color:white; border:none; border-radius:50px; font-size:1.1em; cursor:pointer;">
+          Guardar Cambios
+        </button>
+        <p id="msgEditarCuenta" style="text-align:center; margin-top:15px; font-weight:bold;"></p>
+      </div>
+    </div>
     <div id="modalEstadisticas"><div class="modal-content">...</div></div>
 
     <button id="contactoBtn" title="¿Necesitas ayuda?" onclick="window.open('https://wa.me/5493764275443', '_blank')">
@@ -1210,19 +1244,20 @@ setTimeout(() => { msgEl.textContent = ""; }, 5000);
 });
 }
 function abrirModalEditarCuenta() {
-document.getElementById("modalEditarCuenta").style.display = "block";
-cargarDatosCuenta();
+  document.getElementById("modalEditarCuenta").style.display = "flex";  // ← CORREGIDO: era "block"
+  cargarDatosCuenta();
 }
+
 function cerrarModalEditarCuenta() {
-document.getElementById("modalEditarCuenta").style.display = "none";
-document.getElementById("emailEditar").value = "";
-document.getElementById("nombreEditar").value = "";
-document.getElementById("contactoEditar").value = "";
-document.getElementById("passwordEditar").value = "";
-document.getElementById("codigoPaisEditar").value = "+549";
-document.getElementById("msgEditarCuenta").textContent = "";
-document.getElementById("passwordEditar").type = "password";
-document.querySelector(".toggle-password").textContent = "Mostrar";
+  document.getElementById("modalEditarCuenta").style.display = "none";
+  document.getElementById("emailEditar").value = "";
+  document.getElementById("nombreEditar").value = "";
+  document.getElementById("contactoEditar").value = "";
+  document.getElementById("passwordEditar").value = "";
+  document.getElementById("codigoPaisEditar").value = "+549";
+  document.getElementById("msgEditarCuenta").textContent = "";
+  document.getElementById("passwordEditar").type = "password";
+  document.querySelector(".toggle-password").textContent = "Mostrar";
 }
 function cargarDatosCuenta() {
 const email = localStorage.getItem("dueno");
