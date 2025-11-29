@@ -194,7 +194,6 @@
         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         z-index: 999;
       }
-
       /* ==== SELECTOR MODERNO AL HACER CLIC EN "AGREGAR PROPIEDAD" ==== */
       #seleccionPropiedad {
         display: none;
@@ -207,7 +206,6 @@
         animation: fadeIn 0.4s;
       }
       #seleccionPropiedad.active { display: block; }
-
       .seleccion-container {
         display: flex;
         flex-direction: column;
@@ -258,7 +256,6 @@
         background: #3651d4;
         transform: translateY(-2px);
       }
-
       /* Formularios modernos */
       [id^="formulario"] {
         display: none;
@@ -271,9 +268,7 @@
         animation: fadeIn 0.4s;
       }
       [id^="formulario"].active { display: block; }
-
       @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
       .form-group {
         position: relative;
         margin-bottom: 28px;
@@ -311,7 +306,6 @@
         font-size: 18px;
       }
       .form-group textarea { resize: vertical; min-height: 100px; }
-
       .file-upload {
         border: 2px dashed #cbd5e1;
         border-radius: 12px;
@@ -326,7 +320,6 @@
         background: #eef2ff;
       }
       .file-upload input { display: none; }
-
       .preview-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -357,7 +350,6 @@
         cursor: pointer;
         font-size: 16px;
       }
-
       .btn-guardar {
         width: 100%;
         padding: 18px;
@@ -376,7 +368,6 @@
         background: #3651d4;
         transform: translateY(-3px);
       }
-
       .msg-estado {
         text-align: center;
         font-weight: bold;
@@ -388,7 +379,6 @@
       .estado-msg.success { background: #d1fae5; color: #065f46; }
       .estado-msg.error { background: #fee2e2; color: #991b1b; }
       .estado-msg.loading { background: #dbeafe; color: #1e40af; }
-
       .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
       .modal.active { display: flex; }
       .modal-content {
@@ -405,7 +395,6 @@
       }
       .close-modal { position: absolute; top: 12px; right: 16px; font-size: 28px; font-weight: bold; cursor: pointer; color: #aaa; }
       .close-modal:hover { color: var(--danger); }
-
       @media (max-width: 600px) {
         body { font-size: 20px; padding-top: 100px; }
         #seleccionPropiedad, [id^="formulario"] { padding: 20px; }
@@ -421,7 +410,6 @@
       <button onclick="logout()">Cerrar Sesión</button>
     </div>
     <header><div></div><img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya"><div></div></header>
-
     <div id="planContainer">
       <b>Mi plan</b>
       <div id="planStatus"></div>
@@ -430,10 +418,8 @@
     </div>
     <h3>Mis Propiedades</h3>
     <div id="listaAlquileres">Cargando...</div>
-
     <!-- BOTÓN PRINCIPAL -->
     <button id="btnAgregarPropiedad" onclick="toggleOpcionesPropiedad()">Agregar Propiedad</button>
-
     <!-- SELECTOR MODERNO (aparece al hacer clic) -->
     <div id="seleccionPropiedad">
       <h3 style="text-align:center; color:var(--primary); margin-bottom:32px;">
@@ -448,14 +434,12 @@
             <option value="Alquilar">Alquilar</option>
           </select>
         </div>
-
         <div class="seleccion-group">
           <i class="fas fa-home"></i>
           <select id="tipoPropiedad">
             <option value="">Selecciona tipo de propiedad</option>
           </select>
         </div>
-
         <button class="btn-continuar" onclick="mostrarFormularioSeleccionado()">
           <i class="fas fa-arrow-right"></i> Continuar
         </button>
@@ -531,7 +515,7 @@
       <button class="btn-guardar" id="btnGuardarTemporario" onclick="agregarAlquiler('Temporario')"><i class="fas fa-paper-plane"></i> Publicar Temporario</button>
       <p id="msgTemporario" class="msg-estado"></p>
     </div>
-   
+  
     <!-- MODAL DE PLANES (AHORA COMPLETO Y FUNCIONAL) -->
     <div id="modalPlan" class="modal">
       <div class="modal-content">
@@ -905,6 +889,22 @@ function toggleMenu() {
   const menu = document.getElementById("menu");
   menu.classList.toggle("active");
 }
+function toggleOpcionesPropiedad() {
+        const selector = document.getElementById("seleccionPropiedad");
+        const btn = document.getElementById("btnAgregarPropiedad");
+
+        if (!selector || !btn) return; // Seguridad
+
+        if (selector.classList.contains("active")) {
+          selector.classList.remove("active");
+          btn.textContent = "Agregar Propiedad";
+          resetAllForms();
+        } else {
+          selector.classList.add("active");
+          btn.textContent = "Cerrar";
+          document.getElementById("tipoOperacion").value = "";
+          document.getElementById("tipoPropiedad").innerHTML = '<option value="">Selecciona tipo de propiedad</option>';
+        }
 }
 function mostrarOpcionesPorOperacion() {
   const tipoOperacion = document.getElementById("tipoOperacion").value;
@@ -1456,9 +1456,7 @@ console.error("Error en edición de cuenta:", err);
 function toggleOpcionesPropiedad() {
         const selector = document.getElementById("seleccionPropiedad");
         const btn = document.getElementById("btnAgregarPropiedad");
-
         if (!selector) return; // Seguridad extra
-
         if (selector.classList.contains("active")) {
           selector.classList.remove("active");
           btn.textContent = "Agregar Propiedad";
@@ -1470,12 +1468,10 @@ function toggleOpcionesPropiedad() {
           document.getElementById("tipoPropiedad").innerHTML = '<option value="">Selecciona tipo de propiedad</option>';
         }
       }
-
       function actualizarTipoPropiedad() {
         const operacion = document.getElementById("tipoOperacion").value;
         const selectorPropiedad = document.getElementById("tipoPropiedad");
         selectorPropiedad.innerHTML = '<option value="">Selecciona tipo de propiedad</option>';
-
         if (operacion === "Vender") {
           ["Terreno", "Casa", "Departamento", "Local"].forEach(op => {
             const option = document.createElement("option");
@@ -1492,11 +1488,9 @@ function toggleOpcionesPropiedad() {
           });
         }
       }
-
       function mostrarFormularioSeleccionado() {
         const tipo = document.getElementById("tipoPropiedad").value;
         if (!tipo) return;
-
         document.querySelectorAll('[id^="formulario"]').forEach(f => f.classList.remove("active"));
         document.getElementById("formulario" + tipo).classList.add("active");
         document.getElementById("btnAgregarPropiedad").textContent = "Cerrar";
