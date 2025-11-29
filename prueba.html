@@ -889,6 +889,59 @@ function mostrarFormulario(tipo) {
   document.getElementById("btnAgregarPropiedad").textContent = "Cerrar Opciones";
   window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
 }
+  function toggleOpcionesPropiedad() {
+        const selector = document.getElementById("selectorPropiedad");
+        const btn = document.getElementById("btnAgregarPropiedad");
+        const selectOperacion = document.getElementById("tipoOperacion");
+        const selectPropiedad = document.getElementById("tipoPropiedadSelect");
+
+        if (selector.classList.contains("active")) {
+          selector.classList.remove("active");
+          btn.textContent = "Agregar Propiedad";
+          resetAllForms();
+        } else {
+          selector.classList.add("active");
+          btn.textContent = "Cerrar";
+          actualizarOpcionesPropiedad();
+        }
+      }
+
+      function actualizarOpcionesPropiedad() {
+        const operacion = document.getElementById("tipoOperacion").value;
+        const select = document.getElementById("tipoPropiedadSelect");
+        select.innerHTML = "<option value=''>Seleccioná el tipo de propiedad</option>";
+
+        const opciones = operacion === "Vender" 
+          ? ["Terreno", "Casa", "Departamento", "Local Comercial"]
+          : ["Departamento", "Local Comercial", "Temporario"];
+
+        opciones.forEach(tipo => {
+          const opt = document.createElement("option");
+          opt.value = tipo;
+          opt.textContent = tipo;
+          select.appendChild(opt);
+        });
+      }
+
+      function mostrarFormularioSegunSelect() {
+        const tipo = document.getElementById("tipoPropiedadSelect").value;
+        if (!tipo) {
+          alert("Por favor seleccioná un tipo de propiedad");
+          return;
+        }
+        document.getElementById("selectorPropiedad").classList.remove("active");
+        document.getElementById("btnAgregarPropiedad").textContent = "Cerrar Opciones";
+        mostrarFormulario(tipo);
+      }
+
+      // Mantener compatibilidad con la función antigua
+      function mostrarFormulario(tipo) {
+        const formularios = ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'];
+        formularios.forEach(f => document.getElementById(`formulario${f}`).classList.remove("active"));
+        document.getElementById(`formulario${tipo}`).classList.add("active");
+        document.getElementById("btnAgregarPropiedad").textContent = "Cerrar Opciones";
+        window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop - 100);
+      }
 window.onload = function() {
   initGoogleCharts();
   const email = localStorage.getItem("dueno");
@@ -1345,7 +1398,6 @@ if (contacto.startsWith(code)) {
 codigoPais = code;
 numero = contacto.slice(code.length).trim();
 break;
-}
 }
 }
 document.getElementById("codigoPaisEditar").value = codigoPais;
