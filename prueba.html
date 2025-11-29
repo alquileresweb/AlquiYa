@@ -345,62 +345,69 @@
     <div id="formularioTemporario"><input type="hidden" id="editRowTemporario"><input type="hidden" id="enlaceCompartirTemporario"><input type="hidden" id="existingVideosTemporario"><label>Dirección</label><input type="text" id="direccionTemporario"><label>Imágenes del Alquiler</label><input type="file" id="imagenFileTemporario" accept="image/png, image/jpeg" multiple><div id="previewContainerTemporario"></div><label>Videos del Alquiler</label><input type="file" id="videoFileTemporario" accept="video/*" multiple><div id="videoPreviewContainerTemporario"></div><label>Información de ingreso</label><textarea id="infoIngresoTemporario" rows="2"></textarea><label>Detalles</label><textarea id="detallesTemporario" rows="3"></textarea><button id="btnGuardarTemporario" onclick="agregarAlquiler('Temporario')">Agregar</button><p id="msgTemporario"></p></div>
 
     <div id="modalPlan" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="cerrarModalPlan()">×</span>
-      <h2>Mejorar Plan</h2>
-      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px,1fr)); gap:20px;">
-        <div style="border:2px solid #4361ee; border-radius:16px; padding:20px; text-align:center;">
-          <h3>Básico</h3>
-          <p style="font-size:2em;" id="precioBasico">$0 / mes</p>
-          <p>1 propiedad activa</p>
-          <div id="mpBtnBasico"></div>
-          <button onclick="seleccionarPlan('Basico')" style="margin-top:10px; padding:12px 24px; background:#4361ee; color:white; border:none; border-radius:50px; cursor:pointer;">Pagar con Mercado Pago</button>
-        </div>
-        <div style="border:2px solid #10b981; border-radius:16px; padding:20px; text-align:center; background:#f0fdf4;">
-          <h3>Plus</h3>
-          <p style="font-size:2em;" id="precioPlus">$0 / mes</p>
-          <p>Hasta 3 propiedades activas</p>
-          <div id="mpBtnPlus"></div>
-          <button onclick="seleccionarPlan('Plus')" style="margin-top:10px; padding:12px 24px; background:#10b981; color:white; border:none; border-radius:50px; cursor:pointer;">Pagar con Mercado Pago</button>
-        </div>
-        <div style="border:2px solid #f59e0b; border-radius:16px; padding:20px; text-align:center;">
-          <h3>Full</h3>
-          <p style="font-size:2em;" id="precioFull">$0 / mes</p>
-          <p>Sin límite de propiedades</p>
-          <div id="mpBtnFull"></div>
-          <button onclick="seleccionarPlan('Full')" style="margin-top:10px; padding:12px 24px; background:#f59e0b; color:white; border:none; border-radius:50px; cursor:pointer;">Pagar con Mercado Pago</button>
+      <div class="modal-content">
+        <span onclick="cerrarModalPlan()" style="position:absolute; top:10px; right:20px; font-size:28px; cursor:pointer;">×</span>
+        <h2>Mejorar Plan</h2>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px,1fr)); gap:20px;">
+          <div style="border:2px solid #4361ee; border-radius:16px; padding:20px; text-align:center;">
+            <h3>Básico</h3>
+            <p style="font-size:2em; margin:10px 0;" id="precioBasico">$0,00 / mes</p>
+            <p>Hasta 3 propiedades activas</p>
+            <div id="mpBtnBasico" style="margin-top:20px;"></div>
+            <button onclick="seleccionarPlan('Basico')" style="margin-top:10px; padding:12px 24px; background:#4361ee; color:white; border:none; border-radius:50px; cursor:pointer;">
+              Pagar con Mercado Pago
+            </button>
+          </div>
+          <div style="border:2px solid #10b981; border-radius:16px; padding:20px; text-align:center; background:#f0fdf4;">
+            <h3>Plus (Recomendado)</h3>
+            <p style="font-size:2em; margin:10px 0;" id="precioPlus">$0,00 / mes</p>
+            <p>Hasta 5 propiedades activas</p>
+            <div id="mpBtnPlus" style="margin-top:20px;"></div>
+            <button onclick="seleccionarPlan('Plus')" style="margin-top:10px; padding:12px 24px; background:#10b981; color:white; border:none; border-radius:50px; cursor:pointer;">
+              Pagar con Mercado Pago
+            </button>
+          </div>
+          <div style="border:2px solid #f59e0b; border-radius:16px; padding:20px; text-align:center;">
+            <h3>Full</h3>
+            <p style="font-size:2em; margin:10px 0;" id="precioFull">$0,00 / mes</p>
+            <p>Hasta 10 propiedades activas</p>
+            <div id="mpBtnFull" style="margin-top:20px;"></div>
+            <button onclick="seleccionarPlan('Full')" style="margin-top:10px; padding:12px 24px; background:#f59e0b; color:white; border:none; border-radius:50px; cursor:pointer;">
+              Pagar con Mercado Pago
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- MODAL EDITAR CUENTA (AHORA SÍ EXISTE) -->
-  <div id="modalEditarCuenta" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="cerrarModalEditarCuenta()">×</span>
-      <h2>Editar Cuenta</h2>
-      <label>Email</label>
-      <input type="email" id="emailEditar" placeholder="nuevo@email.com">
-      <label>Nombre</label>
-      <input type="text" id="nombreEditar">
-      <label>Contacto</label>
-      <div style="display:flex; gap:5px;">
-        <select id="codigoPaisEditar" style="width:80px;">
-          <option value="+549">+549</option>
-          <option value="+54">+54</option>
-        </select>
-        <input type="tel" id="contactoEditar" placeholder="3764123456">
+    <!-- MODAL EDITAR CUENTA (AHORA CON HTML COMPLETO) -->
+    <div id="modalEditarCuenta" class="modal">
+      <div class="modal-content" style="max-width:500px;">
+        <span onclick="cerrarModalEditarCuenta()" style="position:absolute; top:10px; right:20px; font-size:28px; cursor:pointer;">×</span>
+        <h2>Editar Cuenta</h2>
+        <label>Email</label>
+        <input type="email" id="emailEditar" style="width:100%; padding:10px; margin:10px 0; border:1px solid #ccc; border-radius:8px;">
+        <label>Nombre</label>
+        <input type="text" id="nombreEditar" style="width:100%; padding:10px; margin:10px 0; border:1px solid #ccc; border-radius:8px;">
+        <label>Contacto</label>
+        <div style="display:flex;">
+          <select id="codigoPaisEditar" style="padding:10px; border:1px solid #ccc; border-radius:8px 0 0 8px;">
+            <option value="+549">+549</option>
+            <option value="+54">+54</option>
+          </select>
+          <input type="tel" id="contactoEditar" placeholder="1123456789" style="flex:1; padding:10px; border:1px solid #ccc; border-left:none; border-radius:0 8px 8px 0;">
+        </div>
+        <label>Contraseña</label>
+        <div style="position:relative;">
+          <input type="password" id="passwordEditar" style="width:100%; padding:10px; margin:10px 0; border:1px solid #ccc; border-radius:8px;">
+          <span class="toggle-password" onclick="togglePasswordVisibility()" style="position:absolute; right:10px; top:15px; cursor:pointer;">Mostrar</span>
+        </div>
+        <button onclick="editarCuenta()" style="margin-top:20px; padding:12px 24px; background:var(--primary); color:white; border:none; border-radius:50px; cursor:pointer;">
+          Guardar Cambios
+        </button>
+        <p id="msgEditarCuenta" style="margin-top:15px; text-align:center;"></p>
       </div>
-      <label>Contraseña</label>
-      <div style="position:relative;">
-        <input type="password" id="passwordEditar" placeholder="Nueva contraseña">
-        <span class="toggle-password" onclick="togglePasswordVisibility()" style="position:absolute; right:10px; top:12px; cursor:pointer;">Mostrar</span>
-      </div>
-      <button onclick="editarCuenta()" style="margin-top:20px; padding:12px; background:var(--primary); color:white; border:none; border-radius:50px; width:100%;">Guardar Cambios</button>
-      <p id="msgEditarCuenta" style="margin-top:10px; text-align:center;"></p>
     </div>
-  </div>
-    <div id="modalEstadisticas"><div class="modal-content">...</div></div>
 
     <button id="contactoBtn" title="¿Necesitas ayuda?" onclick="window.open('https://wa.me/5493764275443', '_blank')">
       <i class="fab fa-whatsapp"></i>
@@ -419,7 +426,17 @@ let limiteDeptos = 0;
 let deptosActivos = 0;
 let preciosPlanes = { Basico: 0, Plus: 0, Full: 0 };
 
-// === CARGAR PRECIOS AL INICIO ===
+<script>
+// === CONFIGURACIÓN ===
+const API_URL = "https://script.google.com/macros/s/AKfycbyFvDRwPZoG6ChhvcxGm6B27ziD6Qkg4RcH0TI9K59b7zPz7iFxy7mgmbs5mo5T-TxD/exec";
+const MP_BEARER = "APP_USR-595288641172928-010710-d915bce4137b3ee26e0c6e04873f1ac1-695835795";
+
+let planActual = null;
+let limiteDeptos = 0;
+let deptosActivos = 0;
+let preciosPlanes = { Basico: 0, Plus: 0, Full: 0 };
+
+// === CARGAR PRECIOS DE PLANES ===
 function cargarPreciosPlanes() {
   const script = document.createElement("script");
   script.src = `${API_URL}?action=getPlanes&callback=mostrarPreciosPlanes`;
@@ -427,12 +444,13 @@ function cargarPreciosPlanes() {
 }
 
 function mostrarPreciosPlanes(res) {
-  if (!res.success || !res.data) return;
-  res.data.forEach(p => {
-    preciosPlanes[p.nombre] = Number(p.precio) || 0;
-    const el = document.getElementById(`precio${p.nombre}`);
-    if (el) el.textContent = "$" + p.precio.toLocaleString() + " / mes";
-  });
+  if (res.success && res.data) {
+    res.data.forEach(p => {
+      preciosPlanes[p.nombre] = Number(p.precio) || 0;
+      const el = document.getElementById(`precio${p.nombre}`);
+      if (el) el.textContent = formatoPrecioPlan(p.precio) + " / mes";
+    });
+  }
 }
 
 // === SELECCIONAR PLAN (CORREGIDO) ===
@@ -441,43 +459,31 @@ async function seleccionarPlan(plan) {
   const precio = preciosPlanes[plan];
 
   if (!precio || precio <= 0) {
-    alert("El precio del plan no está disponible aún. Espera unos segundos y vuelve a intentarlo.");
+    alert("El precio del plan no está disponible aún. Intenta en unos segundos.");
     return;
   }
 
   const preference = {
-    items: [{
-      title: `Plan ${plan} - Alqui Ya`,
-      quantity: 1,
-      unit_price: precio,
-      currency_id: "ARS"
-    }],
+    items: [{ title: `Plan ${plan} - Alqui Ya`, quantity: 1, unit_price: precio, currency_id: "ARS" }],
     payer: { email },
     external_reference: `${email}_${plan}`,
-    back_urls: {
-      success: window.location.href,
-      failure: window.location.href,
-      pending: window.location.href
-    },
+    back_urls: { success: location.href, failure: location.href, pending: location.href },
     auto_return: "approved"
   };
 
   try {
     const res = await fetch("https://api.mercadopago.com/checkout/preferences", {
       method: "POST",
-      headers: {
-        "Authorization": "Bearer " + MP_BEARER,
-        "Content-Type": "application/json"
-      },
+      headers: { "Authorization": "Bearer " + MP_BEARER, "Content-Type": "application/json" },
       body: JSON.stringify(preference)
     });
-
     const data = await res.json();
+
     if (data.init_point) {
-      document.getElementById(`mpBtn${plan}`).innerHTML = 
+      document.getElementById(`mpBtn${plan}`).innerHTML =
         `<iframe src="${data.init_point}" width="100%" height="700" frameborder="0"></iframe>`;
     } else {
-      alert("Error al crear el pago: " + JSON.stringify(data));
+      alert("Error al crear el pago: " + (data.message || "Desconocido"));
     }
   } catch (err) {
     console.error(err);
@@ -485,30 +491,55 @@ async function seleccionarPlan(plan) {
   }
 }
 
-// === VERIFICAR PAGO AL VOLVER ===
+// === CARGAR ESTADO PLAN ===
+function cargarEstadoPlan() {
+  const email = localStorage.getItem("dueno");
+  const script = document.createElement("script");
+  script.src = `${API_URL}?action=getLoginInfo&email=${encodeURIComponent(email)}&callback=mostrarEstadoPlan`;
+  document.body.appendChild(script);
+}
+
+function mostrarEstadoPlan(res) {
+  const el = document.getElementById("planStatus");
+  if (!res.success || !res.data?.[0]) {
+    el.innerHTML = "Error al cargar plan";
+    return;
+  }
+  const login = res.data[0];
+  planActual = login.Plan || "Prueba";
+  el.innerHTML = `Plan actual: <b>${planActual}</b>`;
+  cargarAlquileres(); // para contar deptos activos
+}
+
+// === CHECK PAYMENT ON RETURN (corregido) ===
 function checkPaymentOnReturn() {
   const params = new URLSearchParams(location.search);
-  const paymentId = params.get("payment_id");
-  if (paymentId) {
-    document.getElementById("planStatus").innerHTML = "Pago aprobado. Actualizando plan...";
+  if (params.get("payment_id") && params.get("status") === "approved") {
     setTimeout(() => {
       cargarEstadoPlan();
       cargarAlquileres();
-    }, 2000);
-    history.replaceState({}, "", location.pathname);
+      document.getElementById("planStatus").innerHTML = "<span style='color:green;'>¡Plan activado con éxito!</span>";
+    }, 3000);
   }
+  history.replaceState({}, "", location.pathname);
+}
+
+// === MOSTRAR DATOS CUENTA (corregido) ===
+function mostrarDatosCuenta(res) {
+  if (!res.success || !res.data?.[0]) return;
+  const d = res.data[0];
+  document.getElementById("emailEditar").value = d.Email || "";
+  document.getElementById("nombreEditar").value = d.Nombre || "";
+  document.getElementById("passwordEditar").value = d.Password || "";
+  const contacto = d.Contacto || "";
+  document.getElementById("codigoPaisEditar").value = contacto.startsWith("+549") ? "+549" : "+54";
+  document.getElementById("contactoEditar").value = contacto.replace(/^\+\d+/, "");
 }
 
 // === INICIO ===
-window.onload = function() {
+window.onload = () => {
   const email = localStorage.getItem("dueno");
-  if (!email) { window.location.href = "index.html"; return; }
-
-  cargarPreciosPlanes();
-  cargarEstadoPlan();
-  cargarAlquileres();
-  checkPaymentOnReturn();
-};
+  if (!email) { location.href = "index.html"; return; }
 
 function cargarAlquileres() {
   const email = localStorage.getItem("dueno");
