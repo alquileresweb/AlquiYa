@@ -195,7 +195,7 @@
         z-index: 999;
       }
 
-      /* ==== NUEVO: SELECTORES MODERNOS AL ABRIR "AGREGAR PROPIEDAD" ==== */
+      /* ==== SELECTOR MODERNO AL HACER CLIC EN "AGREGAR PROPIEDAD" ==== */
       #seleccionPropiedad {
         display: none;
         margin: 30px auto;
@@ -259,7 +259,7 @@
         transform: translateY(-2px);
       }
 
-      /* Formularios modernos (igual que antes) */
+      /* Formularios modernos */
       [id^="formulario"] {
         display: none;
         margin: 30px auto;
@@ -434,7 +434,7 @@
     <!-- BOTÓN PRINCIPAL -->
     <button id="btnAgregarPropiedad" onclick="toggleOpcionesPropiedad()">Agregar Propiedad</button>
 
-    <!-- NUEVO: SELECTOR DE OPERACIÓN Y TIPO DE PROPIEDAD (solo aparece al hacer clic) -->
+    <!-- SELECTOR MODERNO (aparece al hacer clic) -->
     <div id="seleccionPropiedad">
       <h3 style="text-align:center; color:var(--primary); margin-bottom:32px;">
         <i class="fas fa-plus-circle"></i> Agregar Nueva Propiedad
@@ -451,7 +451,7 @@
 
         <div class="seleccion-group">
           <i class="fas fa-home"></i>
-          <select id="tipoPropiedad" onchange="mostrarFormularioSeleccionado()">
+          <select id="tipoPropiedad">
             <option value="">Selecciona tipo de propiedad</option>
           </select>
         </div>
@@ -1472,7 +1472,9 @@ console.error("Error en edición de cuenta:", err);
 function toggleOpcionesPropiedad() {
         const selector = document.getElementById("seleccionPropiedad");
         const btn = document.getElementById("btnAgregarPropiedad");
-        
+
+        if (!selector) return; // Seguridad extra
+
         if (selector.classList.contains("active")) {
           selector.classList.remove("active");
           btn.textContent = "Agregar Propiedad";
@@ -1488,20 +1490,17 @@ function toggleOpcionesPropiedad() {
       function actualizarTipoPropiedad() {
         const operacion = document.getElementById("tipoOperacion").value;
         const selectorPropiedad = document.getElementById("tipoPropiedad");
-        
         selectorPropiedad.innerHTML = '<option value="">Selecciona tipo de propiedad</option>';
-        
+
         if (operacion === "Vender") {
-          const opciones = ["Terreno", "Casa", "Departamento", "Local"];
-          opciones.forEach(op => {
+          ["Terreno", "Casa", "Departamento", "Local"].forEach(op => {
             const option = document.createElement("option");
             option.value = op;
             option.textContent = op === "Local" ? "Local Comercial" : op;
             selectorPropiedad.appendChild(option);
           });
         } else if (operacion === "Alquilar") {
-          const opciones = ["Departamento", "Local", "Temporario"];
-          opciones.forEach(op => {
+          ["Departamento", "Local", "Temporario"].forEach(op => {
             const option = document.createElement("option");
             option.value = op;
             option.textContent = op === "Local" ? "Local Comercial" : op === "Temporario" ? "Alquiler Temporario" : op;
@@ -1514,16 +1513,9 @@ function toggleOpcionesPropiedad() {
         const tipo = document.getElementById("tipoPropiedad").value;
         if (!tipo) return;
 
-        // Ocultar todos los formularios
         document.querySelectorAll('[id^="formulario"]').forEach(f => f.classList.remove("active"));
-        
-        // Mostrar el seleccionado
         document.getElementById("formulario" + tipo).classList.add("active");
-        
-        // Cambiar botón a "Cerrar"
         document.getElementById("btnAgregarPropiedad").textContent = "Cerrar";
-        
-        // Scroll suave al formulario
         document.getElementById("formulario" + tipo).scrollIntoView({ behavior: "smooth" });
       }
 }
