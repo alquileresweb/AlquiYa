@@ -259,19 +259,19 @@
         transform: translateY(-2px);
       }
 
-      /* Formularios modernos */
+      /* ==== FORMULARIOS MODERNOS ==== */
       [id^="formulario"] {
         display: none;
         margin: 30px auto;
         max-width: 750px;
         background: white;
         padding: 32px;
-        border-radius: var(--radius);
+        border-radius: var("var(--radius)");
         box-shadow: var(--shadow);
         animation: fadeIn 0.4s;
+        box-sizing: border-box;
       }
       [id^="formulario"].active { display: block; }
-
       @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
       .form-group {
@@ -280,6 +280,8 @@
       }
       .form-group input, .form-group select, .form-group textarea {
         width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
         padding: 14px 16px 14px 48px;
         border: 2px solid #e2e8f0;
         border-radius: 12px;
@@ -291,7 +293,7 @@
         outline: none;
         border-color: var(--primary);
         background: white;
-        box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.15);
+        box-shadow: 0 0 0 4px rgba(67,97,238,0.15);
       }
       .form-group label {
         position: absolute;
@@ -312,6 +314,17 @@
       }
       .form-group textarea { resize: vertical; min-height: 100px; }
 
+      /* IMÁGENES Y VIDEOS AL LADO */
+      .media-upload-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 28px;
+      }
+      @media (max-width: 600px) {
+        .media-upload-container { grid-template-columns: 1fr; }
+      }
+
       .file-upload {
         border: 2px dashed #cbd5e1;
         border-radius: 12px;
@@ -320,16 +333,17 @@
         background: #f8fafc;
         cursor: pointer;
         transition: all 0.3s;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
       }
-      .file-upload:hover {
-        border-color: var(--primary);
-        background: #eef2ff;
-      }
+      .file-upload:hover { border-color: var(--primary); background: #eef2ff; }
       .file-upload input { display: none; }
 
       .preview-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
         gap: 12px;
         margin-top: 16px;
       }
@@ -339,16 +353,12 @@
         overflow: hidden;
         box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       }
-      .preview-img, .preview-video {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
+      .preview-img, .preview-video { width: 100%; height: 100%; object-fit: cover; }
       .delete-img, .delete-video {
         position: absolute;
         top: 8px;
         right: 8px;
-        background: rgba(239, 68, 68, 0.9);
+        background: rgba(239,68,68,0.9);
         color: white;
         border: none;
         width: 28px;
@@ -370,12 +380,9 @@
         cursor: pointer;
         margin-top: 24px;
         transition: all 0.3s;
-        box-shadow: 0 10px 25px rgba(67, 97, 238, 0.3);
+        box-shadow: 0 10px 25px rgba(67,97,238,0.3);
       }
-      .btn-guardar:hover {
-        background: #3651d4;
-        transform: translateY(-3px);
-      }
+      .btn-guardar:hover { background: #3651d4; transform: translateY(-3px); }
 
       .msg-estado {
         text-align: center;
@@ -460,143 +467,95 @@
       </div>
     </div>
     <!-- ==================== TODOS LOS FORMULARIOS CON DISEÑO MODERNO ==================== -->
-    <!-- TERRENO -->
+    <!-- 1. TERRENO -->
     <div id="formularioTerreno">
       <input type="hidden" id="editRowTerreno"><input type="hidden" id="enlaceCompartirTerreno"><input type="hidden" id="existingVideosTerreno">
-      <h3 style="text-align:center; color:var(--primary); margin-bottom:24px;"><i class="fas fa-mountain"></i> Terreno en Venta</h3>
+      <h3 style="text-align:center; color:var(--primary); margin-bottom:24px;">Terreno en Venta</h3>
       <div class="form-group"><i class="fas fa-map-marker-alt"></i><input type="text" id="direccionTerreno" required><label>Dirección completa</label></div>
       <div class="form-group"><i class="fas fa-ruler-combined"></i><input type="number" id="superficieTerreno" required><label>Superficie (m²)</label></div>
       <div class="form-group"><i class="fas fa-dollar-sign"></i><input type="text" id="precioTerreno" required><label>Precio (USD)</label></div>
-      <div class="form-group"><label class="file-upload"><i class="fas fa-camera" style="font-size:28px;color:var(--primary);"></i><br><strong>Subir imágenes</strong><br><small>Múltiples permitidas</small><input type="file" id="imagenFileTerreno" accept="image/*" multiple></label><div id="previewContainerTerreno" class="preview-grid"></div></div>
-      <div class="form-group"><label class="file-upload"><i class="fas fa-video" style="font-size:28px;color:var(--primary);"></i><br><strong>Subir videos (opcional)</strong><input type="file" id="videoFileTerreno" accept="video/*" multiple></label><div id="videoPreviewContainerTerreno" class="preview-grid"></div></div>
+      <div class="media-upload-container">
+        <div class="form-group">
+          <label class="file-upload"><strong>Subir imágenes</strong><br><small>Múltiples permitidas</small><input type="file" id="imagenFileTerreno" accept="image/*" multiple></label>
+          <div id="previewContainerTerreno" class="preview-grid"></div>
+        </div>
+        <div class="form-group">
+          <label class="file-upload"><strong>Subir videos (opcional)</strong><input type="file" id="videoFileTerreno" accept="video/*" multiple></label>
+          <div id="videoPreviewContainerTerreno" class="preview-grid"></div>
+        </div>
+      </div>
       <div class="form-group"><i class="fas fa-info-circle"></i><textarea id="infoIngresoTerreno"></textarea><label>Información de pago / contacto</label></div>
       <div class="form-group"><i class="fas fa-align-left"></i><textarea id="detallesTerreno"></textarea><label>Detalles adicionales</label></div>
-      <button class="btn-guardar" id="btnGuardarTerreno" onclick="agregarAlquiler('Terreno')"><i class="fas fa-paper-plane"></i> Publicar Terreno</button>
+      <button class="btn-guardar" onclick="agregarAlquiler('Terreno')">Publicar Terreno</button>
       <p id="msgTerreno" class="msg-estado"></p>
     </div>
-    <!-- CASA -->
+
+    <!-- 2. CASA -->
     <div id="formularioCasa">
       <input type="hidden" id="editRowCasa"><input type="hidden" id="enlaceCompartirCasa"><input type="hidden" id="existingVideosCasa">
-      <h3 style="text-align:center; color:var(--primary); margin-bottom:24px;"><i class="fas fa-house-user"></i> Casa en Venta</h3>
+      <h3 style="text-align:center; color:var(--primary); margin-bottom:24px;">Casa en Venta</h3>
       <div class="form-group"><i class="fas fa-map-marker-alt"></i><input type="text" id="direccionCasa" required><label>Dirección completa</label></div>
       <div class="form-group"><i class="fas fa-bed"></i><input type="number" id="ambientesCasa" required><label>Número de ambientes</label></div>
       <div class="form-group"><i class="fas fa-dollar-sign"></i><input type="text" id="precioCasa" required><label>Precio (USD)</label></div>
       <div class="form-group"><i class="fas fa-tree"></i><select id="patioCasa"><option>Sí</option><option>No</option></select><label>¿Tiene patio?</label></div>
       <div class="form-group"><i class="fas fa-car"></i><select id="garageCasa"><option>Sí</option><option>No</option></select><label>¿Tiene garage?</label></div>
       <div class="form-group"><i class="fas fa-calendar"></i><input type="number" id="antiguedadCasa"><label>Antigüedad (años)</label></div>
-      <div class="form-group"><label class="file-upload"><i class="fas fa-camera" style="font-size:28px;color:var(--primary);"></i><br><strong>Subir imágenes</strong><input type="file" id="imagenFileCasa" accept="image/*" multiple></label><div id="previewContainerCasa" class="preview-grid"></div></div>
-      <div class="form-group"><label class="file-upload"><i class="fas fa-video" style="font-size:28px;color:var(--primary);"></i><br><strong>Subir videos</strong><input type="file" id="videoFileCasa" accept="video/*" multiple></label><div id="videoPreviewContainerCasa" class="preview-grid"></div></div>
+      <div class="media-upload-container">
+        <div class="form-group"><label class="file-upload"><strong>Subir imágenes</strong><input type="file" id="imagenFileCasa" accept="image/*" multiple></label><div id="previewContainerCasa" class="preview-grid"></div></div>
+        <div class="form-group"><label class="file-upload"><strong>Subir videos</strong><input type="file" id="videoFileCasa" accept="video/*" multiple></label><div id="videoPreviewContainerCasa" class="preview-grid"></div></div>
+      </div>
       <div class="form-group"><i class="fas fa-info-circle"></i><textarea id="infoIngresoCasa"></textarea><label>Información de pago</label></div>
       <div class="form-group"><i class="fas fa-align-left"></i><textarea id="detallesCasa"></textarea><label>Otros detalles</label></div>
-      <button class="btn-guardar" id="btnGuardarCasa" onclick="agregarAlquiler('Casa')"><i class="fas fa-paper-plane"></i> Publicar Casa</button>
+      <button class="btn-guardar" onclick="agregarAlquiler('Casa')">Publicar Casa</button>
       <p id="msgCasa" class="msg-estado"></p>
     </div>
-    <!-- DEPARTAMENTO -->
+
+    <!-- 3. DEPARTAMENTO -->
     <div id="formularioDepartamento">
-  <input type="hidden" id="editRowDepartamento">
-  <input type="hidden" id="enlaceCompartirDepartamento">
-  <input type="hidden" id="existingVideosDepartamento">
-  
-  <h3 style="text-align:center; color:var(--primary); margin-bottom:24px;">
-    Departamento
-  </h3>
+      <input type="hidden" id="editRowDepartamento"><input type="hidden" id="enlaceCompartirDepartamento"><input type="hidden" id="existingVideosDepartamento">
+      <h3 style="text-align:center; color:var(--primary); margin-bottom:24px;">Departamento</h3>
+      <div class="form-group"><i class="fas fa-map-marker-alt"></i><input type="text" id="direccionDepartamento" required><label>Dirección completa</label></div>
+      <div class="form-group"><i class="fas fa-bed"></i><input type="number" id="ambientesDepartamento" required><label>Número de ambientes</label></div>
+      <div class="form-group"><i class="fas fa-dollar-sign"></i><input type="text" id="precioDepartamento" required><label>Precio (USD)</label></div>
+      <div class="form-group"><i class="fas fa-paw"></i><select id="mascotasDepartamento"><option>Sí</option><option>No</option></select><label>¿Mascotas permitidas?</label></div>
+      <div class="form-group"><i class="fas fa-couch"></i><select id="amobladoDepartamento"><option>Sí</option><option>No</option></select><label>¿Amoblado?</label></div>
+      <div class="media-upload-container">
+        <div class="form-group"><label class="file-upload"><strong>Subir imágenes</strong><input type="file" id="imagenFileDepartamento" accept="image/*" multiple></label><div id="previewContainerDepartamento" class="preview-grid"></div></div>
+        <div class="form-group"><label class="file-upload"><strong>Subir videos</strong><input type="file" id="videoFileDepartamento" accept="video/*" multiple></label><div id="videoPreviewContainerDepartamento" class="preview-grid"></div></div>
+      </div>
+      <div class="form-group"><i class="fas fa-info-circle"></i><textarea id="infoIngresoDepartamento"></textarea><label>Información de pago</label></div>
+      <div class="form-group"><i class="fas fa-align-left"></i><textarea id="detallesDepartamento"></textarea><label>Otros detalles</label></div>
+      <button class="btn-guardar" onclick="agregarAlquiler('Departamento')">Publicar Departamento</button>
+      <p id="msgDepartamento" class="msg-estado"></p>
+    </div>
 
-  <div class="form-group">
-    <i class="fas fa-map-marker-alt"></i>
-    <input type="text" id="direccionDepartamento" required>
-    <label>Dirección completa</label>
-  </div>
-
-  <div class="form-group">
-    <i class="fas fa-bed"></i>
-    <input type="number" id="ambientesDepartamento" required>
-    <label>Número de ambientes</label>
-  </div>
-
-  <div class="form-group">
-    <i class="fas fa-dollar-sign"></i>
-    <input type="text" id="precioDepartamento" required>
-    <label>Precio (USD)</label>
-  </div>
-
-  <!-- NUEVO: MASCOTAS PERMITIDAS -->
-  <div class="form-group">
-    <i class="fas fa-paw"></i>
-    <select id="mascotasDepartamento">
-      <option value="Sí">Sí</option>
-      <option value="No" selected>No</option>
-    </select>
-    <label>¿Mascotas permitidas?</label>
-  </div>
-
-  <!-- NUEVO: AMOBLADO -->
-  <div class="form-group">
-    <i class="fas fa-couch"></i>
-    <select id="amobladoDepartamento">
-      <option value="Sí">Sí</option>
-      <option value="No" selected>No</option>
-    </select>
-    <label>¿Amoblado?</label>
-  </div>
-
-  <div class="form-group">
-    <label class="file-upload">
-      <i class="fas fa-camera" style="font-size:28px;color:var(--primary);"></i><br>
-      <strong>Subir imágenes</strong><br>
-      <small>Múltiples permitidas</small>
-      <input type="file" id="imagenFileDepartamento" accept="image/*" multiple>
-    </label>
-    <div id="previewContainerDepartamento" class="preview-grid"></div>
-  </div>
-
-  <div class="form-group">
-    <label class="file-upload">
-      <i class="fas fa-video" style="font-size:28px;color:var(--primary);"></i><br>
-      <strong>Subir videos (opcional)</strong>
-      <input type="file" id="videoFileDepartamento" accept="video/*" multiple>
-    </label>
-    <div id="videoPreviewContainerDepartamento" class="preview-grid"></div>
-  </div>
-
-  <div class="form-group">
-    <i class="fas fa-info-circle"></i>
-    <textarea id="infoIngresoDepartamento"></textarea>
-    <label>Información de pago</label>
-  </div>
-
-  <div class="form-group">
-    <i class="fas fa-align-left"></i>
-    <textarea id="detallesDepartamento"></textarea>
-    <label>Otros detalles</label>
-  </div>
-
-  <button class="btn-guardar" id="btnGuardarDepartamento" onclick="agregarAlquiler('Departamento')">
-    Publicar Departamento
-  </button>
-  <p id="msgDepartamento" class="msg-estado"></p>
-</div>
-    <!-- LOCAL COMERCIAL -->
+    <!-- 4. LOCAL COMERCIAL -->
     <div id="formularioLocal">
       <input type="hidden" id="editRowLocal"><input type="hidden" id="enlaceCompartirLocal"><input type="hidden" id="existingVideosLocal">
-      <h3 style="text-align:center; color:var(--primary); margin-bottom:24px;"><i class="fas fa-store"></i> Local Comercial</h3>
+      <h3 style="text-align:center; color:var(--primary); margin-bottom:24px;">Local Comercial</h3>
       <div class="form-group"><i class="fas fa-map-marker-alt"></i><input type="text" id="direccionLocal" required><label>Dirección completa</label></div>
-      <div class="form-group"><label class="file-upload"><i class="fas fa-camera" style="font-size:28px;color:var(--primary);"></i><br><strong>Subir imágenes</strong><input type="file" id="imagenFileLocal" accept="image/*" multiple></label><div id="previewContainerLocal" class="preview-grid"></div></div>
-      <div class="form-group"><label class="file-upload"><i class="fas fa-video" style="font-size:28px;color:var(--primary);"></i><br><strong>Subir videos</strong><input type="file" id="videoFileLocal" accept="video/*" multiple></label><div id="videoPreviewContainerLocal" class="preview-grid"></div></div>
+      <div class="media-upload-container">
+        <div class="form-group"><label class="file-upload"><strong>Subir imágenes</strong><input type="file" id="imagenFileLocal" accept="image/*" multiple></label><div id="previewContainerLocal" class="preview-grid"></div></div>
+        <div class="form-group"><label class="file-upload"><strong>Subir videos</strong><input type="file" id="videoFileLocal" accept="video/*" multiple></label><div id="videoPreviewContainerLocal" class="preview-grid"></div></div>
+      </div>
       <div class="form-group"><i class="fas fa-info-circle"></i><textarea id="infoIngresoLocal"></textarea><label>Información de ingreso</label></div>
       <div class="form-group"><i class="fas fa-align-left"></i><textarea id="detallesLocal"></textarea><label>Detalles adicionales</label></div>
-      <button class="btn-guardar" id="btnGuardarLocal" onclick="agregarAlquiler('Local')"><i class="fas fa-paper-plane"></i> Publicar Local</button>
+      <button class="btn-guardar" onclick="agregarAlquiler('Local')">Publicar Local</button>
       <p id="msgLocal" class="msg-estado"></p>
     </div>
-    <!-- TEMPORARIO -->
+
+    <!-- 5. TEMPORARIO -->
     <div id="formularioTemporario">
       <input type="hidden" id="editRowTemporario"><input type="hidden" id="enlaceCompartirTemporario"><input type="hidden" id="existingVideosTemporario">
-      <h3 style="text-align:center; color:var(--primary); margin-bottom:24px;"><i class="fas fa-calendar-alt"></i> Alquiler Temporario</h3>
+      <h3 style="text-align:center; color:var(--primary); margin-bottom:24px;">Alquiler Temporario</h3>
       <div class="form-group"><i class="fas fa-map-marker-alt"></i><input type="text" id="direccionTemporario" required><label>Dirección completa</label></div>
-      <div class="form-group"><label class="file-upload"><i class="fas fa-camera" style="font-size:28px;color:var(--primary);"></i><br><strong>Subir imágenes</strong><input type="file" id="imagenFileTemporario" accept="image/*" multiple></label><div id="-previewContainerTemporario" class="preview-grid"></div></div>
-      <div class="form-group"><label class="file-upload"><i class="fas fa-video" style="font-size:28px;color:var(--primary);"></i><br><strong>Subir videos</strong><input type="file" id="videoFileTemporario" accept="video/*" multiple></label><div id="videoPreviewContainerTemporario" class="preview-grid"></div></div>
+      <div class="media-upload-container">
+        <div class="form-group"><label class="file-upload"><strong>Subir imágenes</strong><input type="file" id="imagenFileTemporario" accept="image/*" multiple></label><div id="previewContainerTemporario" class="preview-grid"></div></div>
+        <div class="form-group"><label class="file-upload"><strong>Subir videos</strong><input type="file" id="videoFileTemporario" accept="video/*" multiple></label><div id="videoPreviewContainerTemporario" class="preview-grid"></div></div>
+      </div>
       <div class="form-group"><i class="fas fa-info-circle"></i><textarea id="infoIngresoTemporario"></textarea><label>Información de ingreso</label></div>
       <div class="form-group"><i class="fas fa-align-left"></i><textarea id="detallesTemporario"></textarea><label>Detalles adicionales</label></div>
-      <button class="btn-guardar" id="btnGuardarTemporario" onclick="agregarAlquiler('Temporario')"><i class="fas fa-paper-plane"></i> Publicar Temporario</button>
+      <button class="btn-guardar" onclick="agregarAlquiler('Temporario')">Publicar Temporario</button>
       <p id="msgTemporario" class="msg-estado"></p>
     </div>
   
@@ -1197,9 +1156,7 @@ document.body.appendChild(script);
 function toggleOpcionesPropiedad() {
         const selector = document.getElementById("seleccionPropiedad");
         const btn = document.getElementById("btnAgregarPropiedad");
-
         if (!selector || !btn) return;
-
         if (selector.classList.contains("active")) {
           selector.classList.remove("active");
           btn.textContent = "Agregar Propiedad";
@@ -1216,9 +1173,7 @@ function toggleOpcionesPropiedad() {
         const operacion = document.getElementById("tipoOperacion").value;
         const selectorPropiedad = document.getElementById("tipoPropiedad");
         if (!selectorPropiedad) return;
-
         selectorPropiedad.innerHTML = '<option value="">Selecciona tipo de propiedad</option>';
-
         if (operacion === "Vender") {
           ["Terreno", "Casa", "Departamento", "Local"].forEach(op => {
             const option = document.createElement("option");
@@ -1239,7 +1194,6 @@ function toggleOpcionesPropiedad() {
       function mostrarFormularioSeleccionado() {
         const tipo = document.getElementById("tipoPropiedad").value;
         if (!tipo) return;
-
         document.querySelectorAll('[id^="formulario"]').forEach(f => f.classList.remove("active"));
         document.getElementById("formulario" + tipo).classList.add("active");
         document.getElementById("btnAgregarPropiedad").textContent = "Cerrar";
