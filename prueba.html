@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Dueños</title>
-    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-SSJ5DG33JK"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -12,7 +11,6 @@
       gtag('js', new Date());
       gtag('config', 'G-SSJ5DG33JK');
     </script>
-    <!-- GOOGLE CHARTS API -->
     <script src="https://www.gstatic.com/charts/loader.js"></script>
     <link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -196,7 +194,72 @@
         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         z-index: 999;
       }
-      /* ==== FORMULARIOS MODERNOS ==== */
+
+      /* ==== NUEVO: SELECTORES MODERNOS AL ABRIR "AGREGAR PROPIEDAD" ==== */
+      #seleccionPropiedad {
+        display: none;
+        margin: 30px auto;
+        max-width: 750px;
+        background: white;
+        padding: 32px;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        animation: fadeIn 0.4s;
+      }
+      #seleccionPropiedad.active { display: block; }
+
+      .seleccion-container {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+      .seleccion-group {
+        position: relative;
+      }
+      .seleccion-group select {
+        width: 100%;
+        padding: 16px 16px 16px 48px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 18px;
+        background: #f8fafc;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+      .seleccion-group select:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: white;
+        box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.15);
+      }
+      .seleccion-group i {
+        position: absolute;
+        left: 16px;
+        top: 18px;
+        color: var(--gray);
+        font-size: 20px;
+        pointer-events: none;
+      }
+      .btn-continuar {
+        width: 100%;
+        padding: 16px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-size: 1.3em;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: all 0.3s;
+        box-shadow: 0 8px 20px rgba(67, 97, 238, 0.3);
+      }
+      .btn-continuar:hover {
+        background: #3651d4;
+        transform: translateY(-2px);
+      }
+
+      /* Formularios modernos (igual que antes) */
       [id^="formulario"] {
         display: none;
         margin: 30px auto;
@@ -208,7 +271,9 @@
         animation: fadeIn 0.4s;
       }
       [id^="formulario"].active { display: block; }
+
       @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
       .form-group {
         position: relative;
         margin-bottom: 28px;
@@ -246,6 +311,7 @@
         font-size: 18px;
       }
       .form-group textarea { resize: vertical; min-height: 100px; }
+
       .file-upload {
         border: 2px dashed #cbd5e1;
         border-radius: 12px;
@@ -260,6 +326,7 @@
         background: #eef2ff;
       }
       .file-upload input { display: none; }
+
       .preview-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -290,6 +357,7 @@
         cursor: pointer;
         font-size: 16px;
       }
+
       .btn-guardar {
         width: 100%;
         padding: 18px;
@@ -308,6 +376,7 @@
         background: #3651d4;
         transform: translateY(-3px);
       }
+
       .msg-estado {
         text-align: center;
         font-weight: bold;
@@ -319,6 +388,7 @@
       .estado-msg.success { background: #d1fae5; color: #065f46; }
       .estado-msg.error { background: #fee2e2; color: #991b1b; }
       .estado-msg.loading { background: #dbeafe; color: #1e40af; }
+
       .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
       .modal.active { display: flex; }
       .modal-content {
@@ -335,10 +405,11 @@
       }
       .close-modal { position: absolute; top: 12px; right: 16px; font-size: 28px; font-weight: bold; cursor: pointer; color: #aaa; }
       .close-modal:hover { color: var(--danger); }
+
       @media (max-width: 600px) {
         body { font-size: 20px; padding-top: 100px; }
-        [id^="formulario"] { padding: 20px; }
-        .btn-guardar { font-size: 1.2em; padding: 16px; }
+        #seleccionPropiedad, [id^="formulario"] { padding: 20px; }
+        .btn-guardar, .btn-continuar { font-size: 1.2em; padding: 16px; }
       }
     </style>
   </head>
@@ -350,6 +421,7 @@
       <button onclick="logout()">Cerrar Sesión</button>
     </div>
     <header><div></div><img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya"><div></div></header>
+
     <div id="planContainer">
       <b>Mi plan</b>
       <div id="planStatus"></div>
@@ -358,23 +430,35 @@
     </div>
     <h3>Mis Propiedades</h3>
     <div id="listaAlquileres">Cargando...</div>
+
+    <!-- BOTÓN PRINCIPAL -->
     <button id="btnAgregarPropiedad" onclick="toggleOpcionesPropiedad()">Agregar Propiedad</button>
-    <div id="opcionesPropiedad">
-      <label for="tipoOperacion">Tipo de Operación</label>
-      <select id="tipoOperacion">
-        <option value="Vender">Vender</option>
-        <option value="Alquilar">Alquilar</option>
-      </select>
-      <div id="opcionesVenta">
-        <button onclick="mostrarFormulario('Terreno')">Terreno</button>
-        <button onclick="mostrarFormulario('Casa')">Casa</button>
-        <button onclick="mostrarFormulario('Departamento')">Departamento</button>
-        <button onclick="mostrarFormulario('Local')">Local Comercial</button>
-      </div>
-      <div id="opcionesAlquiler">
-        <button onclick="mostrarFormulario('Departamento')">Departamento</button>
-        <button onclick="mostrarFormulario('Local')">Local Comercial</button>
-        <button onclick="mostrarFormulario('Temporario')">Temporario</button>
+
+    <!-- NUEVO: SELECTOR DE OPERACIÓN Y TIPO DE PROPIEDAD (solo aparece al hacer clic) -->
+    <div id="seleccionPropiedad">
+      <h3 style="text-align:center; color:var(--primary); margin-bottom:32px;">
+        <i class="fas fa-plus-circle"></i> Agregar Nueva Propiedad
+      </h3>
+      <div class="seleccion-container">
+        <div class="seleccion-group">
+          <i class="fas fa-tag"></i>
+          <select id="tipoOperacion" onchange="actualizarTipoPropiedad()">
+            <option value="">Selecciona tipo de operación</option>
+            <option value="Vender">Vender</option>
+            <option value="Alquilar">Alquilar</option>
+          </select>
+        </div>
+
+        <div class="seleccion-group">
+          <i class="fas fa-home"></i>
+          <select id="tipoPropiedad" onchange="mostrarFormularioSeleccionado()">
+            <option value="">Selecciona tipo de propiedad</option>
+          </select>
+        </div>
+
+        <button class="btn-continuar" onclick="mostrarFormularioSeleccionado()">
+          <i class="fas fa-arrow-right"></i> Continuar
+        </button>
       </div>
     </div>
     <!-- ==================== TODOS LOS FORMULARIOS CON DISEÑO MODERNO ==================== -->
@@ -1385,6 +1469,63 @@ msgEl.style.color = "red";
 msgEl.textContent = "Error al guardar: " + (err.message || "Error de conexión");
 console.error("Error en edición de cuenta:", err);
 }
+function toggleOpcionesPropiedad() {
+        const selector = document.getElementById("seleccionPropiedad");
+        const btn = document.getElementById("btnAgregarPropiedad");
+        
+        if (selector.classList.contains("active")) {
+          selector.classList.remove("active");
+          btn.textContent = "Agregar Propiedad";
+          resetAllForms();
+        } else {
+          selector.classList.add("active");
+          btn.textContent = "Cerrar";
+          document.getElementById("tipoOperacion").value = "";
+          document.getElementById("tipoPropiedad").innerHTML = '<option value="">Selecciona tipo de propiedad</option>';
+        }
+      }
+
+      function actualizarTipoPropiedad() {
+        const operacion = document.getElementById("tipoOperacion").value;
+        const selectorPropiedad = document.getElementById("tipoPropiedad");
+        
+        selectorPropiedad.innerHTML = '<option value="">Selecciona tipo de propiedad</option>';
+        
+        if (operacion === "Vender") {
+          const opciones = ["Terreno", "Casa", "Departamento", "Local"];
+          opciones.forEach(op => {
+            const option = document.createElement("option");
+            option.value = op;
+            option.textContent = op === "Local" ? "Local Comercial" : op;
+            selectorPropiedad.appendChild(option);
+          });
+        } else if (operacion === "Alquilar") {
+          const opciones = ["Departamento", "Local", "Temporario"];
+          opciones.forEach(op => {
+            const option = document.createElement("option");
+            option.value = op;
+            option.textContent = op === "Local" ? "Local Comercial" : op === "Temporario" ? "Alquiler Temporario" : op;
+            selectorPropiedad.appendChild(option);
+          });
+        }
+      }
+
+      function mostrarFormularioSeleccionado() {
+        const tipo = document.getElementById("tipoPropiedad").value;
+        if (!tipo) return;
+
+        // Ocultar todos los formularios
+        document.querySelectorAll('[id^="formulario"]').forEach(f => f.classList.remove("active"));
+        
+        // Mostrar el seleccionado
+        document.getElementById("formulario" + tipo).classList.add("active");
+        
+        // Cambiar botón a "Cerrar"
+        document.getElementById("btnAgregarPropiedad").textContent = "Cerrar";
+        
+        // Scroll suave al formulario
+        document.getElementById("formulario" + tipo).scrollIntoView({ behavior: "smooth" });
+      }
 }
 </script>
 </body>
