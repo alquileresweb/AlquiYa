@@ -559,7 +559,7 @@
       <p id="msgTemporario" class="msg-estado"></p>
     </div>
   
-    <!-- MODAL DE PLANES (AHORA COMPLETO Y FUNCIONAL) -->
+    <!-- MODAL DE PLANES -->
     <div id="modalPlan" class="modal">
       <div class="modal-content">
         <span class="close-modal" onclick="cerrarModalPlan()">&times;</span>
@@ -568,7 +568,7 @@
           <h3>Plan Básico</h3>
           <div class="plan-price" id="precioBasico">Cargando...</div>
           <ul class="plan-features">
-            <li>Hasta 3 propiedades activas</li>
+            <li>1 propiedad activa</li>
             <li>Publicación en el mapa</li>
             <li>Soporte básico</li>
           </ul>
@@ -579,7 +579,7 @@
           <h3>Plan Plus</h3>
           <div class="plan-price" id="precioPlus">Cargando...</div>
           <ul class="plan-features">
-            <li>Hasta 5 propiedades activas</li>
+            <li>Hasta 3 propiedades activas</li>
             <li>Destacado en búsquedas</li>
             <li>Soporte prioritario</li>
           </ul>
@@ -590,12 +590,24 @@
           <h3>Plan Full</h3>
           <div class="plan-price" id="precioFull">Cargando...</div>
           <ul class="plan-features">
-            <li>Hasta 10 propiedades activas</li>
+            <li>Hasta 5 propiedades activas</li>
             <li>Máxima visibilidad</li>
             <li>Soporte 24/7 + WhatsApp directo</li>
           </ul>
           <div id="mpBtnFull"></div>
           <button style="margin-top:10px; padding:12px 24px; background:var(--primary); color:white; border:none; border-radius:50px; cursor:pointer;" onclick="seleccionarPlan('Full')">Pagar con Mercado Pago</button>
+        </div>
+        <div class="plan-card">
+          <h3>Plan Inmobiliario</h3>
+          <div class="plan-price">Consultar</div>
+          <ul class="plan-features">
+            <li>Propiedades ilimitadas</li>
+            <li>Todas las funciones premium</li>
+            <li>Soporte dedicado</li>
+          </ul>
+          <button style="margin-top:10px; padding:12px 24px; background:#10b981; color:white; border:none; border-radius:50px; cursor:pointer;" onclick="window.open('https://wa.me/5493764275443','_blank')">
+            Contactar por WhatsApp
+          </button>
         </div>
       </div>
     </div>
@@ -1038,23 +1050,28 @@ script.src = `${API_URL}?action=getLoginInfo&email=${encodeURIComponent(email)}&
 document.body.appendChild(script);
 }
 function mostrarEstadoPlan(res) {
-const planStatusEl = document.getElementById("planStatus");
-if (!res.success || !res.data || !res.data[0]) {
-planActual = null;
-limiteDeptos = 0;
-planStatusEl.innerHTML = `Plan: <b>Sin plan</b> | Estado de Pago: N/D | Vencimiento: N/D`;
-document.getElementById("btnPlan").textContent = "Elegir Plan";
-document.getElementById("limiteAlquileres").textContent = "";
-return;
-}
-const login = res.data[0];
-planActual = login.Plan || null;
-limiteDeptos = planActual === "Prueba" ? Infinity : planActual === "Basico" ? 3 : planActual === "Plus" ? 5 : planActual === "Full" ? 10 : 0;
-const estadoPago = login.EstadoPago || "No registrado";
-const vencimiento = formatoFecha(login.Vencimiento || "N/D");
-let planStatusHTML = `Plan: <b>${planActual || "Sin plan"}</b> | Estado de Pago: ${estadoPago} | Vencimiento: ${vencimiento}`;
-if (planActual === "Prueba" && vencimiento !== "N/D") {
-const vencimientoDate = new Date(vencimiento.split("/").reverse().join("-"));
+  const planStatusEl = document.getElementById("planStatus");
+  if (!res.success || !res.data || !res.data[0]) {
+    planActual = null;
+    limiteDeptos = 0;
+    planStatusEl.innerHTML = `Plan: <b>Sin plan</b> | Estado de Pago: N/D | Vencimiento: N/D`;
+    document.getElementById("btnPlan").textContent = "Elegir Plan";
+    document.getElementById("limiteAlquileres").textContent = "";
+    return;
+  }
+  const login = res.data[0];
+  planActual = login.Plan || null;
+// NUEVA LÓGICA DE LÍMITES SEGÚN COLUMNA H
+  if (planActual === "Basico") limiteDeptos = 1;
+  else if (planActual === "Plus") limiteDeptos = 3;
+  else if (planActual === "Full") limiteDeptos = 5;
+  else if (planActual === "Inmobiliario") limiteDeptos = Infinity;
+  else if (planActual === "Prueba") limiteDeptos = Infinity;
+  else limiteDeptos = 0;
+
+  const estadoPago = login.EstadoPago || "No registrado";
+  const vencimiento = formatoFecha(login.Vencimiento || "N/D");
+  let planStatusHTML = `Plan: <b>${planActual || "Sin plan"}</b> | Estado de Pago: ${estadoPago} | Vencimiento: ${vencimiento}`;
 const today = new Date();
 const diffTime = vencimientoDate - today;
 const diasRestantes = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -1071,8 +1088,11 @@ planStatusHTML += `<br><span style="color:red">Plan vencido, tus alquileres no s
 }
 }
 planStatusEl.innerHTML = planStatusHTML;
-document.getElementById("limiteAlquileres").textContent = planActual === "Prueba" ? `${deptosActivos} propiedades activas` : `${deptosActivos}/${limiteDeptos} propiedades activas`;
-document.getElementById("btnPlan").textContent = planActual ? "Mejorar Plan" : "Elegir Plan";
+  document.getElementById("limiteAlquileres").textContent = 
+    (planActual === "Prueba" || planActual === "Inmobiliario") 
+      ? `${deptosActivos} propiedades activas` 
+      : `${deptosActivos}/${limiteDeptos} propiedades activas`;
+  document.getElementById("btnPlan").textContent = planActual ? "Mejorar Plan" : "Elegir Plan";
 }
 function abrirModalPlan() {
   document.getElementById("modalPlan").style.display = "flex";
