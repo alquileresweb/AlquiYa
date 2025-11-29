@@ -412,31 +412,35 @@ box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 <p id="msgTemporario" style="color:green"></p>
 </div>
 
-<!-- Modal de Planes -->
-<div id="modalPlan" class="modal">
-<div class="modal-content">
-<h3>Elige tu plan</h3>
-<div class="plan-option">
-<b>Básico</b> - Hasta 3 deptos activos
-<p id="precioBasico">$0 / mes</p>
-<button onclick="seleccionarPlan('Basico')">Elegir Básico</button>
-<div id="mpBtnBasico"></div>
-</div>
-<div class="plan-option">
-<b>Plus</b> - Hasta 5 deptos activos
-<p id="precioPlus">$0 / mes</p>
-<button onclick="seleccionarPlan('Plus')">Elegir Plus</button>
-<div id="mpBtnPlus"></div>
-</div>
-<div class="plan-option">
-<b>Full</b> - Hasta 10 deptos activos
-<p id="precioFull">$0 / mes</p>
-<button onclick="seleccionarPlan('Full')">Elegir Full</button>
-<div id="mpBtnFull"></div>
-</div>
-<button onclick="cerrarModalPlan()">Cerrar</button>
-</div>
-</div>
+<div id="modalPlan" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999;">
+      <div class="modal-content" style="background:white; margin:5% auto; padding:30px; max-width:800px; border-radius:20px; position:relative;">
+        <span onclick="cerrarModalPlan()" style="position:absolute; top:10px; right:20px; font-size:28px; cursor:pointer;">×</span>
+        <h2 style="text-align:center; margin-bottom:20px;">Mejorar Plan</h2>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px,1fr)); gap:20px;">
+          <div style="border:2px solid #4361ee; border-radius:16px; padding:20px; text-align:center;">
+            <h3>Básico</h3>
+            <p style="font-size:2em; margin:10px 0;" id="precioBasico">$0,00 / mes</p>
+            <p>1 propiedad activa</p>
+            <div id="mpBtnBasico" style="margin-top:20px;"></div>
+            <button onclick="seleccionarPlan('Basico')" style="margin-top:10px; padding:12px 24px; background:#4361ee; color:white; border:none; border-radius:50px; cursor:pointer;">Pagar con Mercado Pago</button>
+          </div>
+          <div style="border:2px solid #10b981; border-radius:16px; padding:20px; text-align:center; background:#f0fdf4;">
+            <h3>Plus (Recomendado)</h3>
+            <p style="font-size:2em; margin:10px 0;" id="precioPlus">$0,00 / mes</p>
+            <p>Hasta 3 propiedades activas</p>
+            <div id="mpBtnPlus" style="margin-top:20px;"></div>
+            <button onclick="seleccionarPlan('Plus')" style="margin-top:10px; padding:12px 24px; background:#10b981; color:white; border:none; border-radius:50px; cursor:pointer;">Pagar con Mercado Pago</button>
+          </div>
+          <div style="border:2px solid #f59e0b; border-radius:16px; padding:20px; text-align:center;">
+            <h3>Full</h3>
+            <p style="font-size:2em; margin:10px 0;" id="precioFull">$0,00 / mes</p>
+            <p>Sin límite de propiedades</p>
+            <div id="mpBtnFull" style="margin-top:20px;"></div>
+            <button onclick="seleccionarPlan('Full')" style="margin-top:10px; padding:12px 24px; background:#f59e0b; color:white; border:none; border-radius:50px; cursor:pointer;">Pagar con Mercado Pago</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
 <!-- Modal de Editar Cuenta -->
 <div id="modalEditarCuenta" class="modal">
@@ -490,18 +494,123 @@ Contactos
 <button id="contactoBtn" title="¿Necesitas ayuda o tuviste inconvenientes?" onclick="window.open('https://wa.me/5493764275443', '_blank')">Ayuda</button>
 
 <script>
-// === CONSTANTES Y VARIABLES ===
+// === VARIABLES Y CONSTANTES (actualizadas) ===
 const API_URL = "https://script.google.com/macros/s/AKfycbyFvDRwPZoG6ChhvcxGm6B27ziD6Qkg4RcH0TI9K59b7zPz7iFxy7mgmbs5mo5T-TxD/exec";
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
 const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
 const GEOCODE_KEY = "AIzaSyAisqYSTfpQ_rqqutAomzitD2v_dtKYtLE";
 const MP_BEARER = "APP_USR-595288641172928-010710-d915bce4137b3ee26e0c6e04873f1ac1-695835795";
-let imagenesBase64 = { Departamento: [], Local: [], Temporario: [], Terreno: [], Casa: [] };
-let videosBase64 = { Departamento: [], Local: [], Temporario: [], Terreno: [], Casa: [] };
+
 let planActual = null;
 let limiteDeptos = 0;
 let deptosActivos = 0;
-let preciosPlanes = {Basico: 0, Plus: 0, Full: 0};
+let preciosPlanes = { Basico: 0, Plus: 0, Full: 0 };
+
+// === FUNCIONES ACTUALIZADAS ===
+
+function cargarPreciosPlanes() {
+  const script = document.createElement("script");
+  script.src = `${API_URL}?action=getPlanes&callback=mostrarPreciosPlanes`;
+  document.body.appendChild(script);
+}
+
+function mostrarPreciosPlanes(res) {
+  if (res.success && res.data) {
+    res.data.forEach(plan => {
+      preciosPlanes[plan.nombre] = parseFloat(plan.precio) || 0;
+      const precioEl = document.getElementById(`precio${plan.nombre}`);
+      if (precioEl) {
+        precioEl.textContent = formatoPrecioPlan(plan.precio) + " / mes";
+      }
+    });
+  }
+}
+
+async function seleccionarPlan(plan) {
+  const email = localStorage.getItem("dueno");
+  const precio = preciosPlanes[plan];
+  if (precio === 0) {
+    alert("El precio del plan no está disponible. Intenta más tarde.");
+    return;
+  }
+
+  const preferenceData = {
+    items: [{ title: `Plan ${plan} - Alqui Ya`, quantity: 1, unit_price: precio, currency_id: "ARS" }],
+    payer: { email: email },
+    external_reference: `${email}_${plan}`,
+    back_urls: {
+      success: window.location.href,
+      failure: window.location.href,
+      pending: window.location.href
+    },
+    auto_return: "approved"
+  };
+
+  try {
+    const response = await fetch("https://api.mercadopago.com/checkout/preferences", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + MP_BEARER,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(preferenceData)
+    });
+
+    const data = await response.json();
+    if (data.id) {
+      const container = document.getElementById(`mpBtn${plan}`);
+      container.innerHTML = `<iframe src="${data.init_point}" width="100%" height="700" frameborder="0"></iframe>`;
+    } else {
+      alert("Error al generar el pago. Intenta de nuevo.");
+    }
+  } catch (err) {
+    console.error("Error MP:", err);
+    alert("Error de conexión con Mercado Pago.");
+  }
+}
+
+function checkPaymentOnReturn() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const paymentId = urlParams.get("payment_id");
+  const status = urlParams.get("status");
+
+  if (paymentId && status === "approved") {
+    const planStatusEl = document.getElementById("planStatus");
+    planStatusEl.innerHTML = `<span style="color:green;">Pago aprobado. Actualizando plan...</span>`;
+
+    // Forzar actualización del plan
+    setTimeout(() => {
+      cargarEstadoPlan();
+      cargarAlquileres();
+      planStatusEl.innerHTML = `<span style="color:green;">¡Plan actualizado con éxito!</span>`;
+      setTimeout(() => cargarEstadoPlan(), 3000);
+    }, 2000);
+  }
+
+  // Limpiar URL
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
+
+// === EL RESTO DEL CÓDIGO (sin cambios) ===
+window.onload = function() {
+  initGoogleCharts();
+  const email = localStorage.getItem("dueno");
+  if (!email) { window.location.href = "index.html"; return; }
+
+  cargarEstadoPlan();
+  cargarAlquileres();
+  cargarPreciosPlanes();
+  cargarDatosCuenta();
+  checkPaymentOnReturn();
+
+  ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'].forEach(tipo => {
+    inicializarPreviewImagenes(tipo);
+    inicializarPreviewVideos(tipo);
+    if (tipo === 'Departamento' || tipo === 'Terreno' || tipo === 'Casa') inicializarFormatoPrecio(tipo);
+  });
+
+  document.getElementById("tipoOperacion").addEventListener("change", mostrarOpcionesPorOperacion);
+};
 
 function mostrarAlquileres(res) {
 const div = document.getElementById("listaAlquileres");
