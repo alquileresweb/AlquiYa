@@ -378,152 +378,113 @@
       let deptosActivos = 0;
       let preciosPlanes = { Basico: 0, Plus: 0, Full: 0 };
 
-      // === FUNCIONES DE PLAN (TODAS DEFINIDAS ANTES DE USARSE) ===
-      function cargarPreciosPlanes() {
-        const script = document.createElement("script");
-        script.src = `${API_URL}?action=getPlanes&callback=mostrarPreciosPlanes`;
-        document.body.appendChild(script);
-      }
-
-      function mostrarPreciosPlanes(res) {
-        if (res.success && res.data) {
-          res.data.forEach(p => {
-            if (p.nombre === "Basico") preciosPlanes.Basico = parseFloat(p.precio);
-            if (p.nombre === "Plus") preciosPlanes.Plus = parseFloat(p.precio);
-            if (p.nombre === "Full") preciosPlanes.Full = parseFloat(p.precio);
-          });
-        }
-      }
-
-      function cargarEstadoPlan() {
-        const email = localStorage.getItem("dueno");
-        if (!email) return;
-        const script = document.createElement("script");
-        script.src = `${API_URL}?action=getLoginInfo&email=${encodeURIComponent(email)}&callback=mostrarEstadoPlan`;
-        document.body.appendChild(script);
-      }
-
-      function mostrarEstadoPlan(res) {
-        const statusEl = document.getElementById("planStatus");
-        const limiteEl = document.getElementById("limiteAlquileres");
-        const btnPlan = document.getElementById("btnPlan");
-
-        if (!res.success || !res.data || res.data.length === 0) {
-          planActual = "Sin plan";
-          limiteDeptos = 0;
-          statusEl.innerHTML = `<b>Sin plan activo</b>`;
-          limiteEl.textContent = "";
-          btnPlan.textContent = "Elegir Plan";
-          return;
-        }
-
-        const login = res.data[0];
-        planActual = login.Plan || "Prueba";
-        const estadoPago = login.EstadoPago || "Pendiente";
-        const vencimiento = login.Vencimiento ? formatoFecha(login.Vencimiento) : "N/D";
-
-        limiteDeptos = planActual === "Prueba" ? Infinity :
-                       planActual === "Basico" ? 3 :
-                       planActual === "Plus" ? 5 :
-                       planActual === "Full" ? 10 : 0;
-
-        statusEl.innerHTML = `<strong>${planActual}</strong> ${estadoPago === "Aprobado" ? "Approved" : ""} | Vence: ${vencimiento}`;
-        limiteEl.textContent = planActual === "Prueba" ? `${deptosActivos} activas (prueba)` : `${deptosActivos}/${limiteDeptos} activas`;
-        btnPlan.textContent = planActual === "Prueba" ? "Elegir Plan" : "Mejorar Plan";
-
-        if (estadoPago.toLowerCase().includes("aprobado")) {
-          const msg = document.createElement("span");
-          msg.className = "estado-msg success";
-          msg.textContent = "Plan activado!";
-          msg.style.marginLeft = "10px";
-          statusEl.appendChild(msg);
-          setTimeout(() => msg.remove(), 5000);
-        }
-      }
-
       function abrirModalPlan() {
-        document.getElementById("modalPlan").style.display = "block";
-        ["Basico", "Plus", "Full"].forEach(p => document.getElementById("mpBtn" + p).innerHTML = "");
+      document.getElementById("modalPlan").style.display = "flex";
+      ["Basico", "Plus", "Full"].forEach(p => document.getElementById("mpBtn" + p).innerHTML = "");
+    }
+
+    function cerrarModalPlan() {
+      document.getElementById("modalPlan").style.display = "none";
+    }
+
+    function cargarPreciosPlanes() {
+      const script = document.createElement("script");
+      script.src = `${API_URL}?action=getPlanes&callback=mostrarPreciosPlanes`;
+      document.body.appendChild(script);
+    }
+
+    function mostrarPreciosPlanes(res) {
+      if (res.success && res.data) {
+        res.data.forEach(p => {
+          if (p.nombre === "Basico") preciosPlanes.Basico = parseFloat(p.precio);
+          if (p.nombre === "Plus") preciosPlanes.Plus = parseFloat(p.precio);
+          if (p.nombre === "Full") preciosPlanes.Full = parseFloat(p.precio);
+        });
+      }
+    }
+
+    function cargarEstadoPlan() {
+      const email = localStorage.getItem("dueno");
+      if (!email) return;
+      const script = document.createElement("script");
+      script.src = `${API_URL}?action=getLoginInfo&email=${encodeURIComponent(email)}&callback=mostrarEstadoPlan`;
+      document.body.appendChild(script);
+    }
+
+    function mostrarEstadoPlan(res) {
+      const statusEl = document.getElementById("planStatus");
+      const limiteEl = document.getElementById("limiteAlquileres");
+      const btnPlan = document.getElementById("btnPlan");
+
+      if (!res.success || !res.data || res.data.length === 0) {
+        statusEl.innerHTML = "<b>Sin plan activo</b>";
+        limiteEl.textContent = "";
+        btnPlan.textContent = "Elegir Plan";
+        return;
       }
 
-      function cerrarModalPlan() {
-        document.getElementById("modalPlan").style.display = "none";
-      }
+      const login = res.data[0];
+      planActual = login.Plan || "Prueba";
+      limiteDeptos = planActual === "Prueba" ? Infinity : 
+                     planActual === "Basico" ? 3 :
+                     planActual === "Plus" ? 5 : 10;
 
-      async function seleccionarPlan(plan) {
-        const email = localStorage.getItem("dueno");
-        const precio = preciosPlanes[plan];
-        if (!precio || precio === 0) {
-          alert("Esperando carga de precios...");
-          return;
-        }
+      statusEl.innerHTML = `<strong>${planActual}</strong> | Vence: ${login.Vencimiento || "N/D"}`;
+      limiteEl.textContent = planActual === "Prueba" ? 
+        `${deptosActivos} activas (prueba)` : 
+        `${deptosActivos}/${limiteDeptos} activas`;
 
-        document.getElementById("planStatus").innerHTML = '<span class="estado-msg loading">Generando pago...</span>';
+      btnPlan.textContent = planActual === "Prueba" ? "Elegir Plan" : "Mejorar Plan";
+    }
 
-        const preference = {
-          items: [{ title: `Plan ${plan} - AlquiYa`, quantity: 1, unit_price: precio, currency_id: "ARS" }],
-          payer: { email: email },
-          external_reference: `${email}_${plan}`,
-          back_urls: {
-            success: window.location.href.split('?')[0] + "?status=approved",
-            failure: window.location.href.split('?')[0] + "?status=failed",
-            pending: window.location.href.split('?')[0] + "?status=pending"
-          },
-          auto_return: "approved",
-          notification_url: API_URL + "?action=updatePlan"
-        };
+    async function seleccionarPlan(plan) {
+      const email = localStorage.getItem("dueno");
+      const precio = preciosPlanes[plan];
+      if (!precio) return alert("Cargando precios...");
 
-        try {
-          const resp = await fetch("https://api.mercadopago.com/checkout/preferences", {
-            method: "POST",
-            headers: { "Authorization": "Bearer " + MP_BEARER, "Content-Type": "application/json" },
-            body: JSON.stringify(preference)
-          });
-          const data = await resp.json();
-          if (data.init_point) {
-            document.getElementById("mpBtn" + plan).innerHTML = `<iframe src="${data.init_point}" width="100%" height="650" frameborder="0"></iframe>`;
-            document.getElementById("planStatus").innerHTML = "";
-          }
-        } catch (err) {
-          document.getElementById("planStatus").innerHTML = '<span class="estado-msg error">Error al generar pago</span>';
-        }
-      }
-
-      window.planActualizado = function(res) {
-        if (res.success) {
-          cargarEstadoPlan();
-          cargarAlquileres();
-          cerrarModalPlan();
-        }
+      const preference = {
+        items: [{ title: `Plan ${plan}`, quantity: 1, unit_price: precio, currency_id: "ARS" }],
+        payer: { email },
+        external_reference: `${email}_${plan}`,
+        back_urls: { success: location.href.split('?')[0], failure: location.href.split('?')[0] },
+        auto_return: "approved",
+        notification_url: API_URL + "?action=updatePlan"
       };
 
-      async function checkPaymentOnReturn() {
-        const params = new URLSearchParams(window.location.search);
-        const status = params.get("status");
-        const paymentId = params.get("payment_id");
-        if (status && paymentId) {
-          document.getElementById("planStatus").innerHTML = '<span class="estado-msg loading">Verificando pago...</span>';
-          try {
-            const resp = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
-              headers: { "Authorization": "Bearer " + MP_BEARER }
-            });
-            const pago = await resp.json();
-            if (pago.status === "approved") {
-              const [email, plan] = pago.external_reference.split("_");
-              const script = document.createElement("script");
-              script.src = `${API_URL}?action=updatePlan&email=${encodeURIComponent(email)}&plan=${plan}&payment_id=${paymentId}&callback=planActualizado`;
-              document.body.appendChild(script);
-            }
-          } catch (err) { console.error(err); }
-          history.replaceState({}, "", window.location.pathname);
+      try {
+        const resp = await fetch("https://api.mercadopago.com/checkout/preferences", {
+          method: "POST",
+          headers: { "Authorization": "Bearer " + MP_BEARER, "Content-Type": "application/json" },
+          body: JSON.stringify(preference)
+        });
+        const data = await resp.json();
+        if (data.init_point) {
+          document.getElementById("mpBtn" + plan).innerHTML = 
+            `<iframe src="${data.init_point}" width="100%" height="650" frameborder="0"></iframe>`;
         }
+      } catch (err) {
+        alert("Error al generar pago");
       }
+    }
 
-      function actualizarContadorActivos(cantidad) {
-        deptosActivos = cantidad;
-        const limiteEl = document.getElementById("limiteAlquileres");
-        limiteEl.textContent = planActual === "Prueba" ? `${deptosActivos} activas (prueba)` : `${deptosActivos}/${limiteDeptos} activas`;
+    // === CARGA INICIAL ===
+    window.onload = function() {
+      const email = localStorage.getItem("dueno");
+      if (!email) { window.location.href = "index.html"; return; }
+
+      cargarPreciosPlanes();
+      cargarEstadoPlan();
+      cargarAlquileres();
+      checkPaymentOnReturn();
+    };
+
+    function checkPaymentOnReturn() {
+      const params = new URLSearchParams(location.search);
+      if (params.get("status") === "approved") {
+        setTimeout(cargarEstadoPlan, 3000);
+        history.replaceState({}, "", location.pathname);
       }
+    }
 
 function mostrarAlquileres(res) {
   const div = document.getElementById("listaAlquileres");
@@ -852,23 +813,6 @@ function mostrarFormulario(tipo) {
   document.getElementById(`formulario${tipo}`).classList.add("active");
   document.getElementById("btnAgregarPropiedad").textContent = "Cerrar Opciones";
   window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
-}
-window.onload = function() {
-  initGoogleCharts();
-  const email = localStorage.getItem("dueno");
-  if (!email) { window.location.href = "index.html"; return; }
-
-  cargarPreciosPlanes();
-  cargarEstadoPlan();
-  cargarAlquileres();
-  cargarDatosCuenta();
-  checkPaymentOnReturn();
-  ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'].forEach(tipo => {
-    inicializarPreviewImagenes(tipo);
-    inicializarPreviewVideos(tipo);
-    if (tipo === 'Departamento' || tipo === 'Terreno' || tipo === 'Casa') inicializarFormatoPrecio(tipo);
-  });
-  document.getElementById("tipoOperacion").addEventListener("change", mostrarOpcionesPorOperacion);
 }
 }
 function cargarAlquileres() {
