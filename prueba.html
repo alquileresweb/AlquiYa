@@ -325,7 +325,7 @@
     <div id="formularioLocal">...</div>
     <div id="formularioTemporario">...</div>
 
-    <!-- MODAL DE PLANES (CORREGIDO Y FUNCIONAL) -->
+    <!-- MODAL DE PLANES -->
     <div id="modalPlan" class="modal">
       <div class="modal-content">
         <span class="close-modal" onclick="cerrarModalPlan()">&times;</span>
@@ -356,7 +356,7 @@
       </div>
     </div>
 
-    <!-- Otros modales (sin cambios) -->
+    <!-- Otros modales -->
     <div id="modalEditarCuenta" class="modal">...</div>
     <div id="modalEstadisticas" class="modal">...</div>
 
@@ -366,17 +366,22 @@
 
     <script>
       const API_URL = "https://script.google.com/macros/s/AKfycbyFvDRwPZoG6ChhvcxGm6B27ziD6Qkg4RcH0TI9K59b7zPz7iFxy7mgmbs5mo5T-TxD/exec";
+      const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
+      const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
+      const GEOCODE_KEY = "AIzaSyAisqYSTfpQ_rqqutAomzitD2v_dtKYtLE";
       const MP_BEARER = "APP_USR-595288641172928-010710-d915bce4137b3ee26e0c6e04873f1ac1-695835795";
 
+      let imagenesBase64 = { Departamento: [], Local: [], Temporario: [], Terreno: [], Casa: [] };
+      let videosBase64 = { Departamento: [], Local: [], Temporario: [], Terreno: [], Casa: [] };
       let planActual = null;
       let limiteDeptos = 0;
       let deptosActivos = 0;
       let planesData = { Basico: { precio: 0 }, Plus: { precio: 0 }, Full: { precio: 0 } };
 
-      // === FUNCIONES DEL MODAL DE PLANES (CORREGIDAS) ===
+      // === FUNCIONES DEL MODAL DE PLANES ===
       function abrirModalPlan() {
         document.getElementById("modalPlan").style.display = "block";
-        cargarPlanesDesdeBackend(); // Recargar precios al abrir
+        cargarPlanesDesdeBackend();
       }
 
       function cerrarModalPlan() {
@@ -386,7 +391,7 @@
         document.getElementById("mpBtnFull").innerHTML = "";
       }
 
-      // Cerrar modal al hacer clic fuera
+      // Cerrar al hacer clic fuera
       window.onclick = function(e) {
         const modal = document.getElementById("modalPlan");
         if (e.target === modal) cerrarModalPlan();
@@ -422,7 +427,7 @@
         return `$${enteroFormateado},${decimal}`;
       }
 
-      // === SELECCIONAR PLAN (con precios reales) ===
+      // === SELECCIONAR PLAN ===
       async function seleccionarPlan(plan) {
         const email = localStorage.getItem("dueno");
         const precio = planesData[plan]?.precio || 0;
@@ -451,8 +456,40 @@
           }
         } catch (err) {
           console.error("Error Mercado Pago:", err);
-          alert("Error al generar el pago. Intenta de nuevo.");
+          alert("Error al generar el pago.");
         }
+      }
+
+      // === FUNCIONES BÁSICAS (toggleMenu, toggleOpcionesPropiedad, etc.) ===
+      function toggleMenu() {
+        document.getElementById("menu").classList.toggle("active");
+      }
+
+      function toggleOpcionesPropiedad() {
+        const opciones = document.getElementById("opcionesPropiedad");
+        const btn = document.getElementById("btnAgregarPropiedad");
+        if (opciones.classList.contains("active")) {
+          opciones.classList.remove("active");
+          document.getElementById("opcionesVenta").classList.remove("active");
+          document.getElementById("opcionesAlquiler").classList.remove("active");
+          btn.textContent = "Agregar Propiedad";
+          resetAllForms();
+        } else {
+          opciones.classList.add("active");
+          btn.textContent = "Cerrar Opciones";
+        }
+      }
+
+      function mostrarOpcionesPorOperacion() {
+        const tipo = document.getElementById("tipoOperacion").value;
+        document.getElementById("opcionesVenta").classList.toggle("active", tipo === "Vender");
+        document.getElementById("opcionesAlquiler").classList.toggle("active", tipo === "Alquilar");
+      }
+
+      function mostrarFormulario(tipo) {
+        document.querySelectorAll('[id^="formulario"]').forEach(f => f.classList.remove("active"));
+        document.getElementById(`formulario${tipo}`).classList.add("active");
+        document.getElementById("btnAgregarPropiedad").textContent = "Cerrar Opciones";
       }
 
       // === CARGA INICIAL ===
