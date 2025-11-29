@@ -194,7 +194,6 @@
         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         z-index: 999;
       }
-
       /* ==== SELECTOR MODERNO ==== */
       #seleccionPropiedad {
         display: none;
@@ -207,7 +206,6 @@
         animation: fadeIn 0.4s;
       }
       #seleccionPropiedad.active { display: block; }
-
       .seleccion-container {
         display: flex;
         flex-direction: column;
@@ -258,7 +256,6 @@
         background: #3651d4;
         transform: translateY(-2px);
       }
-
       /* ==== FORMULARIOS MODERNOS ==== */
       [id^="formulario"] {
         display: none;
@@ -266,14 +263,13 @@
         max-width: 750px;
         background: white;
         padding: 32px;
-        border-radius: var("var(--radius)");
+        border-radius: var(--radius);
         box-shadow: var(--shadow);
         animation: fadeIn 0.4s;
         box-sizing: border-box;
       }
       [id^="formulario"].active { display: block; }
       @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
       .form-group {
         position: relative;
         margin-bottom: 28px;
@@ -313,7 +309,6 @@
         font-size: 18px;
       }
       .form-group textarea { resize: vertical; min-height: 100px; }
-
       /* IMÁGENES Y VIDEOS AL LADO */
       .media-upload-container {
         display: grid;
@@ -324,7 +319,6 @@
       @media (max-width: 600px) {
         .media-upload-container { grid-template-columns: 1fr; }
       }
-
       .file-upload {
         border: 2px dashed #cbd5e1;
         border-radius: 12px;
@@ -340,7 +334,6 @@
       }
       .file-upload:hover { border-color: var(--primary); background: #eef2ff; }
       .file-upload input { display: none; }
-
       .preview-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -367,7 +360,6 @@
         cursor: pointer;
         font-size: 16px;
       }
-
       .btn-guardar {
         width: 100%;
         padding: 18px;
@@ -383,7 +375,6 @@
         box-shadow: 0 10px 25px rgba(67,97,238,0.3);
       }
       .btn-guardar:hover { background: #3651d4; transform: translateY(-3px); }
-
       .msg-estado {
         text-align: center;
         font-weight: bold;
@@ -395,7 +386,6 @@
       .estado-msg.success { background: #d1fae5; color: #065f46; }
       .estado-msg.error { background: #fee2e2; color: #991b1b; }
       .estado-msg.loading { background: #dbeafe; color: #1e40af; }
-
       .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
       .modal.active { display: flex; }
       .modal-content {
@@ -412,7 +402,6 @@
       }
       .close-modal { position: absolute; top: 12px; right: 16px; font-size: 28px; font-weight: bold; cursor: pointer; color: #aaa; }
       .close-modal:hover { color: var(--danger); }
-
       @media (max-width: 600px) {
         body { font-size: 20px; padding-top: 100px; }
         #seleccionPropiedad, [id^="formulario"] { padding: 20px; }
@@ -428,7 +417,6 @@
       <button onclick="logout()">Cerrar Sesión</button>
     </div>
     <header><div></div><img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya"><div></div></header>
-
     <div id="planContainer">
       <b>Mi plan</b>
       <div id="planStatus"></div>
@@ -438,7 +426,6 @@
     <h3>Mis Propiedades</h3>
     <div id="listaAlquileres">Cargando...</div>
 
-    <!-- BOTÓN PRINCIPAL -->
     <button id="btnAgregarPropiedad" onclick="toggleOpcionesPropiedad()">Agregar Propiedad</button>
 
     <!-- SELECTOR MODERNO -->
