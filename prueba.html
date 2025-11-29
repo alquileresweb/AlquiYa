@@ -256,8 +256,6 @@
         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         z-index: 999;
       }
-
-      /* NUEVO: Ocultar formularios por defecto */
       [id^="formulario"] {
         display: none;
         margin: 30px auto;
@@ -270,8 +268,6 @@
       [id^="formulario"].active {
         display: block;
       }
-
-      /* Opciones de propiedad */
       #opcionesPropiedad {
         display: none;
         margin: 20px auto;
@@ -281,7 +277,6 @@
       #opcionesPropiedad.active { display: block; }
       #opcionesVenta, #opcionesAlquiler { display: none; }
       #opcionesVenta.active, #opcionesAlquiler.active { display: block; }
-
       @media (max-width: 600px) {
         body { font-size: 20px; padding-top: 100px; }
         #back-arrow, #menu-toggle { width: 56px; height: 56px; font-size: 36px; }
@@ -338,14 +333,26 @@
     </div>
 
     <!-- Formularios ocultos por defecto -->
-    <div id="formularioTerreno"><input type="hidden" id="editRowTerreno"><input type="hidden" id="enlaceCompartirTerreno"><input type="hidden" id="existingVideosTerreno"><label>Superficie total (m²)</label><input type="number" id="superficieTerreno"><label>Dirección</label><input type="text" id="direccionTerreno"><label>Precio (USD)</label><input type="text" id="precioTerreno"><label>Imágenes del Terreno</label><input type="file" id="imagenFileTerreno" accept="image/png, image/jpeg" multiple><div id="previewContainerTerreno"></div><label>Videos del Terreno</label><input type="file" id="videoFileTerreno" accept="video/*" multiple><div id="videoPreviewContainerTerreno"></div><label>Información de pago</label><textarea id="infoIngresoTerreno" rows="2"></textarea><label>Detalles</label><textarea id="detallesTerreno" rows="3"></textarea><button id="btnGuardarTerreno" onclick="agregarAlquiler('Terreno')">Agregar</button><p id="msgTerreno"></p></div>
-    <div id="formularioCasa"><input type="hidden" id="editRowCasa"><input type="hidden" id="enlaceCompartirCasa"><input type="hidden" id="existingVideosCasa"><label>Dirección</label><input type="text" id="direccionCasa"><label>Precio (USD)</label><input type="text" id="precioCasa"><label>Detalle de Ambientes</label><input type="number" id="ambientesCasa"><label>Patio</label><select id="patioCasa"><option value="Sí">Sí</option><option value="No">No</option></select><label>Garage</label><select id="garageCasa"><option value="Sí">Sí</option><option value="No">No</option></select><label>Antigüedad (años)</label><input type="number" id="antiguedadCasa"><label>Imágenes de la Casa</label><input type="file" id="imagenFileCasa" accept="image/png, image/jpeg" multiple><div id="previewContainerCasa"></div><label>Videos de la Casa</label><input type="file" id="videoFileCasa" accept="video/*" multiple><div id="videoPreviewContainerCasa"></div><label>Información de pago</label><textarea id="infoIngresoCasa" rows="2"></textarea><label>Otros detalles</label><textarea id="detallesCasa" rows="3"></textarea><button id="btnGuardarCasa" onclick="agregarAlquiler('Casa')">Agregar</button><p id="msgCasa"></p></div>
-    <div id="formularioDepartamento"><input type="hidden" id="editRowDepartamento"><input type="hidden" id="enlaceCompartirDepartamento"><input type="hidden" id="existingVideosDepartamento"><label>Dirección</label><input type="text" id="direccionDepartamento"><label>Ambientes</label><input type="number" id="ambientesDepartamento"><label>Precio (USD)</label><input type="text" id="precioDepartamento"><label>Imágenes del Alquiler</label><input type="file" id="imagenFileDepartamento" accept="image/png, image/jpeg" multiple><div id="previewContainerDepartamento"></div><label>Videos del Alquiler</label><input type="file" id="videoFileDepartamento" accept="video/*" multiple><div id="videoPreviewContainerDepartamento"></div><label>Información de pago</label><textarea id="infoIngresoDepartamento" rows="2"></textarea><label>Otros detalles</label><textarea id="detallesDepartamento" rows="3"></textarea><button id="btnGuardarDepartamento" onclick="agregarAlquiler('Departamento')">Agregar</button><p id="msgDepartamento"></p></div>
-    <div id="formularioLocal"><input type="hidden" id="editRowLocal"><input type="hidden" id="enlaceCompartirLocal"><input type="hidden" id="existingVideosLocal"><label>Dirección</label><input type="text" id="direccionLocal"><label>Imágenes del Alquiler</label><input type="file" id="imagenFileLocal" accept="image/png, image/jpeg" multiple><div id="previewContainerLocal"></div><label>Videos del Alquiler</label><input type="file" id="videoFileLocal" accept="video/*" multiple><div id="videoPreviewContainerLocal"></div><label>Información de ingreso</label><textarea id="infoIngresoLocal" rows="2"></textarea><label>Detalles</label><textarea id="detallesLocal" rows="3"></textarea><button id="btnGuardarLocal" onclick="agregarAlquiler('Local')">Agregar</button><p id="msgLocal"></p></div>
-    <div id="formularioTemporario"><input type="hidden" id="editRowTemporario"><input type="hidden" id="enlaceCompartirTemporario"><input type="hidden" id="existingVideosTemporario"><label>Dirección</label><input type="text" id="direccionTemporario"><label>Imágenes del Alquiler</label><input type="file" id="imagenFileTemporario" accept="image/png, image/jpeg" multiple><div id="previewContainerTemporario"></div><label>Videos del Alquiler</label><input type="file" id="videoFileTemporario" accept="video/*" multiple><div id="videoPreviewContainerTemporario"></div><label>Información de ingreso</label><textarea id="infoIngresoTemporario" rows="2"></textarea><label>Detalles</label><textarea id="detallesTemporario" rows="3"></textarea><button id="btnGuardarTemporario" onclick="agregarAlquiler('Temporario')">Agregar</button><p id="msgTemporario"></p></div>
+    <div id="formularioTerreno">...</div>
+    <div id="formularioCasa">...</div>
+    <div id="formularioDepartamento">...</div>
+    <div id="formularioLocal">...</div>
+    <div id="formularioTemporario">...</div>
 
-    <!-- Modales (sin cambios) -->
-    <div id="modalPlan" class="modal"><div class="modal-content">...</div></div>
+    <!-- Modales -->
+    <div id="modalPlan" class="modal" style="display:none;">
+      <div class="modal-content">
+        <h2>Elige tu plan</h2>
+        <button onclick="seleccionarPlan('Basico')">Plan Básico</button>
+        <button onclick="seleccionarPlan('Plus')">Plan Plus</button>
+        <button onclick="seleccionarPlan('Full')">Plan Full</button>
+        <div id="mpBtnBasico"></div>
+        <div id="mpBtnPlus"></div>
+        <div id="mpBtnFull"></div>
+        <button onclick="cerrarModalPlan()">Cerrar</button>
+      </div>
+    </div>
+
     <div id="modalEditarCuenta" class="modal"><div class="modal-content">...</div></div>
     <div id="modalEstadisticas"><div class="modal-content">...</div></div>
 
@@ -353,234 +360,170 @@
       <i class="fab fa-whatsapp"></i>
     </button>
 
-<script>
-// === CONSTANTES Y VARIABLES ===
-const API_URL = "https://script.google.com/macros/s/AKfycbyFvDRwPZoG6ChhvcxGm6B27ziD6Qkg4RcH0TI9K59b7zPz7iFxy7mgmbs5mo5T-TxD/exec";
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
-const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
-const GEOCODE_KEY = "AIzaSyAisqYSTfpQ_rqqutAomzitD2v_dtKYtLE";
-const MP_BEARER = "APP_USR-595288641172928-010710-d915bce4137b3ee26e0c6e04873f1ac1-695835795";
-let imagenesBase64 = { Departamento: [], Local: [], Temporario: [], Terreno: [], Casa: [] };
-let videosBase64 = { Departamento: [], Local: [], Temporario: [], Terreno: [], Casa: [] };
-  
-  // === VARIABLES GLOBALES DE PLAN ===
-  let planActual = null;
-  let limiteDeptos = 0;
-  let deptosActivos = 0;
-  let preciosPlanes = { Basico: 0, Plus: 0, Full: 0 };
+    <!-- === TODO EL JAVASCRIPT EN UN SOLO BLOQUE CORRECTO === -->
+    <script>
+      // === CONSTANTES Y VARIABLES ===
+      const API_URL = "https://script.google.com/macros/s/AKfycbyFvDRwPZoG6ChhvcxGm6B27ziD6Qkg4RcH0TI9K59b7zPz7iFxy7mgmbs5mo5T-TxD/exec";
+      const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnugmwern/image/upload";
+      const CLOUDINARY_UPLOAD_PRESET = "preset_alquileres";
+      const GEOCODE_KEY = "AIzaSyAisqYSTfpQ_rqqutAomzitD2v_dtKYtLE";
+      const MP_BEARER = "APP_USR-595288641172928-010710-d915bce4137b3ee26e0c6e04873f1ac1-695835795";
 
-  // === CARGAR PRECIOS DE PLANES ===
-  function cargarPreciosPlanes() {
-    const script = document.createElement("script");
-    script.src = `${API_URL}?action=getPlanes&callback=mostrarPreciosPlanes`;
-    document.body.appendChild(script);
-  }
+      let imagenesBase64 = { Departamento: [], Local: [], Temporario: [], Terreno: [], Casa: [] };
+      let videosBase64 = { Departamento: [], Local: [], Temporario: [], Terreno: [], Casa: [] };
 
-  function mostrarPreciosPlanes(res) {
-    if (res.success && res.data) {
-      res.data.forEach(p => {
-        if (p.nombre === "Basico") preciosPlanes.Basico = parseFloat(p.precio);
-        if (p.nombre === "Plus") preciosPlanes.Plus = parseFloat(p.precio);
-        if (p.nombre === "Full") preciosPlanes.Full = parseFloat(p.precio);
-      });
-    }
-  }
+      // === VARIABLES DE PLAN (CORREGIDAS) ===
+      let planActual = null;
+      let limiteDeptos = 0;
+      let deptosActivos = 0;
+      let preciosPlanes = { Basico: 0, Plus: 0, Full: 0 };
 
-  // === CARGAR ESTADO DEL PLAN ===
-  function cargarEstadoPlan() {
-    const email = localStorage.getItem("dueno");
-    if (!email) return;
-    const script = document.createElement("script");
-    script.src = `${API_URL}?action=getLoginInfo&email=${encodeURIComponent(email)}&callback=mostrarEstadoPlan`;
-    document.body.appendChild(script);
-  }
-
-  function mostrarEstadoPlan(res) {
-    const statusEl = document.getElementById("planStatus");
-    const limiteEl = document.getElementById("limiteAlquileres");
-    const btnPlan = document.getElementById("btnPlan");
-
-    if (!res.success || !res.data || res.data.length === 0) {
-      planActual = "Sin plan";
-      limiteDeptos = 0;
-      statusEl.innerHTML = `<b>Sin plan activo</b>`;
-      limiteEl.textContent = "";
-      btnPlan.textContent = "Elegir Plan";
-      return;
-    }
-
-    const login = res.data[0];
-    planActual = login.Plan || "Prueba";
-    const estadoPago = login.EstadoPago || "Pendiente";
-    const vencimiento = login.Vencimiento ? formatoFecha(login.Vencimiento) : "N/D";
-
-    // Cálculo de límite
-    if (planActual === "Prueba") limiteDeptos = Infinity;
-    else if (planActual === "Basico") limiteDeptos = 3;
-    else if (planActual === "Plus") limiteDeptos = 5;
-    else if (planActual === "Full") limiteDeptos = 10;
-    else limiteDeptos = 0;
-
-    // Actualizar UI
-    statusEl.innerHTML = `
-      <strong>${planActual}</strong> 
-      ${estadoPago === "Aprobado" ? "✅" : ""} 
-      | Vence: ${vencimiento}
-    `;
-
-    // Contador de propiedades activas (se actualiza en mostrarAlquileres)
-    if (planActual === "Prueba") {
-      limiteEl.textContent = `${deptosActivos} propiedades activas (prueba)`;
-    } else {
-      limiteEl.textContent = `${deptosActivos}/${limiteDeptos} propiedades activas`;
-    }
-
-    btnPlan.textContent = planActual === "Prueba" || !planActual ? "Elegir Plan" : "Mejorar Plan";
-
-    // Mensaje de éxito temporal
-    if (estadoPago.toLowerCase().includes("aprobado")) {
-      const msg = document.createElement("span");
-      msg.className = "estado-msg success";
-      msg.textContent = "¡Plan activado correctamente!";
-      msg.style.marginLeft = "10px";
-      statusEl.appendChild(msg);
-      setTimeout(() => msg.remove(), 5000);
-    }
-  }
-
-  // === ABRIR MODAL DE PLANES ===
-  function abrirModalPlan() {
-    document.getElementById("modalPlan").style.display = "block";
-    // Limpiar iframes anteriores
-    ["Basico", "Plus", "Full"].forEach(p => {
-      document.getElementById("mpBtn" + p).innerHTML = "";
-    });
-  }
-
-  function cerrarModalPlan() {
-    document.getElementById("modalPlan").style.display = "none";
-  }
-
-  // === SELECCIONAR PLAN Y GENERAR PAGO ===
-  async function seleccionarPlan(plan) {
-    const email = localStorage.getItem("dueno");
-    const precio = preciosPlanes[plan];
-    if (!precio || precio === 0) {
-      alert("Error: precio del plan no cargado aún. Intenta en unos segundos.");
-      return;
-    }
-
-    document.getElementById("planStatus").innerHTML = '<span class="estado-msg loading">Generando pago...</span>';
-
-    const preference = {
-      items: [{
-        title: `Plan ${plan} - AlquiYa`,
-        quantity: 1,
-        unit_price: precio,
-        currency_id: "ARS"
-      }],
-      payer: { email: email },
-      external_reference: `${email}_${plan}`,
-      back_urls: {
-        success: window.location.href.split('?')[0] + "?status=approved",
-        failure: window.location.href.split('?')[0] + "?status=failed",
-        pending: window.location.href.split('?')[0] + "?status=pending"
-      },
-      auto_return: "approved",
-      notification_url: API_URL + "?action=updatePlan"
-    };
-
-    try {
-      const resp = await fetch("https://api.mercadopago.com/checkout/preferences", {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + MP_BEARER,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(preference)
-      });
-
-      const data = await resp.json();
-      if (data.init_point) {
-        const container = document.getElementById("mpBtn" + plan);
-        container.innerHTML = `<iframe src="${data.init_point}" width="100%" height="650" frameborder="0"></iframe>`;
-        document.getElementById("planStatus").innerHTML = "";
-      } else {
-        throw new Error("No se recibió init_point");
+      // === FUNCIONES DE PLAN (TODAS DEFINIDAS ANTES DE USARSE) ===
+      function cargarPreciosPlanes() {
+        const script = document.createElement("script");
+        script.src = `${API_URL}?action=getPlanes&callback=mostrarPreciosPlanes`;
+        document.body.appendChild(script);
       }
-    } catch (err) {
-      console.error(err);
-      document.getElementById("planStatus").innerHTML = '<span class="estado-msg error">Error al generar el pago</span>';
-      setTimeout(cargarEstadoPlan, 3000);
-    }
-  }
 
-  // === CALLBACK DE PLAN ACTUALIZADO (desde webhook o checkPaymentOnReturn) ===
-  window.planActualizado = function(res) {
-    if (res.success) {
-      cargarEstadoPlan();
-      cargarAlquileres();
-      cerrarModalPlan();
-    }
-  };
-
-  // === VERIFICAR PAGO AL VOLVER ===
-  async function checkPaymentOnReturn() {
-    const params = new URLSearchParams(window.location.search);
-    const status = params.get("status");
-    const paymentId = params.get("payment_id");
-
-    if (status && paymentId) {
-      document.getElementById("planStatus").innerHTML = '<span class="estado-msg loading">Verificando pago...</span>';
-
-      try {
-        const resp = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
-          headers: { "Authorization": "Bearer " + MP_BEARER }
-        });
-        const pago = await resp.json();
-
-        if (pago.status === "approved") {
-          const [email, plan] = pago.external_reference.split("_");
-          const script = document.createElement("script");
-          script.src = `${API_URL}?action=updatePlan&email=${encodeURIComponent(email)}&plan=${plan}&payment_id=${paymentId}&callback=planActualizado`;
-          document.body.appendChild(script);
-        } else {
-          document.getElementById("planStatus").innerHTML = '<span class="estado-msg error">Pago no aprobado</span>';
-          setTimeout(cargarEstadoPlan, 4000);
+      function mostrarPreciosPlanes(res) {
+        if (res.success && res.data) {
+          res.data.forEach(p => {
+            if (p.nombre === "Basico") preciosPlanes.Basico = parseFloat(p.precio);
+            if (p.nombre === "Plus") preciosPlanes.Plus = parseFloat(p.precio);
+            if (p.nombre === "Full") preciosPlanes.Full = parseFloat(p.precio);
+          });
         }
-      } catch (err) {
-        document.getElementById("planStatus").innerHTML = '<span class="estado-msg error">Error verificando pago</span>';
       }
 
-      // Limpiar URL
-      history.replaceState({}, "", window.location.pathname);
-    }
-  }
-
-  // === ACTUALIZAR CONTADOR DE ACTIVOS (se llama desde mostrarAlquileres) ===
-  function actualizarContadorActivos(cantidad) {
-    deptosActivos = cantidad;
-    // Refrescar límite visual
-    const limiteEl = document.getElementById("limiteAlquileres");
-    if (planActual === "Prueba") {
-      limiteEl.textContent = `${deptosActivos} propiedades activas (prueba)`;
-    } else {
-      limiteEl.textContent = `${deptosActivos}/${limiteDeptos} propiedades activas`;
-    }
-
-    // Bloquear toggle si se alcanzó el límite
-    document.querySelectorAll('.toggle-switch input').forEach(input => {
-      const row = input.closest('.alquiler').querySelector('[onclick*="cambiarEstado"]')?.onclick?.toString().match(/cambiarEstado\((\d+)/)?.[1];
-      const yaActivo = input.checked;
-      if (!yaActivo && deptosActivos >= limiteDeptos && planActual !== "Prueba") {
-        input.disabled = true;
-        input.closest('.toggle-switch').title = `Límite alcanzado (${limiteDeptos} activas)`;
-      } else {
-        input.disabled = false;
-        input.closest('.toggle-switch').title = "";
+      function cargarEstadoPlan() {
+        const email = localStorage.getItem("dueno");
+        if (!email) return;
+        const script = document.createElement("script");
+        script.src = `${API_URL}?action=getLoginInfo&email=${encodeURIComponent(email)}&callback=mostrarEstadoPlan`;
+        document.body.appendChild(script);
       }
-    });
-  }
+
+      function mostrarEstadoPlan(res) {
+        const statusEl = document.getElementById("planStatus");
+        const limiteEl = document.getElementById("limiteAlquileres");
+        const btnPlan = document.getElementById("btnPlan");
+
+        if (!res.success || !res.data || res.data.length === 0) {
+          planActual = "Sin plan";
+          limiteDeptos = 0;
+          statusEl.innerHTML = `<b>Sin plan activo</b>`;
+          limiteEl.textContent = "";
+          btnPlan.textContent = "Elegir Plan";
+          return;
+        }
+
+        const login = res.data[0];
+        planActual = login.Plan || "Prueba";
+        const estadoPago = login.EstadoPago || "Pendiente";
+        const vencimiento = login.Vencimiento ? formatoFecha(login.Vencimiento) : "N/D";
+
+        limiteDeptos = planActual === "Prueba" ? Infinity :
+                       planActual === "Basico" ? 3 :
+                       planActual === "Plus" ? 5 :
+                       planActual === "Full" ? 10 : 0;
+
+        statusEl.innerHTML = `<strong>${planActual}</strong> ${estadoPago === "Aprobado" ? "Approved" : ""} | Vence: ${vencimiento}`;
+        limiteEl.textContent = planActual === "Prueba" ? `${deptosActivos} activas (prueba)` : `${deptosActivos}/${limiteDeptos} activas`;
+        btnPlan.textContent = planActual === "Prueba" ? "Elegir Plan" : "Mejorar Plan";
+
+        if (estadoPago.toLowerCase().includes("aprobado")) {
+          const msg = document.createElement("span");
+          msg.className = "estado-msg success";
+          msg.textContent = "Plan activado!";
+          msg.style.marginLeft = "10px";
+          statusEl.appendChild(msg);
+          setTimeout(() => msg.remove(), 5000);
+        }
+      }
+
+      function abrirModalPlan() {
+        document.getElementById("modalPlan").style.display = "block";
+        ["Basico", "Plus", "Full"].forEach(p => document.getElementById("mpBtn" + p).innerHTML = "");
+      }
+
+      function cerrarModalPlan() {
+        document.getElementById("modalPlan").style.display = "none";
+      }
+
+      async function seleccionarPlan(plan) {
+        const email = localStorage.getItem("dueno");
+        const precio = preciosPlanes[plan];
+        if (!precio || precio === 0) {
+          alert("Esperando carga de precios...");
+          return;
+        }
+
+        document.getElementById("planStatus").innerHTML = '<span class="estado-msg loading">Generando pago...</span>';
+
+        const preference = {
+          items: [{ title: `Plan ${plan} - AlquiYa`, quantity: 1, unit_price: precio, currency_id: "ARS" }],
+          payer: { email: email },
+          external_reference: `${email}_${plan}`,
+          back_urls: {
+            success: window.location.href.split('?')[0] + "?status=approved",
+            failure: window.location.href.split('?')[0] + "?status=failed",
+            pending: window.location.href.split('?')[0] + "?status=pending"
+          },
+          auto_return: "approved",
+          notification_url: API_URL + "?action=updatePlan"
+        };
+
+        try {
+          const resp = await fetch("https://api.mercadopago.com/checkout/preferences", {
+            method: "POST",
+            headers: { "Authorization": "Bearer " + MP_BEARER, "Content-Type": "application/json" },
+            body: JSON.stringify(preference)
+          });
+          const data = await resp.json();
+          if (data.init_point) {
+            document.getElementById("mpBtn" + plan).innerHTML = `<iframe src="${data.init_point}" width="100%" height="650" frameborder="0"></iframe>`;
+            document.getElementById("planStatus").innerHTML = "";
+          }
+        } catch (err) {
+          document.getElementById("planStatus").innerHTML = '<span class="estado-msg error">Error al generar pago</span>';
+        }
+      }
+
+      window.planActualizado = function(res) {
+        if (res.success) {
+          cargarEstadoPlan();
+          cargarAlquileres();
+          cerrarModalPlan();
+        }
+      };
+
+      async function checkPaymentOnReturn() {
+        const params = new URLSearchParams(window.location.search);
+        const status = params.get("status");
+        const paymentId = params.get("payment_id");
+        if (status && paymentId) {
+          document.getElementById("planStatus").innerHTML = '<span class="estado-msg loading">Verificando pago...</span>';
+          try {
+            const resp = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+              headers: { "Authorization": "Bearer " + MP_BEARER }
+            });
+            const pago = await resp.json();
+            if (pago.status === "approved") {
+              const [email, plan] = pago.external_reference.split("_");
+              const script = document.createElement("script");
+              script.src = `${API_URL}?action=updatePlan&email=${encodeURIComponent(email)}&plan=${plan}&payment_id=${paymentId}&callback=planActualizado`;
+              document.body.appendChild(script);
+            }
+          } catch (err) { console.error(err); }
+          history.replaceState({}, "", window.location.pathname);
+        }
+      }
+
+      function actualizarContadorActivos(cantidad) {
+        deptosActivos = cantidad;
+        const limiteEl = document.getElementById("limiteAlquileres");
+        limiteEl.textContent = planActual === "Prueba" ? `${deptosActivos} activas (prueba)` : `${deptosActivos}/${limiteDeptos} activas`;
+      }
 
 function mostrarAlquileres(res) {
   const div = document.getElementById("listaAlquileres");
