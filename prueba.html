@@ -250,7 +250,6 @@
         position: relative;
         box-shadow: 0 20px 40px rgba(0,0,0,0.2);
       }
-      .modal-content h2 { margin-top: 0; }
       .close-modal {
         position: absolute;
         top: 15px;
@@ -318,7 +317,7 @@
       </div>
     </div>
 
-    <!-- Formularios (mantén los tuyos) -->
+    <!-- Formularios -->
     <div id="formularioTerreno">...</div>
     <div id="formularioCasa">...</div>
     <div id="formularioDepartamento">...</div>
@@ -397,7 +396,7 @@
         if (e.target === modal) cerrarModalPlan();
       }
 
-      // === CARGAR PLANES DINÁMICOS ===
+      // === CARGAR PLANES DESDE EL BACKEND ===
       function cargarPlanesDesdeBackend() {
         const script = document.createElement("script");
         script.src = `${API_URL}?action=getPlanes&callback=actualizarPlanesUI`;
@@ -460,7 +459,7 @@
         }
       }
 
-      // === FUNCIONES BÁSICAS (toggleMenu, toggleOpcionesPropiedad, etc.) ===
+      // === FUNCIONES BÁSICAS ===
       function toggleMenu() {
         document.getElementById("menu").classList.toggle("active");
       }
@@ -506,80 +505,78 @@
         document.getElementById("tipoOperacion").addEventListener("change", mostrarOpcionesPorOperacion);
       }
 
-function mostrarAlquileres(res) {
-  const div = document.getElementById("listaAlquileres");
-  div.innerHTML = "";
-  if (!res.success || !res.data || res.data.length === 0) {
-    div.innerHTML = "<p style='font-size:1.6em; color:#666; text-align:center;'>No tienes propiedades aún.</p>";
-    return;
-  }
-  deptosActivos = res.data.filter(a => a.Estado === "Activo").length;
-  document.getElementById("limiteAlquileres").textContent =
-    planActual === "Prueba" ? `${deptosActivos} propiedades activas` :
-    `${deptosActivos}/${limiteDeptos} propiedades activas`;
+      // === RESTO DE TUS FUNCIONES (sin cambios) ===
+      function mostrarAlquileres(res) {
+        const div = document.getElementById("listaAlquileres");
+        div.innerHTML = "";
+        if (!res.success || !res.data || res.data.length === 0) {
+          div.innerHTML = "<p style='font-size:1.6em; color:#666; text-align:center;'>No tienes propiedades aún.</p>";
+          return;
+        }
+        deptosActivos = res.data.filter(a => a.Estado === "Activo").length;
+        document.getElementById("limiteAlquileres").textContent =
+          planActual === "Prueba" ? `${deptosActivos} propiedades activas` :
+          `${deptosActivos}/${limiteDeptos} propiedades activas`;
 
-  res.data.forEach(alq => {
-    let estado = alq.Estado === "Activo";
-    let idPropiedad = alq[13] || alq.ID || alq.row;
+        res.data.forEach(alq => {
+          let estado = alq.Estado === "Activo";
+          let idPropiedad = alq[13] || alq.ID || alq.row;
+          let precioFormateado = (alq.Tipo === "Departamento" || alq.Tipo === "Terreno" || alq.Tipo === "Casa") 
+            ? formatoPrecio(alq.Precio) : "";
+          let tipoDisplay = alq.Tipo;
+          if (alq.Operacion === "Alquilar") tipoDisplay += " (A)";
+          if (alq.Operacion === "Vender") tipoDisplay += " (R)";
+          let vistas = parseInt(alq.Vistas || alq[18] || 0) || 0;
+          let contactos = parseInt(alq.Consultas || alq.contactos || alq.Contactos || alq[19] || 0) || 0;
 
-    // Solo mostramos Precio y Tipo (A) / Subtipo (R)
-    let precioFormateado = (alq.Tipo === "Departamento" || alq.Tipo === "Terreno" || alq.Tipo === "Casa") 
-      ? formatoPrecio(alq.Precio) : "";
-    let tipoDisplay = alq.Tipo;
-    if (alq.Operacion === "Alquilar") tipoDisplay += " (A)";
-    if (alq.Operacion === "Vender") tipoDisplay += " (R)";
+          const statsHTML = `<div class="stats-inline">
+            <div class="stats-item"><i class="fa-solid fa-eye"></i><span class="stats-number">${vistas}</span> vistas</div>
+            <div class="stats-item"><i class="fa-solid fa-phone"></i><span class="stats-number">${contactos}</span> contactos</div>
+          </div>`;
 
-    let vistas = parseInt(alq.Vistas || alq[18] || 0) || 0;
-    let contactos = parseInt(alq.Consultas || alq.contactos || alq.Contactos || alq[19] || 0) || 0;
+          div.innerHTML += `<div class="alquiler">
+            <b>${alq.Direccion || alq.direccion}</b><br>
+            ${tipoDisplay}${precioFormateado ? " - " + precioFormateado : ""}<br>
+            Estado: <strong>${estado ? "Activo" : "Inactivo"}</strong><br>
+            ${statsHTML}
+            <div class="alquiler-actions">
+              <div class="alquiler-actions-left">
+                <button class="copy-share-btn" data-id="${idPropiedad}">Copiar enlace</button>
+                <button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>
+              </div>
+              <div class="alquiler-actions-right">
+                <button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>
+                <label class="toggle-switch">
+                  <input type="checkbox" ${estado ? "checked" : ""} onchange="cambiarEstado(${alq.row}, '${alq.Estado}')">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            <span id="estadoMsg-${alq.row}" class="estado-msg"></span>
+          </div>`;
+        });
 
-    const statsHTML = `<div class="stats-inline">
-      <div class="stats-item"><i class="fa-solid fa-eye"></i><span class="stats-number">${vistas}</span> vistas</div>
-      <div class="stats-item"><i class="fa-solid fa-phone"></i><span class="stats-number">${contactos}</span> contactos</div>
-    </div>`;
+        document.querySelectorAll('.copy-share-btn').forEach(btn => {
+          btn.onclick = function () {
+            const idPropiedad = this.getAttribute('data-id');
+            const url = `https://www.alquiya.com.ar/propiedad.html?id=${idPropiedad}`;
+            navigator.clipboard.writeText(url).then(() => {
+              const textoOriginal = this.innerHTML;
+              this.innerHTML = "Enlace copiado";
+              this.style.background = "#10b981";
+              setTimeout(() => { this.innerHTML = textoOriginal; this.style.background = ""; }, 2000);
+            }).catch(() => alert('Enlace (copia manual):\n' + url));
+          };
+        });
+      }
 
-    div.innerHTML += `<div class="alquiler">
-      <b>${alq.Direccion || alq.direccion}</b><br>
-      ${tipoDisplay}${precioFormateado ? " - " + precioFormateado : ""}<br>
-      Estado: <strong>${estado ? "Activo" : "Inactivo"}</strong><br>
-      ${statsHTML}
-      <div class="alquiler-actions">
-        <div class="alquiler-actions-left">
-          <button class="copy-share-btn" data-id="${idPropiedad}">Copiar enlace</button>
-          <button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>
-        </div>
-        <div class="alquiler-actions-right">
-          <button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>
-          <label class="toggle-switch">
-            <input type="checkbox" ${estado ? "checked" : ""} onchange="cambiarEstado(${alq.row}, '${alq.Estado}')">
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
-      <span id="estadoMsg-${alq.row}" class="estado-msg"></span>
-    </div>`;
-  });
+      function cargarAlquileres() {
+        const email = localStorage.getItem("dueno");
+        const script = document.createElement("script");
+        script.src = `${API_URL}?action=getAlquileresDueno&dueno=${encodeURIComponent(email)}&callback=mostrarAlquileres`;
+        document.body.appendChild(script);
+      }
 
-  document.querySelectorAll('.copy-share-btn').forEach(btn => {
-    btn.onclick = function () {
-      const idPropiedad = this.getAttribute('data-id');
-      const url = `https://www.alquiya.com.ar/propiedad.html?id=${idPropiedad}`;
-      fetch(`${API_URL}?action=generarEnlaceCompartido&id=${idPropiedad}`, {method: 'GET', mode: 'no-cors'}).catch(() => {});
-      navigator.clipboard.writeText(url).then(() => {
-        const textoOriginal = this.innerHTML;
-        this.innerHTML = "Enlace copiado";
-        this.style.background = "#10b981";
-        setTimeout(() => { this.innerHTML = textoOriginal; this.style.background = ""; }, 2000);
-      }).catch(() => alert('Enlace (copia manual):\n' + url));
-    };
-  });
-}
-
-function cargarAlquileres() {
-  const email = localStorage.getItem("dueno");
-  const script = document.createElement("script");
-  script.src = `${API_URL}?action=getAlquileresDueno&dueno=${encodeURIComponent(email)}&callback=mostrarAlquileres`;
-  document.body.appendChild(script);
-}
 function initGoogleCharts() {
   console.log('Inicializando Google Charts...');
   if (typeof google === 'undefined' || !google.charts) {
