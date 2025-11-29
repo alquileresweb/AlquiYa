@@ -362,10 +362,225 @@ const GEOCODE_KEY = "AIzaSyAisqYSTfpQ_rqqutAomzitD2v_dtKYtLE";
 const MP_BEARER = "APP_USR-595288641172928-010710-d915bce4137b3ee26e0c6e04873f1ac1-695835795";
 let imagenesBase64 = { Departamento: [], Local: [], Temporario: [], Terreno: [], Casa: [] };
 let videosBase64 = { Departamento: [], Local: [], Temporario: [], Terreno: [], Casa: [] };
-let planActual = null;
-let limiteDeptos = 0;
-let deptosActivos = 0;
-let preciosPlanes = {Basico: 0, Plus: 0, Full: 0};
+  
+  // === VARIABLES GLOBALES DE PLAN ===
+  let planActual = null;
+  let limiteDeptos = 0;
+  let deptosActivos = 0;
+  let preciosPlanes = { Basico: 0, Plus: 0, Full: 0 };
+
+  // === CARGAR PRECIOS DE PLANES ===
+  function cargarPreciosPlanes() {
+    const script = document.createElement("script");
+    script.src = `${API_URL}?action=getPlanes&callback=mostrarPreciosPlanes`;
+    document.body.appendChild(script);
+  }
+
+  function mostrarPreciosPlanes(res) {
+    if (res.success && res.data) {
+      res.data.forEach(p => {
+        if (p.nombre === "Basico") preciosPlanes.Basico = parseFloat(p.precio);
+        if (p.nombre === "Plus") preciosPlanes.Plus = parseFloat(p.precio);
+        if (p.nombre === "Full") preciosPlanes.Full = parseFloat(p.precio);
+      });
+    }
+  }
+
+  // === CARGAR ESTADO DEL PLAN ===
+  function cargarEstadoPlan() {
+    const email = localStorage.getItem("dueno");
+    if (!email) return;
+    const script = document.createElement("script");
+    script.src = `${API_URL}?action=getLoginInfo&email=${encodeURIComponent(email)}&callback=mostrarEstadoPlan`;
+    document.body.appendChild(script);
+  }
+
+  function mostrarEstadoPlan(res) {
+    const statusEl = document.getElementById("planStatus");
+    const limiteEl = document.getElementById("limiteAlquileres");
+    const btnPlan = document.getElementById("btnPlan");
+
+    if (!res.success || !res.data || res.data.length === 0) {
+      planActual = "Sin plan";
+      limiteDeptos = 0;
+      statusEl.innerHTML = `<b>Sin plan activo</b>`;
+      limiteEl.textContent = "";
+      btnPlan.textContent = "Elegir Plan";
+      return;
+    }
+
+    const login = res.data[0];
+    planActual = login.Plan || "Prueba";
+    const estadoPago = login.EstadoPago || "Pendiente";
+    const vencimiento = login.Vencimiento ? formatoFecha(login.Vencimiento) : "N/D";
+
+    // Cálculo de límite
+    if (planActual === "Prueba") limiteDeptos = Infinity;
+    else if (planActual === "Basico") limiteDeptos = 3;
+    else if (planActual === "Plus") limiteDeptos = 5;
+    else if (planActual === "Full") limiteDeptos = 10;
+    else limiteDeptos = 0;
+
+    // Actualizar UI
+    statusEl.innerHTML = `
+      <strong>${planActual}</strong> 
+      ${estadoPago === "Aprobado" ? "✅" : ""} 
+      | Vence: ${vencimiento}
+    `;
+
+    // Contador de propiedades activas (se actualiza en mostrarAlquileres)
+    if (planActual === "Prueba") {
+      limiteEl.textContent = `${deptosActivos} propiedades activas (prueba)`;
+    } else {
+      limiteEl.textContent = `${deptosActivos}/${limiteDeptos} propiedades activas`;
+    }
+
+    btnPlan.textContent = planActual === "Prueba" || !planActual ? "Elegir Plan" : "Mejorar Plan";
+
+    // Mensaje de éxito temporal
+    if (estadoPago.toLowerCase().includes("aprobado")) {
+      const msg = document.createElement("span");
+      msg.className = "estado-msg success";
+      msg.textContent = "¡Plan activado correctamente!";
+      msg.style.marginLeft = "10px";
+      statusEl.appendChild(msg);
+      setTimeout(() => msg.remove(), 5000);
+    }
+  }
+
+  // === ABRIR MODAL DE PLANES ===
+  function abrirModalPlan() {
+    document.getElementById("modalPlan").style.display = "block";
+    // Limpiar iframes anteriores
+    ["Basico", "Plus", "Full"].forEach(p => {
+      document.getElementById("mpBtn" + p).innerHTML = "";
+    });
+  }
+
+  function cerrarModalPlan() {
+    document.getElementById("modalPlan").style.display = "none";
+  }
+
+  // === SELECCIONAR PLAN Y GENERAR PAGO ===
+  async function seleccionarPlan(plan) {
+    const email = localStorage.getItem("dueno");
+    const precio = preciosPlanes[plan];
+    if (!precio || precio === 0) {
+      alert("Error: precio del plan no cargado aún. Intenta en unos segundos.");
+      return;
+    }
+
+    document.getElementById("planStatus").innerHTML = '<span class="estado-msg loading">Generando pago...</span>';
+
+    const preference = {
+      items: [{
+        title: `Plan ${plan} - AlquiYa`,
+        quantity: 1,
+        unit_price: precio,
+        currency_id: "ARS"
+      }],
+      payer: { email: email },
+      external_reference: `${email}_${plan}`,
+      back_urls: {
+        success: window.location.href.split('?')[0] + "?status=approved",
+        failure: window.location.href.split('?')[0] + "?status=failed",
+        pending: window.location.href.split('?')[0] + "?status=pending"
+      },
+      auto_return: "approved",
+      notification_url: API_URL + "?action=updatePlan"
+    };
+
+    try {
+      const resp = await fetch("https://api.mercadopago.com/checkout/preferences", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + MP_BEARER,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(preference)
+      });
+
+      const data = await resp.json();
+      if (data.init_point) {
+        const container = document.getElementById("mpBtn" + plan);
+        container.innerHTML = `<iframe src="${data.init_point}" width="100%" height="650" frameborder="0"></iframe>`;
+        document.getElementById("planStatus").innerHTML = "";
+      } else {
+        throw new Error("No se recibió init_point");
+      }
+    } catch (err) {
+      console.error(err);
+      document.getElementById("planStatus").innerHTML = '<span class="estado-msg error">Error al generar el pago</span>';
+      setTimeout(cargarEstadoPlan, 3000);
+    }
+  }
+
+  // === CALLBACK DE PLAN ACTUALIZADO (desde webhook o checkPaymentOnReturn) ===
+  window.planActualizado = function(res) {
+    if (res.success) {
+      cargarEstadoPlan();
+      cargarAlquileres();
+      cerrarModalPlan();
+    }
+  };
+
+  // === VERIFICAR PAGO AL VOLVER ===
+  async function checkPaymentOnReturn() {
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get("status");
+    const paymentId = params.get("payment_id");
+
+    if (status && paymentId) {
+      document.getElementById("planStatus").innerHTML = '<span class="estado-msg loading">Verificando pago...</span>';
+
+      try {
+        const resp = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+          headers: { "Authorization": "Bearer " + MP_BEARER }
+        });
+        const pago = await resp.json();
+
+        if (pago.status === "approved") {
+          const [email, plan] = pago.external_reference.split("_");
+          const script = document.createElement("script");
+          script.src = `${API_URL}?action=updatePlan&email=${encodeURIComponent(email)}&plan=${plan}&payment_id=${paymentId}&callback=planActualizado`;
+          document.body.appendChild(script);
+        } else {
+          document.getElementById("planStatus").innerHTML = '<span class="estado-msg error">Pago no aprobado</span>';
+          setTimeout(cargarEstadoPlan, 4000);
+        }
+      } catch (err) {
+        document.getElementById("planStatus").innerHTML = '<span class="estado-msg error">Error verificando pago</span>';
+      }
+
+      // Limpiar URL
+      history.replaceState({}, "", window.location.pathname);
+    }
+  }
+
+  // === ACTUALIZAR CONTADOR DE ACTIVOS (se llama desde mostrarAlquileres) ===
+  function actualizarContadorActivos(cantidad) {
+    deptosActivos = cantidad;
+    // Refrescar límite visual
+    const limiteEl = document.getElementById("limiteAlquileres");
+    if (planActual === "Prueba") {
+      limiteEl.textContent = `${deptosActivos} propiedades activas (prueba)`;
+    } else {
+      limiteEl.textContent = `${deptosActivos}/${limiteDeptos} propiedades activas`;
+    }
+
+    // Bloquear toggle si se alcanzó el límite
+    document.querySelectorAll('.toggle-switch input').forEach(input => {
+      const row = input.closest('.alquiler').querySelector('[onclick*="cambiarEstado"]')?.onclick?.toString().match(/cambiarEstado\((\d+)/)?.[1];
+      const yaActivo = input.checked;
+      if (!yaActivo && deptosActivos >= limiteDeptos && planActual !== "Prueba") {
+        input.disabled = true;
+        input.closest('.toggle-switch').title = `Límite alcanzado (${limiteDeptos} activas)`;
+      } else {
+        input.disabled = false;
+        input.closest('.toggle-switch').title = "";
+      }
+    });
+  }
 
 function mostrarAlquileres(res) {
   const div = document.getElementById("listaAlquileres");
@@ -375,6 +590,7 @@ function mostrarAlquileres(res) {
     return;
   }
   deptosActivos = res.data.filter(a => a.Estado === "Activo").length;
+  actualizarContadorActivos(deptosActivos);
   document.getElementById("limiteAlquileres").textContent =
     planActual === "Prueba" ? `${deptosActivos} propiedades activas` :
     `${deptosActivos}/${limiteDeptos} propiedades activas`;
@@ -698,9 +914,10 @@ window.onload = function() {
   initGoogleCharts();
   const email = localStorage.getItem("dueno");
   if (!email) { window.location.href = "index.html"; return; }
+
+  cargarPreciosPlanes();
   cargarEstadoPlan();
   cargarAlquileres();
-  cargarPreciosPlanes();
   cargarDatosCuenta();
   checkPaymentOnReturn();
   ['Departamento', 'Local', 'Temporario', 'Terreno', 'Casa'].forEach(tipo => {
@@ -709,149 +926,6 @@ window.onload = function() {
     if (tipo === 'Departamento' || tipo === 'Terreno' || tipo === 'Casa') inicializarFormatoPrecio(tipo);
   });
   document.getElementById("tipoOperacion").addEventListener("change", mostrarOpcionesPorOperacion);
-}
-async function checkPaymentOnReturn() {
-const urlParams = new URLSearchParams(window.location.search);
-const status = urlParams.get("status");
-const paymentId = urlParams.get("payment_id");
-const planStatusEl = document.getElementById("planStatus");
-if (status && paymentId) {
-planStatusEl.innerHTML = `<span class="estado-msg loading">Verificando estado del pago...</span>`;
-try {
-const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
-method: "GET",
-headers: { "Authorization": "Bearer " + MP_BEARER }
-});
-const paymentData = await response.json();
-if (response.ok && paymentData.status === "approved") {
-const [email, plan] = paymentData.external_reference.split("_");
-const script = document.createElement("script");
-script.src = `${API_URL}?action=updatePlan&email=${encodeURIComponent(email)}&plan=${plan}&payment_id=${paymentId}&estadoPago=Aprobado&descripcionPago=Pago%20plan%20${plan}%20-%20ID:%20${paymentId}&callback=planActualizado`;
-document.body.appendChild(script);
-} else {
-planStatusEl.innerHTML = `<span class="estado-msg error">Pago no aprobado. Estado: ${paymentData.status || "Desconocido"}.</span>`;
-setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
-}
-} catch (err) {
-console.error("Error verificando pago:", err);
-planStatusEl.innerHTML = `<span class="estado-msg error">Error al verificar el pago. Por favor, intenta de nuevo.</span>`;
-setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
-}
-window.history.replaceState({}, document.title, window.location.pathname);
-}
-// === CARGAR PRECIOS PLANES ===
-function cargarPreciosPlanes() {
-const script = document.createElement("script");
-script.src = ${API_URL}?action=getPlanes&callback=mostrarPreciosPlanes;
-document.body.appendChild(script);
-}
-function mostrarPreciosPlanes(res) {
-if (res.success && res.data && res.data.length) {
-res.data.forEach(plan => {
-preciosPlanes[plan.nombre] = parseFloat(plan.precio) || 0;
-});
-document.getElementById("precioBasico").textContent = formatoPrecio(preciosPlanes.Basico) + " / mes";
-document.getElementById("precioPlus").textContent = formatoPrecio(preciosPlanes.Plus) + " / mes";
-document.getElementById("precioFull").textContent = formatoPrecio(preciosPlanes.Full) + " / mes";
-} else {
-console.error("Error al cargar precios de planes:", res);
-}
-}
-// === CARGAR ESTADO DE PLAN ===
-function cargarEstadoPlan() {
-const email = localStorage.getItem("dueno");
-const script = document.createElement("script");
-script.src = ${API_URL}?action=getLoginInfo&email=${encodeURIComponent(email)}&callback=mostrarEstadoPlan;
-document.body.appendChild(script);
-}
-function mostrarEstadoPlan(res) {
-if (!res.success || !res.data || !res.data[0]) {
-planActual = null;
-limiteDeptos = 0;
-document.getElementById("planStatus").innerHTML = Plan: <b>Sin plan</b> | Estado de Pago: N/D | Vencimiento: N/D;
-document.getElementById("btnPlan").textContent = "💳 Elegir Plan";
-document.getElementById("limiteAlquileres").textContent = "";
-return;
-}
-const login = res.data[0];
-planActual = login.Plan || null;
-limiteDeptos = planActual === "Basico" ? 3 : planActual === "Plus" ? 5 : planActual === "Full" ? 10 : 0;
-const estadoPago = login.EstadoPago || "No registrado";
-const vencimiento = login.Vencimiento || "N/D";
-document.getElementById("planStatus").innerHTML = Plan: <b>${planActual || "Sin plan"}</b> | Estado de Pago: ${estadoPago} | Vencimiento: ${vencimiento};
-document.getElementById("limiteAlquileres").textContent = ${deptosActivos}/${limiteDeptos} alquileres activos;
-document.getElementById("btnPlan").textContent = planActual ? "💳 Mejorar Plan" : "💳 Elegir Plan";
-if (estadoPago.toLowerCase() === "aprobado" || estadoPago.toLowerCase() === "approved") {
-document.getElementById("planStatus").innerHTML += <span class="estado-msg success">✅ Plan actualizado correctamente</span>;
-setTimeout(() => {
-const msg = document.querySelector("#planStatus .estado-msg");
-if (msg) msg.remove();
-}, 5000);
-}
-}
-// === MODAL PLAN ===
-function abrirModalPlan() { document.getElementById("modalPlan").style.display = "block"; }
-function cerrarModalPlan() {
-document.getElementById("modalPlan").style.display = "none";
-document.getElementById("mpBtnBasico").innerHTML = "";
-document.getElementById("mpBtnPlus").innerHTML = "";
-document.getElementById("mpBtnFull").innerHTML = "";
-}
-async function seleccionarPlan(plan) {
-const email = localStorage.getItem("dueno");
-const precio = preciosPlanes[plan] || 0;
-const planStatusEl = document.getElementById("planStatus");
-planStatusEl.innerHTML = <span class="estado-msg loading">Procesando pago ⏳</span>;
-const preferenceData = {
-items: [{ title: Plan ${plan}, quantity: 1, unit_price: parseFloat(precio), currency_id: "ARS" }],
-payer: { email: email },
-external_reference: email + "_" + plan,
-back_urls: {
-success: ${window.location.href}?status=approved&plan=${plan}&payment_id={payment_id},
-failure: ${window.location.href}?status=failed&plan=${plan}&payment_id={payment_id},
-pending: ${window.location.href}?status=pending&plan=${plan}&payment_id={payment_id}
-},
-auto_return: "approved",
-notification_url: ${API_URL}?action=updatePlan
-};
-try {
-const response = await fetch("https://api.mercadopago.com/checkout/preferences", {
-method: "POST",
-headers: { "Authorization": "Bearer " + MP_BEARER, "Content-Type": "application/json" },
-body: JSON.stringify(preferenceData)
-});
-const res = await response.json();
-if (res.init_point) {
-const mpContainer = document.getElementById("mpBtn" + plan);
-mpContainer.innerHTML = <iframe src="${res.init_point}" width="100%" height="650" frameborder="0" allowtransparency="true"></iframe>;
-planStatusEl.innerHTML = "";
-} else {
-console.error("Error MP:", res);
-planStatusEl.innerHTML = <span class="estado-msg error">❌ No se pudo generar el botón de pago. Revisa la consola.</span>;
-setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
-}
-} catch (err) {
-console.error("Error MP:", err);
-planStatusEl.innerHTML = <span class="estado-msg error">❌ Error al procesar el pago. Por favor, intenta de nuevo.</span>;
-setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
-}
-}
-function planActualizado(res) {
-const planStatusEl = document.getElementById("planStatus");
-if (res.success) {
-planStatusEl.innerHTML = <span class="estado-msg success">✅ Plan actualizado con éxito: ${res.plan}</span>;
-setTimeout(() => {
-planStatusEl.innerHTML = "";
-cargarEstadoPlan();
-cargarAlquileres();
-cerrarModalPlan();
-}, 3000);
-} else {
-planStatusEl.innerHTML = <span class="estado-msg error">❌ Error al actualizar el plan: ${res.error || "desconocido"}</span>;
-setTimeout(() => {
-planStatusEl.innerHTML = "";
-cargarEstadoPlan();
-}, 5000);
 }
 }
 function cargarAlquileres() {
@@ -1015,10 +1089,11 @@ window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
 async function cambiarEstado(row, estadoActual) {
 const msgEl = document.getElementById(`estadoMsg-${row}`);
 if (estadoActual === "Inactivo" && deptosActivos >= limiteDeptos && planActual !== "Prueba") {
-msgEl.className = "estado-msg error";
-msgEl.textContent = `No puedes activar más propiedades. Tu plan (${planActual}) permite hasta ${limiteDeptos} propiedades activas.`;
-setTimeout(() => { msgEl.textContent = ""; }, 5000);
-return;
+  msgEl.className = "estado-msg error";
+  msgEl.textContent = `Límite alcanzado: tu plan ${planActual} permite solo ${limiteDeptos} propiedades activas.`;
+  // No revertir el checkbox (queda como estaba)
+  setTimeout(() => { msgEl.textContent = ""; }, 6000);
+  return;
 }
 msgEl.className = "estado-msg loading";
 msgEl.textContent = "Cambiando Estado";
