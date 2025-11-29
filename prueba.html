@@ -905,22 +905,6 @@ function toggleMenu() {
   const menu = document.getElementById("menu");
   menu.classList.toggle("active");
 }
-function toggleOpcionesPropiedad() {
-  const opciones = document.getElementById("opcionesPropiedad");
-  const opcionesVenta = document.getElementById("opcionesVenta");
-  const opcionesAlquiler = document.getElementById("opcionesAlquiler");
-  const btn = document.getElementById("btnAgregarPropiedad");
-  if (opciones.classList.contains("active")) {
-    opciones.classList.remove("active");
-    opcionesVenta.classList.remove("active");
-    opcionesAlquiler.classList.remove("active");
-    btn.textContent = "Agregar Propiedad";
-    resetAllForms();
-  } else {
-    opciones.classList.add("active");
-    btn.textContent = "Cerrar Opciones";
-    window.scrollTo(0, document.getElementById("opcionesPropiedad").offsetTop);
-  }
 }
 function mostrarOpcionesPorOperacion() {
   const tipoOperacion = document.getElementById("tipoOperacion").value;
