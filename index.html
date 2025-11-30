@@ -19,6 +19,7 @@
     --primary: #3483fa;
     --primary-dark: #2565c0;
     --success: #25D366;
+    --copy-success: #10b981;
     --bg: #fafafa;
     --card: #ffffff;
     --text: #333;
@@ -150,7 +151,7 @@
     display: none;
   }
 
-  /* MARCADORES ORIGINALES CON EMOJI MÁS PEQUEÑO PARA QUE ENTRE EL NÚMERO */
+  /* MARCADORES: Emoji más pequeño + número legible */
   .marker-icon {
     display: flex !important;
     align-items: center !important;
@@ -163,12 +164,13 @@
     height: 30px !important;
     border: 2px solid white !important;
     box-shadow: 0 0 2px #000 !important;
-    font-size: 13px !important; /* ← Emoji más pequeño para que entre el número */
+    font-size: 15px !important; /* Emoji más chico */
     line-height: 1 !important;
   }
   .marker-icon span {
-    font-size: 11px !important;
+    font-size: 10px !important;
     margin-left: 1px !important;
+    font-weight: bold;
   }
 
   .popup-button {
@@ -216,6 +218,38 @@
   #imagenes-container img:hover {
     transform: scale(1.08);
     box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+  }
+
+  /* Botones en detalle */
+  .detalle-botones {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+  .btn-whatsapp {
+    background: #25D366;
+    color: white;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  .btn-copiar {
+    background: #6366f1;
+    color: white;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: var(--transition);
+  }
+  .btn-copiar.copiado {
+    background: var(--copy-success) !important;
   }
 
   #publicidad-container {
@@ -283,13 +317,11 @@
     header img { max-width: 200px; }
     #filtros, #alquiler-detalle { padding: 1.5rem; margin: 1rem; }
     #map { height: 55vh; }
+    .detalle-botones { flex-direction: column; }
   }
 </style>
 </head>
 <body>
-<header>
-<img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya" style="max-width:250px;margin-bottom:10px;">
-</header>
 <div id="modal-terminos">
 <div id="modal-terminos-content">
 <h2>Términos y Condiciones de Uso</h2>
@@ -845,14 +877,11 @@ function cargarAlquileres() {
   loadingEl.textContent = "Cargando alquileres disponibles...";
 
   if (!map || !markersLayer) {
-    if (!initializeMap()) {
-      loadingEl.textContent = "Error: No se pudo inicializar el mapa.";
-      return;
-    }
+    if (!initializeMap()) return;
   }
   markersLayer.clearLayers();
 
-  // Marcadores estáticos (universidad, hospital, etc.)
+  // Marcadores estáticos
   const uniIcon = L.divIcon({ className: 'marker-icon', html: 'University', iconSize: [30, 30], iconAnchor: [15, 15] });
   const hospIcon = L.divIcon({ className: 'marker-icon', html: 'Hospital', iconSize: [30, 30], iconAnchor: [15, 15] });
   const superIcon = L.divIcon({ className: 'marker-icon', html: 'Shopping Cart', iconSize: [30, 30], iconAnchor: [15, 15] });
@@ -867,7 +896,6 @@ function cargarAlquileres() {
   L.marker([-28.5468697, -56.0432862], { icon: busIcon }).addTo(markersLayer).bindPopup("<b>Terminal de Omnibus</b>");
   L.marker([-28.5487787, -56.0396171], { icon: policeIcon }).addTo(markersLayer).bindPopup("<b>Policía</b>");
 
-  // Filtros
   const filtroAmb = document.getElementById("filtroAmb").value;
   const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
   const filtroMax = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
@@ -875,21 +903,12 @@ function cargarAlquileres() {
   const filtroAmoblado = document.getElementById("filtroAmoblado").checked;
   const filtroTipo = document.getElementById("filtroTipo").value;
 
-  makeRequest(webAppURL + "?action=getAlquileres", {
-    method: "GET",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" }
-  })
+  makeRequest(webAppURL + "?action=getAlquileres", { method: "GET" })
   .then(res => {
     loadingEl.style.display = "none";
-    if (!res.success || !Array.isArray(res.data)) {
-      console.error("Error al cargar alquileres:", res.error || "Respuesta inválida");
-      loadingEl.textContent = "Error al cargar alquileres. Por favor, intenta de nuevo.";
-      return;
-    }
+    if (!res.success || !Array.isArray(res.data)) return;
 
-    let cont = 0;
     res.data.forEach(a => {
-      // Excluir propiedades vencidas del plan Prueba
       const plan = getField(a, ["Plan"]);
       const fechaVencimientoStr = getField(a, ["Fecha de Vencimiento", "FechaVencimiento", "Vencimiento"]);
       if (plan === "Prueba") {
@@ -898,62 +917,42 @@ function cargarAlquileres() {
         if (fechaVencimiento && fechaActual > fechaVencimiento) return;
       }
 
-      // Coordenadas
       const lat = parseFloat(String(getField(a, ["Latitud", "lat", "LAT", "Lat"])).replace(/[^0-9.-]/g, ""));
-      const lng = parseFloat(String(getField(a, ["Longitud", "lng", "LNG", "Long"]).replace(/[^0-9.-]/g, ""));
+      const lng = parseFloat(String(getField(a, ["Longitud", "lng", "LNG", "Long"])).replace(/[^0-9.-]/g, ""));
       if (isNaN(lat) || isNaN(lng)) return;
 
-      // Datos básicos
       const tipo = getField(a, ["Tipo"]);
       if (filtroTipo && tipo !== filtroTipo) return;
 
       const nroAmb = toInt(getField(a, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]), 0);
       const precioVal = getField(a, ["Precio", "precio", "$"]);
       const formattedPrecio = formatPrice(precioVal);
+      const precioNum = toNumber(precioVal);
 
-      // Aplicar filtros
       if (filtroAmb && nroAmb !== toInt(filtroAmb)) return;
-      if (toNumber(precioVal) < filtroMin || toNumber(precioVal) > filtroMax) return;
+      if (precioNum < filtroMin || precioNum > filtroMax) return;
       if (filtroMascotas && getField(a, ["Mascotas"]).toLowerCase() !== "sí") return;
       if (filtroAmoblado && getField(a, ["Amoblado"]).toLowerCase() !== "sí") return;
 
       const idPropiedad = getField(a, ["ID Propiedad", "idPropiedad", "ID", "Id"]);
       const direccion = getField(a, ["Direccion", "Dirección", "Domicilio"]);
-      const infoIngreso = getField(a, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso", "Informacion de ingreso"]);
+      const infoIngreso = getField(a, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso"]);
       const detalles = getField(a, ["Detalles", "Detalle", "Descripcion", "Descripción"]);
       const contacto = getField(a, ["Contacto", "Whatsapp", "WhatsApp", "Tel", "Telefono", "Teléfono"]);
-      const enlace = getField(a, ["Enlace para compartir"]);
+      const enlace = getField(a, ["Enlace para compartir"]) || `https://www.alquiya.com.ar/propiedad.html?id=${idPropiedad}`;
 
-      // ICONO DEL MARCADOR: emoji más pequeño + número legible
-      let iconHtml;
-      if (tipo === "Temporario") {
-        iconHtml = 'Hourglass';
-      } else if (tipo === "Local") {
-        iconHtml = 'Shopping Bag';
-      } else {
-        // Home más pequeño + número bien visible
-        iconHtml = `Home<span style="font-size:11px;margin-left:1px;">${nroAmb || "-"}</span>`;
-      }
+      // Marcador con Home más chico + número
+      let iconHtml = tipo === "Temporario" ? 'Hourglass' : tipo === "Local" ? 'Shopping Bag' : `Home<span>${nroAmb || ""}</span>`;
+      const icon = L.divIcon({ className: 'marker-icon', html: iconHtml, iconSize: [  [30, 30], iconAnchor: [15, 15] });
+      const marker = L.marker([lat, lng], { icon }).addTo(markersLayer);
 
-      const icon = L.divIcon({
-        className: 'marker-icon',
-        html: iconHtml,
-        iconSize: [30, 30],
-        iconAnchor: [15, 15]
-      });
-
-      const marker = L.marker([lat, lng], { icon: icon }).addTo(markersLayer);
-
-      // POPUP MEJORADO: muestra Tipo + Precio + Ambientes
+      // Popup mejorado
       const popupDiv = document.createElement('div');
-      popupDiv.innerHTML = `<b>Dirección:</b> ${direccion || "No disponible"}<br>`;
-
+      popupDiv.innerHTML = `<b>${direccion || "Sin dirección"}</b><br>`;
       if (tipo !== "Temporario" && tipo !== "Local") {
-        popupDiv.innerHTML += `<b>Tipo:</b> ${tipo || "Propiedad"}<br>`;
-        popupDiv.innerHTML += `<b>Ambientes:</b> ${nroAmb || "No especificado"}<br>`;
-        popupDiv.innerHTML += `<b>Precio:</b> ${formattedPrecio || "Consultar"}`;
+        popupDiv.innerHTML += `<small><b>${tipo}</b> • ${nroAmb} amb • ${formattedPrecio}</small>`;
       } else {
-        popupDiv.innerHTML += `<b>Tipo:</b> ${tipo}`;
+        popupDiv.innerHTML += `<small><b>${tipo}</b></small>`;
       }
 
       const verBtn = document.createElement('button');
@@ -963,27 +962,22 @@ function cargarAlquileres() {
         if (idPropiedad) incrementarMetrica(idPropiedad, "vistas");
 
         const detalle = document.getElementById('alquiler-detalle');
-        detalle.innerHTML = `<h2>Alquiler: ${direccion || ''}</h2><p id="metricas-error"></p>`;
+        detalle.innerHTML = `<h2>${tipo}: ${direccion || 'Propiedad'}</h2>`;
 
         const rows = (tipo === "Temporario" || tipo === "Local") ? [
-          ['Dirección', direccion || ''],
-          ['Información de ingreso', infoIngreso || ''],
-          ['Detalles', detalles || '']
+          ['Dirección', direccion], ['Información de ingreso', infoIngreso], ['Detalles', detalles]
         ] : [
-          ['Dirección', direccion || ''],
-          ['Tipo', tipo || ''],
-          ['Ambientes', nroAmb || ''],
-          ['Precio', formattedPrecio || ''],
-          ['Información de ingreso', infoIngreso || ''],
-          ['Detalles', detalles || ''],
-          ['Mascotas', getField(a, ["Mascotas"]) || ''],
-          ['Amoblado', getField(a, ["Amoblado"]) || '']
+          ['Dirección', direccion], ['Tipo', tipo], ['Ambientes', nroAmb], ['Precio', formattedPrecio],
+          ['Información de ingreso', infoIngreso], ['Detalles', detalles],
+          ['Mascotas', getField(a, ["Mascotas"])], ['Amoblado', getField(a, ["Amoblado"])]
         ];
 
         rows.forEach(([label, val]) => {
-          const p = document.createElement('p');
-          p.innerHTML = `<b>${label}:</b> ${val || 'No especificado'}`;
-          detalle.appendChild(p);
+          if (val) {
+            const p = document.createElement('p');
+            p.innerHTML = `<b>${label}:</b> ${val}`;
+            detalle.appendChild(p);
+          }
         });
 
         // Imágenes
@@ -991,73 +985,59 @@ function cargarAlquileres() {
         imgContainer.id = 'imagenes-container';
         const fotos = getField(a, ["Fotos", "Imagenes", "Imágenes", "images"]);
         if (fotos) {
-          const imageUrls = fotos.split(',').map(f => driveUrlDirect(f.trim())).filter(url => url);
-          imageUrls.forEach((url, index) => {
+          fotos.split(',').map(f => driveUrlDirect(f.trim())).filter(Boolean).forEach((url, i) => {
             const img = document.createElement('img');
-            img.src = url;
-            img.alt = "Imagen del alquiler";
-            img.referrerPolicy = "no-referrer";
-            img.onclick = () => abrirModal(url, imageUrls, index);
+            img.src = url; img.referrerPolicy = "no-referrer";
+            img.onclick = () => abrirModal(url, fotos.split(',').map(f => driveUrlDirect(f.trim())).filter(Boolean), i);
             imgContainer.appendChild(img);
           });
         }
         detalle.appendChild(imgContainer);
 
-        // Botón WhatsApp
+        // Botones: WhatsApp + Copiar enlace
+        const botonesDiv = document.createElement('div');
+        botonesDiv.className = 'detalle-botones';
+
         if (contacto) {
           const waBtn = document.createElement('button');
+          waBtn.className = 'btn-whatsapp';
           waBtn.textContent = 'Contactar por WhatsApp';
-          waBtn.style.background = '#25D366';
-          waBtn.style.color = 'white';
-          waBtn.style.marginTop = '10px';
-          waBtn.style.padding = '12px 20px';
-          waBtn.style.border = 'none';
-          waBtn.style.borderRadius = '10px';
-          waBtn.style.fontWeight = '600';
           waBtn.onclick = () => {
             if (idPropiedad) incrementarMetrica(idPropiedad, "contactos");
-            const mensaje = `Hola, vengo desde AlquiYa y quiero consultar por el alquiler de ${direccion}`;
-            window.open(`https://wa.me/${contacto}?text=${encodeURIComponent(mensaje)}`, '_blank');
+            window.open(`https://wa.me/${contacto}?text=${encodeURIComponent("Hola, vengo desde AlquiYa y quiero consultar por " + direccion)}`, '_blank');
           };
-          detalle.appendChild(waBtn);
+          botonesDiv.appendChild(waBtn);
         }
 
-        // Enlace para compartir
-        if (enlace) {
-          const linkContainer = document.createElement('div');
-          linkContainer.id = 'link-container';
-          linkContainer.innerHTML = `
-            <input type="text" value="${enlace}" readonly>
-            <span>Seleccioná y copiá para compartir</span>
-          `;
-          detalle.appendChild(linkContainer);
-        }
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'btn-copiar';
+        copyBtn.textContent = 'Copiar enlace';
+        copyBtn.setAttribute('data-id', idPropiedad);
+        copyBtn.onclick = function() {
+          const url = `https://www.alquiya.com.ar/propiedad.html?id=${idPropiedad}`;
+          navigator.clipboard.writeText(url).then(() => {
+            const original = this.textContent;
+            this.textContent = 'Enlace copiado';
+            this.classList.add('copiado');
+            setTimeout(() => {
+              this.textContent = original;
+              this.classList.remove('copiado');
+            }, 2000);
+          }).catch(() => alert('Enlace: ' + url));
+        };
+        botonesDiv.appendChild(copyBtn);
 
+        detalle.appendChild(botonesDiv);
         detalle.style.display = 'block';
         detalle.classList.add("highlight");
         detalle.scrollIntoView({ behavior: "smooth", block: "start" });
         setTimeout(() => detalle.classList.remove("highlight"), 1200);
-        if (map) map.invalidateSize();
+        map.invalidateSize();
       };
 
       popupDiv.appendChild(verBtn);
       marker.bindPopup(popupDiv);
-      cont++;
     });
-
-    if (cont === 0) {
-      loadingEl.textContent = "No se encontraron alquileres con los filtros actuales.";
-    } else {
-      try {
-        const bounds = markersLayer.getBounds();
-        if (bounds.isValid()) map.fitBounds(bounds, { padding: [50, 50] });
-      } catch (e) { console.warn("No se pudo ajustar el zoom al mapa"); }
-    }
-  })
-  .catch(err => {
-    loadingEl.style.display = "none";
-    console.error("Error al conectar con WebApp:", err);
-    loadingEl.textContent = "Error al conectar con el servidor. Por favor, intenta de nuevo.";
   });
 }
 /* =========================
