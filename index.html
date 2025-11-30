@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AlquiYa - Alquileres en Santo Tomé</title>
+<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-SSJ5DG33JK"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -13,69 +13,79 @@
 </script>
 <link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --primary: #3483fa;
     --primary-dark: #2565c0;
     --success: #25D366;
-    --copy-success: #10b981;
     --bg: #fafafa;
-    --card: #ffffff;
+    --card: white;
     --text: #333;
     --border: #e0e0e0;
-    --shadow: 0 6px 20px rgba(0,0,0,0.08);
+    --shadow: 0 4px 20px rgba(0,0,0,0.08);
     --radius: 14px;
     --transition: all 0.3s ease;
   }
-  * { box-sizing: border-box; margin:0; padding:0; }
+
+  * { box-sizing: border-box; }
   body {
+    margin: 0;
     font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
     background: var(--bg);
     color: var(--text);
     line-height: 1.6;
   }
+
   header {
     background: white;
-    color: white;
-    padding: 15px;
+    padding: 1rem;
     text-align: center;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
   }
+
   header img {
     max-width: 250px;
-    margin-bottom: 10px;
+    height: auto;
   }
+
   nav {
     display: flex;
     justify-content: center;
-    gap: 20px;
+    gap: 2rem;
     background: white;
     padding: 1rem;
-    box-shadow: var(--shadow);
-    margin-bottom: 1rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    flex-wrap: wrap;
   }
+
   nav a {
     text-decoration: none;
-    font-weight: bold;
-    color: #333;
-    padding: 0.7rem 1.4rem;
+    font-weight: 600;
+    color: var(--text);
+    padding: 0.7rem 1.2rem;
     border-radius: 10px;
     transition: var(--transition);
   }
+
   nav a:hover {
     background: var(--primary);
     color: white;
   }
+
   #boton-filtros-container {
     display: flex;
     justify-content: center;
     gap: 1rem;
-    flex-wrap: wrap;
     margin: 1.5rem auto;
+    flex-wrap: wrap;
     max-width: 700px;
   }
+
   #boton-filtros-container button {
-    padding: 0.8rem 2rem;
+    padding: 0.9rem 2rem;
     background: var(--primary);
     color: white;
     border: none;
@@ -85,14 +95,16 @@
     box-shadow: var(--shadow);
     transition: var(--transition);
   }
+
   #boton-filtros-container button:hover {
     background: var(--primary-dark);
     transform: translateY(-3px);
   }
+
   #filtros {
-    max-width: 900px;
+    max-width: 800px;
     margin: 0 auto 2rem;
-    padding: 2rem;
+    padding: 1.8rem;
     background: var(--card);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
@@ -101,26 +113,35 @@
     gap: 1rem;
     align-items: end;
   }
-  #filtros input, #filtros select {
-    flex: 1;
-    min-width: 160px;
+
+  #filtros > div { width: 100%; display: flex; flex-wrap: wrap; gap: 1rem; }
+
+  #filtros input,
+  #filtros select {
     padding: 0.9rem 1rem;
-    border: 1.8px solid var(--border);
+    border: 1.5px solid var(--border);
     border-radius: var(--radius);
     font-size: 1rem;
+    flex: 1;
+    min-width: 140px;
     transition: var(--transition);
   }
-  #filtros input:focus, #filtros select:focus {
+
+  #filtros input:focus,
+  #filtros select:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 4px rgba(52,131,250,0.15);
   }
+
   #filtros label {
     display: flex;
     align-items: center;
     gap: 0.6rem;
     font-weight: 500;
+    white-space: nowrap;
   }
+
   #filtros button {
     padding: 0.9rem 2.5rem;
     background: var(--primary);
@@ -129,11 +150,14 @@
     border-radius: var(--radius);
     font-weight: 600;
     cursor: pointer;
+    transition: var(--transition);
   }
+
   #filtros button:hover {
     background: var(--primary-dark);
     transform: translateY(-3px);
   }
+
   #map {
     height: 65vh;
     border-radius: var(--radius);
@@ -142,6 +166,7 @@
     margin: 1.5rem auto;
     max-width: 1400px;
   }
+
   #loading-msg {
     text-align: center;
     font-weight: 600;
@@ -151,7 +176,88 @@
     display: none;
   }
 
-  /* MARCADORES: Emoji más pequeño + número legible */
+  /* === PANEL DETALLE ALQUILER === */
+  #alquiler-detalle {
+    display: none;
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: var(--card);
+    border: 2px solid var(--primary);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    animation: fadeIn 0.6s ease;
+  }
+
+  #alquiler-detalle.highlight { animation: resaltar 1.2s ease; }
+
+  #alquiler-detalle h2 {
+    margin-top: 0;
+    color: var(--primary);
+    font-size: 2rem;
+  }
+
+  #alquiler-detalle p {
+    margin: 0.9rem 0;
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  #alquiler-detalle p:last-child { border-bottom: none; }
+
+  #imagenes-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 14px;
+    margin: 1.8rem 0;
+  }
+
+  #imagenes-container img {
+    width: 100%;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+    transition: var(--transition);
+  }
+
+  #imagenes-container img:hover {
+    transform: scale(1.06);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.22);
+  }
+
+  #alquiler-detalle button {
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: var(--radius);
+    font-weight: 600;
+    cursor: pointer;
+    margin: 0.6rem 0.6rem 0 0;
+    transition: var(--transition);
+  }
+
+  #alquiler-detalle button:first-of-type {
+    background: var(--success);
+    color: white;
+  }
+
+  #link-container {
+    display: flex;
+    gap: 12px;
+    margin-top: 1.2rem;
+    flex-wrap: wrap;
+  }
+
+  #link-container input {
+    flex: 1;
+    min-width: 260px;
+    padding: 0.9rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  /* === MARCADORES (NO TOCADOS - ORIGINALES) === */
   .marker-icon {
     display: flex !important;
     align-items: center !important;
@@ -164,92 +270,119 @@
     height: 30px !important;
     border: 2px solid white !important;
     box-shadow: 0 0 2px #000 !important;
-    font-size: 15px !important; /* Emoji más chico */
-    line-height: 1 !important;
-  }
-  .marker-icon span {
-    font-size: 10px !important;
-    margin-left: 1px !important;
-    font-weight: bold;
   }
 
   .popup-button {
     display: inline-block;
     padding: 8px 16px;
     margin-top: 8px;
-    background: #3483fa;
+    background: var(--primary);
     color: white;
+    text-decoration: none;
     border-radius: 8px;
     font-weight: bold;
     cursor: pointer;
-    font-size: 0.95em;
+    transition: var(--transition);
   }
 
-  #alquiler-detalle, #login, #registro, #avisos-panel, #panel-dueno {
-    max-width: 800px;
-    margin: 2rem auto;
+  .popup-button:hover { background: var(--primary-dark); }
+
+  /* === MODAL IMÁGENES === */
+  #modal-img {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.94);
+    backdrop-filter: blur(10px);
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 2rem;
+  }
+
+  #modal-img img {
+    max-width: 95%;
+    max-height: 95%;
+    border-radius: 18px;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+  }
+
+  .nav-btn, .close-btn {
+    position: absolute;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: none;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    font-size: 30px;
+    cursor: pointer;
+    backdrop-filter: blur(12px);
+    transition: var(--transition);
+  }
+
+  .nav-btn:hover, .close-btn:hover {
+    background: var(--primary);
+    transform: scale(1.12);
+  }
+
+  .close-btn { top: 20px; right: 20px; }
+  .prev-btn { left: 20px; }
+  .next-btn { right: 20px; }
+
+  /* === PANEL LOGIN / REGISTRO / AVISOS === */
+  #login, #registro, #avisos-panel, #panel-dueno {
+    display: none;
+    max-width: 500px;
+    margin: 3rem auto;
     padding: 2.5rem;
     background: var(--card);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-    display: none;
+    text-align: center;
   }
-  #alquiler-detalle {
-    border: 2px solid var(--primary);
-  }
-  #alquiler-detalle.highlight { animation: resaltar 1.2s ease; }
-  #alquiler-detalle h2 { color: var(--primary); font-size: 2rem; margin-bottom: 1.5rem; }
 
-  #imagenes-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 1rem;
-    margin: 2rem 0;
+  #login h2, #registro h2, #avisos-panel h2 {
+    color: var(--primary);
+    margin-bottom: 1.5rem;
   }
-  #imagenes-container img {
+
+  input, select, button {
     width: 100%;
-    height: 110px;
-    object-fit: cover;
-    border-radius: 12px;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    transition: var(--transition);
-  }
-  #imagenes-container img:hover {
-    transform: scale(1.08);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+    padding: 0.9rem;
+    margin: 0.8rem 0;
+    border-radius: var(--radius);
+    border: 1.5px solid var(--border);
+    font-size: 1rem;
   }
 
-  /* Botones en detalle */
-  .detalle-botones {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-top: 20px;
-  }
-  .btn-whatsapp {
-    background: #25D366;
+  button {
+    background: var(--primary);
     color: white;
-    padding: 14px 24px;
     border: none;
-    border-radius: 12px;
     font-weight: 600;
     cursor: pointer;
-    font-size: 1rem;
-  }
-  .btn-copiar {
-    background: #6366f1;
-    color: white;
-    padding: 14px 24px;
-    border: none;
-    border-radius: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 1rem;
     transition: var(--transition);
   }
-  .btn-copiar.copiado {
-    background: var(--copy-success) !important;
+
+  button:hover {
+    background: var(--primary-dark);
+    transform: translateY(-3px);
+  }
+
+  .password-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .eye-icon {
+    position: absolute;
+    right: 12px;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    background: url('https://img.icons8.com/ios/50/000000/visible.png') no-repeat center/contain;
   }
 
   #publicidad-container {
@@ -263,65 +396,34 @@
     cursor: pointer;
     transition: var(--transition);
   }
+
   #publicidad-container:hover {
     border-color: var(--primary);
     box-shadow: var(--shadow);
   }
 
-  #modal-terminos, #modal-img {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.8);
-    backdrop-filter: blur(10px);
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    padding: 1rem;
+  /* === ANIMACIONES === */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
   }
-  #modal-terminos-content {
-    background: white;
-    max-width: 800px;
-    max-height: 90vh;
-    overflow-y: auto;
-    padding: 2.5rem;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-  }
-  #modal-img img {
-    max-width: 94%;
-    max-height: 94%;
-    border-radius: 18px;
-    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
-  }
-  .nav-btn, .close-btn {
-    position: absolute;
-    background: rgba(255,255,255,0.25);
-    color: white;
-    border: none;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    font-size: 30px;
-    cursor: pointer;
-    backdrop-filter: blur(10px);
-  }
-  .nav-btn:hover, .close-btn:hover { background: var(--primary); }
 
   @keyframes resaltar {
-    0%,100% { transform: scale(1); }
-    50% { transform: scale(1.02); box-shadow: 0 0 40px rgba(52,131,250,0.4); }
+    0%, 100% { transform: scale(1); box-shadow: var(--shadow); }
+    50% { transform: scale(1.02); box-shadow: 0 0 35px rgba(52,131,250,0.4); }
   }
 
   @media (max-width: 768px) {
-    header img { max-width: 200px; }
-    #filtros, #alquiler-detalle { padding: 1.5rem; margin: 1rem; }
+    #filtros, #login, #registro { padding: 1.5rem; margin: 1.5rem; }
     #map { height: 55vh; }
-    .detalle-botones { flex-direction: column; }
+    nav { gap: 1rem; padding: 1rem; }
   }
 </style>
 </head>
 <body>
+<header>
+<img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya" style="max-width:250px;margin-bottom:10px;">
+</header>
 <div id="modal-terminos">
 <div id="modal-terminos-content">
 <h2>Términos y Condiciones de Uso</h2>
@@ -868,26 +970,22 @@ async function incrementarMetrica(idPropiedad, metrica) {
 /* =========================
 CARGA DE ALQUILERES
 */
-/* =========================
-CARGA DE ALQUILERES - VERSIÓN ACTUALIZADA 2025
-========================= */
 function cargarAlquileres() {
   const loadingEl = document.getElementById("loading-msg");
   loadingEl.style.display = "block";
   loadingEl.textContent = "Cargando alquileres disponibles...";
-
   if (!map || !markersLayer) {
-    if (!initializeMap()) return;
+    if (!initializeMap()) {
+      loadingEl.textContent = "Error: No se pudo inicializar el mapa.";
+      return;
+    }
   }
   markersLayer.clearLayers();
-
-  // Marcadores estáticos
-  const uniIcon = L.divIcon({ className: 'marker-icon', html: 'University', iconSize: [30, 30], iconAnchor: [15, 15] });
-  const hospIcon = L.divIcon({ className: 'marker-icon', html: 'Hospital', iconSize: [30, 30], iconAnchor: [15, 15] });
-  const superIcon = L.divIcon({ className: 'marker-icon', html: 'Shopping Cart', iconSize: [30, 30], iconAnchor: [15, 15] });
-  const busIcon = L.divIcon({ className: 'marker-icon', html: 'Bus', iconSize: [30, 30], iconAnchor: [15, 15] });
-  const policeIcon = L.divIcon({ className: 'marker-icon', html: 'Police', iconSize: [30, 30], iconAnchor: [15, 15] });
-
+  const uniIcon = L.divIcon({ className: 'markerongan-icon', html: '🎓', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const hospIcon = L.divIcon({ className: 'marker-icon', html: '🏥', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const superIcon = L.divIcon({ className: 'marker-icon', html: '🛒', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const busIcon = L.divIcon({ className: 'marker-icon', html: '🚌', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const policeIcon = L.divIcon({ className: 'marker-icon', html: '👮', iconSize: [30, 30], iconAnchor: [15, 15] });
   L.marker([-28.5509978, -56.0409727], { icon: uniIcon }).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
   L.marker([-28.5551127, -56.0389282], { icon: hospIcon }).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
   L.marker([-28.5519443, -56.0401962], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado La Bomba</b>");
@@ -895,150 +993,197 @@ function cargarAlquileres() {
   L.marker([-28.5462903, -56.0440365], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado La Economía</b>");
   L.marker([-28.5468697, -56.0432862], { icon: busIcon }).addTo(markersLayer).bindPopup("<b>Terminal de Omnibus</b>");
   L.marker([-28.5487787, -56.0396171], { icon: policeIcon }).addTo(markersLayer).bindPopup("<b>Policía</b>");
-
   const filtroAmb = document.getElementById("filtroAmb").value;
   const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
   const filtroMax = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
   const filtroMascotas = document.getElementById("filtroMascotas").checked;
   const filtroAmoblado = document.getElementById("filtroAmoblado").checked;
   const filtroTipo = document.getElementById("filtroTipo").value;
-
-  makeRequest(webAppURL + "?action=getAlquileres", { method: "GET" })
-  .then(res => {
-    loadingEl.style.display = "none";
-    if (!res.success || !Array.isArray(res.data)) return;
-
-    res.data.forEach(a => {
-      const plan = getField(a, ["Plan"]);
-      const fechaVencimientoStr = getField(a, ["Fecha de Vencimiento", "FechaVencimiento", "Vencimiento"]);
-      if (plan === "Prueba") {
-        const fechaVencimiento = parseDate(fechaVencimientoStr);
-        const fechaActual = new Date();
-        if (fechaVencimiento && fechaActual > fechaVencimiento) return;
+  makeRequest(webAppURL + "?action=getAlquileres", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    }
+  })
+    .then(res => {
+      loadingEl.style.display = "none";
+      if (!res.success || !Array.isArray(res.data)) {
+        console.error("Error al cargar alquileres:", res.error || "Respuesta inválida");
+        loadingEl.textContent = "Error al cargar alquileres. Por favor, intenta de nuevo.";
+        return;
       }
-
-      const lat = parseFloat(String(getField(a, ["Latitud", "lat", "LAT", "Lat"])).replace(/[^0-9.-]/g, ""));
-      const lng = parseFloat(String(getField(a, ["Longitud", "lng", "LNG", "Long"])).replace(/[^0-9.-]/g, ""));
-      if (isNaN(lat) || isNaN(lng)) return;
-
-      const tipo = getField(a, ["Tipo"]);
-      if (filtroTipo && tipo !== filtroTipo) return;
-
-      const nroAmb = toInt(getField(a, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]), 0);
-      const precioVal = getField(a, ["Precio", "precio", "$"]);
-      const formattedPrecio = formatPrice(precioVal);
-      const precioNum = toNumber(precioVal);
-
-      if (filtroAmb && nroAmb !== toInt(filtroAmb)) return;
-      if (precioNum < filtroMin || precioNum > filtroMax) return;
-      if (filtroMascotas && getField(a, ["Mascotas"]).toLowerCase() !== "sí") return;
-      if (filtroAmoblado && getField(a, ["Amoblado"]).toLowerCase() !== "sí") return;
-
-      const idPropiedad = getField(a, ["ID Propiedad", "idPropiedad", "ID", "Id"]);
-      const direccion = getField(a, ["Direccion", "Dirección", "Domicilio"]);
-      const infoIngreso = getField(a, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso"]);
-      const detalles = getField(a, ["Detalles", "Detalle", "Descripcion", "Descripción"]);
-      const contacto = getField(a, ["Contacto", "Whatsapp", "WhatsApp", "Tel", "Telefono", "Teléfono"]);
-      const enlace = getField(a, ["Enlace para compartir"]) || `https://www.alquiya.com.ar/propiedad.html?id=${idPropiedad}`;
-
-      // Marcador con Home más chico + número
-      let iconHtml = tipo === "Temporario" ? 'Hourglass' : tipo === "Local" ? 'Shopping Bag' : `Home<span>${nroAmb || ""}</span>`;
-      const icon = L.divIcon({ className: 'marker-icon', html: iconHtml, iconSize: [  [30, 30], iconAnchor: [15, 15] });
-      const marker = L.marker([lat, lng], { icon }).addTo(markersLayer);
-
-      // Popup mejorado
-      const popupDiv = document.createElement('div');
-      popupDiv.innerHTML = `<b>${direccion || "Sin dirección"}</b><br>`;
-      if (tipo !== "Temporario" && tipo !== "Local") {
-        popupDiv.innerHTML += `<small><b>${tipo}</b> • ${nroAmb} amb • ${formattedPrecio}</small>`;
-      } else {
-        popupDiv.innerHTML += `<small><b>${tipo}</b></small>`;
-      }
-
-      const verBtn = document.createElement('button');
-      verBtn.className = 'popup-button';
-      verBtn.textContent = 'Ver Detalles';
-      verBtn.onclick = () => {
-        if (idPropiedad) incrementarMetrica(idPropiedad, "vistas");
-
-        const detalle = document.getElementById('alquiler-detalle');
-        detalle.innerHTML = `<h2>${tipo}: ${direccion || 'Propiedad'}</h2>`;
-
-        const rows = (tipo === "Temporario" || tipo === "Local") ? [
-          ['Dirección', direccion], ['Información de ingreso', infoIngreso], ['Detalles', detalles]
-        ] : [
-          ['Dirección', direccion], ['Tipo', tipo], ['Ambientes', nroAmb], ['Precio', formattedPrecio],
-          ['Información de ingreso', infoIngreso], ['Detalles', detalles],
-          ['Mascotas', getField(a, ["Mascotas"])], ['Amoblado', getField(a, ["Amoblado"])]
-        ];
-
-        rows.forEach(([label, val]) => {
-          if (val) {
+      let cont = 0;
+      res.data.forEach(a => {
+        const plan = getField(a, ["Plan"]);
+        const fechaVencimientoStr = getField(a, ["Fecha de Vencimiento", "FechaVencimiento", "Vencimiento"]);
+        if (plan === "Prueba") {
+          const fechaVencimiento = parseDate(fechaVencimientoStr);
+          const fechaActual = new Date();
+          if (fechaVencimiento && fechaActual > fechaVencimiento) {
+            return;
+          }
+        }
+        const latRaw = getField(a, ["Latitud", "lat", "LAT", "Lat"]);
+        const lngRaw = getField(a, ["Longitud", "lng", "LNG", "Long"]);
+        const lat = parseFloat(String(latRaw).replace(/[^0-9.-]/g, ""));
+        const lng = parseFloat(String(lngRaw).replace(/[^0-9.-]/g, ""));
+        if (isNaN(lat) || isNaN(lng)) {
+          console.warn("Coordenadas inválidas:", { latRaw, lngRaw, alquiler: a });
+          return;
+        }
+        const tipo = getField(a, ["Tipo"]);
+        if (filtroTipo && tipo !== filtroTipo) return;
+        const ambVal = getField(a, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]);
+        const nroAmb = toInt(ambVal, 0);
+        const precioVal = getField(a, ["Precio", "precio", "$"]);
+        const precio = toNumber(precioVal);
+        const formattedPrecio = formatPrice(precioVal);
+        if (filtroAmb && nroAmb !== toInt(filtroAmb)) return;
+        if (precio < filtroMin || precio > filtroMax) return;
+        const mascotas = getField(a, ["Mascotas"]);
+        if (filtroMascotas && (!mascotas || mascotas.toLowerCase() !== "sí")) return;
+        const amoblado = getField(a, ["Amoblado"]);
+        if (filtroAmoblado && (!amoblado || amoblado.toLowerCase() !== "sí")) return;
+        const idPropiedad = getField(a, ["ID Propiedad", "idPropiedad", "ID", "Id"]);
+        const direccion = getField(a, ["Direccion", "Dirección", "Domicilio"]);
+        const infoIngreso = getField(a, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso", "Informacion de ingreso"]);
+        const detalles = getField(a, ["Detalles", "Detalle", "Descripcion", "Descripción"]);
+        const contacto = getField(a, ["Contacto", "Whatsapp", "WhatsApp", "Tel", "Telefono", "Teléfono"]);
+        const enlace = getField(a, ["Enlace para compartir"]);
+        let iconHtml;
+        if (tipo === "Temporario") {
+          iconHtml = '⌛';
+        } else if (tipo === "Local") {
+          iconHtml = '🛍️';
+        } else {
+          iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-") + '</span>';
+        }
+        const icon = L.divIcon({
+          className: 'marker-icon',
+          html: iconHtml,
+          iconSize: [30, 30],
+          iconAnchor: [15, 15]
+        });
+        const marker = L.marker([lat, lng], { icon: icon }).addTo(markersLayer);
+        const popupDiv = document.createElement('div');
+        popupDiv.innerHTML = `<b>Dirección:</b> ${direccion || ""}`;
+        if (tipo !== "Temporario" && tipo !== "Local") {
+          popupDiv.innerHTML += `<br><b>Ambientes:</b> ${nroAmb || ""}<br><b>Precio:</b> ${formattedPrecio || ""}`;
+        }
+        const verBtn = document.createElement('button');
+        verBtn.className = 'popup-button';
+        verBtn.textContent = 'Ver Alquiler';
+        verBtn.onclick = () => {
+          // Limpiar mensaje de error anterior
+          const errorEl = document.getElementById('metricas-error');
+          if (errorEl) {
+            errorEl.style.display = 'none';
+          }
+          // Incrementar vistas antes de mostrar detalles
+          if (idPropiedad) {
+            console.log("Datos del alquiler:", JSON.stringify(a, null, 2));
+            incrementarMetrica(idPropiedad, "vistas");
+          } else {
+            console.warn("ID de propiedad no encontrado para incrementar vistas");
+            if (errorEl) {
+              errorEl.style.display = 'block';
+              errorEl.textContent = 'Error: No se encontró el ID de la propiedad';
+            }
+          }
+          const detalle = document.getElementById('alquiler-detalle');
+          detalle.innerHTML = `<h2>Alquiler: ${direccion || ''}</h2><p id="metricas-error"></p>`;
+          const rows = (tipo === "Temporario" || tipo === "Local") ? [
+            ['Dirección', direccion || ''],
+            ['Información de ingreso', infoIngreso || ''],
+            ['Detalles', detalles || '']
+          ] : [
+            ['Dirección', direccion || ''],
+            ['Ambientes', nroAmb || ''],
+            ['Precio', formattedPrecio || ''],
+            ['Información de ingreso', infoIngreso || ''],
+            ['Detalles', detalles || ''],
+            ['Mascotas', mascotas || ''],
+            ['Amoblado', amoblado || '']
+          ];
+          rows.forEach(([label, val]) => {
             const p = document.createElement('p');
             p.innerHTML = `<b>${label}:</b> ${val}`;
             detalle.appendChild(p);
-          }
-        });
-
-        // Imágenes
-        const imgContainer = document.createElement('div');
-        imgContainer.id = 'imagenes-container';
-        const fotos = getField(a, ["Fotos", "Imagenes", "Imágenes", "images"]);
-        if (fotos) {
-          fotos.split(',').map(f => driveUrlDirect(f.trim())).filter(Boolean).forEach((url, i) => {
-            const img = document.createElement('img');
-            img.src = url; img.referrerPolicy = "no-referrer";
-            img.onclick = () => abrirModal(url, fotos.split(',').map(f => driveUrlDirect(f.trim())).filter(Boolean), i);
-            imgContainer.appendChild(img);
           });
-        }
-        detalle.appendChild(imgContainer);
-
-        // Botones: WhatsApp + Copiar enlace
-        const botonesDiv = document.createElement('div');
-        botonesDiv.className = 'detalle-botones';
-
-        if (contacto) {
-          const waBtn = document.createElement('button');
-          waBtn.className = 'btn-whatsapp';
-          waBtn.textContent = 'Contactar por WhatsApp';
-          waBtn.onclick = () => {
-            if (idPropiedad) incrementarMetrica(idPropiedad, "contactos");
-            window.open(`https://wa.me/${contacto}?text=${encodeURIComponent("Hola, vengo desde AlquiYa y quiero consultar por " + direccion)}`, '_blank');
-          };
-          botonesDiv.appendChild(waBtn);
-        }
-
-        const copyBtn = document.createElement('button');
-        copyBtn.className = 'btn-copiar';
-        copyBtn.textContent = 'Copiar enlace';
-        copyBtn.setAttribute('data-id', idPropiedad);
-        copyBtn.onclick = function() {
-          const url = `https://www.alquiya.com.ar/propiedad.html?id=${idPropiedad}`;
-          navigator.clipboard.writeText(url).then(() => {
-            const original = this.textContent;
-            this.textContent = 'Enlace copiado';
-            this.classList.add('copiado');
-            setTimeout(() => {
-              this.textContent = original;
-              this.classList.remove('copiado');
-            }, 2000);
-          }).catch(() => alert('Enlace: ' + url));
+          const imgContainer = document.createElement('div');
+          imgContainer.id = 'imagenes-container';
+          const fotos = getField(a, ["Fotos", "Imagenes", "Imágenes", "images"]);
+          let imageUrls = [];
+          if (fotos) {
+            imageUrls = fotos.split(',').map(f => driveUrlDirect(f.trim())).filter(url => url);
+            imageUrls.forEach((url, index) => {
+              const img = document.createElement('img');
+              img.src = url;
+              img.alt = "Imagen del alquiler";
+              img.referrerPolicy = "no-referrer";
+              img.onclick = () => abrirModal(url, imageUrls, index);
+              imgContainer.appendChild(img);
+            });
+          }
+          detalle.appendChild(imgContainer);
+          if (contacto) {
+            const waBtn = document.createElement('button');
+            waBtn.textContent = 'Contactar por WhatsApp';
+            waBtn.style.background = '#25D366';
+            waBtn.style.color = 'white';
+            waBtn.style.marginTop = '10px';
+            waBtn.onclick = () => {
+              // Incrementar contactos antes de abrir WhatsApp
+              if (idPropiedad) {
+                incrementarMetrica(idPropiedad, "contactos");
+              } else {
+                console.warn("ID de propiedad no encontrado para incrementar contactos");
+                const errorEl = document.getElementById('metricas-error');
+                if (errorEl) {
+                  errorEl.style.display = 'block';
+                  errorEl.textContent = 'Error: No se encontró el ID de la propiedad';
+                }
+              }
+              const mensaje = `Hola, vengo desde AlquiYa y quiero consultar por el alquiler de ${direccion}`;
+              window.open(`https://wa.me/${contacto}?text=${encodeURIComponent(mensaje)}`, '_blank');
+            };
+            detalle.appendChild(waBtn);
+          }
+          if (enlace) {
+            const linkContainer = document.createElement('div');
+            linkContainer.id = 'link-container';
+            const linkInput = document.createElement('input');
+            linkInput.type = 'text';
+            linkInput.value = enlace;
+            const copyText = document.createElement('span');
+            copyText.textContent = 'Seleccioná y copiá para compartir';
+            linkContainer.appendChild(linkInput);
+            linkContainer.appendChild(copyText);
+            detalle.appendChild(linkContainer);
+          }
+          const copyMsg = document.createElement('p');
+          copyMsg.id = 'copy-msg';
+          detalle.appendChild(copyMsg);
+          detalle.style.display = 'block';
+          detalle.classList.add("highlight");
+          detalle.scrollIntoView({ behavior: "smooth", block: "start" });
+          setTimeout(() => detalle.classList.remove("highlight"), 1200);
+          if (map) map.invalidateSize();
         };
-        botonesDiv.appendChild(copyBtn);
-
-        detalle.appendChild(botonesDiv);
-        detalle.style.display = 'block';
-        detalle.classList.add("highlight");
-        detalle.scrollIntoView({ behavior: "smooth", block: "start" });
-        setTimeout(() => detalle.classList.remove("highlight"), 1200);
-        map.invalidateSize();
-      };
-
-      popupDiv.appendChild(verBtn);
-      marker.bindPopup(popupDiv);
+        popupDiv.appendChild(verBtn);
+        marker.bindPopup(popupDiv);
+        cont++;
+      });
+      if (cont === 0) {
+        console.warn("No se encontraron alquileres para los filtros actuales.");
+        loadingEl.textContent = "No se encontraron alquileres para los filtros actuales.";
+      }
+    })
+    .catch(err => {
+      document.getElementById("loading-msg").style.display = "none";
+      console.error("Error al conectar con WebApp:", err);
+      loadingEl.textContent = "Error al conectar con el servidor. Por favor, intenta de nuevo.";
     });
-  });
 }
 /* =========================
 PASSWORD VISIBILITY TOGGLE
