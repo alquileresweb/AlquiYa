@@ -3,68 +3,74 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AlquiYa - Alquileres en Santo Tomé</title>
+<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-SSJ5DG33JK"></script>
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-SSJ5DG33JK');
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-SSJ5DG33JK');
 </script>
 <link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
 <style>
   :root {
     --primary: #3483fa;
     --primary-dark: #2565c0;
     --success: #25D366;
-    --bg: #fafafa;
-    --card: #ffffff;
+    --bg-light: #f9f9f9;
     --text: #333;
     --border: #e0e0e0;
-    --shadow: 0 6px 20px rgba(0,0,0,0.08);
-    --radius: 14px;
+    --shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    --radius: 12px;
     --transition: all 0.3s ease;
   }
 
-  * { box-sizing: border-box; margin:0; padding:0; }
+  * { box-sizing: border-box; }
   body {
+    margin: 0;
     font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-    background: var(--bg);
+    background: #fafafa;
     color: var(--text);
     line-height: 1.6;
   }
 
-  /* LOGO ORIGINAL GRANDE (como estaba antes) */
   header {
     background: white;
-    padding: 20px;
+    padding: 1.5rem 1rem;
     text-align: center;
     box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
   }
+
   header img {
     max-width: 250px;
-    margin-bottom: 10px;
+    border-radius: 16px;
+    box-shadow: 0 6px 25px rgba(52, 131, 250, 0.2);
   }
 
   nav {
-    background: white;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    background: #f4f4f4;
     padding: 1rem;
-    text-align: center;
-    box-shadow: var(--shadow);
-    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
   }
+
   nav a {
-    margin: 0 1rem;
+    text-decoration: none;
     font-weight: 600;
     color: var(--text);
-    text-decoration: none;
-    padding: 0.7rem 1.4rem;
-    border-radius: 10px;
+    font-size: 1.1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
     transition: var(--transition);
   }
+
   nav a:hover {
     background: var(--primary);
     color: white;
@@ -74,21 +80,24 @@
     display: flex;
     justify-content: center;
     gap: 1rem;
+    margin: 2rem auto;
     flex-wrap: wrap;
-    margin: 1.5rem auto;
     max-width: 700px;
   }
+
   #boton-filtros-container button {
-    padding: 0.8rem 2rem;
-    background: var(--primary);
-    color: white;
+    padding: 0.85rem 2rem;
     border: none;
     border-radius: var(--radius);
+    background: var(--primary);
+    color: white;
     font-weight: 600;
+    font-size: 1rem;
     cursor: pointer;
     box-shadow: var(--shadow);
     transition: var(--transition);
   }
+
   #boton-filtros-container button:hover {
     background: var(--primary-dark);
     transform: translateY(-3px);
@@ -97,45 +106,56 @@
   #filtros {
     max-width: 900px;
     margin: 0 auto 2rem;
-    padding: 2rem;
-    background: var(--card);
+    padding: 1.8rem;
+    background: white;
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     display: none;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 1.2rem;
     align-items: end;
   }
-  #filtros input, #filtros select {
-    flex: 1;
-    min-width: 160px;
-    padding: 0.9rem 1rem;
-    border: 1.8px solid var(--border);
+
+  #filtros > div { display: contents; }
+
+  #filtros input,
+  #filtros select {
+    padding: 0.85rem 1rem;
+    border: 1.5px solid var(--border);
     border-radius: var(--radius);
     font-size: 1rem;
+    min-width: 160px;
+    flex: 1;
     transition: var(--transition);
   }
-  #filtros input:focus, #filtros select:focus {
+
+  #filtros input:focus,
+  #filtros select:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 4px rgba(52,131,250,0.15);
+    box-shadow: 0 0 0 4px rgba(52, 131, 250, 0.15);
   }
+
   #filtros label {
     display: flex;
     align-items: center;
     gap: 0.6rem;
     font-weight: 500;
     white-space: nowrap;
+    font-size: 0.95rem;
   }
+
   #filtros button {
-    padding: 0.9rem 2.5rem;
+    padding: 0.85rem 2.5rem;
     background: var(--primary);
     color: white;
     border: none;
     border-radius: var(--radius);
     font-weight: 600;
     cursor: pointer;
+    transition: var(--transition);
   }
+
   #filtros button:hover {
     background: var(--primary-dark);
     transform: translateY(-3px);
@@ -159,7 +179,90 @@
     display: none;
   }
 
-  /* MARCAORES DEL MAPA: exactamente como estaban antes */
+  #alquiler-detalle {
+    display: none;
+    max-width: 900px;
+    margin: 2.5rem auto;
+    padding: 2.2rem;
+    background: white;
+    border: 2px solid var(--primary);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    animation: fadeIn 0.6s ease;
+  }
+
+  #alquiler-detalle.highlight { animation: resaltar 1.2s ease; }
+
+  #alquiler-detalle h2 {
+    margin-top: 0;
+    color: var(--primary);
+    font-size: 2rem;
+    font-weight: 700;
+  }
+
+  #alquiler-detalle p {
+    margin: 1rem 0;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+    font-size: 1.05rem;
+  }
+
+  #alquiler-detalle p:last-child { border-bottom: none; }
+
+  #imagenes-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 14px;
+    margin: 2rem 0;
+  }
+
+  #imagenes-container img {
+    width: 100%;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+  }
+
+  #imagenes-container img:hover {
+    transform: scale(1.08);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+  }
+
+  #alquiler-detalle button {
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: var(--radius);
+    font-weight: 600;
+    cursor: pointer;
+    margin: 0.6rem 0.6rem 0 0;
+    transition: var(--transition);
+  }
+
+  #alquiler-detalle button:first-of-type {
+    background: var(--success);
+    color: white;
+  }
+
+  #link-container {
+    display: flex;
+    gap: 12px;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  #link-container input {
+    flex: 1;
+    min-width: 280px;
+    padding: 0.85rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  /* === MARCADORES ORIGINALES (sin tocar) === */
   .marker-icon {
     display: flex !important;
     align-items: center !important;
@@ -172,7 +275,7 @@
     height: 30px !important;
     border: 2px solid white !important;
     box-shadow: 0 0 2px #000 !important;
-    font-size: 16px !important;
+    font-size: 18px !important;
   }
 
   .popup-button {
@@ -186,92 +289,31 @@
     font-weight: bold;
     cursor: pointer;
     font-size: 0.95rem;
-  }
-
-  /* Resto del diseño moderno (login, detalle, modal, etc.) */
-  #login, #registro, #avisos-panel, #panel-dueno {
-    max-width: 500px;
-    margin: 3rem auto;
-    padding: 2.5rem;
-    background: var(--card);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    text-align: center;
-  }
-  #login h2, #registro h2, #avisos-panel h2 {
-    margin-bottom: 1.5rem;
-    color: var(--primary);
-    font-size: 1.9rem;
-  }
-  #login input, #registro input, #avisos-panel input,
-  #login button, #registro button, #avisos-panel button {
-    width: 100%;
-    max-width: 340px;
-    margin: 0.8rem auto;
-    padding: 0.9rem 1rem;
-    border-radius: var(--radius);
-    border: 1.8px solid var(--border);
-    font-size: 1rem;
-  }
-  #login button, #registro button, #avisos-panel button {
-    background: var(--primary);
-    color: white;
-    border: none;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  #login button:hover, #registro button:hover, #avisos-panel button:hover {
-    background: var(--primary-dark);
-  }
-
-  #alquiler-detalle {
-    display: none;
-    max-width: 900px;
-    margin: 2rem auto;
-    padding: 2.5rem;
-    background: var(--card);
-    border: 2px solid var(--primary);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-  }
-  #alquiler-detalle.highlight { animation: resaltar 1.2s ease; }
-  #alquiler-detalle h2 { color: var(--primary); margin-bottom: 1.5rem; font-size: 2rem; }
-  #imagenes-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 1rem;
-    margin: 2rem 0;
-  }
-  #imagenes-container img {
-    width: 100%;
-    height: 110px;
-    object-fit: cover;
-    border-radius: 12px;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     transition: var(--transition);
   }
-  #imagenes-container img:hover {
-    transform: scale(1.08);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.2);
-  }
 
+  .popup-button:hover { background: var(--primary-dark); }
+
+  /* Modal imágenes */
   #modal-img {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.95);
-    backdrop-filter: blur(12px);
+    background: rgba(0, 0, 0, 0.94);
+    backdrop-filter: blur(10px);
     align-items: center;
     justify-content: center;
     z-index: 9999;
+    padding: 2rem;
   }
+
   #modal-img img {
-    max-width: 94%;
-    max-height: 94%;
+    max-width: 95%;
+    max-height: 95%;
     border-radius: 18px;
-    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+    box-shadow: 0 25px 60px rgba(0,0,0,0.6);
   }
+
   .nav-btn, .close-btn {
     position: absolute;
     background: rgba(255,255,255,0.25);
@@ -282,19 +324,70 @@
     border-radius: 50%;
     font-size: 30px;
     cursor: pointer;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
+    transition: var(--transition);
   }
+
   .nav-btn:hover, .close-btn:hover {
     background: var(--primary);
     transform: scale(1.15);
   }
-  .close-btn { top: 20px; right: 20px; }
+
+  .close-btn { top: 20px; right: 20px; background: rgba(255,0,0,0.7); }
   .prev-btn { left: 20px; }
   .next-btn { right: 20px; }
 
+  /* Paneles login/registro */
+  #login, #registro, #avisos-panel, #panel-dueno {
+    max-width: 480px;
+    margin: 3rem auto;
+    padding: 2.5rem;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+
+  #login h2, #registro h2, #avisos-panel h2 {
+    color: var(--primary);
+    font-size: 1.9rem;
+    margin-bottom: 1.5rem;
+  }
+
+  input, select, button {
+    width: 100%;
+    padding: 0.9rem;
+    margin: 0.8rem 0;
+    border-radius: var(--radius);
+    border: 1.5px solid var(--border);
+    font-size: 1rem;
+  }
+
+  button {
+    background: var(--primary);
+    color: white;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  button:hover { background: var(--primary-dark); transform: translateY(-2px); }
+
+  .password-container { position: relative; display: flex; align-items: center; }
+  .eye-icon {
+    position: absolute;
+    right: 12px;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    background: url('https://img.icons8.com/ios/50/000000/visible.png') no-repeat center/contain;
+  }
+
+  /* Publicidad */
   #publicidad-container {
-    background: var(--card);
-    border: 2px dashed var(--border);
+    background: white;
+    border: 2px dashed #ccc;
     border-radius: var(--radius);
     padding: 2rem;
     margin: 2rem auto;
@@ -303,20 +396,28 @@
     cursor: pointer;
     transition: var(--transition);
   }
+
   #publicidad-container:hover {
     border-color: var(--primary);
-    box-shadow: var(--shadow);
+    box-shadow: 0 8px 25px rgba(52,131,250,0.15);
+  }
+
+  /* Animaciones */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   @keyframes resaltar {
-    0%,100% { transform: scale(1); }
-    50% { transform: scale(1.02); box-shadow: 0 0 40px rgba(52,131,250,0.4); }
+    0%, 100% { transform: scale(1); box-shadow: var(--shadow); }
+    50% { transform: scale(1.02); box-shadow: 0 0 35px rgba(52, 131, 250, 0.5); }
   }
 
   @media (max-width: 768px) {
     header img { max-width: 200px; }
-    #filtros, #alquiler-detalle, #login, #registro { padding: 1.5rem; margin: 1.5rem; }
+    #filtros, #alquiler-detalle { margin: 1rem; padding: 1.5rem; }
     #map { height: 55vh; }
+    nav { gap: 1rem; padding: 0.8rem; }
   }
 </style>
 </head>
