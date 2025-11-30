@@ -390,7 +390,7 @@
       .modal.active { display: flex; }
       .modal-content {
         background-color: white;
-        margin: auto;
+        margin: auto17px;
         padding: 24px;
         border-radius: var(--radius);
         width: 90%;
@@ -417,17 +417,19 @@
       <button onclick="logout()">Cerrar Sesión</button>
     </div>
     <header><div></div><img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya"><div></div></header>
+    
     <div id="planContainer">
       <b>Mi plan</b>
       <div id="planStatus"></div>
       <span id="limiteAlquileres"></span>
       <button id="btnPlan" onclick="abrirModalPlan()">Mejorar Plan</button>
     </div>
+    
     <h3>Mis Propiedades</h3>
     <div id="listaAlquileres">Cargando...</div>
-
+    
     <button id="btnAgregarPropiedad" onclick="toggleOpcionesPropiedad()">Agregar Propiedad</button>
-
+    
     <!-- SELECTOR MODERNO -->
     <div id="seleccionPropiedad">
       <h3 style="text-align:center; color:var(--primary); margin-bottom:32px;">
@@ -476,7 +478,6 @@
       <button class="btn-guardar" onclick="agregarAlquiler('Terreno')">Publicar Terreno</button>
       <p id="msgTerreno" class="msg-estado"></p>
     </div>
-
     <!-- 2. CASA -->
     <div id="formularioCasa">
       <input type="hidden" id="editRowCasa"><input type="hidden" id="enlaceCompartirCasa"><input type="hidden" id="existingVideosCasa">
@@ -496,7 +497,6 @@
       <button class="btn-guardar" onclick="agregarAlquiler('Casa')">Publicar Casa</button>
       <p id="msgCasa" class="msg-estado"></p>
     </div>
-
     <!-- 3. DEPARTAMENTO -->
     <div id="formularioDepartamento">
       <input type="hidden" id="editRowDepartamento"><input type="hidden" id="enlaceCompartirDepartamento"><input type="hidden" id="existingVideosDepartamento">
@@ -515,7 +515,6 @@
       <button class="btn-guardar" onclick="agregarAlquiler('Departamento')">Publicar Departamento</button>
       <p id="msgDepartamento" class="msg-estado"></p>
     </div>
-
     <!-- 4. LOCAL COMERCIAL -->
     <div id="formularioLocal">
       <input type="hidden" id="editRowLocal"><input type="hidden" id="enlaceCompartirLocal"><input type="hidden" id="existingVideosLocal">
@@ -530,7 +529,6 @@
       <button class="btn-guardar" onclick="agregarAlquiler('Local')">Publicar Local</button>
       <p id="msgLocal" class="msg-estado"></p>
     </div>
-
     <!-- 5. TEMPORARIO -->
     <div id="formularioTemporario">
       <input type="hidden" id="editRowTemporario"><input type="hidden" id="enlaceCompartirTemporario"><input type="hidden" id="existingVideosTemporario">
@@ -545,8 +543,8 @@
       <button class="btn-guardar" onclick="agregarAlquiler('Temporario')">Publicar Temporario</button>
       <p id="msgTemporario" class="msg-estado"></p>
     </div>
-  
-    <!-- MODAL DE PLANES -->
+ 
+    <!-- MODAL DE PLANES (actualizado) -->
     <div id="modalPlan" class="modal">
       <div class="modal-content">
         <span class="close-modal" onclick="cerrarModalPlan()">&times;</span>
@@ -586,15 +584,14 @@
         </div>
         <div class="plan-card">
           <h3>Plan Inmobiliario</h3>
-          <div class="plan-price">Consultar</div>
+          <div class="plan-price" id="precioInmobiliario">Cargando...</div>
           <ul class="plan-features">
             <li>Propiedades ilimitadas</li>
-            <li>Todas las funciones premium</li>
+            <li>Todas las funciones avanzadas</li>
             <li>Soporte dedicado</li>
           </ul>
-          <button style="margin-top:10px; padding:12px 24px; background:#10b981; color:white; border:none; border-radius:50px; cursor:pointer;" onclick="window.open('https://wa.me/5493764275443','_blank')">
-            Contactar por WhatsApp
-          </button>
+          <div id="mpBtnInmobiliario"></div>
+          <button style="margin-top:10px; padding:12px 24px; background:var(--primary); color:white; border:none; border-radius:50px; cursor:pointer;" onclick="seleccionarPlan('Inmobiliario')">Pagar con Mercado Pago</button>
         </div>
       </div>
     </div>
@@ -656,7 +653,8 @@ function mostrarAlquileres(res) {
   }
   deptosActivos = res.data.filter(a => a.Estado === "Activo").length;
   document.getElementById("limiteAlquileres").textContent =
-    planActual === "Prueba" ? `${deptosActivos} propiedades activas` :
+    (planActual === "Prueba" || planActual === "Inmobiliario") ?
+    `${deptosActivos} propiedades activas` :
     `${deptosActivos}/${limiteDeptos} propiedades activas`;
   res.data.forEach(alq => {
     let estado = alq.Estado === "Activo";
@@ -934,9 +932,7 @@ function toggleMenu() {
 function toggleOpcionesPropiedad() {
         const selector = document.getElementById("seleccionPropiedad");
         const btn = document.getElementById("btnAgregarPropiedad");
-
         if (!selector || !btn) return; // Seguridad
-
         if (selector.classList.contains("active")) {
           selector.classList.remove("active");
           btn.textContent = "Agregar Propiedad";
@@ -1019,13 +1015,14 @@ script.src = `${API_URL}?action=getPlanes&callback=mostrarPreciosPlanes`;
 document.body.appendChild(script);
 }
 function mostrarPreciosPlanes(res) {
-if (res.success && res.data && res.data.length) {
-res.data.forEach(plan => {
-preciosPlanes[plan.nombre] = parseFloat(plan.precio) || 0;
-});
-document.getElementById("precioBasico").textContent = formatoPrecioPlan(preciosPlanes.Basico) + " / mes";
-document.getElementById("precioPlus").textContent = formatoPrecioPlan(preciosPlanes.Plus) + " / mes";
-document.getElementById("precioFull").textContent = formatoPrecioPlan(preciosPlanes.Full) + " / mes";
+  if (res.success && res.data && res.data.length) {
+    res.data.forEach(plan => {
+      preciosPlanes[plan.nombre] = parseFloat(plan.precio) || 0;
+    });
+    document.getElementById("precioBasico").textContent = formatoPrecioPlan(preciosPlanes.Basico) + " / mes";
+    document.getElementById("precioPlus").textContent = formatoPrecioPlan(preciosPlanes.Plus) + " / mes";
+    document.getElementById("precioFull").textContent = formatoPrecioPlan(preciosPlanes.Full) + " / mes";
+    document.getElementById("precioInmobiliario").textContent = formatoPrecioPlan(preciosPlanes.Inmobiliario) + " / mes";
 } else {
 console.error("Error al cargar precios de planes:", res);
 }
@@ -1036,6 +1033,20 @@ const script = document.createElement("script");
 script.src = `${API_URL}?action=getLoginInfo&email=${encodeURIComponent(email)}&callback=mostrarEstadoPlan`;
 document.body.appendChild(script);
 }
+// === NUEVA LÓGICA DE LÍMITES SEGÚN PLAN (columna H) ===
+function obtenerLimitePorPlan(plan) {
+  if (!plan) return 0;
+  const limites = {
+    "Basico": 1,
+    "Plus": 3,
+    "Full": 5,
+    "Inmobiliario": Infinity,
+    "Prueba": Infinity
+  };
+  return limites[plan] !== undefined ? limites[plan] : 0;
+}
+
+// === ACTUALIZACIÓN DE ESTADO DEL PLAN ===
 function mostrarEstadoPlan(res) {
   const planStatusEl = document.getElementById("planStatus");
   if (!res.success || !res.data || !res.data[0]) {
@@ -1048,38 +1059,36 @@ function mostrarEstadoPlan(res) {
   }
   const login = res.data[0];
   planActual = login.Plan || null;
-// NUEVA LÓGICA DE LÍMITES SEGÚN COLUMNA H
-  if (planActual === "Basico") limiteDeptos = 1;
-  else if (planActual === "Plus") limiteDeptos = 3;
-  else if (planActual === "Full") limiteDeptos = 5;
-  else if (planActual === "Inmobiliario") limiteDeptos = Infinity;
-  else if (planActual === "Prueba") limiteDeptos = Infinity;
-  else limiteDeptos = 0;
+  limiteDeptos = obtenerLimitePorPlan(planActual);
 
   const estadoPago = login.EstadoPago || "No registrado";
   const vencimiento = formatoFecha(login.Vencimiento || "N/D");
   let planStatusHTML = `Plan: <b>${planActual || "Sin plan"}</b> | Estado de Pago: ${estadoPago} | Vencimiento: ${vencimiento}`;
-const today = new Date();
-const diffTime = vencimientoDate - today;
-const diasRestantes = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-if (diasRestantes > 0) {
-planStatusHTML += `<br><span style="color:#00FF00">Te quedan ${diasRestantes} días para mostrar tus departamentos GRATIS con el plan Prueba</span>`;
-} else {
-planStatusHTML += `<br><span style="color:red">Plan Prueba vencido, tus alquileres no se mostrarán en el mapa</span>`;
-}
-} else if (vencimiento !== "N/D") {
-const vencimientoDate = new Date(vencimiento.split("/").reverse().join("-"));
-const today = new Date();
-if (vencimientoDate < today) {
-planStatusHTML += `<br><span style="color:red">Plan vencido, tus alquileres no se mostrarán en el mapa</span>`;
-}
-}
-planStatusEl.innerHTML = planStatusHTML;
+
+  if (planActual === "Prueba" && vencimiento !== "N/D") {
+    const vencimientoDate = new Date(vencimiento.split("/").reverse().join("-"));
+    const today = new Date();
+    const diffTime = vencimientoDate - today;
+    const diasRestantes = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diasRestantes > 0) {
+      planStatusHTML += `<br><span style="color:#00FF00">Te quedan ${diasRestantes} días GRATIS (Plan Prueba)</span>`;
+    } else {
+      planStatusHTML += `<br><span style="color:red">Plan Prueba vencido</span>`;
+    }
+  } else if (vencimiento !== "N/D") {
+    const vencimientoDate = new Date(vencimiento.split("/").reverse().join("-"));
+    const today = new Date();
+    if (vencimientoDate < today) {
+      planStatusHTML += `<br><span style="color:red">Plan vencido</span>`;
+    }
+  }
+
+  planStatusEl.innerHTML = planStatusHTML;
   document.getElementById("limiteAlquileres").textContent = 
-    (planActual === "Prueba" || planActual === "Inmobiliario") 
-      ? `${deptosActivos} propiedades activas` 
-      : `${deptosActivos}/${limiteDeptos} propiedades activas`;
-  document.getElementById("btnPlan").textContent = planActual ? "Mejorar Plan" : "Elegir Plan";
+    (planActual === "Prueba" || planActual === "Inmobiliario") ? 
+    `${deptosActivos} propiedades activas` : 
+    `${deptosActivos}/${limiteDeptos} propiedades activas`;
+  document.get  document.getElementById("btnPlan").textContent = planActual ? "Mejorar Plan" : "Elegir Plan";
 }
 function abrirModalPlan() {
   document.getElementById("modalPlan").style.display = "flex";
@@ -1175,7 +1184,6 @@ function toggleOpcionesPropiedad() {
           document.getElementById("tipoPropiedad").innerHTML = '<option value="">Selecciona tipo de propiedad</option>';
         }
       }
-
       function actualizarTipoPropiedad() {
         const operacion = document.getElementById("tipoOperacion").value;
         const selectorPropiedad = document.getElementById("tipoPropiedad");
@@ -1197,7 +1205,6 @@ function toggleOpcionesPropiedad() {
           });
         }
       }
-
       function mostrarFormularioSeleccionado() {
         const tipo = document.getElementById("tipoPropiedad").value;
         if (!tipo) return;
@@ -1359,13 +1366,12 @@ actualizarVideoPreview(tipo);
 window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
 }
 async function cambiarEstado(row, estadoActual) {
-const msgEl = document.getElementById(`estadoMsg-${row}`);
-if (estadoActual === "Inactivo" && deptosActivos >= limiteDeptos && planActual !== "Prueba") {
-msgEl.className = "estado-msg error";
-msgEl.textContent = `No puedes activar más propiedades. Tu plan (${planActual}) permite hasta ${limiteDeptos} propiedades activas.`;
-setTimeout(() => { msgEl.textContent = ""; }, 5000);
-return;
-}
+  const msgEl = document.getElementById(`estadoMsg-${row}`);
+  if (estadoActual === "Inactivo" && deptosActivos >= limiteDeptos && planActual !== "Prueba" && planActual !== "Inmobiliario") {
+    msgEl.className = "estado-msg error";
+    msgEl.textContent = `Límite alcanzado: tu plan ${planActual} permite solo ${limiteDeptos} propiedades activas.`;
+    setTimeout(() => { msgEl.textContent = ""; }, 6000);
+    return;
 msgEl.className = "estado-msg loading";
 msgEl.textContent = "Cambiando Estado";
 try {
