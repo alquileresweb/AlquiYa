@@ -177,7 +177,7 @@
         padding: 16px 32px;
         border-radius: 50px;
         font-size: 1.3em;
-        cursor: pointer;
+        cursor: pointer toest;
       }
       #contactoBtn {
         position: fixed;
@@ -309,7 +309,6 @@
         font-size: 18px;
       }
       .form-group textarea { resize: vertical; min-height: 100px; }
-      /* IMÁGENES Y VIDEOS AL LADO */
       .media-upload-container {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -390,7 +389,6 @@
       .modal.active { display: flex; }
       .modal-content {
         background-color: white;
-        margin: auto17px;
         padding: 24px;
         border-radius: var(--radius);
         width: 90%;
@@ -544,7 +542,7 @@
       <p id="msgTemporario" class="msg-estado"></p>
     </div>
  
-    <!-- MODAL DE PLANES (actualizado) -->
+    <!-- MODAL DE PLANES (actualizado con nuevos límites) -->
     <div id="modalPlan" class="modal">
       <div class="modal-content">
         <span class="close-modal" onclick="cerrarModalPlan()">&times;</span>
@@ -595,7 +593,8 @@
         </div>
       </div>
     </div>
-    <!-- MODAL EDITAR CUENTA - AHORA COMPLETO Y FUNCIONAL -->
+
+    <!-- MODAL EDITAR CUENTA -->
     <div id="modalEditarCuenta" class="modal">
       <div class="modal-content">
         <span class="close-modal" onclick="cerrarModalEditarCuenta()">&times;</span>
@@ -627,10 +626,11 @@
         <p id="msgEditarCuenta" style="text-align:center; margin-top:15px; font-weight:bold;"></p>
       </div>
     </div>
-    <div id="modalEstadisticas"><div class="modal-content">...</div></div>
+
     <button id="contactoBtn" title="¿Necesitas ayuda?" onclick="window.open('https://wa.me/5493764275443', '_blank')">
       <i class="fab fa-whatsapp"></i>
     </button>
+
 <script>
 // === CONSTANTES Y VARIABLES ===
 const API_URL = "https://script.google.com/macros/s/AKfycbyFvDRwPZoG6ChhvcxGm6B27ziD6Qkg4RcH0TI9K59b7zPz7iFxy7mgmbs5mo5T-TxD/exec";
@@ -1015,17 +1015,13 @@ script.src = `${API_URL}?action=getPlanes&callback=mostrarPreciosPlanes`;
 document.body.appendChild(script);
 }
 function mostrarPreciosPlanes(res) {
-  if (res.success && res.data && res.data.length) {
-    res.data.forEach(plan => {
-      preciosPlanes[plan.nombre] = parseFloat(plan.precio) || 0;
-    });
+  if (res.success && res.data) {
+    res.data.forEach(p => preciosPlanes[p.nombre] = parseFloat(p.precio) || 0);
     document.getElementById("precioBasico").textContent = formatoPrecioPlan(preciosPlanes.Basico) + " / mes";
     document.getElementById("precioPlus").textContent = formatoPrecioPlan(preciosPlanes.Plus) + " / mes";
     document.getElementById("precioFull").textContent = formatoPrecioPlan(preciosPlanes.Full) + " / mes";
     document.getElementById("precioInmobiliario").textContent = formatoPrecioPlan(preciosPlanes.Inmobiliario) + " / mes";
-} else {
-console.error("Error al cargar precios de planes:", res);
-}
+  }
 }
 function cargarEstadoPlan() {
 const email = localStorage.getItem("dueno");
@@ -1035,18 +1031,10 @@ document.body.appendChild(script);
 }
 // === NUEVA LÓGICA DE LÍMITES SEGÚN PLAN (columna H) ===
 function obtenerLimitePorPlan(plan) {
-  if (!plan) return 0;
-  const limites = {
-    "Basico": 1,
-    "Plus": 3,
-    "Full": 5,
-    "Inmobiliario": Infinity,
-    "Prueba": Infinity
-  };
-  return limites[plan] !== undefined ? limites[plan] : 0;
+  const limites = { "Basico": 1, "Plus": 3, "Full": 5, "Inmobiliario": Infinity, "Prueba": Infinity };
+  return limites[plan] ?? 0;
 }
 
-// === ACTUALIZACIÓN DE ESTADO DEL PLAN ===
 function mostrarEstadoPlan(res) {
   const planStatusEl = document.getElementById("planStatus");
   if (!res.success || !res.data || !res.data[0]) {
@@ -1068,27 +1056,21 @@ function mostrarEstadoPlan(res) {
   if (planActual === "Prueba" && vencimiento !== "N/D") {
     const vencimientoDate = new Date(vencimiento.split("/").reverse().join("-"));
     const today = new Date();
-    const diffTime = vencimientoDate - today;
-    const diasRestantes = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    if (diasRestantes > 0) {
-      planStatusHTML += `<br><span style="color:#00FF00">Te quedan ${diasRestantes} días GRATIS (Plan Prueba)</span>`;
-    } else {
-      planStatusHTML += `<br><span style="color:red">Plan Prueba vencido</span>`;
-    }
-  } else if (vencimiento !== "N/D") {
-    const vencimientoDate = new Date(vencimiento.split("/").reverse().join("-"));
-    const today = new Date();
-    if (vencimientoDate < today) {
-      planStatusHTML += `<br><span style="color:red">Plan vencido</span>`;
-    }
+    const diasRestantes = Math.ceil((vencimientoDate - today) / (1000 * 60 * 60 * 24));
+    planStatusHTML += diasRestantes > 0 
+      ? `<br><span style="color:#00FF00">Te quedan ${diasRestantes} días GRATIS (Plan Prueba)</span>`
+      : `<br><span style="color:red">Plan Prueba vencido</span>`;
+  } else if (vencimiento !== "N/D" && new Date(vencimiento.split("/").reverse().join("-")) < new Date()) {
+    planStatusHTML += `<br><span style="color:red">Plan vencido</span>`;
   }
 
   planStatusEl.innerHTML = planStatusHTML;
   document.getElementById("limiteAlquileres").textContent = 
-    (planActual === "Prueba" || planActual === "Inmobiliario") ? 
-    `${deptosActivos} propiedades activas` : 
-    `${deptosActivos}/${limiteDeptos} propiedades activas`;
-  document.get  document.getElementById("btnPlan").textContent = planActual ? "Mejorar Plan" : "Elegir Plan";
+    (planActual === "Prueba" || planActual === "Inmobiliario") 
+      ? `${deptosActivos} propiedades activas` 
+      : `${deptosActivos}/${limiteDeptos} propiedades activas`;
+
+  document.getElementById("btnPlan").textContent = planActual ? "Mejorar Plan" : "Elegir Plan";
 }
 function abrirModalPlan() {
   document.getElementById("modalPlan").style.display = "flex";
@@ -1365,6 +1347,7 @@ actualizarPreview(tipo);
 actualizarVideoPreview(tipo);
 window.scrollTo(0, document.getElementById(`formulario${tipo}`).offsetTop);
 }
+// === VALIDACIÓN AL ACTIVAR PROPIEDAD ===
 async function cambiarEstado(row, estadoActual) {
   const msgEl = document.getElementById(`estadoMsg-${row}`);
   if (estadoActual === "Inactivo" && deptosActivos >= limiteDeptos && planActual !== "Prueba" && planActual !== "Inmobiliario") {
