@@ -1,318 +1,309 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Dueños</title>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SSJ5DG33JK"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-SSJ5DG33JK');
-    </script>
-    <!-- GOOGLE CHARTS API -->
-    <script src="https://www.gstatic.com/charts/loader.js"></script>
-    <link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
-    <!-- Font Awesome para iconos -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <style>
-      :root {
-        --primary: #4361ee;
-        --success: #10b981;
-        --danger: #ef4444;
-        --gray: #6b7280;
-        --light: #f8fafc;
-        --dark: #1e293b;
-        --radius: 16px;
-        --shadow: 0 10px 25px rgba(0,0,0,0.08);
-      }
-      body {
-        font-family: 'Segoe UI', Arial, sans-serif;
-        margin: 0;
-        background: linear-gradient(135deg, #f0f2f5 0%, #e2e8f0 100%);
-        color: var(--dark);
-        font-size: 18px;
-        line-height: 1.6;
-        padding-top: 90px;
-      }
-      header {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        background: white;
-        z-index: 1000;
-        padding: 16px 20px;
-        box-shadow: var(--shadow);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-      header img {
-        max-height: 60px;
-      }
-      #back-arrow {
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        font-size: 32px;
-        color: var(--primary);
-        background: white;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: var(--shadow);
-        cursor: pointer;
-        z-index: 1001;
-      }
-      #menu-toggle {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        font-size: 28px;
-        color: var(--primary);
-        background: white;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: var(--shadow);
-        cursor: pointer;
-        z-index: 1001;
-      }
-      #menu {
-        display: none;
-        position: fixed;
-        top: 80px;
-        right: 20px;
-        background: white;
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        overflow: hidden;
-        z-index: 1001;
-        min-width: 200px;
-      }
-      #menu.active { display: block; }
-      #menu button {
-        width: 100%;
-        padding: 16px 20px;
-        border: none;
-        background: none;
-        text-align: left;
-        font-size: 16px;
-        cursor: pointer;
-        transition: background 0.2s;
-      }
-      #menu button:hover { background: #f1f5f9; }
-      h2, h3 {
-        text-align: center;
-        color: var(--dark);
-        margin: 20px 0;
-      }
-      h3 { font-size: 2em; }
-      #planContainer {
-        background: white;
-        margin: 20px auto;
-        max-width: 600px;
-        padding: 24px;
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        text-align: center;
-      }
-      #planStatus {
-        font-weight: bold;
-        font-size: 1.4em;
-        margin: 12px 0;
-      }
-      #btnPlan {
-        background: var(--primary);
-        color: white;
-        border: none;
-        padding: 14px 28px;
-        border-radius: 50px;
-        font-size: 1.1em;
-        cursor: pointer;
-      }
-      .alquiler {
-        background: white;
-        margin: 16px auto;
-        max-width: 700px;
-        padding: 20px;
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        position: relative;
-      }
-      .alquiler b { font-size: 1.4em; display: block; margin-bottom: 8px; }
-      .alquiler-actions {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-top: 16px;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-      .alquiler-actions-left button {
-        background: var(--primary);
-        color: white;
-        border: none;
-        padding: 10px 16px;
-        border-radius: 50px;
-        cursor: pointer;
-        font-size: 0.95em;
-      }
-      .alquiler-actions-right button {
-        background: var(--danger);
-        color: white;
-        border: none;
-        padding: 10px 16px;
-        border-radius: 50px;
-        cursor: pointer;
-        font-size: 0.95em;
-      }
-      .toggle-switch {
-        position: relative;
-        display: inline-block;
-        width: 60px;
-        height: 34px;
-      }
-      .toggle-switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-      }
-      .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: #ccc;
-        transition: .4s;
-        border-radius: 34px;
-      }
-      .slider:before {
-        position: absolute;
-        content: "";
-        height: 26px;
-        width: 26px;
-        left: 4px;
-        bottom: 4px;
-        background-color: white;
-        transition: .4s;
-        border-radius: 50%;
-      }
-      input:checked + .slider { background-color: var(--success); }
-      input:checked + .slider:before { transform: translateX(26px); }
-      .stats-inline {
-        margin-top: 16px;
-        padding: 14px;
-        background: #fff8e1;
-        border-radius: 12px;
-        display: flex;
-        justify-content: center;
-        gap: 30px;
-        flex-wrap: wrap;
-        font-size: 1.2em;
-      }
-      .stats-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: bold;
-        color: #d97706;
-      }
-      .stats-item i { font-size: 1.4em; }
-      #btnAgregarPropiedad {
-        display: block;
-        margin: 30px auto;
-        background: var(--primary);
-        color: white;
-        border: none;
-        padding: 16px 32px;
-        border-radius: 50px;
-        font-size: 1.3em;
-        cursor: pointer;
-      }
-      #contactoBtn {
-        position: fixed;
-        bottom: 24px;
-        right: 24px;
-        background: #25D366;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 64px;
-        height: 64px;
-        font-size: 2em;
-        cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        z-index: 999;
-      }
-
-      /* NUEVO: Ocultar formularios por defecto */
-      [id^="formulario"] {
-        display: none;
-        margin: 30px auto;
-        max-width: 700px;
-        background: white;
-        padding: 20px;
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-      }
-      [id^="formulario"].active {
-        display: block;
-      }
-
-      /* Opciones de propiedad */
-      #opcionesPropiedad {
-        display: none;
-        margin: 20px auto;
-        max-width: 700px;
-        text-align: center;
-      }
-      #opcionesPropiedad.active { display: block; }
-      #opcionesVenta, #opcionesAlquiler { display: none; }
-      #opcionesVenta.active, #opcionesAlquiler.active { display: block; }
-
-      @media (max-width: 600px) {
-        body { font-size: 20px; padding-top: 100px; }
-        #back-arrow, #menu-toggle { width: 56px; height: 56px; font-size: 36px; }
-        header img { max-height: 50px; }
-        .alquiler-actions { flex-direction: column; align-items: stretch; }
-        .alquiler-actions-left, .alquiler-actions-right { justify-content: center; }
-      }
-    </style>
-  </head>
-  <body>
-    <button id="back-arrow" onclick="window.location.href='index.html'">
-      <i class="fas fa-arrow-left"></i>
-    </button>
-    <button id="menu-toggle" onclick="toggleMenu()">
-      <i class="fas fa-bars"></i>
-    </button>
-    <div id="menu">
-      <button onclick="abrirModalEditarCuenta()">Editar Cuenta</button>
-      <button onclick="logout()">Cerrar Sesión</button>
-    </div>
-    <header>
-      <div></div>
-      <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya">
-      <div></div>
-    </header>
-    <div id="planContainer">
-      <b>Mi plan</b>
-      <div id="planStatus"></div>
-      <span id="limiteAlquileres"></span>
-      <button id="btnPlan" onclick="abrirModalPlan()">Mejorar Plan</button>
-    </div>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AlquiYa - Alquileres en Santo Tomé</title>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SSJ5DG33JK"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-SSJ5DG33JK');
+</script>
+<link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #3483fa;
+    --primary-dark: #2565c0;
+    --success: #25D366;
+    --bg: #fafafa;
+    --card: #ffffff;
+    --text: #333;
+    --border: #e0e0e0;
+    --shadow: 0 6px 20px rgba(0,0,0,0.08);
+    --radius: 14px;
+    --transition: all 0.3s ease;
+  }
+  * { box-sizing: border-box; margin:0; padding:0; }
+  body {
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  header {
+    background: white;
+    color: white;
+    padding: 15px;
+    text-align: center;
+  }
+  header img {
+    max-width: 250px;
+    margin-bottom: 10px;
+  }
+  nav {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    background: white;
+    padding: 1rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 1rem;
+  }
+  nav a {
+    text-decoration: none;
+    font-weight: bold;
+    color: #333;
+    padding: 0.7rem 1.4rem;
+    border-radius: 10px;
+    transition: var(--transition);
+  }
+  nav a:hover {
+    background: var(--primary);
+    color: white;
+  }
+  #boton-filtros-container {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin: 1.5rem auto;
+    max-width: 700px;
+  }
+  #boton-filtros-container button {
+    padding: 0.8rem 2rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+  }
+  #boton-filtros-container button:hover {
+    background: var(--primary-dark);
+    transform: translateY(-3px);
+  }
+  #filtros {
+    max-width: 900px;
+    margin: 0 auto 2rem;
+    padding: 2rem;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    display: none;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: end;
+  }
+  #filtros input, #filtros select {
+    flex: 1;
+    min-width: 160px;
+    padding: 0.9rem 1rem;
+    border: 1.8px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 1rem;
+    transition: var(--transition);
+  }
+  #filtros input:focus, #filtros select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(52,131,250,0.15);
+  }
+  #filtros label {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 500;
+  }
+  #filtros button {
+    padding: 0.9rem 2.5rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #filtros button:hover {
+    background: var(--primary-dark);
+    transform: translateY(-3px);
+  }
+  #map {
+    height: 65vh;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    margin: 1.5rem auto;
+    max-width: 1400px;
+  }
+  #loading-msg {
+    text-align: center;
+    font-weight: 600;
+    color: var(--primary);
+    font-size: 1.3rem;
+    margin: 2rem;
+    display: none;
+  }
+  /* MARCADORES ORIGINALES + AJUSTE DE TAMAÑO PARA DEPARTAMENTOS */
+  .marker-icon {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #3483fa !important;
+    color: white !important;
+    font-weight: bold !important;
+    border-radius: 50% !important;
+    width: 30px !important;
+    height: 30px !important;
+    border: 2px solid white !important;
+    box-shadow: 0 0 2px #000 !important;
+    font-size: 14px !important; /* Reducido para que quepa bien */
+    line-height: 1;
+  }
+  .marker-icon span {
+    font-size: 11px !important;
+    margin-left: 1px;
+  }
+  .popup-button {
+    display: inline-block;
+    padding: 8px 16px;
+    margin-top: 8px;
+    background: #3483fa;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 0.95em;
+  }
+  #alquiler-detalle, #login, #registro, #avisos-panel, #panel-dueno {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2.5rem;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    display: none;
+  }
+  #alquiler-detalle {
+    border: 2px solid var(--primary);
+    display: none;
+  }
+  #alquiler-detalle.highlight { animation: resaltar 1.2s ease; }
+  #alquiler-detalle h2 { color: var(--primary); font-size: 2rem; margin-bottom: 1.5rem; }
+  #imagenes-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 1rem;
+    margin: 2rem 0;
+  }
+  #imagenes-container img {
+    width: 100%;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: var(--transition);
+  }
+  #imagenes-container img:hover {
+    transform: scale(1.08);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+  }
+  .btn-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .copy-share-btn {
+    background: #6366f1;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .copy-share-btn:hover {
+    background: #4f46e5;
+  }
+  #publicidad-container {
+    background: var(--card);
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    margin: 2rem auto;
+    max-width: 700px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  #publicidad-container:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow);
+  }
+  #modal-terminos, #modal-img {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(10px);
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 1rem;
+  }
+  #modal-terminos-content {
+    background: white;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 2.5rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  #modal-img img {
+    max-width: 94%;
+    max-height: 94%;
+    border-radius: 18px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+  }
+  .nav-btn, .close-btn {
+    position: absolute;
+    background: rgba(255,255,255,0.25);
+    color: white;
+    border: none;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    font-size: 30px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+  }
+  .nav-btn:hover, .close-btn:hover { background: var(--primary); }
+  @keyframes resaltar {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.02); box-shadow: 0 0 40px rgba(52,131,250,0.4); }
+  }
+  @media (max-width: 768px) {
+    header img { max-width: 200px; }
+    #filtros, #alquiler-detalle { padding: 1.5rem; margin: 1rem; }
+    #map { height: 55vh; }
+    .btn-group { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<header>
+<img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya">
+</header>
     <h3>Mis Propiedades</h3>
     <div id="listaAlquileres">Cargando...</div>
     <button id="btnAgregarPropiedad" onclick="toggleOpcionesPropiedad()">Agregar Propiedad</button>
@@ -436,11 +427,172 @@ function mostrarAlquileres(res) {
 }
 
 function cargarAlquileres() {
-  const email = localStorage.getItem("dueno");
-  const script = document.createElement("script");
-  script.src = `${API_URL}?action=getAlquileresDueno&dueno=${encodeURIComponent(email)}&callback=mostrarAlquileres`;
-  document.body.appendChild(script);
+  const loadingEl = document.getElementById("loading-msg");
+  loadingEl.style.display = "block";
+  loadingEl.textContent = "Cargando alquileres disponibles...";
+  if (!map || !markersLayer) {
+    if (!initializeMap()) {
+      loadingEl.textContent = "Error: No se pudo inicializar el mapa.";
+      return;
+    }
+  }
+  markersLayer.clearLayers();
+
+  // Marcadores fijos
+  const uniIcon = L.divIcon({ className: 'marker-icon', html: 'Facultad', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const hospIcon = L.divIcon({ className: 'marker-icon', html: 'Hospital', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const superIcon = L.divIcon({ className: 'marker-icon', html: 'Mercado', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const busIcon = L.divIcon({ className: 'marker-icon', html: 'Bus', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const policeIcon = L.divIcon({ className: 'marker-icon', html: 'Policía', iconSize: [30, 30], iconAnchor: [15, 15] });
+  L.marker([-28.5509978, -56.0409727], { icon: uniIcon }).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
+  L.marker([-28.5551127, -56.0389282], { icon: hospIcon }).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
+  L.marker([-28.5519443, -56.0401962], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado La Bomba</b>");
+  L.marker([-28.5472635, -56.0438082], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado El Super</b>");
+  L.marker([-28.5462903, -56.0440365], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado La Economía</b>");
+  L.marker([-28.5468697, -56.0432862], { icon: busIcon }).addTo(markersLayer).bindPopup("<b>Terminal de Omnibus</b>");
+  L.marker([-28.5487787, -56.0396171], { icon: policeIcon }).addTo(markersLayer).bindPopup("<b>Policía</b>");
+
+  // Filtros
+  const filtroAmb = document.getElementById("filtroAmb").value;
+  const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
+  const filtroMax = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
+  const filtroMascotas = document.getElementById("filtroMascotas").checked;
+  const filtroAmoblado = document.getElementById("filtroAmoblado").checked;
+  const filtroTipo = document.getElementById("filtroTipo").value;
+
+  makeRequest(webAppURL + "?action=getAlquileres", { method: "GET" })
+    .then(res => {
+      loadingEl.style.display = "none";
+      if (!res.success || !Array.isArray(res.data)) {
+        loadingEl.textContent = "Error al cargar alquileres.";
+        return;
+      }
+
+      res.data.forEach(a => {
+        // ... [todo el filtrado de siempre] ...
+
+        const lat = parseFloat(String(getField(a, ["Latitud", "lat"])).replace(/[^0-9.-]/g, ""));
+        const lng = parseFloat(String(getField(a, ["Longitud", "lng"])).replace(/[^0-9.-]/g, ""));
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        const tipo = getField(a, ["Tipo"]);
+        const nroAmb = toInt(getField(a, ["Nro Ambientes", "Ambientes", "Nro"]));
+        const precioVal = getField(a, ["Precio", "precio", "$"]);
+        const formattedPrecio = formatPrice(precioVal);
+        const idPropiedad = getField(a, ["ID Propiedad", "idPropiedad", "ID", "Id"]);
+        const direccion = getField(a, ["Direccion", "Dirección", "Domicilio"]);
+        const contacto = getField(a, ["Contacto", "Whatsapp", "WhatsApp"]);
+        const enlace = getField(a, ["Enlace para compartir"]);
+
+        // ICONO CON EMOJI MÁS PEQUEÑO
+        let iconHtml;
+        if (tipo === "Temporario") iconHtml = 'Temporario';
+        else if (tipo === "Local") iconHtml = 'Local';
+        else iconHtml = 'Casa<span style="font-size:11px;margin-left:1px;">' + (nroAmb || "-") + '</span>';
+
+        const icon = L.divIcon({
+          className: 'marker-icon',
+          html: iconHtml,
+          iconSize: [30, 30],
+          iconAnchor: [15, 15]
+        });
+
+        const marker = L.marker([lat, lng], { icon: icon }).addTo(markersLayer);
+
+        // POPUP MEJORADO CON TIPO, PRECIO Y AMBIENTES
+        const popupDiv = document.createElement('div');
+        popupDiv.innerHTML = `<b>${direccion || "Sin dirección"}</b><br>`;
+        if (tipo !== "Temporario" && tipo !== "Local") {
+          popupDiv.innerHTML += `<small><b>Tipo:</b> ${tipo}<br><b>Ambientes:</b> ${nroAmb}<br><b>Precio:</b> ${formattedPrecio}</small>`;
+        } else {
+          popupDiv.innerHTML += `<small><b>Tipo:</b> ${tipo}</small>`;
+        }
+
+        const verBtn = document.createElement('button');
+        verBtn.className = 'popup-button';
+        verBtn.textContent = 'Ver Detalles';
+        verBtn.onclick = () => {
+          if (idPropiedad) incrementarMetrica(idPropiedad, "vistas");
+
+          const detalle = document.getElementById('alquiler-detalle');
+          detalle Inland = `<h2>${tipo}: ${direccion || 'Sin dirección'}</h2><p id="metricas-error"></p>`;
+
+          // ... [todos los datos como antes] ...
+
+          // BOTONES: WHATSAPP + COPIAR ENLACE
+          const btnGroup = document.createElement('div');
+          btnGroup.className = 'btn-group';
+
+          if (contacto) {
+            const waBtn = document.createElement('button');
+            waBtn.textContent = 'Contactar por WhatsApp';
+            waBtn.style.background = '#25D366';
+            waBtn.style.color = 'white';
+            waBtn.style.padding = '12px 20px';
+            waBtn.style.border = 'none';
+            waBtn.style.borderRadius = '10px';
+            waBtn.style.fontWeight = '600';
+            waBtn.style.cursor = 'pointer';
+            waBtn.onclick = () => {
+              if (idPropiedad) incrementarMetrica(idPropiedad, "contactos");
+              window.open(`https://wa.me/${contacto}?text=Hola, vengo desde AlquiYa y quiero consultar por el ${tipo.toLowerCase()} en ${direccion}`, '_blank');
+            };
+            btnGroup.appendChild(waBtn);
+          }
+
+          // BOTÓN COPIAR ENLACE
+          const copyBtn = document.createElement('button');
+          copyBtn.className = 'copy-share-btn';
+          copyBtn.textContent = 'Copiar enlace';
+          copyBtn.setAttribute('data-id', idPropiedad || '');
+          btnGroup.appendChild(copyBtn);
+
+          detalle.appendChild(btnGroup);
+          detalle.style.display = 'block';
+          detalle.classList.add("highlight");
+          detalle.scrollIntoView({ behavior: "smooth" });
+          setTimeout(() => detalle.classList.remove("highlight"), 1200);
+        };
+        popupDiv.appendChild(verBtn);
+        marker.bindPopup(popupDiv);
+      });
+    })
+    .catch(err => {
+      loadingEl.style.display = "none";
+      loadingEl.textContent = "Error de conexión.";
+    });
 }
+  /* =========================
+FUNCIÓN COPIAR ENLACE (nueva)
+*/
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.classList.contains('copy-share-btn')) {
+    const idPropiedad = e.target.getAttribute('data-id');
+    if (!idPropiedad) {
+      alert('No se pudo generar el enlace');
+      return;
+    }
+    const url = `https://www.alquiya.com.ar/propiedad.html?id=${idPropiedad}`;
+
+    // Opcional: avisar al backend
+    fetch(`${webAppURL}?action=generarEnlaceCompartido&id=${idPropiedad}`, {
+      method: 'GET',
+      mode: 'no-cors'
+    }).catch(() => {});
+
+    navigator.clipboard.writeText(url).then(() => {
+      const textoOriginal = e.target.innerHTML;
+      e.target.innerHTML = "Enlace copiado";
+      e.target.style.background = "#10b981";
+      setTimeout(() => {
+        e.target.innerHTML = textoOriginal;
+        e.target.style.background = "";
+      }, 2000);
+    }).catch(() => {
+      alert('Enlace (copia manual):\n' + url);
+    });
+  }
+});
 function initGoogleCharts() {
   console.log('Inicializando Google Charts...');
   if (typeof google === 'undefined' || !google.charts) {
