@@ -42,8 +42,10 @@
     top: 0;
     z-index: 1000;
   }
-  header img { max-width: 250px; height: auto; }
-
+  header img {
+    max-width: 250px;
+    height: auto;
+  }
   nav {
     display: flex;
     justify-content: center;
@@ -61,17 +63,21 @@
     border-radius: 10px;
     transition: var(--transition);
   }
-  nav a:hover { background: var(--primary); color: white; }
+  nav a:hover {
+    background: var(--primary);
+    color: white;
+  }
 
+  /* Botones principales: más cortos y elegantes */
   #boton-filtros-container {
     display: flex;
     justify-content: center;
     gap: 1rem;
     margin: 1.5rem auto;
-    max-width: 600px;
+    flex-wrap: wrap;
   }
   #boton-filtros-container button {
-    padding: 0.85rem 1.8rem;
+    padding: 0.9rem 2rem;
     background: var(--primary);
     color: white;
     border: none;
@@ -99,7 +105,8 @@
     gap: 1rem;
     align-items: end;
   }
-  #filtros input, #filtros select {
+  #filtros input,
+  #filtros select {
     padding: 0.9rem 1rem;
     border: 1.5px solid var(--border);
     border-radius: var(--radius);
@@ -108,7 +115,8 @@
     min-width: 140px;
     transition: var(--transition);
   }
-  #filtros input:focus, #filtros select:focus {
+  #filtros input:focus,
+  #filtros select:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 4px rgba(52,131,250,0.15);
@@ -134,7 +142,6 @@
     background: var(--primary-dark);
     transform: translateY(-3px);
   }
-
   #map {
     height: 65vh;
     border-radius: var(--radius);
@@ -152,6 +159,7 @@
     display: none;
   }
 
+  /* Panel detalle */
   #alquiler-detalle {
     display: none;
     max-width: 800px;
@@ -191,7 +199,9 @@
     cursor: pointer;
     transition: var(--transition);
   }
-  .copy-share-btn:hover { background: #059669; }
+  .copy-share-btn:hover {
+    background: #059669;
+  }
 
   #imagenes-container {
     display: grid;
@@ -213,6 +223,7 @@
     box-shadow: 0 10px 30px rgba(0,0,0,0.22);
   }
 
+  /* Marcadores originales con emojis reales */
   .marker-icon {
     display: flex !important;
     align-items: center !important;
@@ -240,6 +251,7 @@
   }
   .popup-button:hover { background: var(--primary-dark); }
 
+  /* Modal imágenes */
   #modal-img {
     display: none;
     position: fixed;
@@ -278,6 +290,7 @@
   .prev-btn { left: 20px; }
   .next-btn { right: 20px; }
 
+  /* Paneles */
   #login, #registro, #avisos-panel, #panel-dueno {
     display: none;
     max-width: 500px;
@@ -341,12 +354,17 @@
     box-shadow: var(--shadow);
   }
 
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes resaltar { 0%, 100% { transform: scale(1); box-shadow: var(--shadow); } 50% { transform: scale(1.02); box-shadow: 0 0 35px rgba(52,131,250,0.4); } }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes resaltar {
+    0%, 100% { transform: scale(1); box-shadow: var(--shadow); }
+    50% { transform: scale(1.02); box-shadow: 0 0 35px rgba(52,131,250,0.4); }
+  }
 
   @media (max-width: 768px) {
-    #boton-filtros-container { flex-direction: column; }
-    #boton-filtros-container button { width: 80%; margin: 0 auto; }
+    #boton-filtros-container { gap: 0.8rem; }
     #filtros, #login, #registro { padding: 1.5rem; margin: 1.5rem; }
     #map { height: 55vh; }
   }
@@ -413,7 +431,7 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
   <a href="#" onclick="mostrarLogin()">Publicar Propiedad</a>
 </nav>
 
-<!-- Botones uno al lado del otro -->
+<!-- Botones más cortos -->
 <div id="boton-filtros-container">
   <button onclick="toggleFiltros()">Añadir Filtros</button>
   <button onclick="mostrarAvisos()">Recibir Avisos</button>
@@ -903,8 +921,8 @@ async function incrementarMetrica(idPropiedad, metrica) {
     console.error("Falló incrementarMetrica:", err);
     // No rompemos la UX
   }
-    }
- function cargarAlquileres() {
+}
+function cargarAlquileres() {
   const loadingEl = document.getElementById("loading-msg");
   loadingEl.style.display = "block";
   loadingEl.textContent = "Cargando alquileres disponibles...";
@@ -917,21 +935,22 @@ async function incrementarMetrica(idPropiedad, metrica) {
   }
   markersLayer.clearLayers();
 
-  /* === MARCADORES ESTÁTICOS CON EMOJIS REALES === */
-  const uniIcon    = L.divIcon({ className: 'marker-icon', html: 'Graduation Cap',   iconSize: [30,30], iconAnchor: [15,15] });
-  const hospIcon   = L.divIcon({ className: 'marker-icon', html: 'Hospital',        iconSize: [30,30], iconAnchor: [15,15] });
-  const superIcon  = L.divIcon({ className: 'marker-icon', html: 'Shopping Cart',   iconSize: [30,30], iconAnchor: [15,15] });
-  const busIcon    = L.divIcon({ className: 'marker-icon', html: 'Bus',             iconSize: [30,30], iconAnchor: [15,15] });
-  const policeIcon = L.divIcon({ className: 'marker-icon', html: 'Police Officer',  iconSize: [30,30], iconAnchor: [15,15] });
+  // === MARCADORES ESTÁTICOS CON ICONOS ORIGINALES (emojis reales) ===
+  const uniIcon     = L.divIcon({ className: 'marker-icon', html: 'Graduation Cap',   iconSize: [30, 30], iconAnchor: [15, 15] });
+  const hospIcon    = L.divIcon({ className: 'marker-icon', html: 'Hospital',        iconSize: [30, 30], iconAnchor: [15, 15] });
+  const superIcon   = L.divIcon({ className: 'marker-icon', html: 'Shopping Cart',   iconSize: [30, 30], iconAnchor: [15, 15] });
+  const busIcon     = L.divIcon({ className: 'marker-icon', html: 'Bus',             iconSize: [30, 30], iconAnchor: [15, 15] });
+  const policeIcon  = L.divIcon({ className: 'marker-icon', html: 'Police Officer',  iconSize: [30, 30], iconAnchor: [15, 15] });
 
   L.marker([-28.5509978, -56.0409727], { icon: uniIcon }).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
   L.marker([-28.5551127, -56.0389282], { icon: hospIcon }).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
   L.marker([-28.5519443, -56.0401962], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado La Bomba</b>");
-  L.marker([-28.5472635, -56.0438082], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado El Super</b>");
+  L.marker([-28.5472635, -56.0438082], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermermercado La Previsora</b>");
   L.marker([-28.5462903, -56.0440365], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado La Economía</b>");
   L.marker([-28.5468697, -56.0432862], { icon: busIcon }).addTo(markersLayer).bindPopup("<b>Terminal de Omnibus</b>");
   L.marker([-28.5487787, -56.0396171], { icon: policeIcon }).addTo(markersLayer).bindPopup("<b>Policía</b>");
 
+  // === FILTROS ===
   const filtroAmb = document.getElementById("filtroAmb").value;
   const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
   const filtroMax = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
@@ -953,7 +972,7 @@ async function incrementarMetrica(idPropiedad, metrica) {
 
     let cont = 0;
     res.data.forEach(a => {
-      // Filtros de plan y vencimiento
+      // === VENCIMIENTO DE PLANES PRUEBA ===
       const plan = getField(a, ["Plan"]);
       const fechaVencimientoStr = getField(a, ["Fecha de Vencimiento", "FechaVencimiento", "Vencimiento"]);
       if (plan === "Prueba") {
@@ -962,24 +981,25 @@ async function incrementarMetrica(idPropiedad, metrica) {
         if (fechaVencimiento && fechaActual > fechaVencimiento) return;
       }
 
-      // Coordenadas
+      // === COORDENADAS ===
       const latRaw = getField(a, ["Latitud", "lat", "LAT", "Lat"]);
       const lngRaw = getField(a, ["Longitud", "lng", "LNG", "Long"]);
       const lat = parseFloat(String(latRaw).replace(/[^0-9.-]/g, ""));
       const lng = parseFloat(String(lngRaw).replace(/[^0-9.-]/g, ""));
       if (isNaN(lat) || isNaN(lng)) return;
 
-      // Datos principales
+      // === DATOS DE LA PROPIEDAD ===
       const tipo = getField(a, ["Tipo"]) || "Propiedad";
       if (filtroTipo && tipo !== filtroTipo) return;
 
       const ambVal = getField(a, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]);
       const nroAmb = toInt(ambVal, 0);
       const precioVal = getField(a, ["Precio", "precio", "$"]);
+      const precio = toNumber(precioVal);
       const formattedPrecio = formatPrice(precioVal);
 
       if (filtroAmb && nroAmb !== toInt(filtroAmb)) return;
-      if (toNumber(precioVal) < filtroMin || toNumber(precioVal) > filtroMax) return;
+      if (precio < filtroMin || precio > filtroMax) return;
 
       const mascotas = getField(a, ["Mascotas"]);
       if (filtroMascotas && (!mascotas || mascotas.toLowerCase() !== "sí")) return;
@@ -988,20 +1008,16 @@ async function incrementarMetrica(idPropiedad, metrica) {
 
       const idPropiedad = getField(a, ["ID Propiedad", "idPropiedad", "ID", "Id"]);
       const direccion = getField(a, ["Direccion", "Dirección", "Domicilio"]);
-      const infoIngreso = getField(a, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso"]);
+      const infoIngreso = getField(a, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso", "Informacion de ingreso"]);
       const detalles = getField(a, ["Detalles", "Detalle", "Descripcion", "Descripción"]);
       const contacto = getField(a, ["Contacto", "Whatsapp", "WhatsApp", "Tel", "Telefono", "Teléfono"]);
       const fotos = getField(a, ["Fotos", "Imagenes", "Imágenes", "images"]);
 
-      // ÍCONO DEL MARCADOR CON EMOJIS REALES (¡AHORA SÍ!)
+      // === ICONO DE LA PROPIEDAD (emojis originales) ===
       let iconHtml;
-      if (tipo === "Temporario") {
-        iconHtml = 'Hourglass';           // Temporario
-      } else if (tipo === "Local") {
-        iconHtml = 'Shopping Bag';        // Local comercial
-      } else {
-        iconHtml = `House${nroAmb ? `<span style="font-size:12px;margin-left:2px;">${nroAmb}</span>` : ''}`;
-      }
+      if (tipo === "Temporario")       iconHtml = 'Hourglass';
+      else if (tipo === "Local")       iconHtml = 'Shopping Bag';
+      else                             iconHtml = `House<span style="font-size:12px;margin-left:2px;">${nroAmb || "-"}</span>`;
 
       const icon = L.divIcon({
         className: 'marker-icon',
@@ -1012,14 +1028,12 @@ async function incrementarMetrica(idPropiedad, metrica) {
 
       const marker = L.marker([lat, lng], { icon: icon }).addTo(markersLayer);
 
-      // POPUP DEL MARCADOR (con Tipo + Precio + Ambientes para Deptos y Casas)
+      // === POPUP DEL MARCADOR (mejorado) ===
       const popupDiv = document.createElement('div');
-      popupDiv.innerHTML = `<b>${tipo}</b><br>
-                            <b>Dirección:</b> ${direccion || 'No disponible'}`;
+      popupDiv.innerHTML = `<b>${tipo}</b><br><b>Dirección:</b> ${direccion || 'No disponible'}`;
 
       if (tipo === "Departamento" || tipo === "Casa") {
-        popupDiv.innerHTML += `<br><b>Ambientes:</b> ${nroAmb || 'N/D'}<br>
-                               <b>Precio:</b> ${formattedPrecio || 'Consultar'}`;
+        popupDiv.innerHTML += `<br><b>Ambientes:</b> ${nroAmb || 'N/D'}<br><b>Precio:</b> ${formattedPrecio || 'Consultar'}`;
       } else if (tipo !== "Temporario" && tipo !== "Local") {
         popupDiv.innerHTML += `<br><b>Precio:</b> ${formattedPrecio || 'Consultar'}`;
       }
@@ -1033,6 +1047,7 @@ async function incrementarMetrica(idPropiedad, metrica) {
         const detalle = document.getElementById('alquiler-detalle');
         detalle.innerHTML = `<h2>${tipo}: ${direccion || ''}</h2><p id="metricas-error"></p>`;
 
+        // === DETALLES DE LA PROPIEDAD ===
         const rows = (tipo === "Temporario" || tipo === "Local") ? [
           ['Dirección', direccion || ''],
           ['Información de ingreso', infoIngreso || ''],
@@ -1054,7 +1069,7 @@ async function incrementarMetrica(idPropiedad, metrica) {
           detalle.appendChild(p);
         });
 
-        // Imágenes
+        // === IMÁGENES ===
         const imgContainer = document.createElement('div');
         imgContainer.id = 'imagenes-container';
         let imageUrls = [];
@@ -1071,10 +1086,11 @@ async function incrementarMetrica(idPropiedad, metrica) {
         }
         detalle.appendChild(imgContainer);
 
-        // BOTONES DE ACCIÓN
+        // === BOTONES DE ACCIÓN ===
         const actionDiv = document.createElement('div');
         actionDiv.className = 'action-buttons';
 
+        // WhatsApp
         if (contacto) {
           const waBtn = document.createElement('button');
           waBtn.textContent = 'Contactar por WhatsApp';
@@ -1093,6 +1109,7 @@ async function incrementarMetrica(idPropiedad, metrica) {
           actionDiv.appendChild(waBtn);
         }
 
+        // Copiar Enlace
         if (idPropiedad) {
           const copyBtn = document.createElement('button');
           copyBtn.className = 'copy-share-btn';
@@ -1103,6 +1120,7 @@ async function incrementarMetrica(idPropiedad, metrica) {
 
         detalle.appendChild(actionDiv);
 
+        // Mostrar panel
         detalle.style.display = 'block';
         detalle.classList.add("highlight");
         detalle.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1139,20 +1157,23 @@ function togglePassword(inputId) {
     eyeIcon.style.backgroundImage = "url('https://img.icons8.com/ios/50/000000/visible.png')";
   }
   }
-/* Listener del botón Copiar Enlace (obligatorio) */
+// === FUNCIÓN COPIAR ENLACE (nueva) ===
 document.addEventListener('click', function(e) {
   if (e.target && e.target.classList.contains('copy-share-btn')) {
     const idPropiedad = e.target.getAttribute('data-id');
     const url = `https://www.alquiya.com.ar/propiedad.html?id=${idPropiedad}`;
 
-    fetch(`${webAppURL}?action=generarEnlaceCompartido&id=${idPropiedad}`, { method: 'GET', mode: 'no-cors' }).catch(() => {});
+    fetch(`${webAppURL}?action=generarEnlaceCompartido&id=${idPropiedad}`, {
+      method: 'GET',
+      mode: 'no-cors'
+    }).catch(() => {});
 
     navigator.clipboard.writeText(url).then(() => {
-      const textoOriginal = e.target.textContent;
-      e.target.textContent = "Enlace copiado";
+      const textoOriginal = e.target.innerHTML;
+      e.target.innerHTML = "Enlace copiado";
       e.target.style.background = "#10b981";
       setTimeout(() => {
-        e.target.textContent = textoOriginal;
+        e.target.innerHTML = textoOriginal;
         e.target.style.background = "";
       }, 2000);
     }).catch(() => {
@@ -1160,8 +1181,9 @@ document.addEventListener('click', function(e) {
     });
   }
 });
-
-/* INIT */
+/* =========================
+INIT
+*/
 window.onload = () => {
   mostrarTerminos();
   mostrarMapa();
