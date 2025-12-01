@@ -42,10 +42,8 @@
     top: 0;
     z-index: 1000;
   }
-  header img {
-    max-width: 250px;
-    height: auto;
-  }
+  header img { max-width: 250px; height: auto; }
+
   nav {
     display: flex;
     justify-content: center;
@@ -63,21 +61,18 @@
     border-radius: 10px;
     transition: var(--transition);
   }
-  nav a:hover {
-    background: var(--primary);
-    color: white;
-  }
+  nav a:hover { background: var(--primary); color: white; }
 
-  /* Botones principales: más cortos y elegantes */
+  /* Botones principales más compactos y uno al lado del otro */
   #boton-filtros-container {
     display: flex;
     justify-content: center;
     gap: 1rem;
     margin: 1.5rem auto;
-    flex-wrap: wrap;
+    max-width: 600px;
   }
   #boton-filtros-container button {
-    padding: 0.9rem 2rem;
+    padding: 0.85rem 1.8rem;   /* más corto */
     background: var(--primary);
     color: white;
     border: none;
@@ -142,6 +137,7 @@
     background: var(--primary-dark);
     transform: translateY(-3px);
   }
+
   #map {
     height: 65vh;
     border-radius: var(--radius);
@@ -159,7 +155,6 @@
     display: none;
   }
 
-  /* Panel detalle */
   #alquiler-detalle {
     display: none;
     max-width: 800px;
@@ -199,9 +194,7 @@
     cursor: pointer;
     transition: var(--transition);
   }
-  .copy-share-btn:hover {
-    background: #059669;
-  }
+  .copy-share-btn:hover { background: #059669; }
 
   #imagenes-container {
     display: grid;
@@ -223,21 +216,20 @@
     box-shadow: 0 10px 30px rgba(0,0,0,0.22);
   }
 
-  /* Marcadores originales con emojis reales */
+  /* Marcadores con los emojis originales (sin tocar el estilo) */
   .marker-icon {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    background: #3483fa !important;
-    color: white !important;
-    font-weight: bold !important;
-    border-radius: 50% !important;
-    width: 30px !important;
-    height: 30px !important;
-    border: 2px solid white !important;
-    box-shadow: 0 0 2px #000 !important;
-    font-size: 18px !important;
-  }
+display:flex;
+align-items:center;
+justify-content:center;
+background:#3483fa;
+color:white;
+font-weight:bold;
+border-radius:50%;
+width:30px;
+height:30px;
+border:2px solid white;
+box-shadow:0 0 2px #000;
+}
   .popup-button {
     display: inline-block;
     padding: 8px 16px;
@@ -290,7 +282,7 @@
   .prev-btn { left: 20px; }
   .next-btn { right: 20px; }
 
-  /* Paneles */
+  /* Paneles login, registro, avisos */
   #login, #registro, #avisos-panel, #panel-dueno {
     display: none;
     max-width: 500px;
@@ -354,17 +346,12 @@
     box-shadow: var(--shadow);
   }
 
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes resaltar {
-    0%, 100% { transform: scale(1); box-shadow: var(--shadow); }
-    50% { transform: scale(1.02); box-shadow: 0 0 35px rgba(52,131,250,0.4); }
-  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes resaltar { 0%, 100% { transform: scale(1); box-shadow: var(--shadow); } 50% { transform: scale(1.02); box-shadow: 0 0 35px rgba(52,131,250,0.4); } }
 
   @media (max-width: 768px) {
-    #boton-filtros-container { gap: 0.8rem; }
+    #boton-filtros-container { flex-direction: column; }
+    #boton-filtros-container button { width: 80%; margin: 0 auto; }
     #filtros, #login, #registro { padding: 1.5rem; margin: 1.5rem; }
     #map { height: 55vh; }
   }
