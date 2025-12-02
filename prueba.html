@@ -944,11 +944,11 @@ function cargarAlquileres() {
   markersLayer.clearLayers();
 
   // === MARCADORES ESTÁTICOS (sin cambios) ===
-  const uniIcon = L.divIcon({ className: 'markerongan-icon', html: 'Graduation Cap', iconSize: [30, 30], iconAnchor: [15, 15] });
-  const hospIcon = L.divIcon({ className: 'marker-icon', html: 'Hospital', iconSize: [30, 30], iconAnchor: [15, 15] });
-  const superIcon = L.divIcon({ className: 'marker-icon', html: 'Shopping Cart', iconSize: [30, 30], iconAnchor: [15, 15] });
-  const busIcon = L.divIcon({ className: 'marker-icon', html: 'Bus', iconSize: [30, 30], iconAnchor: [15, 15] });
-  const policeIcon = L.divIcon({ className: 'marker-icon', html: 'Police', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const uniIcon = L.divIcon({ className: 'markerongan-icon', html: '🎓', iconSize: [30, 30], iconAnchor: [15, 15] });
+const hospIcon = L.divIcon({ className: 'marker-icon', html: '🏥', iconSize: [30, 30], iconAnchor: [15, 15] });
+const superIcon = L.divIcon({ className: 'marker-icon', html: '🛒', iconSize: [30, 30], iconAnchor: [15, 15] });
+const busIcon = L.divIcon({ className: 'marker-icon', html: '🚌', iconSize: [30, 30], iconAnchor: [15, 15] });
+const policeIcon = L.divIcon({ className: 'marker-icon', html: '👮', iconSize: [30, 30], iconAnchor: [15, 15] });
   L.marker([-28.5509978, -56.0409727], { icon: uniIcon }).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
   L.marker([-28.5551127, -56.0389282], { icon: hospIcon }).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
   L.marker([-28.5519443, -56.0401962], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado La Bomba</b>");
@@ -1020,10 +1020,15 @@ function cargarAlquileres() {
         const fotoPerfil = getField(a, ["FotoPerfil", "fotoPerfil", "Foto Perfil", "FotoPerfilDueño"])
           || "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
 
-        // === ICONO DEL MARCADOR ===
-        let iconHtml = tipo === "Temporario" ? 'Hourglass' : 
-                       tipo === "Local" ? 'Shopping Bag' : 
-                       `House<span style="font-size:12px;margin-left:2px;">${nroAmb || ""}</span>`;
+        // === ICONO DE LA PROPIEDAD (emojis originales) ===
+      let iconHtml;
+if (tipo === "Temporario") {
+iconHtml = '⌛';
+} else if (tipo === "Local") {
+iconHtml = '🛍️';
+} else {
+iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-") + '</span>';
+}
 
         const icon = L.divIcon({
           className: 'marker-icon',
