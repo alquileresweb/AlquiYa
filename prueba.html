@@ -424,10 +424,86 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
     <button onclick="aceptarTerminos()" style="margin-top:2rem;padding:1rem 2rem;background:var(--primary);color:white;border:none;border-radius:var(--radius);cursor:pointer;">Aceptar Términos y Condiciones</button>
   </div>
 </div>
+<!-- MENÚ CON LAS NUEVAS PESTAÑAS -->
 <nav>
-  <a href="#" onclick="mostrarMapa()">Mapa</a>
-  <a href="#" onclick="mostrarLogin()">Publicar Propiedad</a>
+  <a href="#" onclick="mostrarLista()" class="active" id="nav-lista">Lista</a>
+  <a href="#" onclick="mostrarMapa()" id="nav-mapa">Mapa</a>
+  <a href="#" onclick="mostrarPublicar()" id="nav-publicar">Publicar Propiedad</a>
 </nav>
+
+<!-- VISTA LISTA (se carga al inicio) -->
+<div id="vista-lista">
+  <div id="lista-properties" class="property-grid">
+    <div class="loading-properties">Cargando propiedades disponibles...</div>
+  </div>
+</div>
+
+<!-- VISTA MAPA (tu código original) -->
+<div id="vista-mapa">
+  <div id="boton-filtros-container">
+    <button onclick="toggleFiltros()">Añadir Filtros</button>
+    <button onclick="mostrarAvisos()">Recibir Avisos</button>
+  </div>
+  <div id="filtros">
+    <input type="number" id="filtroAmb" placeholder="Nro de Ambientes">
+    <input type="text" id="filtroMin" placeholder="Precio Mínimo" oninput="formatCurrency(this)">
+    <input type="text" id="filtroMax" placeholder="Precio Máximo" oninput="formatCurrency(this)">
+    <select id="filtroTipo">
+      <option value="">Todos los tipos</option>
+      <option value="Departamento">Departamento</option>
+      <option value="Temporario">Alquiler Temporario</option>
+      <option value="Local">Local Comercial</option>
+    </select>
+    <label><input type="checkbox" id="filtroMascotas"> Mascotas Permitidas</label>
+    <label><input type="checkbox" id="filtroAmoblado"> Amoblado</label>
+    <button onclick="cargarAlquileres()">Filtrar</button>
+  </div>
+  <div id="avisos-panel">
+    <h2>Recibir Notificaciones</h2>
+    <input type="text" id="avisos_email" placeholder="Email">
+    <button onclick="registrarEmailAvisos()">Suscribirse</button>
+    <button onclick="mostrarMapa()">Cancelar</button>
+    <p id="avisos-msg" style="color:green"></p>
+  </div>
+  <div id="loading-msg">Cargando alquileres disponibles...</div>
+  <div id="map"></div>
+</div>
+
+<!-- VISTA PUBLICAR (login de dueños) -->
+<div id="vista-publicar">
+  <div id="login">
+    <h2>Login Dueños</h2>
+    <input type="text" id="email" placeholder="Email">
+    <div class="password-container">
+      <input type="password" id="password" placeholder="Contraseña">
+      <div class="eye-icon" onclick="togglePassword('password')"></div>
+    </div>
+    <button onclick="login()">Ingresar</button>
+    <p id="login-loading" style="color:#3483fa">Iniciando sesión...</p>
+    <p>¿No tienes cuenta?</p>
+    <p><button onclick="mostrarRegistro()">Registrarme</button></p>
+    <p id="login-msg" style="color:red"></p>
+  </div>
+  <div id="registro">
+    <h2>Registro Dueños</h2>
+    <input type="text" id="reg_email" placeholder="Email">
+    <input type="text" id="reg_nombre" placeholder="Nombre">
+    <div class="password-container">
+      <input type="password" id="reg_password" placeholder="Contraseña">
+      <div class="eye-icon" onclick="togglePassword('reg_password')"></div>
+    </div>
+    <div id="reg_contacto-container">
+      <select id="reg_codigo_pais">
+        <option value="+54">+54 (Argentina)</option>
+        <option value="+55">+55 (Brasil)</option>
+      </select>
+      <input type="text" id="reg_contacto" placeholder="WhatsApp (ej: 3794000000)">
+    </div>
+    <button onclick="registrarDueno()">Registrar</button>
+    <button onclick="mostrarLogin()">Cancelar</button>
+    <p id="registro-msg" style="color:green"></p>
+  </div>
+</div>
 <!-- Botones más cortos -->
 <div id="boton-filtros-container">
   <button onclick="toggleFiltros()">Añadir Filtros</button>
@@ -610,6 +686,14 @@ function formatPrice(num) {
 /* =========================
 UI NAV
 */
+  function mostrarLista() {
+  document.getElementById("vista-lista").style.display = "block";
+  document.getElementById("vista-mapa").style.display = "none";
+  document.getElementById("vista-publicar").style.display = "none";
+  document.querySelectorAll("nav a").forEach(a => a.classList.remove("active"));
+  document.getElementById("nav-lista").classList.add("active");
+  cargarLista(); // Carga tarjetas al abrir
+}
 function toggleFiltros() {
   const f = document.getElementById("filtros");
   f.style.display = (f.style.display === "none" || f.style.display === "") ? "flex" : "none";
@@ -1167,6 +1251,56 @@ iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-"
       loadingEl.textContent = "Error de conexión. Reintentando...";
       console.error("Error:", err);
     });
+}
+
+  /* CARGA DE TARJETAS EN MODO LISTA */
+async function cargarLista() {
+  const container = document.getElementById("lista-properties");
+  container.innerHTML = '<div class="loading-properties">Cargando propiedades disponibles...</div>';
+
+  try {
+    const res = await fetch(webAppURL + "?action=getAlquileres");
+    const data = await res.json();
+
+    if (!data.success || !Array.isArray(data.data)) {
+      container.innerHTML = '<div class="loading-properties">No se pudieron cargar las propiedades.</div>';
+      return;
+    }
+
+    container.innerHTML = "";
+    data.data.forEach(a => {
+      const idPropiedad = getField(a, ["ID Propiedad", "idPropiedad", "ID"]) || "";
+      const titulo = getField(a, ["Título", "titulo", "Titulo"]) || "Propiedad sin título";
+      const precioRaw = getField(a, ["Precio"]);
+      const precio = formatPrice(precioRaw);
+      const tipo = getField(a, ["Tipo"]) || "Departamento";
+      const ambientes = toInt(getField(a, ["Nro Ambientes", "Ambientes"]));
+      const fotos = getField(a, ["Fotos", "Imagenes", "Imágenes", "images"]) || "";
+      const primeraFoto = fotos ? driveUrlDirect(fotos.split(",")[0].trim()) : "https://via.placeholder.com/400x250?text=Sin+Foto";
+      const contacto = getField(a, ["Contacto", "Whatsapp", "WhatsApp"]) || "543794000000";
+
+      const card = document.createElement("div");
+      card.className = "property-card";
+      card.innerHTML = `
+        <img src="${primeraFoto}" alt="${titulo}" onerror="this.src='https://via.placeholder.com/400x250?text=Sin+Foto'">
+        <div class="property-title">${titulo}</div>
+        <div class="property-price">${precio || "Consultar"}</div>
+        <div class="property-type">${tipo} - ${ambientes} ambientes</div>
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 15px;">
+          <a href="https://wa.me/${contacto}?text=Hola, consulto por ${encodeURIComponent(titulo)}" target="_blank" class="whatsapp-btn">Contactar</a>
+          <a href="propiedad.html?id=${idPropiedad}" target="_blank" class="details-btn">Ver detalles</a>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+
+    if (data.data.length === 0) {
+      container.innerHTML = '<div class="loading-properties">No hay propiedades disponibles en este momento.</div>';
+    }
+  } catch (err) {
+    container.innerHTML = '<div class="loading-properties">Error al cargar propiedades.</div>';
+    console.error(err);
+  }
 }
 /* =========================
 PASSWORD VISIBILITY TOGGLE
