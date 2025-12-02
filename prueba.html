@@ -1047,42 +1047,39 @@ iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-"
       const marker = L.marker([lat, lng], { icon: icon }).addTo(markersLayer);
 
       // === POPUP DEL MARCADOR (con foto de perfil) ===
-      const popupDiv = document.createElement('div');
-      popupDiv.style.position = "relative";
-      popupDiv.style.padding = "12px";
-      popupDiv.style.minWidth = "200px";
+      // Popup del marcador
+          const popupDiv = document.createElement('div');
+          popupDiv.style.position = "relative";
+          popupDiv.style.padding = "12px";
+          popupDiv.style.minWidth = "220px";
 
-      // Foto en popup
-      const popupImg = document.createElement('img');
-      popupImg.className = "popup-profile-img";
-      popupImg.src = "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
-      popupImg.alt = "Foto del dueño";
-      popupDiv.appendChild(popupImg);
-      
-      if (tipo === "Departamento" || tipo === "Casa") {
-        popupDiv.innerHTML += `<br><b>Ambientes:</b> ${nroAmb || 'N/D'}<br><b>Precio:</b> ${formattedPrecio || 'Consultar'}`;
-      } else if (tipo !== "Temporario" && tipo !== "Local") {
-        popupDiv.innerHTML += `<br><b>Precio:</b> ${formattedPrecio || 'Consultar'}`;
-      }
+          const popupImg = document.createElement('img');
+          popupImg.className = "popup-profile-img";
+          popupImg.src = fotoPerfil;
+          popupImg.alt = "Dueño";
+          popupDiv.appendChild(popupImg);
 
-      const verBtn = document.createElement('button');
-      verBtn.className = 'popup-button';
-      verBtn.textContent = 'Ver Detalles';
-      // AQUÍ ESTÁ LA SOLUCIÓN: función async dentro del onclick
-      verBtn.onclick = async () => {
-        if (idPropiedad) await incrementarMetrica(idPropiedad, "vistas");
+          popupDiv.innerHTML += `<b>${tipo}</b><br><b>Dirección:</b> ${direccion || 'No disponible'}`;
+          if (tipo !== "Temporario" && tipo !== "Local") {
+            popupDiv.innerHTML += `<br><b>Ambientes:</b> ${nroAmb || 'N/D'}<br><b>Precio:</b> ${formattedPrecio || 'Consultar'}`;
+          }
 
-        const fotoPerfil = await obtenerFotoPerfil(emailDueno);
-        popupImg.src = fotoPerfil;
+          const verBtn = document.createElement('button');
+          verBtn.className = 'popup-button';
+          verBtn.textContent = 'Ver Detalles';
 
-        const detalle = document.getElementById('alquiler-detalle');
-        detalle.innerHTML = `<h2>${tipo}: ${direccion || ''}</h2><p id="metricas-error"></p>`;
+          verBtn.onclick = async () => {
+            if (idPropiedad) await incrementarMetrica(idPropiedad, "vistas");
 
-        const profileImg = document.createElement('img');
-        profileImg.className = "owner-profile-img";
-        profileImg.src = fotoPerfil;
-        profileImg.alt = "Foto del dueño";
-        detalle.appendChild(profileImg);
+            const detalle = document.getElementById('alquiler-detalle');
+            detalle.innerHTML = `<h2>${tipo}: ${direccion || ''}</h2>`;
+
+            // Foto grande en el detalle
+            const profileImg = document.createElement('img');
+            profileImg.className = "owner-profile-img";
+            profileImg.src = fotoPerfil;
+            profileImg.alt = "Foto del dueño";
+            detalle.appendChild(profileImg);
 
         // === DETALLES DE LA PROPIEDAD ===
         const rows = (tipo === "Temporario" || tipo === "Local") ? [
