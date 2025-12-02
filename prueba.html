@@ -949,14 +949,12 @@ function cargarAlquileres() {
   }
   markersLayer.clearLayers();
 
-  // === MARCADORES ESTÁTICOS CON ICONOS ORIGINALES (emojis reales) ===
-  markersLayer.clearLayers();
-const uniIcon = L.divIcon({ className: 'markerongan-icon', html: '🎓', iconSize: [30, 30], iconAnchor: [15, 15] });
-const hospIcon = L.divIcon({ className: 'marker-icon', html: '🏥', iconSize: [30, 30], iconAnchor: [15, 15] });
-const superIcon = L.divIcon({ className: 'marker-icon', html: '🛒', iconSize: [30, 30], iconAnchor: [15, 15] });
-const busIcon = L.divIcon({ className: 'marker-icon', html: '🚌', iconSize: [30, 30], iconAnchor: [15, 15] });
-const policeIcon = L.divIcon({ className: 'marker-icon', html: '👮', iconSize: [30, 30], iconAnchor: [15, 15] });
-
+  // === MARCADORES ESTÁTICOS (sin cambios) ===
+  const uniIcon = L.divIcon({ className: 'markerongan-icon', html: 'Graduation Cap', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const hospIcon = L.divIcon({ className: 'marker-icon', html: 'Hospital', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const superIcon = L.divIcon({ className: 'marker-icon', html: 'Shopping Cart', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const busIcon = L.divIcon({ className: 'marker-icon', html: 'Bus', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const policeIcon = L.divIcon({ className: 'marker-icon', html: 'Police', iconSize: [30, 30], iconAnchor: [15, 15] });
   L.marker([-28.5509978, -56.0409727], { icon: uniIcon }).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
   L.marker([-28.5551127, -56.0389282], { icon: hospIcon }).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
   L.marker([-28.5519443, -56.0401962], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado La Bomba</b>");
@@ -966,216 +964,197 @@ const policeIcon = L.divIcon({ className: 'marker-icon', html: '👮', iconSize:
   L.marker([-28.5487787, -56.0396171], { icon: policeIcon }).addTo(markersLayer).bindPopup("<b>Policía</b>");
 
   // === FILTROS ===
-  const filtroAmb = document.getElementById("filtroAmb").value;
+  const filtroAmb = toInt(document.getElementById("filtroAmb").value);
   const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
   const filtroMax = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
   const filtroMascotas = document.getElementById("filtroMascotas").checked;
   const filtroAmoblado = document.getElementById("filtroAmoblado").checked;
   const filtroTipo = document.getElementById("filtroTipo").value;
 
-  makeRequest(webAppURL + "?action=getAlquileres", {
-    method: "GET",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" }
-  })
-  .then(res => {
-    loadingEl.style.display = "none";
-    if (!res.success || !Array.isArray(res.data)) {
-      console.error("Error al cargar alquileres:", res.error || "Respuesta inválida");
-      loadingEl.textContent = "Error al cargar alquileres. Por favor, intenta de nuevo.";
-      return;
-    }
-
-    let cont = 0;
-    res.data.forEach(a => {
-      // === VENCIMIENTO DE PLANES PRUEBA ===
-      const plan = getField(a, ["Plan"]);
-      const fechaVencimientoStr = getField(a, ["Fecha de Vencimiento", "FechaVencimiento", "Vencimiento"]);
-      if (plan === "Prueba") {
-        const fechaVencimiento = parseDate(fechaVencimientoStr);
-        const fechaActual = new Date();
-        if (fechaVencimiento && fechaActual > fechaVencimiento) return;
+  makeRequest(webAppURL + "?action=getAlquileres", { method: "GET" })
+    .then(res => {
+      loadingEl.style.display = "none";
+      if (!res.success || !Array.isArray(res.data)) {
+        loadingEl.textContent = "Error al cargar alquileres. Intenta de nuevo.";
+        console.error("Error en respuesta:", res);
+        return;
       }
 
-      // === COORDENADAS ===
-      const latRaw = getField(a, ["Latitud", "lat", "LAT", "Lat"]);
-      const lngRaw = getField(a, ["Longitud", "lng", "LNG", "Long"]);
-      const lat = parseFloat(String(latRaw).replace(/[^0-9.-]/g, ""));
-      const lng = parseFloat(String(lngRaw).replace(/[^0-9.-]/g, ""));
-      if (isNaN(lat) || isNaN(lng)) return;
+      let cont = 0;
+      res.data.forEach(a => {
+        // === VALIDACIONES BÁSICAS ===
+        const plan = getField(a, ["Plan"]);
+        const fechaVencimientoStr = getField(a, ["Fecha de Vencimiento", "FechaVencimiento", "Vencimiento"]);
+        if (plan === "Prueba") {
+          const fechaVencimiento = parseDate(fechaVencimientoStr);
+          if (fechaVencimiento && new Date() > fechaVencimiento) return;
+        }
 
-      // === DATOS DE LA PROPIEDAD ===
-      const tipo = getField(a, ["Tipo"]) || "Propiedad";
-      if (filtroTipo && tipo !== filtroTipo) return;
+        const lat = parseFloat(getField(a, ["Latitud", "lat"]));
+        const lng = parseFloat(getField(a, ["Longitud", "lng"]));
+        if (isNaN(lat) || isNaN(lng)) return;
 
-      const ambVal = getField(a, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]);
-      const nroAmb = toInt(ambVal, 0);
-      const precioVal = getField(a, ["Precio", "precio", "$"]);
-      const precio = toNumber(precioVal);
-      const formattedPrecio = formatPrice(precioVal);
+        const tipo = getField(a, ["Tipo"]) || "Propiedad";
+        if (filtroTipo && tipo !== filtroTipo) return;
 
-      if (filtroAmb && nroAmb !== toInt(filtroAmb)) return;
-      if (precio < filtroMin || precio > filtroMax) return;
+        const nroAmb = toInt(getField(a, ["Nro Ambientes", "Ambientes"]));
+        if (filtroAmb && nroAmb !== filtroAmb) return;
 
-      const mascotas = getField(a, ["Mascotas"]);
-      if (filtroMascotas && (!mascotas || mascotas.toLowerCase() !== "sí")) return;
-      const amoblado = getField(a, ["Amoblado"]);
-      if (filtroAmoblado && (!amoblado || amoblado.toLowerCase() !== "sí")) return;
+        const precio = toNumber(getField(a, ["Precio"]));
+        if (precio < filtroMin || precio > filtroMax) return;
 
-      const idPropiedad = getField(a, ["ID Propiedad", "idPropiedad", "ID", "Id"]);
-      const direccion = getField(a, ["Direccion", "Dirección", "Domicilio"]);
-      const infoIngreso = getField(a, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso", "Informacion de ingreso"]);
-      const detalles = getField(a, ["Detalles", "Detalle", "Descripcion", "Descripción"]);
-      const contacto = getField(a, ["Contacto", "Whatsapp", "WhatsApp", "Tel", "Telefono", "Teléfono"]);
-      const fotos = getField(a, ["Fotos", "Imagenes", "Imágenes", "images"]);
+        const mascotas = getField(a, ["Mascotas"]);
+        if (filtroMascotas && (!mascotas || mascotas.toLowerCase() !== "sí")) return;
 
-      // === ICONO DE LA PROPIEDAD (emojis originales) ===
-      let iconHtml;
-if (tipo === "Temporario") {
-iconHtml = '⌛';
-} else if (tipo === "Local") {
-iconHtml = '🛍️';
-} else {
-iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-") + '</span>';
-}
-      const icon = L.divIcon({
-        className: 'marker-icon',
-        html: iconHtml,
-        iconSize: [30, 30],
-        iconAnchor: [15, 15]
-      });
+        const amoblado = getField(a, ["Amoblado"]);
+        if (filtroAmoblado && (!amoblado || amoblado.toLowerCase() !== "sí")) return;
 
-      const marker = L.marker([lat, lng], { icon: icon }).addTo(markersLayer);
+        // === DATOS FINALES ===
+        const idPropiedad = getField(a, ["ID Propiedad", "idPropiedad", "ID"]);
+        const direccion = getField(a, ["Direccion", "Dirección", "Domicilio"]);
+        const formattedPrecio = formatPrice(getField(a, ["Precio"]));
+        const contacto = getField(a, ["Contacto", "Whatsapp", "WhatsApp"]);
+        const fotos = getField(a, ["Fotos", "Imagenes", "Imágenes", "images"]);
+        const infoIngreso = getField(a, ["Informacion ingreso", "Información ingreso"]);
+        const detalles = getField(a, ["Detalles", "Detalle", "Descripcion"]);
 
-      // === POPUP DEL MARCADOR (con foto de perfil) ===
-      // Popup del marcador
-          const popupDiv = document.createElement('div');
-          popupDiv.style.position = "relative";
-          popupDiv.style.padding = "12px";
-          popupDiv.style.minWidth = "220px";
+        // === FOTO DEL DUEÑO (viene directo del backend) ===
+        const fotoPerfil = getField(a, ["FotoPerfil", "fotoPerfil", "Foto Perfil", "FotoPerfilDueño"]) 
+          || "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
 
-          const popupImg = document.createElement('img');
-          popupImg.className = "popup-profile-img";
-          popupImg.src = fotoPerfil;
-          popupImg.alt = "Dueño";
-          popupDiv.appendChild(popupImg);
+        // === ICONO DEL MARCADOR ===
+        let iconHtml = tipo === "Temporario" ? 'Hourglass' : 
+                       tipo === "Local" ? 'Shopping Bag' : 
+                       `House<span style="font-size:12px;margin-left:2px;">${nroAmb || ""}</span>`;
 
-          popupDiv.innerHTML += `<b>${tipo}</b><br><b>Dirección:</b> ${direccion || 'No disponible'}`;
-          if (tipo !== "Temporario" && tipo !== "Local") {
-            popupDiv.innerHTML += `<br><b>Ambientes:</b> ${nroAmb || 'N/D'}<br><b>Precio:</b> ${formattedPrecio || 'Consultar'}`;
-          }
-
-          const verBtn = document.createElement('button');
-          verBtn.className = 'popup-button';
-          verBtn.textContent = 'Ver Detalles';
-
-          verBtn.onclick = async () => {
-            if (idPropiedad) await incrementarMetrica(idPropiedad, "vistas");
-
-            const detalle = document.getElementById('alquiler-detalle');
-            detalle.innerHTML = `<h2>${tipo}: ${direccion || ''}</h2>`;
-
-            // Foto grande en el detalle
-            const profileImg = document.createElement('img');
-            profileImg.className = "owner-profile-img";
-            profileImg.src = fotoPerfil;
-            profileImg.alt = "Foto del dueño";
-            detalle.appendChild(profileImg);
-
-        // === DETALLES DE LA PROPIEDAD ===
-        const rows = (tipo === "Temporario" || tipo === "Local") ? [
-          ['Dirección', direccion || ''],
-          ['Información de ingreso', infoIngreso || ''],
-          ['Detalles', detalles || '']
-        ] : [
-          ['Tipo', tipo],
-          ['Dirección', direccion || ''],
-          ['Ambientes', nroAmb || '-'],
-          ['Precio', formattedPrecio || '-'],
-          ['Información de ingreso', infoIngreso || ''],
-          ['Detalles', detalles || ''],
-          ['Mascotas', mascotas || '-'],
-          ['Amoblado', amoblado || '-']
-        ];
-
-        rows.forEach(([label, val]) => {
-          const p = document.createElement('p');
-          p.innerHTML = `<b>${label}:</b> ${val || 'No disponible'}`;
-          detalle.appendChild(p);
+        const icon = L.divIcon({
+          className: 'marker-icon',
+          html: iconHtml,
+          iconSize: [30, 30],
+          iconAnchor: [15, 15]
         });
 
-        // === IMÁGENES ===
-        const imgContainer = document.createElement('div');
-        imgContainer.id = 'imagenes-container';
-        let imageUrls = [];
-        if (fotos) {
-          imageUrls = fotos.split(',').map(f => driveUrlDirect(f.trim())).filter(url => url);
-          imageUrls.forEach((url, index) => {
-            const img = document.createElement('img');
-            img.src = url;
-            img.alt = "Imagen del alquiler";
-            img.referrerPolicy = "no-referrer";
-            img.onclick = () => abrirModal(url, imageUrls, index);
-            imgContainer.appendChild(img);
+        const marker = L.marker([lat, lng], { icon }).addTo(markersLayer);
+
+        // === POPUP DEL MARCADOR ===
+        const popupDiv = document.createElement('div');
+        popupDiv.style.position = "relative";
+        popupDiv.style.padding = "12px";
+        popupDiv.style.minWidth = "220px";
+
+        const popupImg = document.createElement('img');
+        popupImg.className = "popup-profile-img";
+        popupImg.src = fotoPerfil;
+        popupImg.alt = "Foto del dueño";
+        popupDiv.appendChild(popupImg);
+
+        popupDiv.innerHTML += `<b>${tipo}</b><br><b>Dirección:</b> ${direccion || 'No disponible'}`;
+        if (tipo !== "Temporario" && tipo !== "Local") {
+          popupDiv.innerHTML += `<br><b>Ambientes:</b> ${nroAmb || 'N/D'}<br><b>Precio:</b> ${formattedPrecio || 'Consultar'}`;
+        }
+
+        const verBtn = document.createElement('button');
+        verBtn.className = 'popup-button';
+        verBtn.textContent = 'Ver Detalles';
+
+        verBtn.onclick = async () => {
+          if (idPropiedad) await incrementarMetrica(idPropiedad, "vistas");
+
+          const detalle = document.getElementById('alquiler-detalle');
+          detalle.innerHTML = `<h2>${tipo}: ${direccion || ''}</h2><p id="metricas-error"></p>`;
+
+          // Foto del dueño en detalle grande
+          const profileImg = document.createElement('img');
+          profileImg.className = "owner-profile-img";
+          profileImg.src = fotoPerfil;
+          profileImg.alt = "Foto del dueño";
+          detalle.appendChild(profileImg);
+
+          // Detalles
+          const rows = (tipo === "Temporario" || tipo === "Local") ? [
+            ['Dirección', direccion],
+            ['Información de ingreso', infoIngreso],
+            ['Detalles', detalles]
+          ] : [
+            ['Tipo', tipo],
+            ['Dirección', direccion],
+            ['Ambientes', nroAmb || '-'],
+            ['Precio', formattedPrecio || '-'],
+            ['Mascotas', mascotas || '-'],
+            ['Amoblado', amoblado || '-'],
+            ['Información de ingreso', infoIngreso],
+            ['Detalles', detalles]
+          ];
+
+          rows.forEach(([label, val]) => {
+            if (val) {
+              const p = document.createElement('p');
+              p.innerHTML = `<b>${label}:</b> ${val || 'No disponible'}`;
+              detalle.appendChild(p);
+            }
           });
-        }
-        detalle.appendChild(imgContainer);
 
-        // === BOTONES DE ACCIÓN ===
-        const actionDiv = document.createElement('div');
-        actionDiv.className = 'action-buttons';
+          // Imágenes
+          const imgContainer = document.createElement('div');
+          imgContainer.id = 'imagenes-container';
+          if (fotos) {
+            const urls = fotos.split(',').map(f => driveUrlDirect(f.trim())).filter(Boolean);
+            urls.forEach((url, i) => {
+              const img = document.createElement('img');
+              img.src = url;
+              img.alt = "Propiedad";
+              img.onclick = () => abrirModal(url, urls, i);
+              imgContainer.appendChild(img);
+            });
+          }
+          detalle.appendChild(imgContainer);
 
-        // WhatsApp
-        if (contacto) {
-          const waBtn = document.createElement('button');
-          waBtn.textContent = 'Contactar por WhatsApp';
-          waBtn.style.background = '#25D366';
-          waBtn.style.color = 'white';
-          waBtn.style.padding = '1rem 2rem';
-          waBtn.style.borderRadius = 'var(--radius)';
-          waBtn.style.border = 'none';
-          waBtn.style.fontWeight = '600';
-          waBtn.style.cursor = 'pointer';
-          waBtn.onclick = () => {
-            if (idPropiedad) incrementarMetrica(idPropiedad, "contactos");
-            const mensaje = `Hola, vengo desde AlquiYa y quiero consultar por el ${tipo.toLowerCase()} en ${direccion}`;
-            window.open(`https://wa.me/${contacto}?text=${encodeURIComponent(mensaje)}`, '_blank');
-          };
-          actionDiv.appendChild(waBtn);
-        }
+          // Botones
+          const actionDiv = document.createElement('div');
+          actionDiv.className = 'action-buttons';
 
-        // Copiar Enlace
-        if (idPropiedad) {
-          const copyBtn = document.createElement('button');
-          copyBtn.className = 'copy-share-btn';
-          copyBtn.setAttribute('data-id', idPropiedad);
-          copyBtn.textContent = 'Copiar Enlace';
-          actionDiv.appendChild(copyBtn);
-        }
+          if (contacto) {
+            const waBtn = document.createElement('button');
+            waBtn.textContent = 'Contactar por WhatsApp';
+            waBtn.style.cssText = 'background:#25D366;color:white;padding:1rem 2rem;border-radius:14px;border:none;font-weight:600;cursor:pointer;margin:5px;';
+            waBtn.onclick = () => {
+              if (idPropiedad) incrementarMetrica(idPropiedad, "contactos");
+              const msg = `Hola, consulto por el ${tipo.toLowerCase()} en ${direccion}`;
+              window.open(`https://wa.me/${contacto}?text=${encodeURIComponent(msg)}`, '_blank');
+            };
+            actionDiv.appendChild(waBtn);
+          }
 
-        detalle.appendChild(actionDiv);
+          if (idPropiedad) {
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'copy-share-btn';
+            copyBtn.setAttribute('data-id', idPropiedad);
+            copyBtn.textContent = 'Copiar Enlace';
+            actionDiv.appendChild(copyBtn);
+          }
 
-        // Mostrar panel
-        detalle.style.display = 'block';
-        detalle.classList.add("highlight");
-        detalle.scrollIntoView({ behavior: "smooth", block: "start" });
-        setTimeout(() => detalle.classList.remove("highlight"), 1200);
-        if (map) map.invalidateSize();
-      };
+          detalle.appendChild(actionDiv);
+          detalle.style.display = 'block';
+          detalle.classList.add("highlight");
+          detalle.scrollIntoView({ behavior: "smooth" });
+          setTimeout(() => detalle.classList.remove("highlight"), 1200);
+          map.invalidateSize();
+        };
 
-      popupDiv.appendChild(verBtn);
-      marker.bindPopup(popupDiv);
-      cont++;
+        popupDiv.appendChild(verBtn);
+        marker.bindPopup(popupDiv);
+        cont++;
+      });
+
+      if (cont === 0) {
+        loadingEl.textContent = "No se encontraron alquileres con los filtros actuales.";
+      }
+    })
+    .catch(err => {
+      loadingEl.style.display = "none";
+      loadingEl.textContent = "Error de conexión. Reintentando...";
+      console.error("Error:", err);
     });
-
-    if (cont === 0) {
-      loadingEl.textContent = "No se encontraron alquileres para los filtros actuales.";
-    }
-  })
-  .catch(err => {
-    document.getElementById("loading-msg").style.display = "none";
-    console.error("Error al conectar con WebApp:", err);
-    loadingEl.textContent = "Error al conectar con el servidor. Por favor, intenta de nuevo.";
-  });
 }
 /* =========================
 PASSWORD VISIBILITY TOGGLE
