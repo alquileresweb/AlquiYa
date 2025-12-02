@@ -840,30 +840,6 @@ async function cargarPropiedadesLista() {
       </div>`;
   }
 }
-
-    contenedor.innerHTML = ""; // limpiar loader
-
-    data.data.forEach(p => {
-      const primeraImg = (p.imagenes && p.imagenes[0]) ? p.imagenes[0] : "https://via.placeholder.com/400x250?text=Sin+Imagen";
-      const precio = p.precio ? `$${parseInt(p.precio).toLocaleString("es-AR")}` : "Consultar";
-
-      const card = document.createElement("div");
-      card.className = "property-card";
-      card.innerHTML = `
-        <img src="${primeraImg}" alt="${p.titulo}" onerror="this.src='https://via.placeholder.com/400x250?text=Sin+Imagen'">
-        <div class="property-title">${p.titulo || "Sin título"}</div>
-        <div class="property-price">${precio}</div>
-        <div style="color:#666;margin-bottom:15px;">${p.tipo || ""} - ${p.operacion || ""}</div>
-        <a href="https://wa.me/54379XXXXXXXX?text=Hola,%20vi%20la%20propiedad%20${encodeURIComponent(p.titulo || "")}%20en%20AlquiYa" target="_blank" class="whatsapp-btn">Contactar</a>
-      `;
-      contenedor.appendChild(card);
-    });
-
-  } catch (err) {
-    console.error(err);
-    contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:#e74c3c;">Error de conexión</div>';
-  }
-}
 /* =========================
 TÉRMINOS Y CONDICIONES
 */
