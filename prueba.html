@@ -925,6 +925,17 @@ async function incrementarMetrica(idPropiedad, metrica) {
     // No rompemos la UX
   }
 }
+/* === FUNCIÓN PARA OBTENER FOTO DE PERFIL (SIN AWAIT AQUÍ) === */
+async function obtenerFotoPerfil(emailDueno) {
+  if (!emailDueno) return "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
+  try {
+    const res = await fetch(`${webAppURL}?action=obtenerFotoPerfil&email=${encodeURIComponent(emailDueno)}`);
+    const data = await res.json();
+    return data.foto || "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
+  } catch {
+    return "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
+  }
+}
 function cargarAlquileres() {
   const loadingEl = document.getElementById("loading-msg");
   loadingEl.style.display = "block";
@@ -1057,17 +1068,16 @@ iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-"
       const verBtn = document.createElement('button');
       verBtn.className = 'popup-button';
       verBtn.textContent = 'Ver Detalles';
-      verBtn.onclick = () => {
-        if (idPropiedad) incrementarMetrica(idPropiedad, "vistas");
+      // AQUÍ ESTÁ LA SOLUCIÓN: función async dentro del onclick
+      verBtn.onclick = async () => {
+        if (idPropiedad) await incrementarMetrica(idPropiedad, "vistas");
 
-        // Cargar foto de perfil del dueño
         const fotoPerfil = await obtenerFotoPerfil(emailDueno);
         popupImg.src = fotoPerfil;
 
         const detalle = document.getElementById('alquiler-detalle');
         detalle.innerHTML = `<h2>${tipo}: ${direccion || ''}</h2><p id="metricas-error"></p>`;
 
-        // Foto de perfil en detalle completo
         const profileImg = document.createElement('img');
         profileImg.className = "owner-profile-img";
         profileImg.src = fotoPerfil;
