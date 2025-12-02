@@ -765,79 +765,55 @@ CARGA DE PROPIEDADES EN MODO LISTA (usa getpropiedadesactivas)
 async function cargarPropiedadesLista() {
   const contenedor = document.getElementById("lista-propiedades");
   contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;font-size:1.4rem;color:#666;">Cargando propiedades...</div>';
-
+  
   try {
-    // FORZAMOS que use la URL correcta (con tu ID real)
-    const url = webAppURL + "?action=getpropiedadesactivas&t=" + Date.now();
+    // CAMBIO AQUÍ: usamos getAlquileres (ya existe y funciona)
+    const url = webAppURL + "?action=getAlquileres&t=" + Date.now();
     console.log("Cargando lista desde:", url);
+    
+    const res = await fetch(url);
+    const data = await res.json();
 
-    const res = await fetch(url, {
-      method: "GET",
-      cache: "no-cache",
-      headers: {
-        "Accept": "application/json"
-      }
-    });
-
-    // Mostrar respuesta cruda para debug
-    const text = await res.text();
-    console.log("Respuesta cruda del servidor:", text);
-
-    if (!res.ok) {
-      throw new Error(`Error HTTP ${res.status}: ${text}`);
+    if (!data.success || !Array.isArray(data.data)) {
+      throw new Error("No se pudieron cargar las propiedades");
     }
 
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
-      console.error("No se pudo parsear JSON:", text);
-      throw new Error("Respuesta inválida del servidor (no es JSON)");
-    }
-
-    if (!data.success) {
-      throw new Error(data.error || "Error desconocido del servidor");
-    }
-
-    if (!Array.isArray(data.data) || data.data.length === 0) {
+    if (data.data.length === 0) {
       contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:#95a5a6;">No hay propiedades activas en este momento</div>';
       return;
     }
 
-    contenedor.innerHTML = ""; // limpiar loader
+    contenedor.innerHTML = "";
 
     data.data.forEach(p => {
-      const primeraImg = (p.imagenes && p.imagenes.length > 0) ? p.imagenes[0] : "https://via.placeholder.com/400x250?text=Sin+Imagen";
-      const precio = p.precio ? "$" + parseInt(p.precio).toLocaleString("es-AR") : "Consultar";
-      const titulo = p.titulo || "Propiedad sin título";
+      const primeraImg = (p.Fotos || "").split(",")[0]?.trim();
+      const imgUrl = primeraImg ? driveUrlDirect(primeraImg) : "https://via.placeholder.com/400x250?text=Sin+Imagen";
+      const precio = p.Precio ? "$" + parseInt(p.Precio).toLocaleString("es-AR") : "Consultar";
+      const titulo = p.Título || p.Tipo || "Propiedad";
 
       const card = document.createElement("div");
       card.className = "property-card";
       card.innerHTML = `
-        <img src="${primeraImg}" alt="${titulo}" onerror="this.src='https://via.placeholder.com/400x250?text=Sin+Imagen'">
+        <img src="${imgUrl}" alt="${titulo}" onerror="this.src='https://via.placeholder.com/400x250?text=Sin+Imagen'">
         <div class="property-title">${titulo}</div>
         <div class="property-price">${precio}</div>
         <div style="color:#666;margin-bottom:15px;font-size:0.95em;">
-          ${p.tipo || "Propiedad"} • ${p.operacion || "Alquiler"}
+          ${p.Tipo || "Propiedad"} • ${p.Operacion || "Alquiler"}
         </div>
-        <a href="https://wa.me/${p.contacto}?text=Hola,%20me%20interesa%20la%20propiedad:%20${encodeURIComponent(titulo)}" 
+        <a href="https://wa.me/${p.Contacto}?text=Hola,%20me%20interesa%20la%20propiedad:%20${encodeURIComponent(titulo)}"
            target="_blank" class="whatsapp-btn">Contactar</a>
       `;
       contenedor.appendChild(card);
     });
 
-    console.log(`Lista cargada: ${data.data.length} propiedades`);
-
   } catch (err) {
-    console.error("Error cargando lista:", err);
-    contenedor.innerHTML = `
-      <div style="grid-column:1/-1;text-align:center;padding:60px;color:#e74c3c;">
-        <h3>Error al cargar propiedades</h3>
-        <p>${err.message}</p>
-        <button onclick="cargarPropiedadesLista()" style="padding:12px 24px;margin-top:10px;background:var(--primary);color:white;border:none;border-radius:10px;cursor:pointer;">
-          Reintentar
-        </button>
-      </div>`;
+    console.error("Error:", err);
+    contenedor.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:#e74c3c;">
+      Error al cargar propiedades<br>
+      <button onclick="cargarPropiedadesLista()" style="margin-top:10px;padding:12px 24px;background:var(--primary);color:white;border:none;border-radius:10px;cursor:pointer;">
+        Reintentar
+      </button>
+    </div>`;
   }
 }
 /* =========================
