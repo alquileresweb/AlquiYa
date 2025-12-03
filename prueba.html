@@ -524,15 +524,6 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
   <div id="registro">...</div>
   <div id="panel-dueno">...</div>
 </div>
-
-  <!-- Modal de imagen grande -->
-<div id="modal-img">
-  <img id="img-grande" src="" alt="Imagen ampliada">
-  <button class="close-btn" onclick="cerrarModal()">X</button>
-  <button class="nav-btn prev-btn" onclick="cambiarImagen(-1)">&lt;</button>
-  <button class="nav-btn next-btn" onclick="cambiarImagen(1)">&gt;</button>
-</div>
-  
 <!-- Botones más cortos -->
 <div id="boton-filtros-container">
   <button onclick="toggleFiltros()">Añadir Filtros</button>
@@ -719,31 +710,27 @@ function toggleFiltros() {
   const f = document.getElementById("filtros");
   f.style.display = (f.style.display === "none" || f.style.display === "") ? "flex" : "none";
 }
-/* ==== MOSTRAR VISTAS ==== */
 function mostrarLista() {
   document.getElementById("vista-lista").style.display = "block";
   document.getElementById("vista-mapa").style.display = "none";
   document.getElementById("vista-publicar").style.display = "none";
-  document.getElementById("botones-extra").style.display = "flex";
   document.querySelectorAll("nav a").forEach(a => a.classList.remove("active"));
   document.getElementById("tab-lista").classList.add("active");
-  cargarPropiedadesLista();
+  cargarPropiedadesLista(); // <-- carga automática
 }
 function mostrarMapa() {
   document.getElementById("vista-lista").style.display = "none";
   document.getElementById("vista-mapa").style.display = "block";
   document.getElementById("vista-publicar").style.display = "none";
-  document.getElementById("botones-extra").style.display = "flex";
   document.querySelectorAll("nav a").forEach(a => a.classList.remove("active"));
   document.getElementById("tab-mapa").classList.add("active");
   if (map) map.invalidateSize();
-  cargarAlquileres();
+  cargarAlquileres(); // tu función original
 }
 function mostrarLogin() {
   document.getElementById("vista-lista").style.display = "none";
   document.getElementById("vista-mapa").style.display = "none";
   document.getElementById("vista-publicar").style.display = "block";
-  document.getElementById("botones-extra").style.display = "none";
   document.querySelectorAll("nav a").forEach(a => a.classList.remove("active"));
   document.getElementById("tab-publicar").classList.add("active");
   document.getElementById("login").style.display = "block";
@@ -773,16 +760,25 @@ function mostrarAvisos() {
   document.getElementById("rapiclean-img-container").style.display = "none";
 }
   /* =========================
-/* ==== CARGA LISTA (con redirección y modal imágenes) ==== */
+CARGA DE PROPIEDADES EN MODO LISTA (usa getpropiedadesactivas)
+*/
 async function cargarPropiedadesLista() {
   const contenedor = document.getElementById("lista-propiedades");
   contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;font-size:1.4rem;color:#666;">Cargando propiedades...</div>';
-
+  
   try {
-    const res = await fetch(webAppURL + "?action=getAlquileres&t=" + Date.now());
+    // CAMBIO AQUÍ: usamos getAlquileres (ya existe y funciona)
+    const url = webAppURL + "?action=getAlquileres&t=" + Date.now();
+    console.log("Cargando lista desde:", url);
+    
+    const res = await fetch(url);
     const data = await res.json();
 
-    if (!data.success || !Array.isArray(data.data) || data.data.length === 0) {
+    if (!data.success || !Array.isArray(data.data)) {
+      throw new Error("No se pudieron cargar las propiedades");
+    }
+
+    if (data.data.length === 0) {
       contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:#95a5a6;">No hay propiedades activas en este momento</div>';
       return;
     }
@@ -790,47 +786,28 @@ async function cargarPropiedadesLista() {
     contenedor.innerHTML = "";
 
     data.data.forEach(p => {
-      const idPropiedad = getField(p, ["ID Propiedad", "idPropiedad", "ID"]);
-      const fotos = (p.Fotos || "").split(",").map(f => driveUrlDirect(f.trim())).filter(Boolean);
-      const primeraImg = fotos[0] || "https://via.placeholder.com/400x250?text=Sin+Imagen";
-      const precio = formatPrice(p.Precio);
-      const titulo = getField(p, ["Título", "titulo", "Titulo", "Título Propiedad"]) || p.Tipo || "Propiedad";
+      const primeraImg = (p.Fotos || "").split(",")[0]?.trim();
+      const imgUrl = primeraImg ? driveUrlDirect(primeraImg) : "https://via.placeholder.com/400x250?text=Sin+Imagen";
+      const precio = p.Precio ? "$" + parseInt(p.Precio).toLocaleString("es-AR") : "Consultar";
+      const titulo = p.Título || p.Tipo || "Propiedad";
 
       const card = document.createElement("div");
       card.className = "property-card";
-
-      // Click en toda la tarjeta → ir a detalle
-      card.onclick = (e) => {
-        if (!e.target.closest('a, button, img')) {
-          window.open(`https://www.alquiya.com.ar/propiedad.html?id=${idPropiedad}`, "_blank");
-        }
-      };
-
       card.innerHTML = `
-        <img src="${primeraImg}" alt="${titulo}" onerror="this.src='https://via.placeholder.com/400x250?text=Sin+Imagen'">
+        <img src="${imgUrl}" alt="${titulo}" onerror="this.src='https://via.placeholder.com/400x250?text=Sin+Imagen'">
         <div class="property-title">${titulo}</div>
         <div class="property-price">${precio}</div>
         <div style="color:#666;margin-bottom:15px;font-size:0.95em;">
           ${p.Tipo || "Propiedad"} • ${p.Operacion || "Alquiler"}
         </div>
         <a href="https://wa.me/${p.Contacto}?text=Hola,%20me%20interesa%20la%20propiedad:%20${encodeURIComponent(titulo)}"
-           target="_blank" class="whatsapp-btn" onclick="event.stopPropagation();">Contactar</a>
-        <button class="ver-detalles-btn" onclick="event.stopPropagation(); window.open('https://www.alquiya.com.ar/propiedad.html?id=${idPropiedad}','_blank')">
-          Ver detalles
-        </button>
+           target="_blank" class="whatsapp-btn">Contactar</a>
       `;
-
-      // Click en la imagen → modal grande
-      card.querySelector("img").onclick = (e) => {
-        e.stopPropagation();
-        abrirModal(primeraImg, fotos, 0);
-      };
-
       contenedor.appendChild(card);
     });
 
   } catch (err) {
-    console.error(err);
+    console.error("Error:", err);
     contenedor.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:#e74c3c;">
       Error al cargar propiedades<br>
       <button onclick="cargarPropiedadesLista()" style="margin-top:10px;padding:12px 24px;background:var(--primary);color:white;border:none;border-radius:10px;cursor:pointer;">
@@ -1041,8 +1018,7 @@ function driveUrlDirect(url) {
   }
   return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
 }
-/* ==== MODAL IMÁGENES ==== */
-function abrirModal(src, images, index = 0) {
+function abrirModal(src, images, index) {
   currentImages = images;
   currentImageIndex = index;
   const modal = document.getElementById("modal-img");
@@ -1054,22 +1030,13 @@ function abrirModal(src, images, index = 0) {
 }
 function cerrarModal() {
   document.getElementById("modal-img").style.display = "none";
+  currentImages = [];
+  currentImageIndex = 0;
 }
-function cambiarImagen(dir) {
-  currentImageIndex = (currentImageIndex + dir + currentImages.length) % currentImages.length;
+function cambiarImagen(direction) {
+  currentImageIndex = (currentImageIndex + direction + currentImages.length) % currentImages.length;
   document.getElementById("img-grande").src = currentImages[currentImageIndex];
 }
-
-/* ==== EN EL DETALLE (panel inferior del mapa) también abrir modal ==== */
-document.addEventListener("click", function(e) {
-  if (e.target.tagName === "IMG" && e.target.closest("#imagenes-container")) {
-    const container = e.target.closest("#imagenes-container");
-    const imgs = Array.from(container.querySelectorAll("img"));
-    const index = imgs.indexOf(e.target);
-    const urls = imgs.map(i => i.src);
-    abrirModal(e.target.src, urls, index);
-  }
-});
 /* =========================
 MÉTRICAS
 */
