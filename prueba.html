@@ -62,15 +62,43 @@
   }
   nav a:hover, nav a.active { background: var(--primary); color: white; }
 
-  /* NUEVO: Contenedor de vistas */
+  /* === NUEVO CONTENEDOR DE BOTONES DEBAJO DEL MENÚ === */
+  #botones-filtros-avisos {
+    display: none;               /* oculto por defecto */
+    justify-content: center;
+    gap: 12px;
+    padding: 0.8rem 1rem;
+    background: white;
+    flex-wrap: wrap;
+  }
+  #botones-filtros-avisos.visible {
+    display: flex;
+  }
+  #botones-filtros-avisos button {
+    padding: 0.65rem 1.2rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: var(--transition);
+  }
+  #botones-filtros-avisos button:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+  }
+
+  /* Vistas */
   #vista-lista, #vista-mapa, #vista-publicar {
     max-width: 1400px;
     margin: 2rem auto;
     padding: 0 20px;
   }
   #vista-lista { display: block; }
-  #vista-mapa { display: none; }
-  #vista-publicar { display: none; }
+  #vista-mapa, #vista-publicar { display: none; }
 
   /* ESTILOS DE TARJETAS (del ejemplo que me diste) */
   .property-grid {
@@ -497,37 +525,34 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
   <a href="#" id="tab-publicar" onclick="mostrarLogin()">Publicar Propiedad</a>
 </nav>
 
-<!-- VISTA LISTA (se carga al inicio) -->
+<!-- VISTA LISTA -->
 <div id="vista-lista">
   <div class="property-grid" id="lista-propiedades">
-    <div style="grid-column:1/-1;text-align:center;padding:40px;font-size:1.4rem;color:#666;">
+    <div style="grid-column:1/-1;text-align:center;padding:40px;font-size:1.4 Zirrem;">
       Cargando propiedades...
     </div>
   </div>
 </div>
 
-<!-- VISTA MAPA (oculta al inicio) -->
+<!-- VISTA MAPA -->
 <div id="vista-mapa">
-  <div id="boton-filtros-container">
-    <button onclick="toggleFiltros()">Añadir Filtros</button>
-    <button onclick="mostrarAvisos()">Recibir Avisos</button>
-  </div>
-  <div id="filtros">...</div>
-  <div id="avisos-panel">...</div>
+  <div id="filtros"> <!-- tus filtros aquí --> </div>
+  <div id="avisos-panel"> <!-- panel avisos --> </div>
   <div id="loading-msg">Cargando alquileres disponibles...</div>
   <div id="map" style="height:65vh;"></div>
 </div>
 
-<!-- VISTA PUBLICAR (login) -->
+<!-- VISTA PUBLICAR -->
 <div id="vista-publicar">
   <div id="login">...</div>
   <div id="registro">...</div>
   <div id="panel-dueno">...</div>
 </div>
-<!-- Botones más cortos -->
-<div id="boton-filtros-container">
-  <button onclick="toggleFiltros()">Añadir Filtros</button>
-  <button onclick="mostrarAvisos()">Recibir Avisos</button>
+
+  <!-- NUEVOS BOTONES DEBAJO DEL MENÚ (aparecen solo en Lista y Mapa) -->
+<div id="botones-filtros-avisos">
+  <button onclick="toggleFiltros()">Filtros</button>
+  <button onclick="mostrarAvisos()">Recibir avisos</button>
 </div>
 <div id="filtros">
 <input type="number" id="filtroAmb" placeholder="Nro de Ambientes">
@@ -714,25 +739,41 @@ function mostrarLista() {
   document.getElementById("vista-lista").style.display = "block";
   document.getElementById("vista-mapa").style.display = "none";
   document.getElementById("vista-publicar").style.display = "none";
+
   document.querySelectorAll("nav a").forEach(a => a.classList.remove("active"));
   document.getElementById("tab-lista").classList.add("active");
-  cargarPropiedadesLista(); // <-- carga automática
+
+  // Mostrar botones
+  document.getElementById("botones-filtros-avisos").classList.add("visible");
+
+  cargarPropiedadesLista();
 }
+
 function mostrarMapa() {
   document.getElementById("vista-lista").style.display = "none";
   document.getElementById("vista-mapa").style.display = "block";
   document.getElementById("vista-publicar").style.display = "none";
+
   document.querySelectorAll("nav a").forEach(a => a.classList.remove("active"));
   document.getElementById("tab-mapa").classList.add("active");
+
+  // Mostrar botones
+  document.getElementById("botones-filtros-avisos").classList.add("visible");
+
   if (map) map.invalidateSize();
-  cargarAlquileres(); // tu función original
+  cargarAlquileres();
 }
 function mostrarLogin() {
   document.getElementById("vista-lista").style.display = "none";
   document.getElementById("vista-mapa").style.display = "none";
   document.getElementById("vista-publicar").style.display = "block";
+
   document.querySelectorAll("nav a").forEach(a => a.classList.remove("active"));
   document.getElementById("tab-publicar").classList.add("active");
+
+  // Ocultar botones en Publicar
+  document.getElementById("botones-filtros-avisos").classList.remove("visible");
+
   document.getElementById("login").style.display = "block";
 }
 function mostrarRegistro() {
