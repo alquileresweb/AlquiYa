@@ -62,33 +62,39 @@
   }
   nav a:hover, nav a.active { background: var(--primary); color: white; }
 
-  /* === NUEVO CONTENEDOR DE BOTONES DEBAJO DEL MENÚ === */
+  /* BOTONES CORTOS DEBAJO DEL MENÚ */
   #botones-filtros-avisos {
-    display: none;               /* oculto por defecto */
+    display: none;
     justify-content: center;
-    gap: 12px;
-    padding: 0.8rem 1rem;
+    gap: 14px;
+    padding: 0.9rem 1rem;
     background: white;
-    flex-wrap: wrap;
+    border-top: 1px solid #eee;
   }
   #botones-filtros-avisos.visible {
     display: flex;
   }
   #botones-filtros-avisos button {
-    padding: 0.65rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.7rem 1.3rem;
     background: var(--primary);
     color: white;
     border: none;
-    border-radius: var(--radius);
+    border-radius: 50px;
     font-weight: 600;
     font-size: 0.95rem;
     cursor: pointer;
-    white-space: nowrap;
     transition: var(--transition);
+    box-shadow: 0 3px 10px rgba(52,131,250,0.25);
   }
   #botones-filtros-avisos button:hover {
     background: var(--primary-dark);
     transform: translateY(-2px);
+  }
+  #botones-filtros-avisos button:active {
+    transform: translateY(0);
   }
 
   /* Vistas */
