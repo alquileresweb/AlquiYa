@@ -782,8 +782,7 @@ function formatPrice(num) {
 
   // MODAL IMÁGENES
 function abrirModal(src, images, index = 0) {
-  currentImages = images;
-  currentImageIndex = index;
+  currentImages = images; currentImageIndex = index;
   document.getElementById("img-grande").src = src;
   document.getElementById("modal-img").style.display = "flex";
   document.querySelector(".prev-btn").style.display = images.length > 1 ? "block" : "none";
