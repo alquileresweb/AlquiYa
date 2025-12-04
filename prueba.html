@@ -791,7 +791,6 @@ function abrirModal(src, images, index = 0) {
   document.querySelector(".next-btn").style.display = currentImages.length > 1 ? "block" : "none";
 }
 function cerrarModal() { document.getElementById("modal-img").style.display = "none"; }
-}
 function cambiarImagen(dir) {
   currentImageIndex = (currentImageIndex + dir + currentImages.length) % currentImages.length;
   document.getElementById("img-grande").src = currentImages[currentImageIndex];
