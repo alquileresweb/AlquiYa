@@ -597,12 +597,14 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 <label><input type="checkbox" id="filtroAmoblado"> Amoblado</label>
 <button onclick="cargarAlquileres()">Filtrar</button>
 </div>
+  
+<!-- PANEL AVISOS -->
 <div id="avisos-panel">
-<h2>Recibir Notificaciones</h2>
-<input type="text" id="avisos_email" placeholder="Email">
-<button onclick="registrarEmailAvisos()">Suscribirse</button>
-<button onclick="mostrarMapa()">Cancelar</button>
-<p id="avisos-msg" style="color:green"></p>
+  <h2>Recibir Notificaciones</h2>
+  <input type="text" id="avisos_email" placeholder="Email">
+  <button onclick="registrarEmailAvisos()">Suscribirse</button>
+  <button onclick="cerrarAvisos()">Cancelar</button>
+  <p id="avisos-msg" style="color:green"></p>
 </div>
 
   <!-- MODAL DE IMÁGENES GRANDE -->
@@ -799,7 +801,7 @@ function toggleFiltros() {
   const f = document.getElementById("filtros");
   f.style.display = (f.style.display === "none" || f.style.display === "") ? "flex" : "none";
 }
-  // === MODAL DE IMÁGENES ===
+  // MODAL IMÁGENES
 function abrirModal(src, images, index = 0) {
   currentImages = images;
   currentImageIndex = index;
@@ -808,22 +810,21 @@ function abrirModal(src, images, index = 0) {
   document.querySelector(".prev-btn").style.display = images.length > 1 ? "block" : "none";
   document.querySelector(".next-btn").style.display = images.length > 1 ? "block" : "none";
 }
-function cerrarModal() {
-  document.getElementById("modal-img").style.display = "none";
-}
+function cerrarModal() { document.getElementById("modal-img").style.display = "none"; }
 function cambiarImagen(dir) {
   currentImageIndex = (currentImageIndex + dir + currentImages.length) % currentImages.length;
   document.getElementById("img-grande").src = currentImages[currentImageIndex];
 }
 
-  // === FILTROS QUE SIRVEN EN AMBAS VISTAS ===
+  // FILTROS COMPARTIDOS
+function toggleFiltros() {
+  const f = document.getElementById("filtros");
+  f.style.display = (f.style.display === "none" || !f.style.display) ? "flex" : "none";
+}
 function aplicarFiltros() {
-  if (document.getElementById("vista-lista").style.display === "block") {
-    cargarPropiedadesLista();
-  } else {
-    cargarAlquileres();
-  }
-  toggleFiltros(); // cierra el panel
+  if (document.getElementById("vista-lista").style.display === "block") cargarPropiedadesLista();
+  else cargarAlquileres();
+  toggleFiltros();
 }
 
 // === IR A DETALLE + MÉTRICA ===
@@ -906,34 +907,25 @@ function driveUrlDirect(url) {
   return id ? `https://drive.google.com/uc?export=view&id=${id}` : url;
 }
   
+// NAVEGACIÓN
 function mostrarLista() {
   document.getElementById("vista-lista").style.display = "block";
   document.getElementById("vista-mapa").style.display = "none";
-  document.getElementById("vista-publicar").style.display = "none";
-
+  document.getElementById("botones-filtros-avisos").classList.add("visible");
   document.querySelectorAll("nav a").forEach(a => a.classList.remove("active"));
   document.getElementById("tab-lista").classList.add("active");
-
-  // Mostrar botones
-  document.getElementById("botones-filtros-avisos").classList.add("visible");
-
   cargarPropiedadesLista();
 }
 
 function mostrarMapa() {
   document.getElementById("vista-lista").style.display = "none";
   document.getElementById("vista-mapa").style.display = "block";
-  document.getElementById("vista-publicar").style.display = "none";
-
+  document.getElementById("botones-filtros-avisos").classList.add("visible");
   document.querySelectorAll("nav a").forEach(a => a.classList.remove("active"));
   document.getElementById("tab-mapa").classList.add("active");
-
-  // Mostrar botones
-  document.getElementById("botones-filtros-avisos").classList.add("visible");
-
-  if (map) map.invalidateSize();
   cargarAlquileres();
 }
+
 function mostrarLogin() {
   document.getElementById("vista-lista").style.display = "none";
   document.getElementById("vista-mapa").style.display = "none";
