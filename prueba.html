@@ -37,17 +37,52 @@
   nav a { text-decoration: none; font-weight: 600; color: var(--text); padding: 0.7rem 1.2rem; border-radius: 10px; transition: var(--transition); }
   nav a:hover, nav a.active { background: var(--primary); color: white; }
 
-  #botones-filtros-avisos {
-    display: none; justify-content: center; gap: 14px; padding: 0.9rem 1rem; background: white;
-    border-bottom: 1px solid #eee; flex-wrap: wrap;
-  }
-  #botones-filtros-avisos.visible { display: flex; }
-  #botones-filtros-avisos button {
-    padding: 0.55rem 1.4rem; background: var(--primary); color: white; border: none;
-    border-radius: 50px; font-weight: 600; font-size: 0.92rem; cursor: pointer;
-    box-shadow: 0 3px 8px rgba(52,131,250,0.25); transition: var(--transition); min-width: 120px;
-  }
-  #botones-filtros-avisos button:hover { background: var(--primary-dark); transform: translateY(-3px); }
+  /* BOTONES DEBAJO DEL MENÚ - CORTOS, JUNTOS Y CENTRADOS */
+#botones-filtros-avisos {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;                    /* espacio entre botones */
+  padding: 0.75rem 1rem;
+  background: white;
+  border-bottom: 1px solid #eee;
+  flex-wrap: nowrap;            /* evita que se bajen en móviles */
+  overflow-x: auto;             /* si no caben, permite scroll horizontal (mejor que romper) */
+  white-space: nowrap;
+  scrollbar-width: none;        /* Firefox - oculta scrollbar */
+}
+#botones-filtros-avisos::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+
+#botones-filtros-avisos.visible {
+  display: flex;
+}
+
+/* BOTONES MÁS CORTOS Y COMPACTOS */
+#botones-filtros-avisos button {
+  padding: 0.5rem 1rem;         /* más corto */
+  min-width: auto;              /* quita el ancho mínimo */
+  width: auto;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(52,131,250,0.25);
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+#botones-filtros-avisos button:hover {
+  background: var(--primary-dark);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(52,131,250,0.35);
+}
+
+#botones-filtros-avisos button:active {
+  transform: translateY(-1px);
+}
 
   /* === TARJETAS EN LISTA - ESTILOS CORREGIDOS Y ÚNICOS === */
   .property-grid {
