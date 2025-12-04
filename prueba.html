@@ -144,20 +144,44 @@
     transform: translateY(-2px);
   }
 
-  /* === MODAL DE IMÁGENES CON FLECHAS < > === */
+  /* === MODAL DE IMÁGENES GRANDE === */
   #modal-img {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.96); backdrop-filter: blur(12px);
-    align-items: center; justify-content: center; z-index: 9999; padding: 2rem;
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.96);
+    backdrop-filter: blur(12px);
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 2rem;
   }
   #modal-img img {
-    max-width: 95%; max-height: 95%; border-radius: 18px; box-shadow: 0 30px 80px rgba(0,0,0,0.7); object-fit: contain;
+    max-width: 95%;
+    max-height: 95%;
+    border-radius: 18px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.7);
+    object-fit: contain;
   }
   .close-btn, .prev-btn, .next-btn {
-    position: absolute; background: rgba(255,255,255,0.25); color: white; border: none;
-    width: 56px; height: 56px; border-radius: 50%; font-size: 32px; font-weight: bold;
-    cursor: pointer; backdrop-filter: blur(12px); transition: var(--transition); z-index: 10;
+    position: absolute;
+    background: rgba(255,255,255,0.25);
+    color: white;
+    border: none;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    font-size: 32px;
+    font-weight: bold;
+    cursor: pointer;
+    backdrop-filter: blur(12px);
+    transition: var(--transition);
+    z-index: 10;
   }
-  .close-btn:hover, .prev-btn:hover, .next-btn:hover { background: var(--primary); transform: scale(1.15); }
+  .close-btn:hover, .prev-btn:hover, .next-btn:hover {
+    background: var(--primary);
+    transform: scale(1.15);
+  }
   .close-btn { top: 20px; right: 20px; }
   .prev-btn { left: 20px; }
   .next-btn { right: 20px; }
@@ -469,17 +493,28 @@
     cursor: pointer;
     background: url('https://img.icons8.com/ios/50/000000/visible.png') no-repeat center/contain;
   }
-  /* === NUEVO BANNER FINAL DE RAPICLEAN === */
-  .final-banner {
-    width: 100%; margin: 40px 0 20px; text-align: center; padding: 0 15px;
+  #publicidad-container {
+    background: var(--card);
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    margin: 2rem auto;
+    max-width: 700px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
   }
-  .final-banner img {
-    width: 100%; max-width: 1000px; height: auto; border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2); transition: transform 0.3s;
+  #publicidad-container:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow);
   }
-  .final-banner img:hover { transform: scale(1.02); }
-
-  #map { height: 65vh; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); margin: 1.5rem auto; max-width: 1400px; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes resaltar { 0%, 100% { transform: scale(1); box-shadow: var(--shadow); } 50% { transform: scale(1.02); box-shadow: 0 0 35px rgba(52,131,250,0.4); } }
+  @media (max-width: 768px) {
+    #boton-filtros-container { flex-direction: column; }
+    #boton-filtros-container button { width: 80%; margin: 0 auto; }
+    #filtros, #login, #registro { padding: 1.5rem; margin: 1.5rem; }
+    #map { height: 55vh; }
   }
 </style>
 </head>
@@ -605,10 +640,11 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 
 <div id="loading-msg">Cargando alquileres disponibles...</div>
 <div id="map"></div>
-<div id="rapiclean-img-container">
-<a href="https://wa.me/5493756617167?text=Hola" target="_blank">
-<img src="https://i.postimg.cc/NMMZQ3YG/M-s-de-40-estudiantes-ya-confiaron-en-Rapiclean-1.png" alt="Más de 40 estudiantes confiaron en Rapiclean" style="max-width:100%;margin:10px auto;display:block;">
-</a>
+<!-- BANNER FINAL BONITO -->
+<div class="final-banner">
+  <a href="https://wa.me/5493764391885" target="_blank">
+    <img src="https://i.postimg.cc/NMMZQ3YG/M-s-de-40-estudiantes-ya-confiaron-en-Rapiclean-1.png" alt="Rapiclean">
+  </a>
 <a href="https://wa.me/5493764275443?text=Hola,+quiero+publicitar+en+AlquiYa&utm_source=chatgpt.com" target="_blank">
 <div id="publicidad-container">
 <p>Espacio Publicitario</p>
@@ -660,11 +696,12 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 <p id="bienvenida"></p>
 <button onclick="logout()">Cerrar Sesión</button>
 </div>
-<div id="modal-img">
-<img id="img-grande">
-<button class="close-btn" onclick="cerrarModal()">X</button>
-<button class="nav-btn prev-btn" onclick="cambiarImagen(-1)">&lt;</button>
-<button class="nav-btn next-btn" onclick="cambiarImagen(1)">&gt;</button>
+<!-- MODAL DE IMÁGENES -->
+<div id="modal-img" onclick="if(event.target === this) cerrarModal()">
+  <img id="img-grande" src="" alt="Imagen grande">
+  <button class="close-btn" onclick="cerrarModal()">X</button>
+  <button class="prev-btn" onclick="cambiarImagen(-1)"><</button>
+  <button class="next-btn" onclick="cambiarImagen(1)">></button>
 </div>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
@@ -780,6 +817,16 @@ function cambiarImagen(dir) {
   document.getElementById("img-grande").src = currentImages[currentImageIndex];
 }
 
+  // === FILTROS QUE SIRVEN EN AMBAS VISTAS ===
+function aplicarFiltros() {
+  if (document.getElementById("vista-lista").style.display === "block") {
+    cargarPropiedadesLista();
+  } else {
+    cargarAlquileres();
+  }
+  toggleFiltros(); // cierra el panel
+}
+
 // === IR A DETALLE + MÉTRICA ===
 async function irADetalle(id) {
   if (id) {
@@ -788,10 +835,10 @@ async function irADetalle(id) {
   window.open(`https://www.alquiya.com.ar/propiedad.html?id=${id}`, "_blank");
 }
 
-// === CARGAR PROPIEDADES EN LISTA (VERSIÓN CORRECTA Y ÚNICA) ===
+// === CARGAR PROPIEDADES EN LISTA ===
 async function cargarPropiedadesLista() {
   const contenedor = document.getElementById("lista-propiedades");
-  contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px;font-size:1.4rem;color:#666;">Cargando propiedades...</div>';
+  contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px;font-size:1.4rem;color:#666;">Cargando...</div>';
 
   try {
     const res = await fetch(webAppURL + "?action=getAlquileres&t=" + Date.now());
@@ -824,22 +871,19 @@ async function cargarPropiedadesLista() {
         <button class="ver-detalles-btn" data-id="${idPropiedad}">Ver detalles</button>
       `;
 
-      // Clic en imagen → abre modal grande
       card.querySelector("img").onclick = e => {
         e.stopPropagation();
         if (fotos.length > 0) abrirModal(fotos[0], fotos, 0);
       };
 
-      // Clic en cualquier parte de la tarjeta → abre detalle
       card.onclick = e => {
         if (e.target.tagName === "IMG" || e.target.tagName === "BUTTON") return;
-        irADetalle(idPropiedad);
+        window.open(`https://www.alquiya.com.ar/propiedad.html?id=${idPropiedad}`, "_blank");
       };
 
-      // Botón "Ver detalles"
       card.querySelector(".ver-detalles-btn").onclick = e => {
         e.stopPropagation();
-        irADetalle(idPropiedad);
+        window.open(`https://www.alquiya.com.ar/propiedad.html?id=${idPropiedad}`, "_blank");
       };
 
       contenedor.appendChild(card);
@@ -927,6 +971,12 @@ function mostrarAvisos() {
   document.getElementById("boton-filtros-container").style.display = "none";
   document.getElementById("loading-msg").style.display = "none";
   document.getElementById("rapiclean-img-container").style.display = "none";
+}
+  // === CANCELAR EN PANEL DE AVISOS (CIERRA EL PANEL) ===
+function cerrarAvisos() {
+  document.getElementById("avisos-panel").style.display = "none";
+  document.getElementById("map").style.display = "block";
+  document.getElementById("filtros").style.display = "none";
 }
 /* =========================
 TÉRMINOS Y CONDICIONES
