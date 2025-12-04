@@ -140,6 +140,16 @@
     padding: 0 20px;
   }
 
+  .property-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    max-width: 1400px;
+    margin: 30px auto;
+    padding: 0 20px;
+    justify-items: center;
+  }
+
   .property-card {
     background: white;
     border-radius: 20px;
@@ -149,45 +159,28 @@
     max-width: 400px;
     transition: all 0.3s ease;
     border: 1px solid #eee;
-    cursor: pointer;                    /* ← toda la tarjeta es clicable */
+    cursor: pointer;
     position: relative;
     overflow: hidden;
   }
-
   .property-card:hover {
     transform: translateY(-10px);
     box-shadow: 0 20px 40px rgba(0,0,0,0.15);
   }
-
   .property-card img {
     width: 100%;
     height: 250px;
     object-fit: cover;
     border-radius: 15px;
     margin-bottom: 20px;
-    cursor: zoom-in;                    /* ← indica que se puede agrandar */
+    cursor: zoom-in;
     transition: transform 0.3s ease;
   }
+  .property-card img:hover { transform: scale(1.03); }
 
-  .property-card img:hover {
-    transform: scale(1.03);
-  }
+  .property-title { font-size: 1.5em; font-weight: bold; color: #333; margin-bottom: 12px; }
+  .property-price { font-size: 1.4em; color: #28a745; font-weight: bold; margin-bottom: 15px; }
 
-  .property-title {
-    font-size: 1.5em;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 12px;
-  }
-
-  .property-price {
-    font-size: 1.4em;
-    color: #28a745;
-    font-weight: bold;
-    margin-bottom: 15px;
-  }
-
-  /* Botón "Ver detalles" dentro de cada tarjeta */
   .ver-detalles-btn {
     background: var(--primary);
     color: white;
@@ -201,11 +194,7 @@
     margin-top: 10px;
     transition: var(--transition);
   }
-
-  .ver-detalles-btn:hover {
-    background: var(--primary-dark);
-    transform: translateY(-2px);
-  }
+  .ver-detalles-btn:hover { background: var(--primary-dark); transform: translateY(-2px);
 
   /* === MODAL DE IMÁGENES GRANDE (mejorado) === */
   #modal-img {
@@ -674,6 +663,14 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 <p id="avisos-msg" style="color:green"></p>
 </div>
 
+  <!-- MODAL DE IMÁGENES GRANDE -->
+<div id="modal-img" onclick="if(event.target === this) cerrarModal()">
+  <img id="img-grande" src="" alt="Imagen grande">
+  <button class="close-btn" onclick="cerrarModal()">X</button>
+  <button class="prev-btn" onclick="cambiarImagen(-1)">Previous</button>
+  <button class="next-btn" onclick="cambiarImagen(1)">Next</button>
+</div>
+
 <!-- VISTA LISTA -->
 <div id="vista-lista">
   <div class="property-grid" id="lista-propiedades">
@@ -681,14 +678,6 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
       Cargando propiedades...
     </div>
   </div>
-</div>
-
-  <!-- MODAL DE IMÁGENES GRANDE -->
-<div id="modal-img" onclick="if(event.target === this) cerrarModal()">
-  <img id="img-grande" src="" alt="Imagen grande">
-  <button class="close-btn" onclick="cerrarModal()">X</button>
-  <button class="prev-btn" onclick="cambiarImagen(-1)">menor</button>
-  <button class="next-btn" onclick="cambiarImagen(1)">mayor</button>
 </div>
 
 <!-- VISTA MAPA -->
@@ -866,7 +855,7 @@ function toggleFiltros() {
   const f = document.getElementById("filtros");
   f.style.display = (f.style.display === "none" || f.style.display === "") ? "flex" : "none";
 }
-  // === ABRIR MODAL DE IMÁGENES (con navegación) ===
+  // === MODAL DE IMÁGENES ===
 function abrirModal(src, images, index = 0) {
   currentImages = images;
   currentImageIndex = index;
@@ -877,25 +866,21 @@ function abrirModal(src, images, index = 0) {
 }
 function cerrarModal() {
   document.getElementById("modal-img").style.display = "none";
-  currentImages = [];
-  currentImageIndex = 0;
 }
 function cambiarImagen(dir) {
   currentImageIndex = (currentImageIndex + dir + currentImages.length) % currentImages.length;
   document.getElementById("img-grande").src = currentImages[currentImageIndex];
 }
 
-// === FUNCIÓN PARA IR A LA PÁGINA DE DETALLE + MÉTRICA ===
-async function irADetalle(idPropiedad) {
-  if (idPropiedad) {
-    await fetch(`${webAppURL}?action=incrementarmetrica&idPropiedad=${idPropiedad}&metrica=vistas`, {
-      method: "GET", cache: "no-cache"
-    }).catch(() => {});
+// === IR A DETALLE + MÉTRICA ===
+async function irADetalle(id) {
+  if (id) {
+    await fetch(`${webAppURL}?action=incrementarmetrica&idPropiedad=${id}&metrica=vistas`, {method:"GET"}).catch(()=>{});
   }
-  window.open(`https://www.alquiya.com.ar/propiedad.html?id=${idPropiedad}`, "_blank");
+  window.open(`https://www.alquiya.com.ar/propiedad.html?id=${id}`, "_blank");
 }
 
-// === CARGA DE PROPIEDADES EN LISTA (con todo lo nuevo) ===
+// === CARGAR PROPIEDADES EN LISTA (VERSIÓN CORRECTA Y ÚNICA) ===
 async function cargarPropiedadesLista() {
   const contenedor = document.getElementById("lista-propiedades");
   contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px;font-size:1.4rem;color:#666;">Cargando propiedades...</div>';
@@ -904,14 +889,14 @@ async function cargarPropiedadesLista() {
     const res = await fetch(webAppURL + "?action=getAlquileres&t=" + Date.now());
     const data = await res.json();
 
-    if (!data.success || !Array.isArray(data.data) || data.data.length === 0) {
-      contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px;color:#95a5a6;">No hay propiedades activas en este momento</div>';
+    if (!data.success || data.data.length === 0) {
+      contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px;color:#95a5a6;">No hay propiedades activas</div>';
       return;
     }
 
     contenedor.innerHTML = "";
     data.data.forEach(p => {
-      const fotos = (p.Fotos || "").split(",").map(f => driveUrlDirect(f.trim())).filter(Boolean);
+      const fotos = (p.Fotos || "").split(",").map(f => f.trim()).filter(Boolean).map(driveUrlDirect);
       const primeraImg = fotos[0] || "https://via.placeholder.com/400x250?text=Sin+Imagen";
       const precio = p.Precio ? "$" + parseInt(p.Precio).toLocaleString("es-AR") : "Consultar";
       const titulo = p.Título || p.Tipo || "Propiedad";
@@ -919,7 +904,7 @@ async function cargarPropiedadesLista() {
 
       const card = document.createElement("div");
       card.className = "property-card";
-      card.dataset.id = idPropiedad; // para clic en toda la tarjeta
+      card.dataset.id = idPropiedad;
 
       card.innerHTML = `
         <img src="${primeraImg}" alt="${titulo}" onerror="this.src='https://via.placeholder.com/400x250?text=Sin+Imagen'">
@@ -931,20 +916,20 @@ async function cargarPropiedadesLista() {
         <button class="ver-detalles-btn" data-id="${idPropiedad}">Ver detalles</button>
       `;
 
-      // Clic en imagen → abre galería
-      card.querySelector("img").onclick = (e) => {
+      // Clic en imagen → abre modal grande
+      card.querySelector("img").onclick = e => {
         e.stopPropagation();
         if (fotos.length > 0) abrirModal(fotos[0], fotos, 0);
       };
 
-      // Clic en toda la tarjeta → va al detalle
-      card.onclick = (e) => {
-        if (e.target.tagName === "BUTTON" || e.target.tagName === "IMG") return;
+      // Clic en cualquier parte de la tarjeta → abre detalle
+      card.onclick = e => {
+        if (e.target.tagName === "IMG" || e.target.tagName === "BUTTON") return;
         irADetalle(idPropiedad);
       };
 
-      // Botón explícito "Ver detalles"
-      card.querySelector(".ver-detalles-btn").onclick = (e) => {
+      // Botón "Ver detalles"
+      card.querySelector(".ver-detalles-btn").onclick = e => {
         e.stopPropagation();
         irADetalle(idPropiedad);
       };
@@ -955,7 +940,7 @@ async function cargarPropiedadesLista() {
   } catch (err) {
     console.error(err);
     contenedor.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:80px;color:#e74c3c;">
-      Error al cargar propiedades<br>
+      Error al cargar<br>
       <button onclick="cargarPropiedadesLista()" style="margin-top:15px;padding:12px 24px;background:var(--primary);color:white;border:none;border-radius:10px;cursor:pointer;">
         Reintentar
       </button>
@@ -1034,63 +1019,6 @@ function mostrarAvisos() {
   document.getElementById("boton-filtros-container").style.display = "none";
   document.getElementById("loading-msg").style.display = "none";
   document.getElementById("rapiclean-img-container").style.display = "none";
-}
-  /* =========================
-CARGA DE PROPIEDADES EN MODO LISTA (usa getpropiedadesactivas)
-*/
-async function cargarPropiedadesLista() {
-  const contenedor = document.getElementById("lista-propiedades");
-  contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;font-size:1.4rem;color:#666;">Cargando propiedades...</div>';
-  
-  try {
-    // CAMBIO AQUÍ: usamos getAlquileres (ya existe y funciona)
-    const url = webAppURL + "?action=getAlquileres&t=" + Date.now();
-    console.log("Cargando lista desde:", url);
-    
-    const res = await fetch(url);
-    const data = await res.json();
-
-    if (!data.success || !Array.isArray(data.data)) {
-      throw new Error("No se pudieron cargar las propiedades");
-    }
-
-    if (data.data.length === 0) {
-      contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:#95a5a6;">No hay propiedades activas en este momento</div>';
-      return;
-    }
-
-    contenedor.innerHTML = "";
-
-    data.data.forEach(p => {
-      const primeraImg = (p.Fotos || "").split(",")[0]?.trim();
-      const imgUrl = primeraImg ? driveUrlDirect(primeraImg) : "https://via.placeholder.com/400x250?text=Sin+Imagen";
-      const precio = p.Precio ? "$" + parseInt(p.Precio).toLocaleString("es-AR") : "Consultar";
-      const titulo = p.Título || p.Tipo || "Propiedad";
-
-      const card = document.createElement("div");
-      card.className = "property-card";
-      card.innerHTML = `
-        <img src="${imgUrl}" alt="${titulo}" onerror="this.src='https://via.placeholder.com/400x250?text=Sin+Imagen'">
-        <div class="property-title">${titulo}</div>
-        <div class="property-price">${precio}</div>
-        <div style="color:#666;margin-bottom:15px;font-size:0.95em;">
-          ${p.Tipo || "Propiedad"} • ${p.Operacion || "Alquiler"}
-        </div>
-        <a href="https://wa.me/${p.Contacto}?text=Hola,%20me%20interesa%20la%20propiedad:%20${encodeURIComponent(titulo)}"
-           target="_blank" class="whatsapp-btn">Contactar</a>
-      `;
-      contenedor.appendChild(card);
-    });
-
-  } catch (err) {
-    console.error("Error:", err);
-    contenedor.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:#e74c3c;">
-      Error al cargar propiedades<br>
-      <button onclick="cargarPropiedadesLista()" style="margin-top:10px;padding:12px 24px;background:var(--primary);color:white;border:none;border-radius:10px;cursor:pointer;">
-        Reintentar
-      </button>
-    </div>`;
-  }
 }
 /* =========================
 TÉRMINOS Y CONDICIONES
