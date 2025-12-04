@@ -83,26 +83,27 @@
   transform: translateY(-1px);
 }
 
-  /* NUEVO: UBICACIÓN FIJA ENCIMA DE LISTA Y MAPA */
-  .ubicacion-fija {
-    text-align: center;
-    padding: 1.2rem 1rem;
+  /* NUEVO PANEL DE UBICACIÓN - MODERNO Y ELEGANTE */
+  .ubicacion-panel {
     background: linear-gradient(135deg, #3483fa, #2565c0);
     color: white;
+    padding: 1.2rem 1.5rem;
+    margin: 20px auto;
+    max-width: 1400px;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(52,131,250,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
     font-size: 1.4rem;
     font-weight: 700;
-    margin: 0 0 20px 0;
-    border-radius: 0 0 20px 20px;
-    box-shadow: 0 6px 20px rgba(52,131,250,0.3);
+    text-align: center;
     animation: fadeInDown 0.6s ease;
-    position: relative;
-    z-index: 10;
   }
-  .ubicacion-fija::before {
-    content: "📍";
-    font-size: 2.2rem;
-    display: block;
-    margin-bottom: 6px;
+  .ubicacion-panel strong {
+    font-size: 1.6rem;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
   }
 
   /* === TARJETAS EN LISTA - ESTILOS CORREGIDOS Y ÚNICOS === */
@@ -585,8 +586,8 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 </div>
   <!-- NUEVO MENÚ CON 3 PESTAÑAS -->
 <nav>
-  <a href="#" id="tab-lista" class="active" onclick="mostrarLista()">Lista</a>
-  <a href="#" id="tab-mapa" onclick="mostrarMapa()">Mapa</a>
+  <a href="#" id="tab-lista" class="active" onclick="mostrarLista()">Ver Lista</a>
+  <a href="#" id="tab-mapa" onclick="mostrarMapa()">Ver Mapa</a>
   <a href="#" id="tab-publicar" onclick="mostrarLogin()">Publicar Propiedad</a>
 </nav>
 
