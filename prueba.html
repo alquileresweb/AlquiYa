@@ -780,12 +780,12 @@ function formatPrice(num) {
   return "$" + formatted.replace(/,/g, ".");
 }
 
-  // MODAL IMÁGENES - SOLUCIONADO EL ERROR undefined
+  // === MODAL IMÁGENES - CORREGIDO PARA EVITAR "undefined" ===
 function abrirModal(src, images, index = 0) {
-  if (!images || images.length === 0) return;
-  currentImages = images.filter(url => url && url.trim() !== ""); // Filtra URLs vacías o undefined
-  currentImageIndex = index;
-  document.getElementById("img-grande").src = currentImages[index] || "https://via.placeholder.com/800x600?text=Sin+Imagen";
+  if (!images || images.length === 0 || !images.every(url => url && url.trim() !== "")) return;
+  currentImages = images.filter(url => url && url.trim() !== ""); // ← Filtra URLs vacías
+  currentImageIndex = index < currentImages.length ? index : 0;
+  document.getElementById("img-grande").src = currentImages[currentImageIndex];
   document.getElementById("modal-img").style.display = "flex";
   document.querySelector(".prev-btn").style.display = currentImages.length > 1 ? "block" : "none";
   document.querySelector(".next-btn").style.display = currentImages.length > 1 ? "block" : "none";
@@ -795,7 +795,9 @@ function cambiarImagen(dir) {
   if (currentImages.length === 0) return;
   currentImageIndex = (currentImageIndex + dir + currentImages.length) % currentImages.length;
   const nuevaUrl = currentImages[currentImageIndex];
-  document.getElementById("img-grande").src = nuevaUrl || "https://via.placeholder.com/800x600?text=Sin+Imagen";
+  if (nuevaUrl && nuevaUrl.trim() !== "") {
+    document.getElementById("img-grande").src = nuevaUrl;
+  }
 }
 
   // FILTROS COMPARTIDOS
