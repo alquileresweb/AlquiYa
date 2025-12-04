@@ -143,44 +143,18 @@
     transform: translateY(-2px);
   }
 
-  /* === MODAL DE IMÁGENES GRANDE === */
+  /* MODAL DE IMÁGENES CON FLECHAS < > */
   #modal-img {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.96);
-    backdrop-filter: blur(12px);
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    padding: 2rem;
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.96); backdrop-filter: blur(12px);
+    align-items: center; justify-content: center; z-index: 9999; padding: 2rem;
   }
-  #modal-img img {
-    max-width: 95%;
-    max-height: 95%;
-    border-radius: 18px;
-    box-shadow: 0 30px 80px rgba(0,0,0,0.7);
-    object-fit: contain;
-  }
+  #modal-img img { max-width: 95%; max-height: 95%; border-radius: 18px; box-shadow: 0 30px 80px rgba(0,0,0,0.7); object-fit: contain; }
   .close-btn, .prev-btn, .next-btn {
-    position: absolute;
-    background: rgba(255,255,255,0.25);
-    color: white;
-    border: none;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    font-size: 32px;
-    font-weight: bold;
-    cursor: pointer;
-    backdrop-filter: blur(12px);
-    transition: var(--transition);
-    z-index: 10;
+    position: absolute; background: rgba(255,255,255,0.25); color: white; border: none;
+    width: 56px; height: 56px; border-radius: 50%; font-size: 32px; font-weight: bold;
+    cursor: pointer; backdrop-filter: blur(12px); transition: var(--transition); z-index: 10;
   }
-  .close-btn:hover, .prev-btn:hover, .next-btn:hover {
-    background: var(--primary);
-    transform: scale(1.15);
-  }
+  .close-btn:hover, .prev-btn:hover, .next-btn:hover { background: var(--primary); transform: scale(1.15); }
   .close-btn { top: 20px; right: 20px; }
   .prev-btn { left: 20px; }
   .next-btn { right: 20px; }
@@ -620,12 +594,12 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
   <p id="avisos-msg" style="color:green"></p>
 </div>
 
-  <!-- MODAL DE IMÁGENES GRANDE -->
+  <!-- MODAL DE IMÁGENES -->
 <div id="modal-img" onclick="if(event.target === this) cerrarModal()">
   <img id="img-grande" src="" alt="Imagen grande">
   <button class="close-btn" onclick="cerrarModal()">X</button>
-  <button class="prev-btn" onclick="cambiarImagen(-1)">Previous</button>
-  <button class="next-btn" onclick="cambiarImagen(1)">Next</button>
+  <button class="prev-btn" onclick="cambiarImagen(-1)"><</button>
+  <button class="next-btn" onclick="cambiarImagen(1)">></button>
 </div>
 
 <!-- VISTA LISTA -->
@@ -840,69 +814,66 @@ async function irADetalle(id) {
   window.open(`https://www.alquiya.com.ar/propiedad.html?id=${id}`, "_blank");
 }
 
-// === CARGAR PROPIEDADES EN LISTA ===
+// CARGAR LISTA CON FILTROS
 async function cargarPropiedadesLista() {
   const contenedor = document.getElementById("lista-propiedades");
   contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px;font-size:1.4rem;color:#666;">Cargando...</div>';
 
+  const filtroAmb = parseInt(document.getElementById("filtroAmb").value) || 0;
+  const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
+  const filtroMax = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
+  const filtroMascotas = document.getElementById("filtroMascotas").checked;
+  const filtroAmoblado = document.getElementById("filtroAmoblado").checked;
+  const filtroTipo = document.getElementById("filtroTipo").value;
+
   try {
     const res = await fetch(webAppURL + "?action=getAlquileres&t=" + Date.now());
     const data = await res.json();
-
     if (!data.success || data.data.length === 0) {
       contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px;color:#95a5a6;">No hay propiedades activas</div>';
       return;
     }
 
+    const filtradas = data.data.filter(p => {
+      if (filtroTipo && p.Tipo !== filtroTipo) return false;
+      if (filtroAmb && toInt(p["Nro Ambientes"] || p.Ambientes) !== filtroAmb) return false;
+      const precio = toNumber(p.Precio);
+      if (precio < filtroMin || precio > filtroMax) return false;
+      if (filtroMascotas && (p.Mascotas || "").toLowerCase() !== "sí") return false;
+      if (filtroAmoblado && (p.Amoblado || "").toLowerCase() !== "sí") return false;
+      return true;
+    });
+
     contenedor.innerHTML = "";
-    data.data.forEach(p => {
+    if (filtradas.length === 0) {
+      contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px;color:#95a5a6;">No se encontraron resultados</div>';
+      return;
+    }
+
+    filtradas.forEach(p => {
       const fotos = (p.Fotos || "").split(",").map(f => f.trim()).filter(Boolean).map(driveUrlDirect);
       const primeraImg = fotos[0] || "https://via.placeholder.com/400x250?text=Sin+Imagen";
       const precio = p.Precio ? "$" + parseInt(p.Precio).toLocaleString("es-AR") : "Consultar";
       const titulo = p.Título || p.Tipo || "Propiedad";
-      const idPropiedad = p["ID Propiedad"] || p.idPropiedad || p.ID || "";
+      const id = p["ID Propiedad"] || p.idPropiedad || p.ID || "";
 
       const card = document.createElement("div");
       card.className = "property-card";
-      card.dataset.id = idPropiedad;
-
       card.innerHTML = `
-        <img src="${primeraImg}" alt="${titulo}" onerror="this.src='https://via.placeholder.com/400x250?text=Sin+Imagen'">
+        <img src="${primeraImg}" alt="${titulo}">
         <div class="property-title">${titulo}</div>
         <div class="property-price">${precio}</div>
-        <div style="color:#666;font-size:0.95em;margin-bottom:15px;">
-          ${p.Tipo || "Propiedad"} • ${p.Operacion || "Alquiler"}
-        </div>
-        <button class="ver-detalles-btn" data-id="${idPropiedad}">Ver detalles</button>
+        <div style="color:#666;font-size:0.95em;margin-bottom:15px;">${p.Tipo || "Propiedad"} • ${p.Operacion || "Alquiler"}</div>
+        <button class="ver-detalles-btn">Ver detalles</button>
       `;
 
-      card.querySelector("img").onclick = e => {
-        e.stopPropagation();
-        if (fotos.length > 0) abrirModal(fotos[0], fotos, 0);
-      };
-
-      card.onclick = e => {
-        if (e.target.tagName === "IMG" || e.target.tagName === "BUTTON") return;
-        window.open(`https://www.alquiya.com.ar/propiedad.html?id=${idPropiedad}`, "_blank");
-      };
-
-      card.querySelector(".ver-detalles-btn").onclick = e => {
-        e.stopPropagation();
-        window.open(`https://www.alquiya.com.ar/propiedad.html?id=${idPropiedad}`, "_blank");
-      };
+      card.querySelector("img").onclick = e => { e.stopPropagation(); if (fotos.length) abrirModal(fotos[0], fotos); };
+      card.onclick = e => { if (!e.target.closest("img") && !e.target.closest("button")) irADetalle(id); };
+      card.querySelector(".ver-detalles-btn").onclick = e => { e.stopPropagation(); irADetalle(id); };
 
       contenedor.appendChild(card);
     });
-
-  } catch (err) {
-    console.error(err);
-    contenedor.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:80px;color:#e74c3c;">
-      Error al cargar<br>
-      <button onclick="cargarPropiedadesLista()" style="margin-top:15px;padding:12px 24px;background:var(--primary);color:white;border:none;border-radius:10px;cursor:pointer;">
-        Reintentar
-      </button>
-    </div>`;
-  }
+  } catch { contenedor.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:80px;color:#e74c3c;">Error<br><button onclick="cargarPropiedadesLista()">Reintentar</button></div>`; }
 }
 
 function driveUrlDirect(url) {
