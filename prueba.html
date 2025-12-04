@@ -1151,24 +1151,25 @@ function driveUrlDirect(url) {
   }
   return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
 }
-function abrirModal(src, images, index) {
-  currentImages = images;
-  currentImageIndex = index;
-  const modal = document.getElementById("modal-img");
-  const img = document.getElementById("img-grande");
-  img.src = src;
-  modal.style.display = "flex";
-  document.querySelector(".prev-btn").style.display = images.length > 1 ? "block" : "none";
-  document.querySelector(".next-btn").style.display = images.length > 1 ? "block" : "none";
-}
-function cerrarModal() {
-  document.getElementById("modal-img").style.display = "none";
-  currentImages = [];
-  currentImageIndex = 0;
-}
-function cambiarImagen(direction) {
-  currentImageIndex = (currentImageIndex + direction + currentImages.length) % currentImages.length;
+// === MODAL IMÁGENES - 100% SEGURO CONTRA "undefined" ===
+function abrirModal(src, images, index = 0) {
+  if (!images || images.length === 0) return;
+  currentImages = images.filter(url => url && url.trim() !== "" && !url.includes("undefined"));
+  if (currentImages.length === 0) return;
+  currentImageIndex = index < currentImages.length ? index : 0;
   document.getElementById("img-grande").src = currentImages[currentImageIndex];
+  document.getElementById("modal-img").style.display = "flex";
+  document.querySelector(".prev-btn").style.display = currentImages.length > 1 ? "block" : "none";
+  document.querySelector(".next-btn").style.display = currentImages.length > 1 ? "block" : "none";
+}
+function cerrarModal() { document.getElementById("modal-img").style.display = "none"; }
+function cambiarImagen(dir) {
+  if (currentImages.length <= 1) return;
+  currentImageIndex = (currentImageIndex + dir + currentImages.length) % currentImages.length;
+  const nuevaUrl = currentImages[currentImageIndex];
+  if (nuevaUrl && nuevaUrl.trim() !== "" && !nuevaUrl.includes("undefined")) {
+    document.getElementById("img-grande").src = nuevaUrl;
+  }
 }
 /* =========================
 MÉTRICAS
