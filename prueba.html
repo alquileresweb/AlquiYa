@@ -887,10 +887,11 @@ function driveUrlDirect(url) {
   return id ? `https://drive.google.com/uc?export=view&id=${id}` : url;
 }
   
-// NAVEGACIÓN
+// NAVEGACIÓN - CIERRA PUBLICAR AL CAMBIAR DE PESTAÑA
 function mostrarLista() {
   document.getElementById("vista-lista").style.display = "block";
   document.getElementById("vista-mapa").style.display = "none";
+  document.getElementById("vista-publicar").style.display = "none"; // ← Cierra login/registro
   document.getElementById("botones-filtros-avisos").classList.add("visible");
   document.querySelectorAll("nav a").forEach(a => a.classList.remove("active"));
   document.getElementById("tab-lista").classList.add("active");
@@ -900,6 +901,7 @@ function mostrarLista() {
 function mostrarMapa() {
   document.getElementById("vista-lista").style.display = "none";
   document.getElementById("vista-mapa").style.display = "block";
+  document.getElementById("vista-publicar").style.display = "none"; // ← Cierra login/registro
   document.getElementById("botones-filtros-avisos").classList.add("visible");
   document.querySelectorAll("nav a").forEach(a => a.classList.remove("active"));
   document.getElementById("tab-mapa").classList.add("active");
