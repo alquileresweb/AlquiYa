@@ -83,42 +83,40 @@
   transform: translateY(-1px);
 }
 
-  /* PANEL DE UBICACIÓN - MODERNO Y CENTRADO */
+  /* PANEL DE UBICACIÓN - SOLO BORDE + ÍCONO */
 .ubicacion-panel {
-  background: linear-gradient(135deg, #3483fa, #2565c0);
-  color: white;
-  padding: 1.4rem 2rem;
-  margin: 25px auto 30px;
+  margin: 30px auto;
   max-width: 900px;
+  padding: 1.4rem 2rem;
+  border: 3px solid #3483fa;
   border-radius: 20px;
-  box-shadow: 0 12px 35px rgba(52, 131, 250, 0.35);
+  background: transparent;
+  color: #333;
+  font-size: 1.7rem;
+  font-weight: 700;
+  text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 14px;
-  font-size: 1.6rem;
-  font-weight: 700;
-  text-align: center;
-  animation: fadeInDown 0.8s ease;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 25px rgba(52, 131, 250, 0.15);
+  backdrop-filter: blur(8px);
+  animation: fadeInDown 0.7s ease;
 }
 
-.ubicacion-panel::before {
-  content: "";
-  font-size: 2rem;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+.ubicacion-panel strong {
+  color: #3483fa;
+  font-size: 1.8rem;
 }
 
 @media (max-width: 480px) {
   .ubicacion-panel {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     padding: 1.2rem 1.5rem;
     gap: 10px;
   }
-  .ubicacion-panel::before { font-size: 1.7rem; }
+  .ubicacion-panel strong { font-size: 1.6rem; }
 }
-
   /* === TARJETAS EN LISTA - ESTILOS CORREGIDOS Y ÚNICOS === */
   .property-grid {
     display: grid;
