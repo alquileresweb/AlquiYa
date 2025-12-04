@@ -594,19 +594,21 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
   <button onclick="toggleFiltros()">Filtros</button>
   <button onclick="mostrarAvisos()">Recibir avisos</button>
 </div>
+  
+<!-- PANEL FILTROS -->
 <div id="filtros">
-<input type="number" id="filtroAmb" placeholder="Nro de Ambientes">
-<input type="text" id="filtroMin" placeholder="Precio Mínimo" oninput="formatCurrency(this)">
-<input type="text" id="filtroMax" placeholder="Precio Máximo" oninput="formatCurrency(this)">
-<select id="filtroTipo">
-<option value="">Todos los tipos</option>
-<option value="Departamento">Departamento</option>
-<option value="Temporario">Alquiler Temporario</option>
-<option value="Local">Local Comercial</option>
-</select>
-<label><input type="checkbox" id="filtroMascotas"> Mascotas Permitidas</label>
-<label><input type="checkbox" id="filtroAmoblado"> Amoblado</label>
-<button onclick="cargarAlquileres()">Filtrar</button>
+  <input type="number" id="filtroAmb" placeholder="Nro de Ambientes">
+  <input type="text" id="filtroMin" placeholder="Precio Mínimo" oninput="formatCurrency(this)">
+  <input type="text" id="filtroMax" placeholder="Precio Máximo" oninput="formatCurrency(this)">
+  <select id="filtroTipo">
+    <option value="">Todos los tipos</option>
+    <option value="Departamento">Departamento</option>
+    <option value="Temporario">Alquiler Temporario</option>
+    <option value="Local">Local Comercial</option>
+  </select>
+  <label><input type="checkbox" id="filtroMascotas"> Mascotas Permitidas</label>
+  <label><input type="checkbox" id="filtroAmoblado"> Amoblado</label>
+  <button onclick="aplicarFiltros()">Filtrar</button>
 </div>
   
 <!-- PANEL AVISOS -->
