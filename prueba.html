@@ -792,10 +792,13 @@ function abrirModal(src, images, index = 0) {
 }
 function cerrarModal() { document.getElementById("modal-img").style.display = "none"; }
 function cambiarImagen(dir) {
+  if (currentImages.length === 0) return;
   currentImageIndex = (currentImageIndex + dir + currentImages.length) % currentImages.length;
-  document.getElementById("img-grande").src = currentImages[currentImageIndex];
+  const nuevaUrl = currentImages[currentImageIndex];
+  if (nuevaUrl && nuevaUrl.trim() !== "") {
+    document.getElementById("img-grande").src = nuevaUrl;
+  }
 }
-
   // FILTROS COMPARTIDOS
 function toggleFiltros() {
   const f = document.getElementById("filtros");
