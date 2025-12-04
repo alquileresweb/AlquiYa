@@ -805,13 +805,7 @@ function formatPrice(num) {
   const formatted = parseInt(clean, 10).toLocaleString('es-AR');
   return "$" + formatted.replace(/,/g, ".");
 }
-/* =========================
-UI NAV
-*/
-function toggleFiltros() {
-  const f = document.getElementById("filtros");
-  f.style.display = (f.style.display === "none" || f.style.display === "") ? "flex" : "none";
-}
+
   // MODAL IMÁGENES
 function abrirModal(src, images, index = 0) {
   currentImages = images;
