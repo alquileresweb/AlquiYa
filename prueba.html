@@ -897,9 +897,9 @@ async function cargarPropiedadesLista() {
       const fotos = (p.Fotos || "").split(",").map(f => f.trim()).filter(Boolean).map(driveUrlDirect);
       const primeraImg = fotos[0] || "https://via.placeholder.com/400x250?text=Sin+Imagen";
 
+      const titulo = getField(p, ["Título", "titulo", "Titulo", "Título Propiedad"]) || p.Tipo || "Propiedad";
       const precioRaw = toNumber(p.Precio);
       const precio = precioRaw ? "$" + precioRaw.toLocaleString("es-AR") : "Consultar";
-      const titulo = getField(p, ["Título", "titulo", "Titulo", "Título Propiedad"]) || p.Tipo || "Propiedad";
       const id = getField(p, ["ID Propiedad", "idPropiedad", "ID"]) || "";
 
       // === DATOS NUEVOS ===
