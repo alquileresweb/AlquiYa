@@ -20,22 +20,25 @@
   header { background: white; padding: 15px; text-align: center; }
   header img { max-width: 250px; }
   
-  /* Foto de perfil del dueño - esquina superior derecha */
-  .owner-profile-img {
+  /* Foto de perfil del dueño - dentro del panel, esquina superior derecha */
+  #owner-profile-img {
     position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 56px;
-    height: 56px;
+    top: 16px;
+    right: 16px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid white;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 4px solid white;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
     z-index: 10;
     cursor: pointer;
-    transition: transform 0.2s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
-  .owner-profile-img:hover { transform: scale(1.mw-parser-output .1); }
+  #owner-profile-img:hover {
+    transform: scale(1.12);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  }
  
   #propiedad-detalle {
     max-width: 700px; margin: 20px auto; padding: 20px;
@@ -77,19 +80,9 @@
   #modal-img .close-btn { top: 15px; right: 15px; background: red; color: white; }
   #modal-img .prev-btn { left: 15px; }
   #modal-img .next-btn { right: 15px; }
-  .marker-icon {
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:#3483fa;
-    color:white;
-    font-weight:bold;
-    border-radius:50%;
-    width:30px;
-    height:30px;
-    border:2px solid white;
-    box-shadow:0 0 2px #000;
-  }
+  /* Marcadores Leaflet */
+  .marker-propiedad { font-size: 32px; text-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+  .marker-estatico { font-size: 28px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
 </style>
 </head>
 <body>
@@ -133,40 +126,37 @@ function formatPrice(num) {
   const n = parseInt(String(num).replace(/[^\d]/g, ""), 10);
   return isNaN(n) ? "No disponible" : "$" + n.toLocaleString('es-AR');
 }
-  /* === FUNCIÓN PARA OBTENER FOTO DE PERFIL === */
-async function obtenerFotoPerfil(emailDueno) {
-  if (!emailDueno) return "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
+  /* === FOTO DE PERFIL DEL DUEÑO === */
+async function cargarFotoPerfil(email) {
+  if (!email) return "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
+
   try {
-    const res = await fetch(`${webAppURL}?action=obtenerFotoPerfil&email=${encodeURIComponent(emailDueno)}`);
+    const res = await fetch(`${webAppURL}?action=obtenerFotoPerfil&email=${encodeURIComponent(email)}`);
+    if (!res.ok) throw new Error("No response");
     const data = await res.json();
     return data.foto || "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
   } catch (e) {
-    console.error("Error al obtener foto de perfil:", e);
+    console.warn("No se pudo cargar foto de perfil:", e);
     return "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
   }
 }
 
-/* === INSERTAR FOTO DE PERFIL EN EL HEADER === */
 async function mostrarFotoPerfil(email) {
-  const header = document.querySelector("header");
+  const panel = document.getElementById("propiedad-detalle");
   let img = document.getElementById("owner-profile-img");
 
-  // Si ya existe, solo actualizamos src
   if (!img) {
     img = document.createElement("img");
     img.id = "owner-profile-img";
-    img.className = "owner-profile-img";
-    img.alt = "Foto del dueño";
-    header.appendChild(img);
+    img.alt = "Foto del propietario";
+    panel.appendChild(img);
   }
 
-  const fotoUrl = await obtenerFotoPerfil(email);
-  img.src = fotoUrl;
-  img.style.display = "block";
-
-  // Al hacer clic → abre en el modal grande
-  img.onclick = () => abrirModal(fotoUrl, [fotoUrl], 0);
+  const url = await cargarFotoPerfil(email);
+  img.src = url;
+  img.onclick = () => abrirModal(url, [url], 0);
 }
+  
 // Modal imágenes
 function abrirModal(src, images, index) {
   currentImages = images;
@@ -182,140 +172,149 @@ function cambiarImagen(dir) {
   currentImageIndex = (currentImageIndex + dir + currentImages.length) % currentImages.length;
   document.getElementById("img-grande").src = currentImages[currentImageIndex];
 }
-/* === INICIALIZAR MAPA CON MARCADORES ESTÁTICOS Y DE LA PROPIEDAD === */
-let markersLayer; // capa para poder limpiar si se quisiera
-function initMap(lat, lng, direccion, nroAmb, tipo, emailDueno) {
+/* === MAPA === */
+let markersLayer;
+function initMap(lat, lng, direccion, nroAmb, tipo) {
   const map = L.map("map").setView([lat, lng], 16);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
-  }).addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
   markersLayer = L.layerGroup().addTo(map);
-  // Marcador principal de la propiedad (más destacado)
-  const mainIcon = L.divIcon({
-    className: 'marker-main',
-    html: `<div style="background:#3483fa;color:white;padding:8px 12px;border-radius:12px;font-weight:bold;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
-             ${tipo === "Temporario" ? 'Clock Temporario' : tipo === "Local" ? 'Shopping Local' : `House ${nroAmb} amb.`}
-           </div>`,
-    iconSize: [140, 40],
-    iconAnchor: [70, 45]
+
+  // === MARCADOR DE LA PROPIEDAD (AZUL) ===
+  let iconHtml;
+  if (tipo === "Temporario") {
+    iconHtml = 'clock';
+  } else if (tipo === "Local") {
+    iconHtml = 'shopping bag';
+  } else {
+    iconHtml = `house<span style="font-size:14px;margin-left:4px;">${nroAmb || ''}</span>`;
+  }
+
+  const propIcon = L.divIcon({
+    className: 'marker-propiedad',
+    html: `<div style="background:#3483fa;color:white;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 4px 12px rgba(52,131,250,0.5);border:3px solid white;">${iconHtml}</div>`,
+    iconSize: [44, 44],
+    iconAnchor: [22, 44]
   });
-  L.marker([lat, lng], { icon: mainIcon })
+
+  L.marker([lat, lng], { icon: propIcon })
     .addTo(markersLayer)
-    .bindPopup(`<b style="font-size:16px;">${direccion}</b><br>${tipo}`)
+    .bindPopup(`<b style="font-size:17px;color:#3483fa;">${direccion}</b><br>${tipo}`)
     .openPopup();
-  // === MARCADORES ESTÁTICOS (sin cambios) ===
-  const uniIcon = L.divIcon({ className: 'marker-icon', html: '🎓', iconSize: [30, 30], iconAnchor: [15, 15] });
+
+  // === MARCADORES ESTÁTICOS (VERDES) ===
+  const verdeIcon = L.divIcon({
+    className: 'marker-estatico',
+    html: `<div style="background:#28a745;color:white;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 3px 10px rgba(40,167,69,0.5);border:3px solid white;">`,
+    iconSize: [36, 36],
+    iconAnchor: [18, 36]
+  });
+
+const uniIcon = L.divIcon({ className: 'marker-icon', html: '🎓', iconSize: [30, 30], iconAnchor: [15, 15] });
 const hospIcon = L.divIcon({ className: 'marker-icon', html: '🏥', iconSize: [30, 30], iconAnchor: [15, 15] });
 const superIcon = L.divIcon({ className: 'marker-icon', html: '🛒', iconSize: [30, 30], iconAnchor: [15, 15] });
 const busIcon = L.divIcon({ className: 'marker-icon', html: '🚌', iconSize: [30, 30], iconAnchor: [15, 15] });
 const policeIcon = L.divIcon({ className: 'marker-icon', html: '👮', iconSize: [30, 30], iconAnchor: [15, 15] });
-  L.marker([-28.5509978, -56.0409727], { icon: uniIcon }).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
-  L.marker([-28.5551127, -56.0389282], { icon: hospIcon }).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
-  L.marker([-28.5519443, -56.0401962], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado La Bomba</b>");
-  L.marker([-28.5472635, -56.0438082], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermermercado La Previsora</b>");
-  L.marker([-28.5462903, -56.0440365], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado La Economía</b>");
-  L.marker([-28.5468697, -56.0432862], { icon: busIcon }).addTo(markersLayer).bindPopup("<b>Terminal de Omnibus</b>");
-  L.marker([-28.5487787, -56.0396171], { icon: policeIcon }).addTo(markersLayer).bindPopup("<b>Policía</b>");
-  // Opcional: ajustar vista para que todo quepa
-  const group = new L.featureGroup(markersLayer.getLayers());
-  map.fitBounds(group.getBounds().pad(0.2));
+
+  L.marker([-28.5509978, -56.0409727], { icon: L.divIcon({...verdeIcon, html: verdeIcon.html + icons.uni}) }).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
+  L.marker([-28.5551127, -56.0389282], { icon: L.divIcon({...verdeIcon, html: verdeIcon.html + icons.hosp}) }).addTo(markersLayer).bindPopup("<b>Hospital San Juan Bautista</b>");
+  L.marker([-28.5519443, -56.0401962], { icon: L.divIcon({...verdeIcon, html: verdeIcon.html + icons.super}) }).addTo(markersLayer).bindPopup("<b>Supermercado La Bomba</b>");
+  L.marker([-28.5472635, -56.0438082], { icon: L.divIcon({...verdeIcon, html: verdeIcon.html + icons.super}) }).addTo(markersLayer).bindPopup("<b>Supermercado La Previsora</b>");
+  L.marker([-28.5462903, -56.0440365], { icon: L.divIcon({...verdeIcon, html: verdeIcon.html + icons.super}) }).addTo(markersLayer).bindPopup("<b>Supermercado La Economía</b>");
+  L.marker([-28.5468697, -56.0432862], { icon: L.divIcon({...verdeIcon, html: verdeIcon.html + icons.bus}) }).addTo(markersLayer).bindPopup("<b>Terminal de Ómnibus</b>");
+  L.marker([-28.5487787, -56.0396171], { icon: L.divIcon({...verdeIcon, html: verdeIcon.html + icons.police}) }).addTo(markersLayer).bindPopup("<b>Policía</b>");
+
+  map.fitBounds(markersLayer.getBounds().pad(0.1));
 }
-// Carga principal
-window.onload = () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const id = urlParams.get("id");
-  const loading = document.getElementById("loading-msg");
-  const detalle = document.getElementById("propiedad-detalle");
-  if (!id) {
-    loading.style.display = "none";
-    detalle.innerHTML = "<h2>Error: No se proporcionó ID</h2>";
-    console.error("Falta parámetro id en la URL");
-    return;
-  }
-  const url = `${webAppURL}?action=getAlquiler&id=${encodeURIComponent(id)}`;
-  log("Solicitando datos →", url);
-  fetch(url, { cache: "no-store" })
-    .then(r => { log("Status:", r.status); return r.json(); })
-    .then(data => {
-      loading.style.display = "none";
-      log("Datos recibidos:", data);
-      if (!data.success || !data.alquiler) {
-        detalle.innerHTML = "<h2>Propiedad no encontrada</h2>";
-        return;
-      }
-      const a = data.alquiler;
-      const tipo = getField(a, ["Tipo"]) || "Sin tipo";
-      const direccion = getField(a, ["Direccion", "Dirección", "Domicilio"]) || "Sin dirección";
-      const precio = formatPrice(a.Precio);
-      detalle.innerHTML = `
-        <h2>${direccion}</h2>
-        <h3 style="color:#3483fa;">
-          ${tipo === "Temporario" ? "Alquiler Temporario" : tipo === "Local" ? "Local Comercial" : "Alquiler Permanente"}
-        </h3>
-        <hr style="border:0;border-top:1px solid #ddd;margin:15px 0;">
-      `;
-      // Campos según tipo
-      const campos = tipo === "Temporario" || tipo === "Local" ? [
-        ["Dirección", direccion],
-        ["Información de ingreso", getField(a, ["Informacion ingreso", "Información ingreso"]) || "No especificada"],
-        ["Detalles", getField(a, ["Detalles", "Detalle", "Descripcion"]) || "Sin detalles"]
-      ] : [
-        ["Dirección", direccion],
-        ["Ambientes", getField(a, ["Nro Ambientes", "Ambientes", "Nro"]) || "-"],
-        ["Precio", precio],
-        ["Información de ingreso", getField(a, ["Informacion ingreso", "Información ingreso"]) || "No especificada"],
-        ["Detalles", getField(a, ["Detalles", "Detalle", "Descripcion"]) || "Sin detalles"],
-        ["Mascotas", getField(a, ["Mascotas"]) || "Consultar"]
-      ];
-      campos.forEach(([label, valor]) => {
-        if (valor && valor !== "-" && valor !== "Consultar" && valor !== "No disponible" || label === "Precio") {
-          detalle.innerHTML += `<p><b>${label}:</b> ${valor}</p>`;
-        }
-      });
-      // Imágenes
-      const fotosRaw = getField(a, ["Fotos", "Imagenes", "Imágenes", "images", "FOTOS"]);
-      if (fotosRaw) {
-        const urls = fotosRaw.split(",").map(u => u.trim()).filter(Boolean)
-          .map(driveUrlDirect)
-          .filter(u => u.startsWith("http"));
-        if (urls.length) {
-          const cont = document.createElement("div");
-          cont.id = "imagenes-container";
-          urls.forEach((url, i) => {
-            const img = document.createElement("img");
-            img.src = url; img.alt = `Foto ${i+1}`;
-            img.onclick = () => abrirModal(url, urls, i);
-            cont.appendChild(img);
-          });
-          detalle.appendChild(cont);
-        }
-      }
-      // Mapa
-      const lat = parseFloat(getField(a, ["Lat", "Latitude", "Latitud"]));
-      const lng = parseFloat(getField(a, ["Lng", "Longitude", "Longitud"]));
-      if (!isNaN(lat) && !isNaN(lng)) {
-        const mapDiv = document.createElement("div");
-        mapDiv.id = "map";
-        detalle.appendChild(mapDiv);
-        setTimeout(() => initMap(lat, lng, direccion, toInt(getField(a, ["Nro Ambientes", "Ambientes"])), tipo), 300);
-      }
-      // Botones
-      if (a.Contacto) {
-        const btnWA = document.createElement("button");
-        btnWA.textContent = "Contactar por WhatsApp";
-        btnWA.onclick = () => window.open(`https://wa.me/${a.Contacto}?text=${encodeURIComponent("Hola, vengo desde AlquiYa y quiero consultar por la propiedad de " + direccion)}`, "_blank");
-        detalle.appendChild(btnWA);
-      }
-      const btnVolver = document.createElement("button");
-      btnVolver.textContent = "Volver al Mapa";
-      btnVolver.onclick = () => location.href = "index.html";
-      detalle.appendChild(btnVolver);
-    })
-    .catch(err => {
-      loading.style.display = "none";
-      detalle.innerHTML = "<h2>Error de conexión</h2><p>No se pudo cargar la propiedad.</p>";
-      console.error("Error:", err);
+
+/* === CARGA PRINCIPAL === */
+window.onload = async () => {
+  const params = new URLSearchParams(location.search);
+  const id = params.get("id");
+  if (!id) { document.getElementById("loading-msg").textContent = "Error: Falta ID"; return; }
+
+  try {
+    const res = await fetch(`${webAppURL}?action=getAlquiler&id=${id}`);
+    const data = await res.json();
+    document.getElementById("loading").style.display = "none";
+
+    if (!data.success || !data.alquiler) {
+      document.getElementById("propiedad-detalle").innerHTML = "<h2>Propiedad no encontrada</h2>";
+      return;
+    }
+
+    const a = data.alquiler;
+    const tipo = getField(a, ["Tipo"]) || "Permanente";
+    const direccion = getField(a, ["Direccion","Dirección","Domicilio"]) || "Sin dirección";
+    const precio = formatPrice(a.Precio);
+
+    // FOTO DE PERFIL (ahora sí se inserta dentro del panel)
+    const emailDueno = getField(a, ["Email","email","Correo","Dueño","Propietario"]);
+    if (emailDueno) mostrarFotoPerfil(emailDueno);
+
+    const detalle = document.getElementById("propiedad-detalle");
+    detalle.innerHTML = `
+      <h2>${direccion}</h2>
+      <h3>${tipo === "Temporario" ? "Alquiler Temporario" : tipo === "Local" ? "Local Comercial" : "Alquiler Permanente"}</h3>
+      <hr style="border-top:1px solid #ddd;margin:20px 0;">
+    `;
+
+    const campos = tipo === "Temporario" || tipo === "Local" ? [
+      ["Dirección", direccion],
+      ["Información de ingreso", getField(a, ["Informacion ingreso","Información ingreso"]) || "No especificada"],
+      ["Detalles", getField(a, ["Detalles","Detalle","Descripcion"]) || "Sin descripción"]
+    ] : [
+      ["Dirección", direccion],
+      ["Ambientes", getField(a, ["Nro Ambientes","Ambientes","Nro"]) || "-"],
+      ["Precio", precio],
+      ["Información de ingreso", getField(a, ["Informacion ingreso","Información ingreso"]) || "No especificada"],
+      ["Detalles", getField(a, ["Detalles","Detalle","Descripcion"]) || "Sin descripción"],
+      ["Mascotas", getField(a, ["Mascotas"]) || "Consultar"]
+    ];
+
+    campos.forEach(([l, v]) => {
+      if (v) detalle.innerHTML += `<p><b>${l}:</b> ${v}</p>`;
     });
+
+    // Imágenes
+    const fotos = getField(a, ["Fotos","Imagenes","Imágenes","images"]).split(",")
+      .map(u => driveUrlDirect(u.trim())).filter(Boolean);
+    if (fotos.length) {
+      const cont = document.createElement("div");
+      cont.id = "imagenes-container";
+      fotos.forEach((url,i) => {
+        const img = document.createElement("img");
+        img.src = url; img.onclick = () => abrirModal(url, fotos, i);
+        cont.appendChild(img);
+      });
+      detalle.appendChild(cont);
+    }
+
+    // Mapa
+    const lat = parseFloat(getField(a, ["Lat","Latitude","Latitud"]));
+    const lng = parseFloat(getField(a, ["Lng","Longitude","Longitud"]));
+    if (lat && lng) {
+      const div = document.createElement("div");
+      div.id = "map";
+      detalle.appendChild(div);
+      setTimeout(() => initMap(lat, lng, direccion, toInt(getField(a, ["Nro Ambientes","Ambientes"])), tipo), 200);
+    }
+
+    // Botones
+    if (a.Contacto) {
+      const btn = document.createElement("button");
+      btn.textContent = "Contactar por WhatsApp";
+      btn.onclick = () => open(`https://wa.me/${a.Contacto}?text=Holas, consulto por ${direccion}`, "_blank");
+      detalle.appendChild(btn);
+    }
+    const volver = document.createElement("button");
+    volver.textContent = "Volver al Mapa";
+    volver.onclick = () => location.href = "index.html";
+    detalle.appendChild(volver);
+
+  } catch (e) {
+    document.getElementById("loading-msg").textContent = "Error de conexión";
+    console.error(e);
+  }
 };
 </script>
 </body>
