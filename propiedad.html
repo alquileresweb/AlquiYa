@@ -80,9 +80,28 @@
   #modal-img .close-btn { top: 15px; right: 15px; background: red; color: white; }
   #modal-img .prev-btn { left: 15px; }
   #modal-img .next-btn { right: 15px; }
-  /* Marcadores Leaflet */
-  .marker-propiedad { font-size: 32px; text-shadow: 0 2px 6px rgba(0,0,0,0.4); }
-  .marker-estatico { font-size: 28px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+  /* Estilos para marcadores personalizados */
+  .marker-icon-verde {
+    background: #4CAF50 !important;
+    color: white;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    border: 3px solid white;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+  }
+  .marker-icon-azul {
+    background: #1976D2 !important;
+    color: white;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    border: 4px solid white;
+    box-shadow: 0 5px 15px rgba(25,118,210,0.5);
+  }
 </style>
 </head>
 <body>
@@ -172,58 +191,63 @@ function cambiarImagen(dir) {
   currentImageIndex = (currentImageIndex + dir + currentImages.length) % currentImages.length;
   document.getElementById("img-grande").src = currentImages[currentImageIndex];
 }
-/* === MAPA === */
-let markersLayer;
-function initMap(lat, lng, direccion, nroAmb, tipo) {
-  const map = L.map("map").setView([lat, lng], 16);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-  markersLayer = L.layerGroup().addTo(map);
-
-  // === MARCADOR DE LA PROPIEDAD (AZUL) ===
+// === MARCADOR DE LA PROPIEDAD (AZUL DESTACADO ===
   let iconHtml;
   if (tipo === "Temporario") {
-    iconHtml = 'clock';
+    iconHtml = '⌛';
   } else if (tipo === "Local") {
-    iconHtml = 'shopping bag';
+    iconHtml = '🛍️';
   } else {
-    iconHtml = `house<span style="font-size:14px;margin-left:4px;">${nroAmb || ''}</span>`;
+    iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-") +
+      '</span>';
   }
 
-  const propIcon = L.divIcon({
-    className: 'marker-propiedad',
-    html: `<div style="background:#3483fa;color:white;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 4px 12px rgba(52,131,250,0.5);border:3px solid white;">${iconHtml}</div>`,
+  const azulIcon = L.divIcon({
+    className: 'marker-icon-azul',
+    html: iconHtml,
     iconSize: [44, 44],
-    iconAnchor: [22, 44]
+    iconAnchor: [22, 44],
+    popupAnchor: [0, -40]
   });
 
-  L.marker([lat, lng], { icon: propIcon })
+  L.marker([lat, lng], { icon: azulIcon })
     .addTo(markersLayer)
-    .bindPopup(`<b style="font-size:17px;color:#3483fa;">${direccion}</b><br>${tipo}`)
+    .bindPopup(`<b style="font-size:17px;color:#1976D2;">${direccion}</b><br><i>${tipo}</i>`)
     .openPopup();
 
-  // === MARCADORES ESTÁTICOS (VERDES) ===
+  // === MARCADORES ESTÁTICOS VERDES CON EMOJIS ORIGINALES ===
   const verdeIcon = L.divIcon({
-    className: 'marker-estatico',
-    html: `<div style="background:#28a745;color:white;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 3px 10px rgba(40,167,69,0.5);border:3px solid white;">`,
+    className: 'marker-icon-verde',
+    html: '', // se rellenará por cada uno
     iconSize: [36, 36],
-    iconAnchor: [18, 36]
+    iconAnchor: [18, 36],
+    popupAnchor: [0, -34]
   });
 
-const uniIcon = L.divIcon({ className: 'marker-icon', html: '🎓', iconSize: [30, 30], iconAnchor: [15, 15] });
-const hospIcon = L.divIcon({ className: 'marker-icon', html: '🏥', iconSize: [30, 30], iconAnchor: [15, 15] });
-const superIcon = L.divIcon({ className: 'marker-icon', html: '🛒', iconSize: [30, 30], iconAnchor: [15, 15] });
-const busIcon = L.divIcon({ className: 'marker-icon', html: '🚌', iconSize: [30, 30], iconAnchor: [15, 15] });
-const policeIcon = L.divIcon({ className: 'marker-icon', html: '👮', iconSize: [30, 30], iconAnchor: [15, 15] });
+  L.marker([-28.5509978, -56.0409727], { icon: L.divIcon({...verdeIcon, html: '🎓'}) })
+    .addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
 
-  L.marker([-28.5509978, -56.0409727], { icon: L.divIcon({...verdeIcon, html: verdeIcon.html + icons.uni}) }).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
-  L.marker([-28.5551127, -56.0389282], { icon: L.divIcon({...verdeIcon, html: verdeIcon.html + icons.hosp}) }).addTo(markersLayer).bindPopup("<b>Hospital San Juan Bautista</b>");
-  L.marker([-28.5519443, -56.0401962], { icon: L.divIcon({...verdeIcon, html: verdeIcon.html + icons.super}) }).addTo(markersLayer).bindPopup("<b>Supermercado La Bomba</b>");
-  L.marker([-28.5472635, -56.0438082], { icon: L.divIcon({...verdeIcon, html: verdeIcon.html + icons.super}) }).addTo(markersLayer).bindPopup("<b>Supermercado La Previsora</b>");
-  L.marker([-28.5462903, -56.0440365], { icon: L.divIcon({...verdeIcon, html: verdeIcon.html + icons.super}) }).addTo(markersLayer).bindPopup("<b>Supermercado La Economía</b>");
-  L.marker([-28.5468697, -56.0432862], { icon: L.divIcon({...verdeIcon, html: verdeIcon.html + icons.bus}) }).addTo(markersLayer).bindPopup("<b>Terminal de Ómnibus</b>");
-  L.marker([-28.5487787, -56.0396171], { icon: L.divIcon({...verdeIcon, html: verdeIcon.html + icons.police}) }).addTo(markersLayer).bindPopup("<b>Policía</b>");
+  L.marker([-28.5551127, -56.0389282], { icon: L.divIcon({...verdeIcon, html: '🏥'}) })
+    .addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
 
-  map.fitBounds(markersLayer.getBounds().pad(0.1));
+  L.marker([-28.5519443, -56.0401962], { icon: L.divIcon({...verdeIcon, html: '🛒'}) })
+    .addTo(markersLayer).bindPopup("<b>Supermercado La Bomba</b>");
+
+  L.marker([-28.5472635, -56.0438082], { icon: L.divIcon({...verdeIcon, html: '🛒'}) })
+    .addTo(markersLayer).bindPopup("<b>Supermercado La Previsora</b>");
+
+  L.marker([-28.5462903, -56.0440365], { icon: L.divIcon({...verdeIcon, html: '🛒'}) })
+    .addTo(markersLayer).bindPopup("<b>Supermercado La Economía</b>");
+
+  L.marker([-28.5468697, -56.0432862], { icon: L.divIcon({...verdeIcon, html: '🚌'}) })
+    .addTo(markersLayer).bindPopup("<b>Terminal de Ómnibus</b>");
+
+  L.marker([-28.5487787, -56.0396171], { icon: L.divIcon({...verdeIcon, html: '👮'}) })
+    .addTo(markersLayer).bindPopup("<b>Policía</b>");
+
+  // Ajustar zoom para que se vea todo
+  const group = new L.featureGroup(markersLayer.getLayers());
+  map.fitBounds(group.getBounds().pad(0.3));
 }
 
 /* === CARGA PRINCIPAL === */
