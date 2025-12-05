@@ -41,20 +41,24 @@
     max-width: 700px; margin: 20px auto; padding: 20px;
     border: 2px solid #3483fa; border-radius: 10px;
     background: #f9f9f9; box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    position: relative; /* para la foto de perfil dentro del detalle si quisieras */
   }
   #propiedad-detalle h2 { color: #3483fa; margin-top: 0; }
   #propiedad-detalle h3 { color: #3483fa; margin: 5px 0 15px; font-weight: normal; }
   #propiedad-detalle p { margin: 12px 0; line-height: 1.5; }
+
   #propiedad-detalle button {
     background: #25D366; color: white; border: none;
     padding: 12px 20px; border-radius: 8px; cursor: pointer;
     font-size: 16px; margin: 10px 10px 0 0;
   }
   #propiedad-detalle button:hover { background: #1ebe57; }
+
   #loading-msg {
     text-align: center; font-weight: bold; color: #3483fa;
     padding: 40px; font-size: 18px;
   }
+  
   #imagenes-container {
     display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;
   }
@@ -77,6 +81,10 @@
   #modal-img .close-btn { top: 15px; right: 15px; background: red; color: white; }
   #modal-img .prev-btn { left: 15px; }
   #modal-img .next-btn { right: 15px; }
+  
+  /* Iconos personalizados para marcadores estáticos */
+  .markerongan-icon { font-size: 26px; text-align: center; }
+  .marker-icon { font-size: 28px; text-align: center; }
 </style>
 </head>
 <body>
