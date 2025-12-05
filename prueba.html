@@ -856,7 +856,7 @@ async function irADetalle(id) {
   window.open(`https://www.alquiya.com.ar/propiedad.html?id=${id}`, "_blank");
 }
 
-// CARGAR LISTA CON FILTROS + TODOS LOS NUEVOS REQUISITOS
+// CARGAR LISTA - VERSIÓN FINAL CON TUS ÚLTIMOS REQUISITOS
 async function cargarPropiedadesLista() {
   const contenedor = document.getElementById("lista-propiedades");
   contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px;font-size:1.4rem;color:#666;">Cargando...</div>';
@@ -902,10 +902,10 @@ async function cargarPropiedadesLista() {
       const titulo = getField(p, ["Título", "titulo", "Titulo", "Título Propiedad"]) || p.Tipo || "Propiedad";
       const id = getField(p, ["ID Propiedad", "idPropiedad", "ID"]) || "";
 
-      // === NUEVOS DATOS REQUERIDOS ===
+      // === DATOS NUEVOS ===
       const ambientesStr = getField(p, ["Nro Ambientes", "Ambientes", "Ambientes "]) || "0";
       const nroAmbientes = toInt(ambientesStr);
-      const dormitorios = nroAmbientes > 0 ? nroAmbientes - 1 : 0; // 1 ambiente = 0 dormitorios
+      const dormitorios = nroAmbientes > 0 ? nroAmbientes - 1 : 0; // 1 amb = 0 dormitorios
       const subtipo = getField(p, ["Subtipo", "Subtipo de propiedad", "R"])?.trim(); // COLUMNA R
 
       const card = document.createElement("div");
@@ -915,37 +915,37 @@ async function cargarPropiedadesLista() {
         <div style="position: relative; border-radius: 15px; overflow: hidden;">
           <img src="${primeraImg}" alt="${titulo}" style="width:100%; height:250px; object-fit:cover; display:block;">
 
-          <!-- SUBTIPO (Columna R) - Arriba a la izquierda -->
+          <!-- SUBTIPO (columna R) - Arriba izquierda -->
           ${subtipo ? `
             <div style="position:absolute; top:12px; left:12px; background:rgba(0,0,0,0.7); color:white; padding:7px 14px; border-radius:50px; font-size:0.95rem; font-weight:600; backdrop-filter:blur(4px); z-index:2;">
               ${subtipo}
             </div>
           ` : ''}
 
-          <!-- DORMITORIOS (Icono + número) - Arriba a la derecha -->
-          <div style="position:absolute; top:12px; right:12px; background:var(--primary); color:white; padding:10px 16px; border-radius:50px; font-size:1.4rem; font-weight:bold; box-shadow:0 4px 15px rgba(52,131,250,0.4); z-index:2;">
-            ${dormitorios}
-          </div>
-
-          <!-- PRECIO + AMBIENTES (Abajo, barra negra) -->
-          <div style="position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent, rgba(0,0,0,0.85)); padding:30px 16px 16px; text-align:center; z-index:2;">
-            <div style="color:white; font-size:1.65rem; font-weight:bold; text-shadow:0 2px 8px rgba(0,0,0,0.6);">
-              ${precio}
-            </div>
-            <div style="color:#ffffff; font-size:1.1rem; margin-top:6px; opacity:0.95; font-weight:500;">
-              ${nroAmbientes === 1 ? "Monoambiente" : nroAmbientes + " ambientes"}
-            </div>
+          <!-- DORMITORIOS con emoji - Abajo izquierda -->
+          <div style="position:absolute; bottom:12px; left:12px; background:rgba(52,131,250,0.95); color:white; padding:9px 16px; border-radius:50px; font-size:1.4rem; font-weight:bold; box-shadow:0 4px 15px rgba(52,131,250,0.4); z-index:2; display:flex; align-items:center; gap:6px;">
+            ${dormitorios} <span style="font-size:1.3rem; margin-top:2px;">Dormitorios</span>
           </div>
         </div>
 
-        <div class="property-title" style="margin-top:18px;">${titulo}</div>
-        <div style="color:#666; font-size:0.95rem; margin-bottom:12px;">
+        <!-- PRECIO + AMBIENTES (en el panel, NO superpuesto) -->
+        <div class="property-price" style="margin:18px 0 8px; font-size:1.65rem; color:#28a745;">
+          ${precio}
+        </div>
+        <div style="color:#444; font-size:1.15rem; font-weight:600; margin-bottom:12px;">
+          ${nroAmbientes === 1 ? "Monoambiente" : nroAmbientes + " ambientes"}
+        </div>
+
+        <div class="property-title" style="margin:10px 0 8px; font-size:1.5rem;">${titulo}</div>
+        
+        <div style="color:#666; font-size:0.95rem; margin-bottom:15px;">
           ${p.Tipo || "Propiedad"} • ${p.Operacion || "Alquiler"}
         </div>
+
         <button class="ver-detalles-btn">Ver detalles</button>
       `;
 
-      // Eventos
+      // Eventos (sin cambios)
       card.querySelector("img").onclick = e => {
         e.stopPropagation();
         if (fotos.length) abrirModal(fotos[0], fotos);
