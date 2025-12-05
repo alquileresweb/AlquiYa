@@ -19,46 +19,24 @@
   body { margin: 0; font-family: Arial, sans-serif; }
   header { background: white; padding: 15px; text-align: center; }
   header img { max-width: 250px; }
-
-  /* Foto de perfil del dueño - esquina superior derecha */
-  .owner-profile-img {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid white;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    z-index: 10;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-  }
-  .owner-profile-img:hover { transform: scale(1.1); }
-  
   #propiedad-detalle {
     max-width: 700px; margin: 20px auto; padding: 20px;
     border: 2px solid #3483fa; border-radius: 10px;
     background: #f9f9f9; box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    position: relative; /* para la foto de perfil dentro del detalle si quisieras */
   }
   #propiedad-detalle h2 { color: #3483fa; margin-top: 0; }
   #propiedad-detalle h3 { color: #3483fa; margin: 5px 0 15px; font-weight: normal; }
   #propiedad-detalle p { margin: 12px 0; line-height: 1.5; }
-
   #propiedad-detalle button {
     background: #25D366; color: white; border: none;
     padding: 12px 20px; border-radius: 8px; cursor: pointer;
     font-size: 16px; margin: 10px 10px 0 0;
   }
   #propiedad-detalle button:hover { background: #1ebe57; }
-
   #loading-msg {
     text-align: center; font-weight: bold; color: #3483fa;
     padding: 40px; font-size: 18px;
   }
-  
   #imagenes-container {
     display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;
   }
@@ -81,17 +59,11 @@
   #modal-img .close-btn { top: 15px; right: 15px; background: red; color: white; }
   #modal-img .prev-btn { left: 15px; }
   #modal-img .next-btn { right: 15px; }
-  
-  /* Iconos personalizados para marcadores estáticos */
-  .markerongan-icon { font-size: 26px; text-align: center; }
-  .marker-icon { font-size: 28px; text-align: center; }
 </style>
 </head>
 <body>
 <header>
   <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya">
-  <!-- Foto de perfil del dueño (se insertará con JS) -->
-  <img id="owner-profile" class="owner-profile-img" src="" alt="Foto del dueño" style="display:none;">
 </header>
 
 <div id="loading-msg">Cargando datos de la propiedad...</div>
@@ -134,17 +106,6 @@ function formatPrice(num) {
   const n = parseInt(String(num).replace(/[^\d]/g, ""), 10);
   return isNaN(n) ? "No disponible" : "$" + n.toLocaleString('es-AR');
 }
-  /* === OBTENER FOTO DE PERFIL DEL DUEÑO === */
-async function obtenerFotoPerfil(emailDueno) {
-  if (!emailDueno) return "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
-  try {
-    const res = await fetch(`${webAppURL}?action=obtenerFotoPerfil&email=${encodeURIComponent(emailDueno)}`);
-    const data = await res.json();
-    return data.foto || "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
-  } catch (e) {
-    return "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
-  }
-}
 
 // Modal imágenes
 function abrirModal(src, images, index) {
@@ -162,48 +123,18 @@ function cambiarImagen(dir) {
   document.getElementById("img-grande").src = currentImages[currentImageIndex];
 }
 
-function initMap(lat, lng, direccion, nroAmb, tipo, emailDueno) {
+// Mapa
+function initMap(lat, lng, direccion, nroAmb, tipo) {
   const map = L.map("map").setView([lat, lng], 16);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
-  }).addTo(map);
+  const iconHtml = tipo === "Temporario" ? 'Clock' : tipo === "Local" ? 'Shopping' : `House<span style="font-size:10px;">${nroAmb}</span>`;
+  const icon = L.divIcon({ className: 'marker-icon', html: iconHtml, iconSize: [30,30], iconAnchor: [15,30] });
 
-  markersLayer = L.layerGroup().addTo(map);
-
-  // Marcador principal de la propiedad (más destacado)
-  const mainIcon = L.divIcon({
-    className: 'marker-main',
-    html: `<div style="background:#3483fa;color:white;padding:8px 12px;border-radius:12px;font-weight:bold;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
-             ${tipo === "Temporario" ? 'Clock Temporario' : tipo === "Local" ? 'Shopping Local' : `House ${nroAmb} amb.`}
-           </div>`,
-    iconSize: [140, 40],
-    iconAnchor: [70, 45]
-  });
-
-  L.marker([lat, lng], { icon: mainIcon })
-    .addTo(markersLayer)
-    .bindPopup(`<b style="font-size:16px;">${direccion}</b><br>${tipo}`)
+  L.marker([lat, lng], { icon })
+    .addTo(map)
+    .bindPopup(`<b>${direccion}</b>`)
     .openPopup();
-
-  // === MARCADORES ESTÁTICOS ===
-  const uniIcon = L.divIcon({ className: 'markerongan-icon', html: 'University', iconSize: [30, 30], iconAnchor: [15, 15] });
-  const hospIcon = L.divIcon({ className: 'marker-icon', html: 'Hospital', iconSize: [30, 30], iconAnchor: [15, 15] });
-  const superIcon = L.divIcon({ className: 'marker-icon', html: 'Shopping Cart', iconSize: [30, 30], iconAnchor: [15, 15] });
-  const busIcon = L.divIcon({ className: 'marker-icon', html: 'Bus', iconSize: [30, 30], iconAnchor: [15, 15] });
-  const policeIcon = L.divIcon({ className: 'marker-icon', html: 'Police', iconSize: [30, 30], iconAnchor: [15, 15] });
-
-  L.marker([-28.5509978, -56.0409727], { icon: uniIcon }).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
-  L.marker([-28.5551127, -56.0389282], { icon: hospIcon }).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
-  L.marker([-28.5519443, -56.0401962], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado La Bomba</b>");
-  L.marker([-28.5472635, -56.0438082], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado La Previsora</b>");
-  L.marker([-28.5462903, -56.0440365], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado La Economía</b>");
-  L.marker([-28.5468697, -56.0432862], { icon: busIcon }).addTo(markersLayer).bindPopup("<b>Terminal de Ómnibus</b>");
-  L.marker([-28.5487787, -56.0396171], { icon: policeIcon }).addTo(markersLayer).bindPopup("<b>Policía</b>");
-
-  // Opcional: ajustar vista para que todo quepa
-  const group = new L.featureGroup(markersLayer.getLayers());
-  map.fitBounds(group.getBounds().pad(0.2));
 }
 
 // Carga principal
