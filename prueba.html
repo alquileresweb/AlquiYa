@@ -856,7 +856,7 @@ async function irADetalle(id) {
   window.open(`https://www.alquiya.com.ar/propiedad.html?id=${id}`, "_blank");
 }
 
-// CARGAR LISTA - VERSIÓN FINAL DEFINITIVA (EXACTAMENTE COMO PEDISTE)
+// CARGAR LISTA - VERSIÓN 100% FINAL Y DEFINITIVA
 async function cargarPropiedadesLista() {
   const contenedor = document.getElementById("lista-propiedades");
   contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px;font-size:1.4rem;color:#666;">Cargando...</div>';
@@ -902,11 +902,24 @@ async function cargarPropiedadesLista() {
       const titulo = getField(p, ["Título", "titulo", "Titulo", "Título Propiedad"]) || p.Tipo || "Propiedad";
       const id = getField(p, ["ID Propiedad", "idPropiedad", "ID"]) || "";
 
-      // === DATOS REQUERIDOS ===
+      // === NRO DE AMBIENTES ===
       const ambientesStr = getField(p, ["Nro Ambientes", "Ambientes", "Ambientes "]) || "1";
       const nroAmbientes = toInt(ambientesStr);
       const textoAmbientes = nroAmbientes === 1 ? "Monoambiente" : nroAmbientes + " ambientes";
-      const subtipo = getField(p, ["Subtipo", "Subtipo de propiedad", "R"])?.trim(); // COLUMNA R
+
+      // === SUBTIPO (columna R) → solo si es "Alquiler" o "Venta" →
+      const subtipoRaw = getField(p, ["Subtipo", "Subtipo de propiedad", "R"])?.trim().toLowerCase();
+      let etiquetaOperacion = "";
+      if (subtipoRaw === "alquiler") {
+        etiquetaOperacion = `<div style="position:absolute; top:12px; left:12px; background:var(--primary); color:white; padding:9px 18px; border-radius:50px; font-size:1rem; font-weight:bold; box-shadow:0 4px 15px rgba(52,131,250,0.4); z-index:2;">
+          Alquiler
+        </div>`;
+      } else if (subtipoRaw === "venta") {
+        etiquetaOperacion = `<div style="position:absolute; top:12px; left:12px; background:#e74c3c; color:white; padding:9px 18px; border-radius:50px; font-size:1rem; font-weight:bold; box-shadow:0 4px 15px rgba(231,76,60,0.4); z-index:2;">
+          Venta
+        </div>`;
+      }
+      // Si es otro valor (A estrenar, etc.), no se muestra nada
 
       const card = document.createElement("div");
       card.className = "property-card";
@@ -915,39 +928,32 @@ async function cargarPropiedadesLista() {
         <div style="position: relative; border-radius: 15px; overflow: hidden;">
           <img src="${primeraImg}" alt="${titulo}" style="width:100%; height:250px; object-fit:cover; display:block;">
 
-          <!-- SUBTIPO (columna R) - Arriba izquierda -->
-          ${subtipo ? `
-            <div style="position:absolute; top:12px; left:12px; background:rgba(0,0,0,0.75); color:white; padding:8px 16px; border-radius:50px; font-size:0.95rem; font-weight:600; backdrop-filter:blur(6px); z-index:2;">
-              ${subtipo}
-            </div>
-          ` : ''}
+          <!-- Etiqueta Alquiler / Venta (solo si corresponde) -->
+          ${etiquetaOperacion}
 
-          <!-- NRO DE AMBIENTES SUPERPUESTO - Abajo izquierda (grande y claro) -->
-          <div style="position:absolute; bottom:14px; left:14px; background:var(--primary); color:white; padding:12px 18px; border-radius:50px; font-size:1.5rem; font-weight:bold; box-shadow:0 6px 20px rgba(52,131,250,0.5); z-index:2; display:flex; align-items:center; gap:8px;">
-            ${nroAmbientes}
+          <!-- NRO DE AMBIENTES (superpuesto, abajo izquierda) -->
+          <div style="position:absolute; bottom:14px; left:14px; background:rgba(0,0,0,0.75); color:white; padding:12px 20px; border-radius:50px; font-size:1.6rem; font-weight:bold; backdrop-filter:blur(6px); box-shadow:0 6px 20px rgba(0,0,0,0.4); z-index:2; display:flex; align-items:center; gap:8px;">
+            ${nroAmbientes} <span style="font-size:1.1rem; opacity:0.9;">amb</span>
           </div>
         </div>
 
-        <!-- PRECIO EN EL PANEL (no superpuesto) -->
-        <div class="property-price" style="margin:20px 0 6px; font-size:1.7rem; color:#28a745;">
+        <!-- ORDEN EXACTO PEDIDO -->
+        <div class="property-title" style="margin:18px 0 8px; font-size:1.55rem; font-weight:bold; color:#333;">
+          ${titulo}
+        </div>
+
+        <div class="property-price" style="margin:0 0 8px; font-size:1.75rem; color:#28a745; font-weight:bold;">
           ${precio}
         </div>
 
-        <!-- AMBIENTES EN EL PANEL (debajo del precio) -->
-        <div style="color:#333; font-size:1.2rem; font-weight:600; margin-bottom:12px;">
+        <div style="color:#444; font-size:1.25rem; font-weight:600; margin-bottom:15px;">
           ${textoAmbientes}
-        </div>
-
-        <div class="property-title" style="margin:10px 0; font-size:1.5rem;">${titulo}</div>
-        
-        <div style="color:#666; font-size:0.95rem; margin-bottom:15px;">
-          ${p.Tipo || "Propiedad"} • ${p.Operacion || "Alquiler"}
         </div>
 
         <button class="ver-detalles-btn">Ver detalles</button>
       `;
 
-      // Eventos (sin cambios)
+      // Eventos
       card.querySelector("img").onclick = e => {
         e.stopPropagation();
         if (fotos.length) abrirModal(fotos[0], fotos);
