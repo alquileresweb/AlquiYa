@@ -83,39 +83,38 @@
   transform: translateY(-1px);
 }
 
-  /* PANEL DE UBICACIÓN - SOLO BORDE + ÍCONO */
+  /* UBICACIÓN - MINIMALISTA Y ELEGANTE */
 .ubicacion-panel {
-  margin: 20px auto;
-  max-width: 600px;
-  padding: 1.4rem 2rem;
-  border: 3px solid #3483fa;
-  border-radius: 20px;
+  margin: 25px auto 35px;
+  max-width: 900px;
+  padding: 0.8rem 1.5rem;
   background: transparent;
-  color: #333;
-  font-size: 1.7rem;
-  font-weight: 700;
+  color: #444;
+  font-size: 1.35rem;           /* ← más pequeña y refinada */
+  font-weight: 600;
   text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
-  box-shadow: 0 8px 25px rgba(52, 131, 250, 0.15);
-  backdrop-filter: blur(8px);
-  animation: fadeInDown 0.7s ease;
+  gap: 10px;
+  letter-spacing: 0.5px;
 }
 
-.ubicacion-panel strong {
-  color: #3483fa;
-  font-size: 1.8rem;
+.ubicacion-panel::before {
+  content: "";
+  font-size: 1.6rem;
 }
 
-@media (max-width: 480px) {
+/* En móviles se ve aún más limpio */
+@media (max-width: 768px) {
   .ubicacion-panel {
-    font-size: 1.5rem;
-    padding: 1.2rem 1.5rem;
-    gap: 10px;
+    font-size: 1.25rem;
+    margin: 20px auto 30px;
+    gap: 8px;
   }
-  .ubicacion-panel strong { font-size: 1.6rem; }
+  .ubicacion-panel::before {
+    font-size: 1.5rem;
+  }
 }
   /* === TARJETAS EN LISTA - ESTILOS CORREGIDOS Y ÚNICOS === */
   .property-grid {
