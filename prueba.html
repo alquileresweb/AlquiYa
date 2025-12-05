@@ -856,7 +856,6 @@ async function irADetalle(id) {
   window.open(`https://www.alquiya.com.ar/propiedad.html?id=${id}`, "_blank");
 }
 
-// CARGAR LISTA CON FILTROS + DATOS SOBRE LA IMAGEN
 async function cargarPropiedadesLista() {
   const contenedor = document.getElementById("lista-propiedades");
   contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px;font-size:1.4rem;color:#666;">Cargando...</div>';
@@ -871,7 +870,6 @@ async function cargarPropiedadesLista() {
   try {
     const res = await fetch(webAppURL + "?action=getAlquileres&t=" + Date.now());
     const data = await res.json();
-
     if (!data.success || data.data.length === 0) {
       contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px;color:#95a5a6;">No hay propiedades activas</div>';
       return;
@@ -888,7 +886,6 @@ async function cargarPropiedadesLista() {
     });
 
     contenedor.innerHTML = "";
-
     if (filtradas.length === 0) {
       contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px;color:#95a5a6;">No se encontraron resultados</div>';
       return;
@@ -898,89 +895,60 @@ async function cargarPropiedadesLista() {
       const fotos = (p.Fotos || "").split(",").map(f => f.trim()).filter(Boolean).map(driveUrlDirect);
       const primeraImg = fotos[0] || "https://via.placeholder.com/400x250?text=Sin+Imagen";
       const precio = p.Precio ? "$" + parseInt(p.Precio).toLocaleString("es-AR") : "Consultar";
-      const titulo = getField(p, ["Título", "titulo", "Titulo", "Título Propiedad"]) || p.Tipo || "Propiedad";
+      const titulo = p.Título || p.Tipo || "Propiedad";
       const id = p["ID Propiedad"] || p.idPropiedad || p.ID || "";
 
-      // === DATOS PARA MOSTRAR SOBRE LA IMAGEN ===
-      const operacion = (getField(p, ["Operacion", "Operación"]) || "Alquiler").trim();
-      const dormitorios = toInt(getField(p, ["Dormitorios", "Habitaciones", "Dormitorios"]));
-      const banos = toInt(getField(p, ["Baños", "Banios", "Baño", "Baños"]));
-
-      const esVenta = operacion.toLowerCase().includes("venta");
-      const colorRibbon = esVenta ? "#e74c3c" : "#27ae60";
-      const textoRibbon = esVenta ? "VENTA" : "ALQUILER";
+      // === NUEVO: Datos que pediste ===
+      const ambientes = toInt(p["Nro Ambientes"] || p.Ambientes || 0);
+      const dormitorios = ambientes - 1; // 1 amb = 0 dorm, 2 amb = 1 dorm, etc.
+      const subtipo = getField(p, ["Subtipo", "subtipo", "R"]); // columna R
 
       const card = document.createElement("div");
       card.className = "property-card";
 
       card.innerHTML = `
-        <div style="position:relative;display:inline-block;width:100%;">
-          <img src="${primeraImg}" alt="${titulo}" style="width:100%;height:250px;object-fit:cover;border-radius:15px;">
-
-          <!-- Ribbon: ALQUILER o VENTA -->
-          <div style="
-            position:absolute;top:12px;left:12px;
-            background:${colorRibbon};color:white;
-            padding:8px 16px;border-radius:50px;
-            font-weight:900;font-size:0.95rem;
-            box-shadow:0 4px 12px rgba(0,0,0,0.3);
-            z-index:10;letter-spacing:1px;
-          ">${textoRibbon}</div>
-
-          <!-- Dormitorios y Baños (esquina inferior derecha) -->
-          <div style="
-            position:absolute;bottom:12px;right:12px;
-            background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);
-            color:white;padding:10px 14px;border-radius:16px;
-            display:flex;gap:14px;align-items:center;
-            font-weight:700;font-size:1rem;z-index:10;
-            box-shadow:0 4px 16px rgba(0,0,0,0.4);
-          ">
-            ${dormitorios > 0 ? `<span>Dormitorios ${dormitorios}</span>` : ''}
-            ${banos > 0 ? `<span>Baños ${banos}</span>` : ''}
-            ${dormitorios === 0 && banos === 0 ? '<span>Sin datos</span>' : ''}
+        <div style="position:relative;">
+          <img src="${primeraImg}" alt="${titulo}" style="border-radius:15px;">
+          
+          <!-- Overlay con Subtipo + Dormitorios -->
+          <div class="img-overlay">
+            ${subtipo ? `<div class="subtype">${subtipo}</div>` : ''}
+            <div class="bedrooms">Dormitorios ${dormitorios >= 0 ? dormitorios : '0'}</div>
           </div>
         </div>
 
         <div class="property-title">${titulo}</div>
         <div class="property-price">${precio}</div>
+        
+        <!-- Número de ambientes debajo del precio -->
+        <div class="ambientes-below-price">${ambientes} ambiente${ambientes !== 1 ? 's' : ''}</div>
+
         <div style="color:#666;font-size:0.95em;margin-bottom:15px;">
-          ${p.Tipo || "Propiedad"} • ${operacion}
+          ${p.Tipo || "Propiedad"} • ${p.Operacion || "Alquiler"}
         </div>
+        
         <button class="ver-detalles-btn">Ver detalles</button>
       `;
 
-      // === EVENTOS (mantengo los originales) ===
-      card.querySelector("img").onclick = e => {
-        e.stopPropagation();
-        if (fotos.length) abrirModal(fotos[0], fotos);
+      card.querySelector("img").onclick = e => { 
+        e.stopPropagation(); 
+        if (fotos.length) abrirModal(fotos[0], fotos); 
       };
-
-      card.onclick = e => {
-        if (!e.target.closest("img") && !e.target.closest("button")) {
-          irADetalle(id);
-        }
+      card.onclick = e => { 
+        if (!e.target.closest("img") && !e.target.closest("button")) irADetalle(id); 
       };
-
-      card.querySelector(".ver-detalles-btn").onclick = e => {
-        e.stopPropagation();
-        irADetalle(id);
+      card.querySelector(".ver-detalles-btn").onclick = e => { 
+        e.stopPropagation(); 
+        irADetalle(id); 
       };
 
       contenedor.appendChild(card);
     });
-
-  } catch (err) {
-    console.error(err);
-    contenedor.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:80px;color:#e74c3c;">
-      Error al cargar las propiedades<br>
-      <button onclick="cargarPropiedadesLista()" style="margin-top:15px;padding:10px 20px;background:var(--primary);color:white;border:none;border-radius:50px;cursor:pointer;">
-        Reintentar
-      </button>
-    </div>`;
+  } catch {
+    contenedor.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:80px;color:#e74c3c;">Error<br><button onclick="cargarPropiedadesLista()">Reintentar</button></div>`;
   }
 }
-
+  
 function driveUrlDirect(url) {
   if (!url) return "";
   const match = url.match(/\/d\/([a-zA-Z0-9_-]+)|id=([a-zA-Z0-9_-]+)/);
