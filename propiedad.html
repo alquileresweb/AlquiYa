@@ -17,10 +17,16 @@
 <link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
 <style>
   body { margin: 0; font-family: Arial, sans-serif; }
-  header { background: white; padding: 15px; text-align: center; }
-  header img { max-width: 250px; }
-  /* Foto de perfil del dueño - esquina superior derecha */
-  .owner-profile-img {
+  header { 
+    background: white; 
+    padding: 15px; 
+    text-align: center; 
+    position: relative; /* Necesario para posicionar la foto de perfil */
+  }
+  header img.logo { max-width: 250px; }
+
+  /* FOTO DE PERFIL DEL DUEÑO - ESQUINA SUPERIOR DERECHA */
+  #owner-profile {
     position: absolute;
     top: 12px;
     right: 12px;
@@ -32,9 +38,10 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     z-index: 10;
     cursor: pointer;
-    transition: transform 0.2s ease;
+    transition: transform .2s ease;
+    display: none; /* Se muestra solo cuando carga la foto */
   }
-  .owner-profile-img:hover { transform: scale(1.1); }
+  #owner-profile:hover { transform: scale(1.12); }
  
   #propiedad-detalle {
     max-width: 700px; margin: 20px auto; padding: 20px;
@@ -130,7 +137,7 @@ function formatPrice(num) {
   const n = parseInt(String(num).replace(/[^\d]/g, ""), 10);
   return isNaN(n) ? "No disponible" : "$" + n.toLocaleString('es-AR');
 }
-  /* === OBTENER FOTO DE PERFIL DEL DUEÑO === */
+  /* === OBTENER FOTO DE PERFIL === */
 async function obtenerFotoPerfil(emailDueno) {
   if (!emailDueno) return "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
   try {
@@ -138,6 +145,7 @@ async function obtenerFotoPerfil(emailDueno) {
     const data = await res.json();
     return data.foto || "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
   } catch (e) {
+    console.error("Error al obtener foto de perfil:", e);
     return "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
   }
 }
