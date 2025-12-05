@@ -34,7 +34,7 @@
     cursor: pointer;
     transition: transform 0.2s ease;
   }
-  .owner-profile-img:hover { transform: scale(1.mw-parser-output .1); }
+  .owner-profile-img:hover { transform: scale(1.1); }
  
   #propiedad-detalle {
     max-width: 700px; margin: 20px auto; padding: 20px;
@@ -94,8 +94,6 @@
 <body>
 <header>
   <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya">
-  <!-- AQUÍ ESTÁ EL TRUCO: creamos la imagen de perfil desde el inicio -->
-  <img id="owner-profile-img" src="" alt="Foto del dueño">
 </header>
 <div id="loading-msg">Cargando datos de la propiedad...</div>
 <div id="propiedad-detalle"></div>
@@ -132,7 +130,7 @@ function formatPrice(num) {
   const n = parseInt(String(num).replace(/[^\d]/g, ""), 10);
   return isNaN(n) ? "No disponible" : "$" + n.toLocaleString('es-AR');
 }
-  /* === FUNCIÓN PARA OBTENER FOTO DE PERFIL === */
+  /* === OBTENER FOTO DE PERFIL DEL DUEÑO === */
 async function obtenerFotoPerfil(emailDueno) {
   if (!emailDueno) return "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
   try {
@@ -140,31 +138,8 @@ async function obtenerFotoPerfil(emailDueno) {
     const data = await res.json();
     return data.foto || "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
   } catch (e) {
-    console.error("Error al obtener foto de perfil:", e);
     return "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
   }
-}
-
-/* === INSERTAR FOTO DE PERFIL EN EL HEADER === */
-async function mostrarFotoPerfil(email) {
-  const header = document.querySelector("header");
-  let img = document.getElementById("owner-profile-img");
-
-  // Si ya existe, solo actualizamos src
-  if (!img) {
-    img = document.createElement("img");
-    img.id = "owner-profile-img";
-    img.className = "owner-profile-img";
-    img.alt = "Foto del dueño";
-    header.appendChild(img);
-  }
-
-  const fotoUrl = await obtenerFotoPerfil(email);
-  img.src = fotoUrl;
-  img.style.display = "block";
-
-  // Al hacer clic → abre en el modal grande
-  img.onclick = () => abrirModal(fotoUrl, [fotoUrl], 0);
 }
 // Modal imágenes
 function abrirModal(src, images, index) {
