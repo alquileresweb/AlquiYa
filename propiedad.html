@@ -156,27 +156,41 @@ function cambiarImagen(dir) {
   currentImageIndex = (currentImageIndex + dir + currentImages.length) % currentImages.length;
   document.getElementById("img-grande").src = currentImages[currentImageIndex];
 }
-/* === INICIALIZAR MAPA CON MARCADORES ESTÁTICOS Y DE LA PROPIEDAD === */
-let markersLayer; // capa para poder limpiar si se quisiera
-function initMap(lat, lng, direccion, nroAmb, tipo, emailDueno) {
+// === MAPA CON MARCADOR PRINCIPAL (EMOJIS ORIGINALES) + MARCADORES ESTÁTICOS ===
+let markersLayer;
+
+function initMap(lat, lng, direccion, nroAmb, tipo) {
   const map = L.map("map").setView([lat, lng], 16);
+
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap'
   }).addTo(map);
+
   markersLayer = L.layerGroup().addTo(map);
-  // Marcador principal de la propiedad (más destacado)
-  const mainIcon = L.divIcon({
-    className: 'marker-main',
-    html: `<div style="background:#3483fa;color:white;padding:8px 12px;border-radius:12px;font-weight:bold;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
-             ${tipo === "Temporario" ? 'Clock Temporario' : tipo === "Local" ? 'Shopping Local' : `House ${nroAmb} amb.`}
-           </div>`,
-    iconSize: [140, 40],
-    iconAnchor: [70, 45]
+
+  // === MARCADOR DE LA PROPIEDAD (con tus emojis originales) ===
+  let iconHtml;
+  if (tipo === "Temporario") {
+    iconHtml = '⌛';
+  } else if (tipo === "Local") {
+    iconHtml = '🛍️';
+  } else {
+    iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-") + '</span>';
+  }
+
+  const propertyIcon = L.divIcon({
+    className: 'marker-icon',
+    html: iconHtml,
+    iconSize: [38, 38],
+    iconAnchor: [19, 19],
+    popupAnchor: [0, -15]
   });
-  L.marker([lat, lng], { icon: mainIcon })
+
+  L.marker([lat, lng], { icon: propertyIcon })
     .addTo(markersLayer)
-    .bindPopup(`<b style="font-size:16px;">${direccion}</b><br>${tipo}`)
+    .bindPopup(`<b style="font-size:16px;color:#3483fa;">${direccion}</b><br>${tipo}`)
     .openPopup();
+  
   // === MARCADORES ESTÁTICOS (sin cambios) ===
   const uniIcon = L.divIcon({ className: 'marker-icon', html: '🎓', iconSize: [30, 30], iconAnchor: [15, 15] });
 const hospIcon = L.divIcon({ className: 'marker-icon', html: '🏥', iconSize: [30, 30], iconAnchor: [15, 15] });
