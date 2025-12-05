@@ -37,6 +37,66 @@
   nav a { text-decoration: none; font-weight: 600; color: var(--text); padding: 0.7rem 1.2rem; border-radius: 10px; transition: var(--transition); }
   nav a:hover, nav a.active { background: var(--primary); color: white; }
 
+  /* === PIE DE PÁGINA AZUL === */
+  footer {
+    background: var(--primary);
+    color: white;
+    padding: 2.5rem 1rem 1.5rem;
+    margin-top: 4rem;
+  }
+  .footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    align-items: center;
+    text-align: center;
+  }
+  .footer-logo img {
+    max-width: 180px;
+    height: auto;
+  }
+  .footer-menu a {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    margin: 0 1rem;
+    font-size: 1.1rem;
+    transition: var(--transition);
+  }
+  .footer-menu a:hover {
+    text-decoration: underline;
+  }
+  .footer-social a {
+    margin: 0 12px;
+    display: inline-block;
+    transition: transform 0.3s ease;
+  }
+  .footer-social a:hover {
+    transform: translateY(-4px);
+  }
+  .footer-social img {
+    width: 40px;
+    height: 40px;
+  }
+  .footer-copy {
+    font-size: 0.95rem;
+    opacity: 0.9;
+    margin-top: 1.5rem;
+    grid-column: 1 / -1;
+  }
+  @media (max-width: 768px) {
+    .footer-container {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+    .footer-menu a {
+      display: block;
+      margin: 0.8rem 0;
+    }
+  }
+
   /* BOTONES DEBAJO DEL MENÚ - CORTOS, JUNTOS Y CENTRADOS */
 #botones-filtros-avisos {
   display: none;
@@ -713,6 +773,35 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
 </div>
 </a>
 </div>
+  <!-- =============== PIE DE PÁGINA AZUL =============== -->
+<footer>
+  <div class="footer-container">
+    <!-- Logo -->
+    <div class="footer-logo">
+      <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo AlquiYa">
+    </div>
+
+    <!-- Menús -->
+    <div class="footer-menu">
+      <a href="#" onclick="mostrarLista(); return false;">Lista</a>
+      <a href="#" onclick="mostrarMapa(); return false;">Mapa</a>
+      <a href="#" onclick="mostrarLogin(); return false;">Publicar</a>
+    </div>
+
+    <!-- Redes sociales -->
+    <div class="footer-social">
+      <a href="https://www.instagram.com/alquiya.st/?utm_source=ig_web_button_share_sheet" target="_blank">
+        <img src="https://i.postimg.cc/GmVWTXX0/394a7aaecd6b8ce44528649681d9fa05.png" alt="Instagram">
+      </a>
+    </div>
+
+    <!-- Copyright -->
+    <div class="footer-copy">
+      © 2025 AlquiYa • Todos los derechos reservados
+    </div>
+  </div>
+</footer>
+  
 <div id="alquiler-detalle">
 <p id="metricas-error"></p>
 </div>
