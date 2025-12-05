@@ -30,48 +30,12 @@
   header { background: white; padding: 1rem; text-align: center; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 1000; }
   header img { max-width: 250px; height: auto; }
 
-  Perfecto, lo que necesitas es que en celular los tres botones del menú principal:
-
-Ver Lista
-Ver Mapa
-Publicar Propiedad
-
-aparezcan uno al lado del otro, más juntos y bien centrados, sin que se bajen ni ocupen todo el ancho como si fueran bloques.
-Aquí tienes la solución más limpia y efectiva. Solo reemplaza o añade este bloque CSS (puedes ponerlo al final del <style> actual):
-CSS/* === MENÚ PRINCIPAL COMPACTO Y HORIZONTAL EN MÓVIL === */
-nav {
-  display: flex;
-  justify-content: center;
-  gap: 1.5rem;           /* espacio original en desktop */
-  background: white;
-  padding: 1rem;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  flex-wrap: nowrap;     /* fuerza a que no se bajen */
-  overflow-x: auto;      /* si por algún motivo no caben, permite scroll horizontal */
-  white-space: nowrap;
-  scrollbar-width: none; /* Firefox */
-}
-
-nav::-webkit-scrollbar { display: none; } /* Chrome/Safari */
-
-/* En móviles: más compacto y siempre horizontal */
-@media (max-width: 768px) {
   nav {
-    gap: 0.8rem;                     /* los hace más juntos */
-    padding: 0.9rem 1rem;
+    display: flex; justify-content: center; gap: 1.5rem; background: white; padding: 1rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05); flex-wrap: wrap;
   }
-
-  nav a {
-    padding: 0.65rem 1rem;           /* botones más cortitos */
-    font-size: 0.95rem;              /* texto un poco más pequeño */
-    min-width: auto;
-    border-radius: 50px;             /* forma de pastilla (más moderno) */
-    font-weight: 600;
-  }
-
-  /* Opcional: si querés que queden aún más pegaditos */
-  /* nav { gap: 0.5rem; } */
-}
+  nav a { text-decoration: none; font-weight: 600; color: var(--text); padding: 0.7rem 1.2rem; border-radius: 10px; transition: var(--transition); }
+  nav a:hover, nav a.active { background: var(--primary); color: white; }
 
   /* === PIE DE PÁGINA AZUL === */
   footer {
