@@ -204,7 +204,7 @@ function initMap(lat, lng, direccion, nroAmb, tipo, emailDueno) {
     .bindPopup(`<b style="font-size:16px;">${direccion}</b><br>${tipo}`)
     .openPopup();
   // === MARCADORES ESTÁTICOS (sin cambios) ===
-  const uniIcon = L.divIcon({ className: 'markerongan-icon', html: '🎓', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const uniIcon = L.divIcon({ className: 'marker-icon', html: '🎓', iconSize: [30, 30], iconAnchor: [15, 15] });
 const hospIcon = L.divIcon({ className: 'marker-icon', html: '🏥', iconSize: [30, 30], iconAnchor: [15, 15] });
 const superIcon = L.divIcon({ className: 'marker-icon', html: '🛒', iconSize: [30, 30], iconAnchor: [15, 15] });
 const busIcon = L.divIcon({ className: 'marker-icon', html: '🚌', iconSize: [30, 30], iconAnchor: [15, 15] });
