@@ -25,19 +25,19 @@
     position: absolute;
     top: 16px;
     right: 16px;
-    width: 64px;
-    height: 64px;
+    width: 68px;
+    height: 68px;
     border-radius: 50%;
     object-fit: cover;
     border: 4px solid white;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
-    z-index: 10;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    z-index: 20;
     cursor: pointer;
     transition: all 0.3s ease;
   }
   .owner-profile-img:hover {
-    transform: scale(1.15);
-    box-shadow: 0 10px 25px rgba(52, 131, 250, 0.4);
+    transform: scale(1.18);
+    box-shadow: 0 12px 30px rgba(52,131,250,0.5);
   }
  
   #propiedad-detalle {
@@ -134,14 +134,18 @@ function formatPrice(num) {
   const n = parseInt(String(num).replace(/[^\d]/g, ""), 10);
   return isNaN(n) ? "No disponible" : "$" + n.toLocaleString('es-AR');
 }
-  async function obtenerFotoPerfil(email) {
+ // OBTENER FOTO DE PERFIL
+async function obtenerFotoPerfil(email) {
   if (!email) return "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
   try {
-    const res = await fetch(`${webAppURL}?action=obtenerFotoPerfil&email=${encodeURIComponent(email)}`);
-    if (!res.ok) throw new Error();
+    const res = await fetch(`${webAppURL}?action=obtenerFotoPerfil&email=${encodeURIComponent(email)}`, {
+      cache: "no-store"
+    });
     const data = await res.json();
+    console.log("Foto de perfil recibida:", data);
     return data.foto || "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
-  } catch {
+  } catch (err) {
+    console.error("Error cargando foto de perfil:", err);
     return "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
   }
 }
@@ -212,102 +216,112 @@ const policeIcon = L.divIcon({ className: 'marker-icon', html: '👮', iconSize:
   const group = new L.featureGroup(markersLayer.getLayers());
   map.fitBounds(group.getBounds().pad(0.2));
 }
-// Carga principal
-window.onload = () => {
+// === CARGA PRINCIPAL CON FOTO DE PERFIL FUNCIONANDO ===
+window.onload = async () => {
   const urlParams = new URLSearchParams(window.location.search);
   const id = urlParams.get("id");
   const loading = document.getElementById("loading-msg");
-  const detalle = document.getElementById("propiedad-detalle");
+  const card = document.getElementById("propiedad-detalle");
+
   if (!id) {
-    loading.style.display = "none";
-    detalle.innerHTML = "<h2>Error: No se proporcionó ID</h2>";
-    console.error("Falta parámetro id en la URL");
+    loading.innerHTML = "Error: Falta ID";
     return;
   }
-  const url = `${webAppURL}?action=getAlquiler&id=${encodeURIComponent(id)}`;
-  log("Solicitando datos →", url);
-  fetch(url, { cache: "no-store" })
-    .then(r => { log("Status:", r.status); return r.json(); })
-    .then(data => {
-      loading.style.display = "none";
-      log("Datos recibidos:", data);
-      if (!data.success || !data.alquiler) {
-        detalle.innerHTML = "<h2>Propiedad no encontrada</h2>";
-        return;
+
+  try {
+    const res = await fetch(`${webAppURL}?action=getAlquiler&id=${id}`, { cache: "no-store" });
+    const { success, alquiler: a } = await res.json();
+
+    loading.style.display = "none";
+
+    if (!success || !a) {
+      card.innerHTML = "<h2>Propiedad no encontrada</h2>";
+      return;
+    }
+
+    const tipo = getField(a, ["Tipo"]) || "Permanente";
+    const direccion = getField(a, ["Direccion","Dirección","Domicilio"]) || "Sin dirección";
+    const emailDueno = getField(a, ["Email","email","Correo","Dueño","dueno"]);
+
+    // OBTENER FOTO DE PERFIL
+    let fotoPerfilHTML = '';
+    if (emailDueno) {
+      const fotoURL = await obtenerFotoPerfil(emailDueno.trim());
+      fotoPerfilHTML = `<img src="${fotoURL}" class="owner-profile-img" alt="Foto del dueño" onclick="abrirModal('${fotoURL}', ['${fotoURL}'], 0)">`;
+    }
+
+    // Construir tarjeta
+    card.innerHTML = `
+      ${fotoPerfilHTML}
+      <h2>${direccion}</h2>
+      <h3>${tipo === "Temporario" ? "Alquiler Temporario" : tipo === "Local" ? "Local Comercial" : "Alquiler Permanente"}</h3>
+      <hr style="border-top:1px solid #ddd;margin:20px 0">
+    `;
+
+    // Campos
+    const campos = tipo === "Temporario" || tipo === "Local" ? [
+      ["Dirección", direccion],
+      ["Información de ingreso", getField(a, ["Informacion ingreso","Información ingreso"]) || "No especificada"],
+      ["Detalles", getField(a, ["Detalles","Detalle","Descripcion"]) || "Sin detalles"]
+    ] : [
+      ["Dirección", direccion],
+      ["Ambientes", getField(a, ["Nro Ambientes","Ambientes","Nro"]) || "-"],
+      ["Precio", formatPrice(a.Precio)],
+      ["Información de ingreso", getField(a, ["Informacion ingreso","Información ingreso"]) || "No especificada"],
+      ["Detalles", getField(a, ["Detalles","Detalle","Descripcion"]) || "Sin detalles"],
+      ["Mascotas", getField(a, ["Mascotas"]) || "Consultar"]
+    ];
+
+    campos.forEach(([label, valor]) => {
+      if (valor && valor !== "-" && valor !== "Consultar" || label === "Precio") {
+        card.innerHTML += `<p><b>${label}:</b> ${valor}</p>`;
       }
-      const a = data.alquiler;
-      const tipo = getField(a, ["Tipo"]) || "Sin tipo";
-      const direccion = getField(a, ["Direccion", "Dirección", "Domicilio"]) || "Sin dirección";
-      const precio = formatPrice(a.Precio);
-      detalle.innerHTML = `
-        <h2>${direccion}</h2>
-        <h3 style="color:#3483fa;">
-          ${tipo === "Temporario" ? "Alquiler Temporario" : tipo === "Local" ? "Local Comercial" : "Alquiler Permanente"}
-        </h3>
-        <hr style="border:0;border-top:1px solid #ddd;margin:15px 0;">
-      `;
-      // Campos según tipo
-      const campos = tipo === "Temporario" || tipo === "Local" ? [
-        ["Dirección", direccion],
-        ["Información de ingreso", getField(a, ["Informacion ingreso", "Información ingreso"]) || "No especificada"],
-        ["Detalles", getField(a, ["Detalles", "Detalle", "Descripcion"]) || "Sin detalles"]
-      ] : [
-        ["Dirección", direccion],
-        ["Ambientes", getField(a, ["Nro Ambientes", "Ambientes", "Nro"]) || "-"],
-        ["Precio", precio],
-        ["Información de ingreso", getField(a, ["Informacion ingreso", "Información ingreso"]) || "No especificada"],
-        ["Detalles", getField(a, ["Detalles", "Detalle", "Descripcion"]) || "Sin detalles"],
-        ["Mascotas", getField(a, ["Mascotas"]) || "Consultar"]
-      ];
-      campos.forEach(([label, valor]) => {
-        if (valor && valor !== "-" && valor !== "Consultar" && valor !== "No disponible" || label === "Precio") {
-          detalle.innerHTML += `<p><b>${label}:</b> ${valor}</p>`;
-        }
-      });
-      // Imágenes
-      const fotosRaw = getField(a, ["Fotos", "Imagenes", "Imágenes", "images", "FOTOS"]);
-      if (fotosRaw) {
-        const urls = fotosRaw.split(",").map(u => u.trim()).filter(Boolean)
-          .map(driveUrlDirect)
-          .filter(u => u.startsWith("http"));
-        if (urls.length) {
-          const cont = document.createElement("div");
-          cont.id = "imagenes-container";
-          urls.forEach((url, i) => {
-            const img = document.createElement("img");
-            img.src = url; img.alt = `Foto ${i+1}`;
-            img.onclick = () => abrirModal(url, urls, i);
-            cont.appendChild(img);
-          });
-          detalle.appendChild(cont);
-        }
-      }
-      // Mapa
-      const lat = parseFloat(getField(a, ["Lat", "Latitude", "Latitud"]));
-      const lng = parseFloat(getField(a, ["Lng", "Longitude", "Longitud"]));
-      if (!isNaN(lat) && !isNaN(lng)) {
-        const mapDiv = document.createElement("div");
-        mapDiv.id = "map";
-        detalle.appendChild(mapDiv);
-        setTimeout(() => initMap(lat, lng, direccion, toInt(getField(a, ["Nro Ambientes", "Ambientes"])), tipo), 300);
-      }
-      // Botones
-      if (a.Contacto) {
-        const btnWA = document.createElement("button");
-        btnWA.textContent = "Contactar por WhatsApp";
-        btnWA.onclick = () => window.open(`https://wa.me/${a.Contacto}?text=${encodeURIComponent("Hola, vengo desde AlquiYa y quiero consultar por la propiedad de " + direccion)}`, "_blank");
-        detalle.appendChild(btnWA);
-      }
-      const btnVolver = document.createElement("button");
-      btnVolver.textContent = "Volver al Mapa";
-      btnVolver.onclick = () => location.href = "index.html";
-      detalle.appendChild(btnVolver);
-    })
-    .catch(err => {
-      loading.style.display = "none";
-      detalle.innerHTML = "<h2>Error de conexión</h2><p>No se pudo cargar la propiedad.</p>";
-      console.error("Error:", err);
     });
+
+    // Imágenes
+    const fotosRaw = getField(a, ["Fotos","Imagenes","Imágenes","images","FOTOS"]);
+    if (fotosRaw) {
+      const urls = fotosRaw.split(",").map(u => u.trim()).filter(Boolean).map(driveUrlDirect).filter(Boolean);
+      if (urls.length) {
+        const cont = document.createElement("div");
+        cont.id = "imagenes-container";
+        urls.forEach((url, i) => {
+          const img = document.createElement("img");
+          img.src = url;
+          img.onclick = () => abrirModal(url, urls, i);
+          cont.appendChild(img);
+        });
+        card.appendChild(cont);
+      }
+    }
+
+    // Mapa
+    const lat = parseFloat(getField(a, ["Lat","Latitude","Latitud"]));
+    const lng = parseFloat(getField(a, ["Lng","Longitude","Longitud"]));
+    if (!isNaN(lat) && !isNaN(lng)) {
+      const mapDiv = document.createElement("div");
+      mapDiv.id = "map";
+      card.appendChild(mapDiv);
+      setTimeout(() => initMap(lat, lng, direccion, toInt(getField(a, ["Nro Ambientes","Ambientes"])), tipo), 400);
+    }
+
+    // Botones
+    if (a.Contacto) {
+      const btn = document.createElement("button");
+      btn.textContent = "Contactar por WhatsApp";
+      btn.onclick = () => window.open(`https://wa.me/${a.Contacto}?text=${encodeURIComponent("Hola, consulto por " + direccion)}`, "_blank");
+      card.appendChild(btn);
+    }
+
+    const volver = document.createElement("button");
+    volver.textContent = "Volver al Mapa";
+    volver.onclick = () => location.href = "index.html";
+    card.appendChild(volver);
+
+  } catch (err) {
+    loading.innerHTML = "Error de conexión";
+    console.error(err);
+  }
 };
 </script>
 </body>
