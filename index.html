@@ -25,52 +25,92 @@
     --radius: 14px;
     --transition: all 0.3s ease;
   }
+
+  /* CHECKBOXES PERSONALIZADOS - PEGADOS AL TEXTO Y BONITOS */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  margin: 8px 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.checkbox-label input[type="checkbox"] {
+  opacity: 0;
+  position: absolute;
+  cursor: pointer;
+}
+
+.custom-checkbox {
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid #3483fa;
+  border-radius: 6px;
+  background: white;
+  position: relative;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.custom-checkbox::after {
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  transition: transform 0.2s ease;
+}
+
+.checkbox-label input[type="checkbox"]:checked + .custom-checkbox {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.checkbox-label input[type="checkbox"]:checked + .custom-checkbox::after {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.checkbox-label:hover .custom-checkbox {
+  box-shadow: 0 0 8px rgba(52, 131, 250, 0.3);
+}
+  
+  /* === NRO DE AMBIENTES SUPERPUESTO – AHORA MÁS ARRIBA Y SIN FONDO === */
+  .ambientes-overlay {
+    position: absolute;
+    top: 180px;               /* ← más arriba */
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.45);
+    color: white;
+    padding: 9px 20px;
+    border-radius: 50px;
+    font-size: 1.45rem;
+    font-weight: bold;
+    backdrop-filter: blur(6px);
+    z-index: 2;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  
   * { box-sizing: border-box; }
   body { margin: 0; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
   header { background: white; padding: 1rem; text-align: center; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 1000; }
   header img { max-width: 250px; height: auto; }
 
-  /* === MENÚ PRINCIPAL - AHORA ULTRA-COMPACTO EN MÓVILES === */
   nav {
-    display: flex;
-    justify-content: center;
-    gap: 0.8rem;               /* menos espacio entre botones */
-    background: white;
-    padding: 0.9rem 1rem;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    flex-wrap: nowrap;          /* nunca se baja */
-    overflow-x: auto;           /* si el móvil es muy pequeño permite scroll horizontal */
-    white-space: nowrap;
-    scrollbar-width: none;
+    display: flex; justify-content: center; gap: 1.5rem; background: white; padding: 1rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05); flex-wrap: wrap;
   }
-  nav::-webkit-scrollbar { display: none; }
-
-  nav a {
-    text-decoration: none;
-    font-weight: 600;
-    color: var(--text);
-    padding: 0.65rem 1rem;      /* menos padding vertical y horizontal */
-    border-radius: 10px;
-    transition: var(--transition);
-    font-size: 0.95rem;         /* texto un poco más pequeño en móvil */
-    min-width: fit-content;
-  }
-  nav a:hover, nav a.active {
-    background: var(--primary);
-    color: white;
-  }
-
-  /* En pantallas muy pequeñas todavía más compacto */
-  @media (max-width: 480px) {
-    nav {
-      gap: 0.5rem;
-      padding: 0.75rem 0.8rem;
-    }
-    nav a {
-      padding: 0.55rem 0.85rem;
-      font-size: 0.9rem;
-    }
-  }
+  nav a { text-decoration: none; font-weight: 600; color: var(--text); padding: 0.7rem 1.2rem; border-radius: 10px; transition: var(--transition); }
+  nav a:hover, nav a.active { background: var(--primary); color: white; }
 
   /* === PIE DE PÁGINA AZUL === */
   footer {
@@ -704,7 +744,7 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
   <button onclick="mostrarAvisos()">Recibir avisos</button>
 </div>
   
-<!-- PANEL FILTROS -->
+<!-- PANEL FILTROS - CHECKBOXES BIEN PEGADOS AL TEXTO -->
 <div id="filtros">
   <input type="number" id="filtroAmb" placeholder="Nro de Ambientes">
   <input type="text" id="filtroMin" placeholder="Precio Mínimo" oninput="formatCurrency(this)">
@@ -715,8 +755,20 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
     <option value="Temporario">Alquiler Temporario</option>
     <option value="Local">Local Comercial</option>
   </select>
-  <label><input type="checkbox" id="filtroMascotas"> Mascotas Permitidas</label>
-  <label><input type="checkbox" id="filtroAmoblado"> Amoblado</label>
+
+  <!-- CHECKBOXES CON TEXTO AL LADO Y PERFECTAMENTE ALINEADOS -->
+  <label class="checkbox-label">
+    <input type="checkbox" id="filtroMascotas">
+    <span class="custom-checkbox"></span>
+    Mascotas Permitidas
+  </label>
+
+  <label class="checkbox-label">
+    <input type="checkbox" id="filtroAmoblado">
+    <span class="custom-checkbox"></span>
+    Amoblado
+  </label>
+
   <button onclick="aplicarFiltros()">Filtrar</button>
 </div>
   
@@ -982,17 +1034,16 @@ async function irADetalle(id) {
   window.open(`https://www.alquiya.com.ar/propiedad.html?id=${id}`, "_blank");
 }
 
-// CARGAR LISTA - VERSIÓN FINAL DEFINITIVA (EXACTO A TU ÚLTIMO PEDIDO)
 async function cargarPropiedadesLista() {
   const contenedor = document.getElementById("lista-propiedades");
   contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px;font-size:1.4rem;color:#666;">Cargando...</div>';
 
-  const filtroAmb = parseInt(document.getElementById("filtroAmb").value) || 0;
-  const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
-  const filtroMax = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
-  const filtroMascotas = document.getElementById("filtroMascotas").checked;
-  const filtroAmoblado = document.getElementById("filtroAmoblado").checked;
-  const filtroTipo = document.getElementById("filtroTipo").value;
+  const filtroAmb       = parseInt(document.getElementById("filtroAmb").value) || 0;
+  const filtroMin       = parseCurrency(document.getElementById("filtroMin").value) || 0;
+  const filtroMax       = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
+  const filtroMascotas  = document.getElementById("filtroMascotas").checked;
+  const filtroAmoblado  = document.getElementById("filtroAmoblado").checked;
+  const filtroTipo      = document.getElementById("filtroTipo").value;
 
   try {
     const res = await fetch(webAppURL + "?action=getAlquileres&t=" + Date.now());
@@ -1006,10 +1057,14 @@ async function cargarPropiedadesLista() {
     const filtradas = data.data.filter(p => {
       if (filtroTipo && p.Tipo !== filtroTipo) return false;
       if (filtroAmb && toInt(p["Nro Ambientes"] || p.Ambientes) !== filtroAmb) return false;
+
       const precio = toNumber(p.Precio);
       if (precio < filtroMin || precio > filtroMax) return false;
+
+      /* FILTROS MASCOTAS Y AMOBLADO */
       if (filtroMascotas && (p.Mascotas || "").toLowerCase() !== "sí") return false;
       if (filtroAmoblado && (p.Amoblado || "").toLowerCase() !== "sí") return false;
+
       return true;
     });
 
@@ -1022,75 +1077,64 @@ async function cargarPropiedadesLista() {
     filtradas.forEach(p => {
       const fotos = (p.Fotos || "").split(",").map(f => f.trim()).filter(Boolean).map(driveUrlDirect);
       const primeraImg = fotos[0] || "https://via.placeholder.com/400x250?text=Sin+Imagen";
-
       const precioRaw = toNumber(p.Precio);
       const precio = precioRaw ? "$" + precioRaw.toLocaleString("es-AR") : "Consultar";
       const titulo = getField(p, ["Título", "titulo", "Titulo", "Título Propiedad"]) || "Sin título";
-      const tipoPropiedad = getField(p, ["Tipo"]) || "Propiedad"; // COLUMNA A
+      const tipoPropiedad = getField(p, ["Tipo"]) || "Propiedad";
       const id = getField(p, ["ID Propiedad", "idPropiedad", "ID"]) || "";
 
-      // === AMBIENTES ===
+      /* AMBIENTES */
       const ambientesStr = getField(p, ["Nro Ambientes", "Ambientes", "Ambientes "]) || "1";
       const nroAmbientes = toInt(ambientesStr);
       const textoAmbientes = nroAmbientes === 1 ? "Monoambiente" : nroAmbientes + " ambientes";
 
-      // === SUBTIPO (columna R) ===
+      /* SUBTIPO (columna R) */
       const subtipo = getField(p, ["Subtipo", "Subtipo de propiedad", "R"])?.trim();
 
       const card = document.createElement("div");
       card.className = "property-card";
-
       card.innerHTML = `
         <div style="position: relative; border-radius: 15px; overflow: hidden;">
           <img src="${primeraImg}" alt="${titulo}" style="width:100%; height:250px; object-fit:cover; display:block;">
 
-          <!-- SUBTIPO (columna R) - Arriba izquierda - FONDO AZUL -->
+          <!-- Subtipo arriba izquierda -->
           ${subtipo ? `
             <div style="position:absolute; top:12px; left:12px; background:var(--primary); color:white; padding:8px 16px; border-radius:50px; font-size:0.95rem; font-weight:600; box-shadow:0 4px 12px rgba(52,131,250,0.4); z-index:2;">
               ${subtipo}
             </div>
           ` : ''}
 
-          <!-- NRO DE AMBIENTES SUPERPUESTO - INFERIOR CENTRADO - SIN FONDO -->
-          <div style="position:absolute; bottom:16px; left:50%; transform:translateX(-50%); 
-                      background:rgba(0,0,0,0.5); color:white; padding:10px 20px; border-radius:50px; 
-                      font-size:1.4rem; font-weight:bold; backdrop-filter:blur(6px); z-index:2; white-space:nowrap;">
+          <!-- NRO DE AMBIENTES – MÁS ARRIBA Y SIN FONDO -->
+          <div class="ambientes-overlay">
             ${textoAmbientes}
           </div>
         </div>
 
-        <!-- ORDEN EXACTO EN EL PANEL -->
         <div class="property-title" style="margin:18px 0 8px; font-size:1.55rem; color:#333; line-height:1.3;">
           ${titulo}
         </div>
-
         <div class="property-price" style="margin:0 0 6px; font-size:1.75rem; color:#28a745; font-weight:bold;">
           ${precio}
         </div>
-
         <div style="color:#222; font-size:1.2rem; font-weight:600; margin-bottom:8px;">
           ${textoAmbientes}
         </div>
-
         <div style="color:#555; font-size:1rem; margin-bottom:18px; font-weight:500;">
           ${tipoPropiedad}
         </div>
-
         <button class="ver-detalles-btn">Ver detalles</button>
       `;
 
-      // Eventos
+      /* Eventos */
       card.querySelector("img").onclick = e => {
         e.stopPropagation();
         if (fotos.length) abrirModal(fotos[0], fotos);
       };
-
       card.onclick = e => {
         if (!e.target.closest("img") && !e.target.closest("button")) {
           irADetalle(id);
         }
       };
-
       card.querySelector(".ver-detalles-btn").onclick = e => {
         e.stopPropagation();
         irADetalle(id);
@@ -1098,7 +1142,6 @@ async function cargarPropiedadesLista() {
 
       contenedor.appendChild(card);
     });
-
   } catch (err) {
     console.error("Error cargando lista:", err);
     contenedor.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:80px;color:#e74c3c;">
