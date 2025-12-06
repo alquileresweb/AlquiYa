@@ -187,29 +187,60 @@
   transform: translateY(-2px);
 }
 
-.alquiler {
-        background: white;
-        margin: 12px auto;
-        max-width: 700px;
-        padding: 18px;
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        position: relative;
-      }
-      .alquiler b { font-size: 1.1em; display: block; margin-bottom: 4px; }
-      
-      /* ===================== TEXTOS NORMALES DE LA TARJETA (precio, tipo, estado...) ===================== */
-.alquiler > *:not(b):not(.alquiler-actions):not(.stats-inline):not(br) {
-  margin: 3px 0 !important;       /* muy poco espacio arriba y abajo */
-  font-size: 1.02em !important;
-  color: #444 !important;
-  line-height: 1.35 !important;
+/* ===================== NUEVO DISEÑO COMPACTO DE TARJETAS ===================== */
+.prop-titulo {
+  font-size: 1.22em;
+  font-weight: 700;
+  color: #222;
+  margin: 0 0 10px 0;
+  line-height: 1.3;
 }
 
-/* Quita los <br> que separan demasiado (los que pone el JavaScript) */
-.alquiler br { 
-  display: none !important; 
+.prop-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 1.05em;
+  font-weight: 600;
 }
+
+.info-tag {
+  background: #e0e7ff;
+  color: #4338ca;
+  padding: 6px 14px;
+  border-radius: 50px;
+  font-size: 0.95em;
+}
+
+.info-tag.precio {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.info-tag.estado.activo {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.info-tag.estado.inactivo {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Tarjeta más compacta */
+.alquiler {
+  margin: 12px auto !important;
+  max-width: 660px;
+  padding: 18px 22px !important;
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  background: white;
+}
+
+/* Quitar cualquier <br> viejo que quede */
+.alquiler br { display: none !important; }
+      
       .alquiler-actions { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; flex-wrap: wrap; gap: 10px; }
       .alquiler-actions-left button, .alquiler-actions-right button {
         background: var(--primary);
