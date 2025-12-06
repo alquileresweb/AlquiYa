@@ -47,7 +47,12 @@
         align-items: center;
         justify-content: space-between;
       }
-      header img { max-height: 60px; }
+      /* LOGO MÁS GRANDE */
+      header img {
+        max-height: 80px;   /* antes era 60px */
+        height: 80px;
+      }
+      
       #back-arrow, #menu-toggle {
         position: fixed;
         top: 20px;
@@ -65,9 +70,17 @@
         z-index: 1001;
       }
       #back-arrow { left: 20px; }
-      #menu-toggle { right: 20px; font-size: 28px; }
-      background-image: url('https://i.postimg.cc/h4Xj2nFV/white-profile-icon-app-logo-260nw-1932531338-(1).png');
-}
+      /* PERSONITA EN LUGAR DEL MENÚ HAMBURGUESA */
+      #menu-toggle i {
+        display: none;
+      }
+      #menu-toggle {
+        background-image: url('https://i.postimg.cc/h4Xj2nFV/white-profile-icon-app-logo-260nw-1932531338-(1).png');
+        background-size: 70%;
+        background-repeat: no-repeat;
+        background-position: center;
+      }
+
       #menu {
         display: none;
         position: fixed;
@@ -92,11 +105,17 @@
         transition: background 0.2s;
       }
       #menu button:hover { background: #f1f5f9; }
-      h2, h3 { text-align: center; color: var(--dark); margin: 20px 0; }
-      h3 { font-size: 2em; }
       
       h2, h3 { text-align: center; color: var(--dark); margin: 20px 0; }
-      h3 { font-size: 1.5em; }
+      
+      /* TÍTULO "MIS PROPIEDADES" MÁS CHICO */
+      h3 {
+        text-align: center;
+        color: var(--dark);
+        margin: 20px 0;
+        font-size: 1.5em;   /* antes era 2em */
+        font-weight: 600;
+      }
       
       /* ==================== PANEL MI PLAN MODIFICADO ==================== */
       #planContainer {
@@ -438,9 +457,7 @@
   </head>
   <body>
     <button id="back-arrow" onclick="window.location.href='index.html'"><i class="fas fa-arrow-left"></i></button>
-    <!-- MENÚ AHORA ES LA PERSONITA -->
-    <button id="menu-toggle" onclick="toggleMenu()"></button>
-
+    <button id="menu-toggle" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
     <div id="menu">
       <button onclick="abrirModalEditarCuenta()">Editar Cuenta</button>
       <button onclick="logout()">Cerrar Sesión</button>
