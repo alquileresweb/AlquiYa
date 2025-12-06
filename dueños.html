@@ -170,61 +170,57 @@
 }
 
 /* ==================== TARJETAS DE PROPIEDADES MÁS COMPACTAS ==================== */
-.alquiler {
-  background: white;
-  margin: 12px auto;              /* menos espacio entre tarjetas */
-  max-width: 660px;
-  padding: 16px 20px;             /* menos padding interno */
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  position: relative;
-  line-height: 1.35;              /* líneas más juntas */
-}
+  .alquiler {
+    background: white;
+    margin: 12px auto !important;           /* menos separación entre tarjetas */
+    max-width: 660px;
+    padding: 16px 20px !important;          /* menos padding interno */
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    line-height: 1.35 !important;           /* líneas más juntas */
+  }
 
-/* Dirección grande pero sin salto exagerado */
-.alquiler b {
-  font-size: 1.22em;
-  display: block;
-  margin-bottom: 2px !important;   /* ← antes tenía mucho espacio */
-  color: #222;
-  font-weight: 700;
-}
+  /* Dirección pegadita al resto */
+  .alquiler b {
+    font-size: 1.15em !important;
+    margin: 0 0 2px 0 !important;            /* casi sin espacio debajo */
+    display: block;
+    color: #222;
+    font-weight: 700;
+  }
 
-/* Todo lo que va después de la dirección: precio, tipo, estado, etc. */
-.alquiler > *:not(b):not(.alquiler-actions):not(.stats-inline) {
-  margin: 4px 0 !important;        /* ← todo pegadito */
-  font-size: 1.02em;
-  color: #444;
-}
+  /* Todo lo que viene después de la dirección: súper pegado */
+  .alquiler > *:not(b):not(.alquiler-actions):not(.stats-inline) {
+    margin: 3px 0 !important;
+    font-size: 1.02em !important;
+    color: #444;
+  }
 
-/* Estadísticas también más compactas */
-.stats-inline {
-  margin-top: 10px;
-  padding: 10px;
-  gap: 20px;
-  font-size: 1.05em;
-}
+  .alquiler br { display: none !important; }  /* eliminamos los <br> que separaban */
 
-/* ==================== BOTÓN "AGREGAR PROPIEDAD" MÁS PEQUEÑO Y BONITO ==================== */
-#btnAgregarPropiedad {
-  display: block;
-  margin: 28px auto 20px auto;    /* un poco más arriba */
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 11px 26px;              /* ← más pequeño que antes */
-  border-radius: 50px;
-  font-size: 1.08em;               /* letra un poco más chica */
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 6px 18px rgba(67, 97, 238, 0.3);
-  transition: all 0.3s ease;
-}
+  /* Stats y acciones también más compactos */
+  .stats-inline { margin-top: 10px; padding: 10px; gap: 20px; font-size: 1.05em; }
+  .alquiler-actions { margin-top: 12px !important; gap: 8px; }
 
-#btnAgregarPropiedad:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(67, 97, 238, 0.45);
-}
+  /* ==================== BOTÓN "AGREGAR PROPIEDAD" MÁS PEQUEÑO Y ELEGANTE ==================== */
+  #btnAgregarPropiedad {
+    display: block;
+    margin: 28px auto;
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 11px 26px !important;     /* ← más pequeño que antes */
+    border-radius: 50px;
+    font-size: 1.15em !important;      /* ← texto un poco más chico */
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(67, 97, 238, 0.35);
+    transition: all 0.3s ease;
+  }
+  #btnAgregarPropiedad:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(67, 97, 238, 0.45);
+  }
       
       #contactoBtn {
         position: fixed;
