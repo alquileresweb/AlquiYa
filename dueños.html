@@ -179,6 +179,18 @@
         position: relative;
       }
       .alquiler b { font-size: 1.1em; display: block; margin-bottom: 4px; }
+      /* ===================== TEXTOS NORMALES DE LA TARJETA (precio, tipo, estado...) ===================== */
+.alquiler > *:not(b):not(.alquiler-actions):not(.stats-inline):not(br) {
+  margin: 3px 0 !important;       /* muy poco espacio arriba y abajo */
+  font-size: 1.02em !important;
+  color: #444 !important;
+  line-height: 1.35 !important;
+}
+
+/* Quita los <br> que separan demasiado (los que pone el JavaScript) */
+.alquiler br { 
+  display: none !important; 
+}
       .alquiler-actions { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; flex-wrap: wrap; gap: 10px; }
       .alquiler-actions-left button, .alquiler-actions-right button {
         background: var(--primary);
