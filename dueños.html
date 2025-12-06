@@ -168,6 +168,24 @@
   margin: 6px 0 10px 0 !important; /* muy poco espacio */
   font-weight: 500;
 }
+      /* Botón más pequeño y pegado */
+#btnPlan {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 10px 22px;             /* botón más compacto */
+  border-radius: 50px;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;                 /* casi pegado al texto de arriba */
+  transition: all 0.3s ease;
+}
+
+#btnPlan:hover {
+  background: #3651d4;
+  transform: translateY(-2px);
+}
 
 .alquiler {
         background: white;
@@ -179,6 +197,7 @@
         position: relative;
       }
       .alquiler b { font-size: 1.1em; display: block; margin-bottom: 4px; }
+      
       /* ===================== TEXTOS NORMALES DE LA TARJETA (precio, tipo, estado...) ===================== */
 .alquiler > *:not(b):not(.alquiler-actions):not(.stats-inline):not(br) {
   margin: 3px 0 !important;       /* muy poco espacio arriba y abajo */
