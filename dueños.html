@@ -755,7 +755,17 @@
         <p id="msgEditarCuenta" style="text-align:center; margin-top:15px; font-weight:bold;"></p>
       </div>
     </div>
-    <div id="modalEstadisticas"><div class="modal-content"></div></div>
+    <div id="modalEstadisticas" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" onclick="cerrarModalEstadisticas()">&times;</span>
+    <h2 id="modal-titulo" style="text-align:center;color:var(--primary);margin-bottom:20px;">Estadísticas</h2>
+    <div style="text-align:center;padding:30px;font-size:1.4em;">
+      <div style="margin:20px 0;"><i class="fa-solid fa-eye" style="color:#d97706;"></i> <strong id="modal-vistas">0</strong> vistas</div>
+      <div style="margin:20px 0;"><i class="fa-solid fa-phone" style="color:#25D366;"></i> <strong id="modal-contactos">0</strong> contactos</div>
+    </div>
+    <p id="msgEstadisticas" style="text-align:center;margin-top:20px;font-weight:bold;"></p>
+  </div>
+</div>
     <button id="contactoBtn" title="¿Necesitas ayuda?" onclick="window.open('https://wa.me/5493764275443', '_blank')">
       <i class="fab fa-whatsapp"></i>
     </button>
