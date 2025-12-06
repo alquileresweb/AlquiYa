@@ -29,7 +29,7 @@
   /* === NRO DE AMBIENTES SUPERPUESTO – AHORA MÁS ARRIBA Y SIN FONDO === */
   .ambientes-overlay {
     position: absolute;
-    top: 80px;               /* ← más arriba */
+    top: 160px;               /* ← más arriba */
     left: 50%;
     transform: translateX(-50%);
     background: rgba(0,0,0,0.45);
@@ -688,7 +688,7 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
   <button onclick="mostrarAvisos()">Recibir avisos</button>
 </div>
   
-<!-- PANEL FILTROS -->
+<!-- PANEL FILTROS - CHECKBOXES BIEN PEGADOS AL TEXTO -->
 <div id="filtros">
   <input type="number" id="filtroAmb" placeholder="Nro de Ambientes">
   <input type="text" id="filtroMin" placeholder="Precio Mínimo" oninput="formatCurrency(this)">
@@ -699,8 +699,20 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
     <option value="Temporario">Alquiler Temporario</option>
     <option value="Local">Local Comercial</option>
   </select>
-  <label><input type="checkbox" id="filtroMascotas"> Mascotas Permitidas</label>
-  <label><input type="checkbox" id="filtroAmoblado"> Amoblado</label>
+
+  <!-- CHECKBOXES CON TEXTO AL LADO Y PERFECTAMENTE ALINEADOS -->
+  <label class="checkbox-label">
+    <input type="checkbox" id="filtroMascotas">
+    <span class="custom-checkbox"></span>
+    Mascotas Permitidas
+  </label>
+
+  <label class="checkbox-label">
+    <input type="checkbox" id="filtroAmoblado">
+    <span class="custom-checkbox"></span>
+    Amoblado
+  </label>
+
   <button onclick="aplicarFiltros()">Filtrar</button>
 </div>
   
