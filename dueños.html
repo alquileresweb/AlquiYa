@@ -71,25 +71,37 @@
       }
       #back-arrow { left: 20px; }
       
-      /* PERSONITA EN LA ESQUINA SUPERIOR DERECHA */
-      #menu-toggle {
-        position: fixed;
-        top: 16px;
-        right: 16px;
-        width: 54px;
-        height: 54px;
-        background: white;
-        background-image: url('https://i.postimg.cc/Wp6Hg6QX/white-profile-icon-app-logo-260nw-1932531338.png');
-        background-size: 70%;
-        background-repeat: no-repeat;
-        background-position: center;
-        border-radius: 50%;
-        box-shadow: var(--shadow);
-        cursor: pointer;
-        z-index: 1002;
-        border: none;
-        padding: 0;
-      }
+      /* PERSONITA EN LUGAR DEL MENÚ HAMBURGUESA - VERSIÓN FINAL CORREGIDA */
+#menu-toggle {
+  position: fixed;
+  top: 18px;           /* un poco más arriba para que quede perfecto */
+  right: 18px;         /* bien pegado a la esquina derecha */
+  width: 56px;
+  height: 56px;
+  background-color: white;
+  background-image: url('https://i.postimg.cc/Wp6Hg6QX/white-profile-icon-app-logo-260nw-1932531338.png');
+  background-size: 62%;           /* ajustado para que se vea completo y bonito */
+  background-repeat: no-repeat;
+  background-position: center;
+  border-radius: 50%;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  cursor: pointer;
+  z-index: 1001;
+  border: 3px solid #4361ee;      /* borde azul para destacar */
+  transition: all 0.3s ease;
+}
+
+/* Efecto al pasar el mouse */
+#menu-toggle:hover {
+  transform: scale(1.08);
+  box-shadow: 0 12px 28px rgba(67, 97, 238, 0.25);
+  border-color: #3651d4;
+}
+
+/* Ocultamos el ícono de Font Awesome que venía antes */
+#menu-toggle i {
+  display: none !important;
+}
       
       #menu {
         display: none;
