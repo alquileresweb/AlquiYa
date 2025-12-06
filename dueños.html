@@ -53,23 +53,31 @@
         height: 100px;
       }
       
-      #back-arrow, #menu-toggle {
-        position: fixed;
-        top: 20px;
-        font-size: 32px;
-        color: var(--primary);
-        background: white;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: var(--shadow);
-        cursor: pointer;
-        z-index: 1001;
-      }
-      #back-arrow { left: 20px; }
+      /* BOTONES FIJOS: FLECHA Y PERSONITA CON EL MISMO ESTILO */
+#back-arrow, #menu-toggle {
+  position: fixed;
+  top: 20px;
+  width: 50px;
+  height: 50px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  z-index: 1001;
+  transition: all 0.3s ease;
+}
+
+/* Flecha izquierda */
+#back-arrow {
+  left: 20px;
+}
+#back-arrow i {
+  font-size: 32px;
+  color: var(--primary);
+}
       
       /* PERSONITA EN LUGAR DEL MENÚ HAMBURGUESA - VERSIÓN FINAL CORREGIDA */
 #menu-toggle {
@@ -79,7 +87,7 @@
   width: 56px;
   height: 56px;
   background-color: white;
-  background-image: url('https://i.postimg.cc/Wp6Hg6QX/white-profile-icon-app-logo-260nw-1932531338.png');
+  background-image: url('https://i.postimg.cc/h4Xj2nFV/white-profile-icon-app-logo-260nw-1932531338-(1).png');
   background-size: 62%;           /* ajustado para que se vea completo y bonito */
   background-repeat: no-repeat;
   background-position: center;
@@ -91,11 +99,13 @@
   transition: all 0.3s ease;
 }
 
-/* Efecto al pasar el mouse */
-#menu-toggle:hover {
+/* Efecto hover igual para ambos */
+#back-arrow:hover, #menu-toggle:hover {
   transform: scale(1.08);
   box-shadow: 0 12px 28px rgba(67, 97, 238, 0.25);
-  border-color: #3651d4;
+}
+#menu-toggle:hover {
+  border: 2px solid var(--primary);
 }
 
 /* Ocultamos el ícono de Font Awesome que venía antes */
