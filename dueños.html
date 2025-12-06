@@ -1322,7 +1322,7 @@ cerrarModalPlan();
 planStatusEl.innerHTML = `<span class="estado-msg error">Error al actualizar el plan: ${res.error || "desconocido"}</span>`;
 setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
 }
-
+}
 function toggleOpcionesPropiedad() {
         const selector = document.getElementById("seleccionPropiedad");
         const btn = document.getElementById("btnAgregarPropiedad");
