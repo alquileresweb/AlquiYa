@@ -854,10 +854,21 @@ function mostrarAlquileres(res) {
 }
 function cargarAlquileres() {
   const email = localStorage.getItem("dueno");
+  if (!email) return;
+
+  // Limpiamos cualquier "undefined" que haya quedado colgado de llamadas anteriores
+  const oldScripts = document.querySelectorAll('script[src*="getAlquileresDueno"]');
+  oldScripts.forEach(s => s.remove());
+
   const script = document.createElement("script");
-  script.src = `${API_URL}?action=getAlquileresDueno&dueno=${encodeURIComponent(email)}&callback=mostrarAlquileres`;
+  script.src = `${API_URL}?action=getAlquileresDueno&dueno=${encodeURIComponent(email)}&callback=mostrarAlquileres&t=${Date.now()}`;
+  script.onerror = () => {
+    document.getElementById("listaAlquileres").innerHTML = 
+      "<p style='text-align:center;color:#666;padding:40px;'>Error de conexión. <button onclick='cargarAlquileres()' style='margin-top:10px;padding:8px 16px;background:var(--primary);color:white;border:none;border-radius:50px;cursor:pointer;'>Reintentar</button></p>";
+  };
   document.body.appendChild(script);
 }
+  
 function initGoogleCharts() {
   console.log('Inicializando Google Charts...');
   if (typeof google === 'undefined' || !google.charts) {
