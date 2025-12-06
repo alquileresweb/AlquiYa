@@ -65,7 +65,17 @@
         z-index: 1001;
       }
       #back-arrow { left: 20px; }
-      #menu-toggle { right: 20px; font-size: 28px; }
+      /* PERSONITA EN LUGAR DEL MENÚ HAMBURGUESA */
+      #menu-toggle i {
+        display: none;
+      }
+      #menu-toggle {
+        background-image: url('https://i.postimg.cc/Wp6Hg6QX/white-profile-icon-app-logo-260nw-1932531338.png');
+        background-size: 70%;
+        background-repeat: no-repeat;
+        background-position: center;
+      }
+
       #menu {
         display: none;
         position: fixed;
@@ -90,8 +100,9 @@
         transition: background 0.2s;
       }
       #menu button:hover { background: #f1f5f9; }
+      
       h2, h3 { text-align: center; color: var(--dark); margin: 20px 0; }
-      h3 { font-size: 2em; }
+      h3 { font-size: 1.5em; }
       
       /* ==================== PANEL MI PLAN MODIFICADO ==================== */
       #planContainer {
@@ -183,7 +194,7 @@
         justify-content: center;
         gap: 30px;
         flex-wrap: wrap;
-        font-size: 1.2em;
+        font-size: 1.1em;
       }
       .stats-item { display: flex; align-items: center; gap: 8px; font-weight: bold; color: #d97706; }
       .stats-item i { font-size: 1.4em; }
