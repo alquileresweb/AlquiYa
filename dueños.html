@@ -192,13 +192,13 @@
         background: white;
         margin: 12px auto;
         max-width: 700px;
-        padding: 20px;
+        padding: 18px;
         border-radius: var(--radius);
         box-shadow: var(--shadow);
         position: relative;
       }
-      .alquiler b { font-size: 1.1em; display: block; margin-bottom: 8px; }
-      .alquiler-actions { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; flex-wrap: wrap; gap: 10px; }
+      .alquiler b { font-size: 1.1em; display: block; margin-bottom: 4px; }
+      .alquiler-actions { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; flex-wrap: wrap; gap: 10px; }
       .alquiler-actions-left button, .alquiler-actions-right button {
         background: var(--primary);
         color: white;
@@ -251,11 +251,17 @@
         background: var(--primary);
         color: white;
         border: none;
-        padding: 16px 32px;
+        padding: 12px 28px;
         border-radius: 50px;
-        font-size: 1.3em;
+        font-size: 1.1em;
         cursor: pointer;
       }
+      
+      #btnAgregarPropiedad:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(67, 97, 238, 0.4);
+}
+      
       #contactoBtn {
         position: fixed;
         bottom: 24px;
