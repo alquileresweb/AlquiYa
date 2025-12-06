@@ -139,17 +139,27 @@
         font-weight: 600;
       }
       
-      /* ==================== PANEL MI PLAN MODIFICADO ==================== */
-      #planContainer {
-        background: white;
-        margin: 20px auto;
-        max-width: 600px;
-        padding: 24px;
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        text-align: center;
-        border: 3px solid #4361ee; /* borde azul */
-      }
+* ==================== PANEL MI PLAN - VERSIÓN MÁS CHICO Y MÁS BAJO ==================== */
+#planContainer {
+  background: white;
+  margin: 40px auto 30px auto;   /* más margen arriba → baja el panel */
+  max-width: 420px;              /* más estrecho (antes 600px) */
+  padding: 18px 20px;            /* menos padding interno */
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  text-align: center;
+  border: 2.5px solid var(--primary);   /* borde azul un poco más fino */
+  font-size: 0.95em;             /* todo el texto dentro un poco más pequeño */
+}
+
+/* Ajustes internos para que se vea más compacto y lindo */
+#planContainer b {
+  font-size: 1.2em;
+  color: var(--dark);
+  display: block;
+  margin-bottom: 8px;
+}
+      
       #planStatus {
         font-weight: bold;
         font-size: 1.1em;
