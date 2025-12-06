@@ -169,115 +169,61 @@
   font-weight: 500;
 }
 
-/* Botón más pequeño y pegado */
-#btnPlan {
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 10px 22px;             /* botón más compacto */
-  border-radius: 50px;
-  font-size: 1em;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 8px;                 /* casi pegado al texto de arriba */
-  transition: all 0.3s ease;
-}
-
-#btnPlan:hover {
-  background: #3651d4;
-  transform: translateY(-2px);
-}
-      
+/* ==================== TARJETAS DE PROPIEDADES MÁS COMPACTAS ==================== */
 .alquiler {
   background: white;
-  margin: 14px auto;
-  max-width: 680px;
-  padding: 18px 22px;           /* ← menos padding general */
+  margin: 12px auto;              /* menos espacio entre tarjetas */
+  max-width: 660px;
+  padding: 16px 20px;             /* menos padding interno */
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   position: relative;
-  line-height: 1.4;             /* ← líneas más juntas */
+  line-height: 1.35;              /* líneas más juntas */
 }
 
+/* Dirección grande pero sin salto exagerado */
 .alquiler b {
-  font-size: 1.1em;            /* ← dirección un poco más grande */
+  font-size: 1.22em;
   display: block;
-  margin-bottom: 4px !important; /* ← mucho más cerca del resto */
+  margin-bottom: 2px !important;   /* ← antes tenía mucho espacio */
   color: #222;
   font-weight: 700;
 }
 
-/* Los textos siguientes también más pegaditos */
-.alquiler br + strong,
+/* Todo lo que va después de la dirección: precio, tipo, estado, etc. */
 .alquiler > *:not(b):not(.alquiler-actions):not(.stats-inline) {
-  margin: 6px 0 !important;
-  font-size: 1.05em;
+  margin: 4px 0 !important;        /* ← todo pegadito */
+  font-size: 1.02em;
   color: #444;
 }
-      .alquiler b { font-size: 1.1em; display: block; margin-bottom: 4px; }
-      .alquiler-actions { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; flex-wrap: wrap; gap: 10px; }
-      .alquiler-actions-left button, .alquiler-actions-right button {
-        background: var(--primary);
-        color: white;
-        border: none;
-        padding: 10px 16px;
-        border-radius: 50px;
-        cursor: pointer;
-        font-size: 0.95em;
-      }
-      .alquiler-actions-right button { background: var(--danger); }
-      .toggle-switch { position: relative; display: inline-block; width: 60px; height: 34px; }
-      .toggle-switch input { opacity: 0; width: 0; height: 0; }
-      .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background-color: #ccc;
-        transition: .4s;
-        border-radius: 34px;
-      }
-      .slider:before {
-        position: absolute;
-        content: "";
-        height: 26px;
-        width: 26px;
-        left: 4px;
-        bottom: 4px;
-        background-color: white;
-        transition: .4s;
-        border-radius: 50%;
-      }
-      input:checked + .slider { background-color: var(--success); }
-      input:checked + .slider:before { transform: translateX(26px); }
-      .stats-inline {
-        margin-top: 16px;
-        padding: 14px;
-        background: #fff8e1;
-        border-radius: 12px;
-        display: flex;
-        justify-content: center;
-        gap: 30px;
-        flex-wrap: wrap;
-        font-size: 1.1em;
-      }
-      .stats-item { display: flex; align-items: center; gap: 8px; font-weight: bold; color: #d97706; }
-      .stats-item i { font-size: 1.4em; }
-      
-      #btnAgregarPropiedad {
-        display: block;
-        margin: 30px auto;
-        background: var(--primary);
-        color: white;
-        border: none;
-        padding: 12px 28px;
-        border-radius: 50px;
-        font-size: 1.1em;
-        cursor: pointer;
-      }
-      
-      #btnAgregarPropiedad:hover {
+
+/* Estadísticas también más compactas */
+.stats-inline {
+  margin-top: 10px;
+  padding: 10px;
+  gap: 20px;
+  font-size: 1.05em;
+}
+
+/* ==================== BOTÓN "AGREGAR PROPIEDAD" MÁS PEQUEÑO Y BONITO ==================== */
+#btnAgregarPropiedad {
+  display: block;
+  margin: 28px auto 20px auto;    /* un poco más arriba */
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 11px 26px;              /* ← más pequeño que antes */
+  border-radius: 50px;
+  font-size: 1.08em;               /* letra un poco más chica */
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(67, 97, 238, 0.3);
+  transition: all 0.3s ease;
+}
+
+#btnAgregarPropiedad:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(67, 97, 238, 0.4);
+  box-shadow: 0 10px 25px rgba(67, 97, 238, 0.45);
 }
       
       #contactoBtn {
