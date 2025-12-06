@@ -1322,13 +1322,7 @@ cerrarModalPlan();
 planStatusEl.innerHTML = `<span class="estado-msg error">Error al actualizar el plan: ${res.error || "desconocido"}</span>`;
 setTimeout(() => { planStatusEl.innerHTML = ""; cargarEstadoPlan(); }, 5000);
 }
-}
-function cargarAlquileres() {
-const email = localStorage.getItem("dueno");
-const script = document.createElement("script");
-script.src = `${API_URL}?action=getAlquileresDueno&dueno=${encodeURIComponent(email)}&callback=mostrarAlquileres`;
-document.body.appendChild(script);
-}
+
 function toggleOpcionesPropiedad() {
         const selector = document.getElementById("seleccionPropiedad");
         const btn = document.getElementById("btnAgregarPropiedad");
