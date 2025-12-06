@@ -92,6 +92,8 @@
       #menu button:hover { background: #f1f5f9; }
       h2, h3 { text-align: center; color: var(--dark); margin: 20px 0; }
       h3 { font-size: 2em; }
+      
+      /* ==================== PANEL MI PLAN MODIFICADO ==================== */
       #planContainer {
         background: white;
         margin: 20px auto;
@@ -100,8 +102,24 @@
         border-radius: var(--radius);
         box-shadow: var(--shadow);
         text-align: center;
+        border: 3px solid #4361ee; /* borde azul */
       }
-      #planStatus { font-weight: bold; font-size: 1.4em; margin: 12px 0; }
+      #planStatus {
+        font-weight: bold;
+        font-size: 1.4em;
+        margin: 12px 0;
+        color: var(--primary);
+      }
+      #planInfo {
+        font-size: 1.1em;
+        color: #444;
+        margin: 8px 0;
+      }
+      #limiteAlquileres {
+        font-size: 1.1em;
+        color: var(--gray);
+        margin-top: 8px;
+      }
       #btnPlan {
         background: var(--primary);
         color: white;
@@ -110,6 +128,7 @@
         border-radius: 50px;
         font-size: 1.1em;
         cursor: pointer;
+        margin-top: 12px;
       }
       .alquiler {
         background: white;
