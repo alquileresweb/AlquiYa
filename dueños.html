@@ -65,33 +65,35 @@
         z-index: 1001;
       }
       #back-arrow { left: 20px; }
-      /* PERSONITA NUEVA Y MEJORADA */
-  #menu-toggle {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    width: 56px;
-    height: 56px;
-    background: white;
-    border-radius: 50%;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
-    cursor: pointer;
-    z-index: 1001;
-    background-image: url('https://i.postimg.cc/h4Xj2nFV/white-profile-icon-app-logo-260nw-1932531338-(1).png');
-    background-size: 68%;
-    background-repeat: no-repeat;
-    background-position: center;
-    border: 2.5px solid #000000;   /* detalle azul AlquiYa */
-    transition: all 0.2s;
-  }
-
-  #menu-toggle:hover {
-    transform: scale(1.08);
-    box-shadow: 0 12px 30px rgba(67, 97, 238, 0.25);
-  }
-
-  /* Ocultamos cualquier ícono anterior */
-  #menu-toggle i { display: none !important; }
+      #menu-toggle { right: 20px; font-size: 28px; }
+      background-image: url('https://i.postimg.cc/h4Xj2nFV/white-profile-icon-app-logo-260nw-1932531338-(1).png');
+}
+      #menu {
+        display: none;
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: white;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        z-index: 1001;
+        min-width: 200px;
+      }
+      #menu.active { display: block; }
+      #menu button {
+        width: 100%;
+        padding: 16px 20px;
+        border: none;
+        background: none;
+        text-align: left;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      #menu button:hover { background: #f1f5f9; }
+      h2, h3 { text-align: center; color: var(--dark); margin: 20px 0; }
+      h3 { font-size: 2em; }
       
       h2, h3 { text-align: center; color: var(--dark); margin: 20px 0; }
       h3 { font-size: 1.5em; }
