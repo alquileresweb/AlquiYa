@@ -768,25 +768,44 @@ function mostrarAlquileres(res) {
       <div class="stats-item"><i class="fa-solid fa-phone"></i><span class="stats-number">${contactos}</span> contactos</div>
     </div>`;
     div.innerHTML += `<div class="alquiler">
-      <b>${alq.Direccion || alq.direccion}</b><br>
-      ${tipoDisplay}${precioFormateado ? " - " + precioFormateado : ""}<br>
-      Estado: <strong>${estado ? "Activo" : "Inactivo"}</strong><br>
-      ${statsHTML}
-      <div class="alquiler-actions">
-        <div class="alquiler-actions-left">
-          <button class="copy-share-btn" data-id="${idPropiedad}">Copiar enlace</button>
-          <button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>
-        </div>
-        <div class="alquiler-actions-right">
-          <button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>
-          <label class="toggle-switch">
-            <input type="checkbox" ${estado ? "checked" : ""} onchange="cambiarEstado(${alq.row}, '${alq.Estado}')">
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
-      <span id="estadoMsg-${alq.row}" class="estado-msg"></span>
-    </div>`;
+  <!-- TÍTULO: DIRECCIÓN -->
+  <div class="prop-titulo">
+    ${alq.Direccion || alq.direccion || "Sin dirección"}
+  </div>
+
+  <!-- INFORMACIÓN EN LÍNEA: Operación • Precio • Estado -->
+  <div class="prop-info">
+    <span class="info-tag operacion">
+      ${alq.Operacion === "Vender" ? "Venta" : "Alquiler"}
+    </span>
+    ${precioFormateado ? 
+      `<span class="info-tag precio">${precioFormateado}</span>` : 
+      '<span class="info-tag precio">Consultar</span>'
+    }
+    <span class="info-tag estado ${estado ? "activo" : "inactivo"}">
+      ${estado ? "Activo" : "Inactivo"}
+    </span>
+  </div>
+
+  <!-- Estadísticas -->
+  ${statsHTML}
+
+  <!-- Botones de acción -->
+  <div class="alquiler-actions">
+    <div class="alquiler-actions-left">
+      <button class="copy-share-btn" data-id="${idPropiedad}">Copiar enlace</button>
+      <button onclick='editarAlquiler(${alq.row}, ${JSON.stringify(alq)})'>Editar</button>
+    </div>
+    <div class="alquiler-actions-right">
+      <button onclick="eliminarAlquiler(${alq.row})">Eliminar</button>
+      <label class="toggle-switch">
+        <input type="checkbox" ${estado ? "checked" : ""} onchange="cambiarEstado(${alq.row}, '${alq.Estado}')">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+  <span id="estadoMsg-${alq.row}" class="estado-msg"></span>
+</div>`;
   });
   document.querySelectorAll('.copy-share-btn').forEach(btn => {
     btn.onclick = function () {
