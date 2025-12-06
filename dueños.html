@@ -70,15 +70,29 @@
         z-index: 1001;
       }
       #back-arrow { left: 20px; }
-      /* PERSONITA EN LUGAR DEL MENÚ HAMBURGUESA */
-      #menu-toggle i {
-        display: none;
-      }
+      
+      /* BOTÓN PERSONITA - ESQUINA SUPERIOR DERECHA */
       #menu-toggle {
+        position: fixed;
+        top: 18px;
+        right: 18px;
+        width: 56px;
+        height: 56px;
+        background: white;
+        border-radius: 50%;
+        box-shadow: var(--shadow);
+        z-index: 1001;
+        cursor: pointer;
         background-image: url('https://i.postimg.cc/h4Xj2nFV/white-profile-icon-app-logo-260nw-1932531338-(1).png');
-        background-size: 70%;
+        background-size: 68%;
         background-repeat: no-repeat;
         background-position: center;
+        border: 2px solid #e2e8f0;
+        transition: all 0.2s;
+      }
+      #menu-toggle:hover {
+        transform: scale(1.08);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
       }
 
       #menu {
