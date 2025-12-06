@@ -1076,7 +1076,7 @@ function mostrarEstadoPlan(res) {
   }
   const estadoPago = login.EstadoPago || "No registrado";
   const vencimiento = formatoFecha(login.Vencimiento || "N/D");
-  let planStatusHTML = `Plan: <b>${planActual || "Sin plan"}</b> | Estado de Pago: ${estadoPago} | Vencimiento: ${vencimiento}`;
+  let planStatusHTML = `Plan: <b>${planActual || "Sin plan"}</b> | Vencimiento: ${vencimiento}`;
   // Mensajes especiales si el plan está vencido o es prueba
   if (planActual === "Prueba" && vencimiento !== "N/D") {
     const vencimientoDate = new Date(vencimiento.split("/").reverse().join("-"));
