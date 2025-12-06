@@ -49,8 +49,8 @@
       }
       /* LOGO MÁS GRANDE */
       header img {
-        max-height: 120px;   /* antes era 60px */
-        height: 120px;
+        max-height: 150px;   /* antes era 60px */
+        height: 150px;
       }
       
       /* BOTONES FIJOS: FLECHA Y PERSONITA CON EL MISMO ESTILO */
@@ -497,7 +497,6 @@
       <button onclick="logout()">Cerrar Sesión</button>
     </div>
     <header><div></div><img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya"><div></div></header>
-    
     <div id="planContainer">
       <b>Mi plan</b>
       <div id="planStatus"></div>
@@ -532,7 +531,6 @@
         </button>
       </div>
     </div>
-    
     <!-- ==================== TODOS LOS FORMULARIOS CON DISEÑO MODERNO ==================== -->
     <!-- 1. TERRENO -->
     <div id="formularioTerreno">
@@ -708,7 +706,6 @@
     <button id="contactoBtn" title="¿Necesitas ayuda?" onclick="window.open('https://wa.me/5493764275443', '_blank')">
       <i class="fab fa-whatsapp"></i>
     </button>
-    
 <script>
 // === CONSTANTES Y VARIABLES ===
 const API_URL = "https://script.google.com/macros/s/AKfycbyFvDRwPZoG6ChhvcxGm6B27ziD6Qkg4RcH0TI9K59b7zPz7iFxy7mgmbs5mo5T-TxD/exec";
@@ -1653,5 +1650,35 @@ console.error("Error en edición de cuenta:", err);
 }
 }
 </script>
+    
+  <!-- =============== PIE DE PÁGINA AZUL – VOLVER AL MAPA (para dueños.html) =============== -->
+  <footer style="margin-top:80px;background:#3483fa;color:white;padding:2.5rem 1rem 1.5rem;">
+    <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2rem;align-items:center;text-align:center;">
+      <!-- Logo -->
+      <div>
+        <img src="https://i.postimg.cc/FHXRBTTX/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.png" alt="Logo AlquiYa" style="max-width:180px;height:auto;">
+      </div>
+
+      <!-- Botón Volver al Mapa -->
+      <div>
+        <a href="https://www.alquiya.com.ar" 
+           style="display:inline-block;background:white;color:#3483fa;font-weight:700;padding:0.9rem 2.6rem;border-radius:50px;font-size:1.28rem;box-shadow:0 6px 20px rgba(52,131,250,0.3);transition:all 0.3s ease;text-decoration:none;">
+          ← Volver al Mapa
+        </a>
+      </div>
+
+      <!-- Instagram -->
+      <div>
+        <a href="https://www.instagram.com/alquiya.st/" target="_blank">
+          <img src="https://i.postimg.cc/GmVWTXX0/394a7aaecd6b8ce44528649681d9fa05.png" alt="Instagram" style="width:40px;height:40px;">
+        </a>
+      </div>
+
+      <!-- Copyright -->
+      <div style="font-size:0.95rem;opacity:0.9;grid-column:1/-1;">
+        © 2025 AlquiYa • Todos los derechos reservados
+      </div>
+    </div>
+  </footer>
 </body>
 </html>
