@@ -105,12 +105,47 @@
   header { background: white; padding: 1rem; text-align: center; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 1000; }
   header img { max-width: 250px; height: auto; }
 
+  * === MENÚ PRINCIPAL - AHORA ULTRA-COMPACTO EN MÓVILES === */
   nav {
-    display: flex; justify-content: center; gap: 0.4rem; background: white; padding: 1rem;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05); flex-wrap: wrap;
+    display: flex;
+    justify-content: center;
+    gap: 0.8rem;               /* menos espacio entre botones */
+    background: white;
+    padding: 0.9rem 1rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    flex-wrap: nowrap;          /* nunca se baja */
+    overflow-x: auto;           /* si el móvil es muy pequeño permite scroll horizontal */
+    white-space: nowrap;
+    scrollbar-width: none;
   }
-  nav a { text-decoration: none; font-weight: 600; color: var(--text); padding: 0.7rem 1.2rem; border-radius: 10px; transition: var(--transition); }
-  nav a:hover, nav a.active { background: var(--primary); color: white; }
+  nav::-webkit-scrollbar { display: none; }
+
+  nav a {
+    text-decoration: none;
+    font-weight: 600;
+    color: var(--text);
+    padding: 0.65rem 1rem;      /* menos padding vertical y horizontal */
+    border-radius: 10px;
+    transition: var(--transition);
+    font-size: 0.95rem;         /* texto un poco más pequeño en móvil */
+    min-width: fit-content;
+  }
+  nav a:hover, nav a.active {
+    background: var(--primary);
+    color: white;
+  }
+
+  /* En pantallas muy pequeñas todavía más compacto */
+  @media (max-width: 480px) {
+    nav {
+      gap: 0.5rem;
+      padding: 0.75rem 0.8rem;
+    }
+    nav a {
+      padding: 0.55rem 0.85rem;
+      font-size: 0.9rem;
+    }
+  }
 
   /* === PIE DE PÁGINA AZUL === */
   footer {
