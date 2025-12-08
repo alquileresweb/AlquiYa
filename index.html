@@ -908,20 +908,21 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
     <a href="https://wa.me/5493764391885" target="_blank">
       <img src="https://i.postimg.cc/rmsfYsVr/Mas-de-40-estudiantes-ya-confiaron-en-Rapiclean-(3).png" alt="Rapiclean">
     </a>
+
+  <!-- NUEVA PUBLICIDAD SOLICITADA (antes del footer) -->
+  <div class="final-banner" style="margin:40px 0 60px;">
+    <a href="https://wa.me/5493756505202?text=Hola,%20vi%20tu%20publicidad%20en%20AlquiYa%20y%20quiero%20más%20info" target="_blank">
+      <img src="https://i.postimg.cc/8cW9tc4x/Whats-App-Image-2025-12-08-at-10-19-35.jpg" 
+           alt="Publicidad" 
+           style="border-radius:15px; box-shadow:0 10px 30px rgba(0,0,0,0.2);">
+    </a>
+  </div>
+
     <a href="https://wa.me/5493764275443?text=Hola,+quiero+publicitar+en+AlquiYa&utm_source=chatgpt.com" target="_blank">
       <div id="publicidad-container">
         <p>Espacio Publicitario</p>
         <p>Haz clic para publicitar aquí</p>
       </div>
-    </a>
-  </div>
-
-  <!-- NUEVA PUBLICIDAD SOLICITADA (antes del footer) -->
-  <div class="final-banner" style="margin:40px 0 60px;">
-    <a href="https://wa.me/5493764275443?text=Hola,%20vi%20tu%20publicidad%20en%20AlquiYa%20y%20quiero%20más%20info" target="_blank">
-      <img src="https://i.postimg.cc/8cW9tc4x/Whats-App-Image-2025-12-08-at-10-19-35.jpg" 
-           alt="Publicidad" 
-           style="border-radius:15px; box-shadow:0 10px 30px rgba(0,0,0,0.2);">
     </a>
   </div>
   
@@ -1830,5 +1831,50 @@ window.onload = () => {
   cargarPropiedadesLista(); // <-- carga inmediata
 };
 </script>
+
+  <!-- POP-UP EMERGENTE RAPICLEAN -->
+<div id="rapiclean-popup" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:9998; align-items:center; justify-content:center; animation:fadeIn 0.6s ease;">
+  <div style="background:white; border-radius:20px; overflow:hidden; max-width:90%; width:380px; box-shadow:0 20px 60px rgba(0,0,0,0.4); position:relative; animation:popUp 0.6s ease;">
+    
+    <!-- Botón cerrar X -->
+    <button onclick="cerrarRapicleanPopup()" style="position:absolute; top:12px; right:12px; background:#e74c3c; color:white; border:none; width:36px; height:36px; border-radius:50%; font-size:20px; font-weight:bold; cursor:pointer; z-index:10; box-shadow:0 0 4px 12px rgba(0,0,0,0.3);">
+      ×
+    </button>
+
+    <!-- Imagen clickable que lleva a WhatsApp -->
+    <a href="https://wa.me/5493764391885" target="_blank">
+      <img src="https://i.postimg.cc/43C34LFX/POST-Rapiclean-(2).png" alt="Rapiclean - Limpieza para estudiantes" style="width:100%; height:auto; display:block; border-radius:20px;">
+    </a>
+  </div>
+</div>
+
+<style>
+  @keyframes fadeIn {
+    from { opacity:0; }
+    to { opacity:1; }
+  }
+  @keyframes popUp {
+    0% { transform:scale(0.7); opacity:0; }
+    100% { transform:scale(1); opacity:1; }
+  }
+</style>
+
+<script>
+// Mostrar el pop-up solo si no fue cerrado en esta sesión
+window.addEventListener('load', function() {
+  if (!sessionStorage.getItem('rapicleanPopupCerrado')) {
+    setTimeout(() => {
+      document.getElementById('rapiclean-popup').style.display = 'flex';
+    }, 1500); // Aparece después de 1.5 segundos
+  }
+});
+
+function cerrarRapicleanPopup() {
+  document.getElementById('rapiclean-popup').style.display = 'none';
+  // Guardamos que ya lo cerró para no volver a mostrarlo en esta sesión
+  sessionStorage.setItem('rapicleanPopupCerrado', 'true');
+}
+</script>
+  
 </body>
 </html>
