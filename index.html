@@ -303,11 +303,15 @@ nav a.active {
   }
 }
   /* === TARJETAS EN LISTA - ESTILOS CORREGIDOS Y ÚNICOS === */
-  /* === CORRECCIÓN: QUITAR ESPACIO EN BLANCO DESPUÉS DE LAS PROPIEDADES === */
-.property-grid {
-  margin: 20px auto 0 !important;
-  padding: 0 20px 10px;
-}
+  .property-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    max-width: 1400px;
+    margin: 20px auto 40px auto !important;
+    padding: 0 20px;
+    justify-items: center;
+  }
 
   .property-card {
     background: white;
@@ -713,7 +717,7 @@ box-shadow:0 0 2px #000;
   }
   /* BANNER FINAL DE RAPICLEAN */
   .final-banner {
-    width: 100%; margin: 40px 0 20px; text-align: center; padding: 0 15px;
+    width: 100%; margin-top: 0 !important; margin-bottom: 40px; text-align: center; padding: 0 15px;
   }
   .final-banner img {
     width: 100%; max-width: 1000px; height: auto; border-radius: 15px;
@@ -895,6 +899,7 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
   
 <div id="loading-msg">Cargando alquileres disponibles...</div>
 <div id="map"></div>
+  
 <!-- BANNER FINAL BONITO -->
   <div class="final-banner">
     <a href="https://wa.me/5493764391885" target="_blank">
