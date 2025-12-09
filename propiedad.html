@@ -312,7 +312,7 @@ window.onload = async () => {
     if (a.Contacto) {
       const btn = document.createElement("button");
       btn.textContent = "Contactar por WhatsApp";
-      btn.onclick = () => window.open(`https://wa.me/${a.Contacto}?text=${encodeURIComponent("Hola, consulto por " + direccion)}`, "_blank");
+      btn.onclick = () => window.open(`https://wa.me/${a.Contacto}?text=${encodeURIComponent("Hola, *vengo desde AlquiYa*\n\nMe interesa el alquiler " + direccion)}`, "_blank");
       card.appendChild(btn);
     }
 
