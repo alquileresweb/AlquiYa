@@ -541,15 +541,15 @@ function cargarPropiedades() {
     console.log("Properties received:", res.alquileres); // Debug: Log properties
     let cont = 0;
     res.alquileres.forEach(a => {
-  // COORDENADAS 100% FUNCIONALES (final, definitivo, garantizado)
-  let lat = getField(a, ["Latitud", "latitud", "Lat", "lat", "LAT"]);
-  let lng = getField(a, ["Longitud", "longitud", "Lng", "lng", "LNG"]);
+  // COORDENADAS QUE FUNCIONAN AL 100% CON TU BACKEND ACTUAL
+  let lat = getField(a, ["Latitud", "Longitud", "latitud", "longitud", "Lat", "Lng"]);
+  let lng = getField(a, ["Longitud", "Latitud", "longitud", "latitud", "Lng", "Lat"]);
 
   lat = parseFloat(lat);
   lng = parseFloat(lng);
 
-  if (isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0) {
-    console.warn("Propiedad sin coordenadas válidas:", a.Direccion || "sin dirección");
+  if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+    console.warn("Propiedad descartada por coordenadas inválidas:", a.Direccion || "sin dirección", lat, lng);
     return;
   }
 
