@@ -541,18 +541,16 @@ function cargarPropiedades() {
     console.log("Properties received:", res.alquileres); // Debug: Log properties
     let cont = 0;
     res.alquileres.forEach(a => {
-  // COORDENADAS QUE FUNCIONAN SIEMPRE (con comillas, espacios, etc.)
-  let latStr = getField(a, ["Latitud", "latitud", "Lat", "lat", "LAT"]);
-  let lngStr = getField(a, ["Longitud", "longitud", "Lng", "lng", "LNG"]);
+  // COORDENADAS QUE FUNCIONAN AL 100% (con mayúscula, comillas, números, todo)
+  let lat = getField(a, ["Latitud", "Lat", "lat", "LAT", "latitude"]);
+  let lng = getField(a, ["Longitud", "Lng", "lng", "LNG", "longitude"]);
 
-  latStr = String(latStr).replace(/[^0-9.-]/g, '');
-  lngStr = String(lngStr).replace(/[^0-9.-]/g, '');
-
-  const lat = parseFloat(latStr);
-  const lng = parseFloat(lngStr);
+  // Forzamos conversión a número limpiando todo lo que no sea dígito, punto o guión
+  lat = parseFloat(String(lat).replace(/[^0-9.-]/g, ''));
+  lng = parseFloat(String(lng).replace(/[^0-9.-]/g, ''));
 
   if (isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0) {
-    console.warn("Sin coordenadas válidas:", a.Direccion || "sin dirección");
+    console.warn("Coordenadas inválidas para:", a.Direccion || "sin dirección", {lat, lng, rawLat: a.Latitud, rawLng: a.Longitud});
     return;
   }
 
