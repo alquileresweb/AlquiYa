@@ -523,13 +523,15 @@ function cargarPropiedades() {
     console.log("Properties received:", res.alquileres); // Debug: Log properties
     let cont = 0;
     res.alquileres.forEach(a => {
-  // COORDENADAS CORREGIDAS DEFINITIVAMENTE (sin intercambio)
-  const lat = parseFloat(getField(a, ["Latitud", "latitud", "Lat", "lat", "LAT"]));
-  const lng = parseFloat(getField(a, ["Longitud", "longitud", "Lng", "lng", "LNG"]));
+  // COORDENADAS – FUNCIONA SÍ O SÍ (acceso directo + fallback)
+  let lat = a.Latitud || a.latitud || a.Lat || a.lat || a.LAT || a["Latitud"];
+  let lng = a.Longitud || a.longitud || a.Lng || a.lng || a.LNG || a["Longitud"];
 
-  // Validación estricta
-  if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-    console.warn("Propiedad descartada - coordenadas inválidas:", a.Direccion || "sin dirección", { lat, lng });
+  lat = parseFloat(lat);
+  lng = parseFloat(lng);
+
+  if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180 || lat === 0 || lng === 0) {
+    console.warn("DESCARTADA → coordenadas inválidas:", a.Direccion || "sin dirección", { lat, lng });
     return;
   }
 
