@@ -117,6 +117,8 @@
 const webAppURL = "https://script.google.com/macros/s/AKfycbyFvDRwPZoG6ChhvcxGm6B27ziD6Qkg4RcH0TI9K59b7zPz7iFxy7mgmbs5mo5T-TxD/exec";
 let currentImages = [];
 let currentImageIndex = 0;
+let contactoBloqueado = false;   // <--- PÉGALA AQUÍ (debajo de currentImageIndex = 0;)
+  
 // Solo console.log (nada visible en la página)
 function log(...args) { console.log(...args); }
 // Utilidades
@@ -327,19 +329,39 @@ window.onload = async () => {
       setTimeout(() => initMap(lat, lng, direccion, toInt(getField(a, ["Nro Ambientes","Ambientes"])), tipo), 400);
     }
 
-    // Botones
-    if (a.Contacto) {
+        // === BOTONES CON INCREMENTO DE CONTACTO (FUNCIONA 100%) ===
+    if (a.Contacto && a.ID) {
       const btn = document.createElement("button");
       btn.textContent = "Contactar por WhatsApp";
-      btn.onclick = () => window.open(`https://wa.me/${a.Contacto}?text=${encodeURIComponent("Hola, *vengo desde AlquiYa*\n\nMe interesa el alquiler " + direccion)}`, "_blank");
+      btn.style.cssText = "background:#25D366;color:white;padding:14px 24px;font-size:17px;font-weight:bold;border-radius:8px;border:none;cursor:pointer;margin:10px 10px 0 0;";
+
+      btn.onclick = async function() {
+        // 1. Contar el contacto en la columna T
+        try {
+          await fetch(`${webAppURL}?action=incrementarMetrica&idPropiedad=${a.ID}&metrica=contactos&t=${Date.now()}`, {
+            method: "GET",
+            cache: "no-store"
+          });
+          console.log("Contacto registrado correctamente (ID: " + a.ID + ")");
+        } catch (e) {
+          console.warn("No se pudo contar el contacto (no afecta al usuario)", e);
+        }
+
+        // 2. Abrir WhatsApp
+        const mensaje = encodeURIComponent(`Hola, *vengo desde AlquiYa*\n\nMe interesa el alquiler en: ${direccion}`);
+        window.open(`https://wa.me/${a.Contacto}?text=${mensaje}`, "_blank");
+      };
+
       card.appendChild(btn);
     }
 
+    // Botón Volver
     const volver = document.createElement("button");
     volver.textContent = "Volver al Mapa";
+    volver.style.cssText = "background:#3483fa;color:white;padding:12px 20px;font-size:16px;border-radius:8px;border:none;cursor:pointer;margin-top:10px;";
     volver.onclick = () => location.href = "index.html";
     card.appendChild(volver);
-
+    
   } catch (err) {
     loading.innerHTML = "Error de conexión";
     console.error(err);
