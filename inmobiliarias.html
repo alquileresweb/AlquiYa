@@ -565,13 +565,34 @@ function cargarPropiedades() {
     console.log("Properties received:", res.alquileres); // Debug: Log properties
     let cont = 0;
     res.alquileres.forEach(a => {
-      // DESPUÉS (nueva versión más tolerante):
-const lat = parseFloat(getField(a, ["Lat", "lat", "LAT", "Latitud", "latitud", "Lat.", "Latitud:"]));
-const lng = parseFloat(getField(a, ["Lng", "lng", "LNG", "Longitud", "longitud", "Long.", "Longitud:"]));
-      if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-        console.warn("Invalid coordinates for property:", a);
-        return;
-      }
+      // === NUEVA VERSIÓN ROBUSTA: lee coordenadas por nombre o por posición de columna ===
+let lat = NaN;
+let lng = NaN;
+
+// 1. Intenta por nombres (por si acaso están bien escritos)
+lat = parseFloat(getField(a, ["Lat", "lat", "LAT", "Latitud", "latitud"]));
+lng = parseFloat(getField(a, ["Lng", "lng", "LNG", "Longitud", "longitud"]));
+
+// 2. Si no encontró por nombre → fuerza lectura por posición de columna
+if (isNaN(lat) || isNaN(lng)) {
+  // Asumiendo que tu hoja "Alquileres" tiene las columnas en este orden exacto:
+  // A=ID, B=Operacion, C=Tipo, D=Latitud, E=Longitud, F=Direccion, etc.
+  const valores = Object.values(a); // convierte el objeto en array ordenado por columna
+
+  if (valores.length >= 5) { // columna E es índice 4
+    const posibleLat = parseFloat(String(valores[3]).replace(',', '.').trim()); // columna D = índice 3
+    const posibleLng = parseFloat(String(valores[4]).replace(',', '.').trim()); // columna E = índice 4
+
+    if (!isNaN(posibleLat) && posibleLat >= -90 && posibleLat <= 90) lat = posibleLat;
+    if (!isNaN(posibleLng) && posibleLng >= -180 && posibleLng <= 180) lng = posibleLng;
+  }
+}
+
+// 3. Validación final
+if (isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0) {
+  console.warn("Coordenadas inválidas o cero para esta propiedad:", a);
+  return; // salta esta propiedad
+}
 
       const operacionProp = getField(a, ["Operacion", "Operación"]);
       if (operacion === "Comprar" && operacionProp !== "Vender") return;
