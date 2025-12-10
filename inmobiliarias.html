@@ -1,3 +1,12 @@
+dame la solucion para el error: Extracted email from malformed URL: prueba@gmail.com
+inmobiliarias.html?=prueba@gmail.com:495 Parsed email: prueba@gmail.com
+inmobiliarias.html?=prueba@gmail.com:496 Sending request with email: prueba%40gmail.com
+inmobiliarias.html?=prueba@gmail.com:524 Backend response: {success: true, data: {…}, alquileres: Array(5)}
+inmobiliarias.html?=prueba@gmail.com:533 Nombre de la inmobiliaria: Agustin Santos
+inmobiliarias.html?=prueba@gmail.com:541 Properties received: (5) [{…}, {…}, {…}, {…}, {…}]
+inmobiliarias.html?=prueba@gmail.com:702 Properties added to map: 0
+inmobiliarias.html?=prueba@gmail.com:704 No properties with valid coordinates found for email: prueba@gmail.com
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -541,17 +550,12 @@ function cargarPropiedades() {
     console.log("Properties received:", res.alquileres); // Debug: Log properties
     let cont = 0;
     res.alquileres.forEach(a => {
-  // COORDENADAS QUE FUNCIONAN AL 100% CON TU BACKEND ACTUAL
-  let lat = getField(a, ["Latitud", "Longitud", "latitud", "longitud", "Lat", "Lng"]);
-  let lng = getField(a, ["Longitud", "Latitud", "longitud", "latitud", "Lng", "Lat"]);
-
-  lat = parseFloat(lat);
-  lng = parseFloat(lng);
-
-  if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-    console.warn("Propiedad descartada por coordenadas inválidas:", a.Direccion || "sin dirección", lat, lng);
-    return;
-  }
+      const lat = parseFloat(getField(a, ["Lat", "lat", "LAT", "Latitud"]));
+      const lng = parseFloat(getField(a, ["Lng", "lng", "LNG", "Longitud"]));
+      if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+        console.warn("Invalid coordinates for property:", a);
+        return;
+      }
 
       const operacionProp = getField(a, ["Operacion", "Operación"]);
       if (operacion === "Comprar" && operacionProp !== "Vender") return;
