@@ -328,6 +328,122 @@ window.onload = async () => {
 };
 </script>
 
+  // Extraer email incluso de URLs mal formadas como "?=email@gmail.com"
+  function extraerEmailDeURL() {
+    const params = new URLSearchParams(window.location.search);
+    let email = params.get("email") || params.get("") || params.keys().next().value;
+    if (email && email.includes("@")) return email.trim();
+    // Soporte para URLs rotas como inmobiliarias.html?=axel.martinezz665@gmail.com
+    const hash = window.location.search.substring(1);
+    const match = hash.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+    return match ? match[0] : null;
+  }
+
+  window.onload = async () => {
+    const email = extraerEmailDeURL();
+    const loading = document.getElementById("loading");
+    const container = document.getElementById("inmobiliaria-info");
+
+    if (!email) {
+      loading.innerHTML = "Error: No se encontró el email de la inmobiliaria.";
+      return;
+    }
+
+    try {
+      // LA CLAVE: ahora sí pasamos action=getInmobiliaria
+      const res = await fetch(
+        `${webAppURL}?action=getInmobiliaria&email=${encodeURIComponent(email)}`,
+        { cache: "no-store" }
+      );
+
+      const result = await res.json();
+
+      if (!result.success) {
+        loading.innerHTML = `<h2 style="color:red;">Error: ${result.error || "Inmobiliaria no encontrada"}</h2>`;
+        return;
+      }
+
+      const { data: inmo, alquileres = [] } = result;
+
+      // Mostrar datos de la inmobiliaria
+      container.innerHTML = `
+        <div class="inmo-header">
+          <img src="https://i.postimg.cc/0jFNDZ7Y/default-avatar.png" alt="Logo Inmobiliaria" class="inmo-foto" onerror="this.src='https://i.postimg.cc/0jFNDZ7Y/default-avatar.png'">
+          <div class="inmo-datos">
+            <h1>${inmo.Nombre || "Inmobiliaria"}</h1>
+            <p><strong>Email:</strong> ${inmo.Email}</p>
+            ${inmo.Contacto ? `<p><strong>Teléfono:</strong> ${inmo.Contacto}</p>` : ""}
+            <p><strong>Plan:</strong> ${inmo.Plan || "Básico"} ${inmo.Vencimiento ? ` (hasta ${inmo.Vencimiento})` : ""}</p>
+            ${inmo.Contacto ? `<a href="https://wa.me/${inmo.Contacto.replace(/[^\d+]/g,'')}?text=Hola,%20vi%20tu%20perfil%20en%20AlquiYa%20y%20quiero%20consultar" class="btn-whatsapp" target="_blank">
+              Contactar por WhatsApp
+            </a>` : ""}
+          </div>
+        </div>
+
+        <h2 style="color:#3483fa; margin-top:40px;">Propiedades en alquiler (${alqueres.length})</h2>
+
+        ${alqueres.length === 0 
+          ? `<p>No hay propiedades activas en este momento.</p>`
+          : `<div class="propiedades-grid">
+              ${alqueres.map(p => {
+                const primeraFoto = p.Fotos ? p.Fotos.split(",")[0].trim() : "";
+                const fotoURL = primeraFoto.includes("drive.google.com") 
+                  ? primeraFoto.replace(/\/open\?id=/, "/uc?export=view&id=").replace(/\/file\/d\//, "/uc?export=view&id=").split("&")[0]
+                  : primeraFoto || "https://via.placeholder.com/400x300?text=Sin+Foto";
+
+                return `
+                  <div class="prop-card" onclick="window.open('propiedad.html?id=${p.ID}', '_blank')">
+                    <img src="${fotoURL}" alt="${p.Direccion || "Propiedad"}" class="prop-img" onerror="this.src='https://via.placeholder.com/400x300?text=Sin+Foto'">
+                    <div class="prop-info">
+                      <h3>${p.Direccion || "Sin dirección"}</h3>
+                      <p><strong>${p.Tipo || "Departamento"}</strong> • ${p["Nro Ambientes"] || "?"} ambientes</p>
+                      <p class="precio">$${Number(p.Precio || 0).toLocaleString("es-AR")}</p>
+                      <p>${p.Detalles ? p.Detalles.substring(0, 100) + "..." : "Sin descripción"}</p>
+                    </div>
+                  </div>
+                `;
+              }).join("")}
+            </div>`
+        }
+
+        ${alqueres.length > 0 ? `<div id="map"></div>` : ""}
+      `;
+
+      // Inicializar mapa con todas las propiedades
+      if (alqueres.length > 0) {
+        setTimeout(() => {
+          const map = L.map("map").setView([-28.55, -56.04], 13);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+          const bounds = [];
+          alquileres.forEach(p => {
+            const lat = parseFloat(p.Lat);
+            const lng = parseFloat(p.Lng);
+            if (!isNaN(lat) && !isNaN(lng)) {
+              L.marker([lat, lng])
+                .addTo(map)
+                .bindPopup(`<b>${p.Direccion}</b><br>$${Number(p.Precio || 0).toLocaleString("es-AR")}<br>Haz click para ver detalles`)
+                .on('click', () => window.open(`propiedad.html?id=${p.ID}`, '_blank'));
+              bounds.push([lat, lng]);
+            }
+          });
+
+          if (bounds.length > 0) {
+            map.fitBounds(bounds.pad(0.1));
+          }
+        }, 500);
+      }
+
+      loading.style.display = "none";
+      container.style.display = "block";
+
+    } catch (err) {
+      console.error(err);
+      loading.innerHTML = `<h2 style="color:red;">Error de conexión</h2>`;
+    }
+  };
+</script>
+
   <!-- =============== PIE DE PÁGINA AZUL – VOLVER AL MAPA (para dueños.html) =============== -->
   <footer style="margin-top:80px;background:#3483fa;color:white;padding:2.5rem 1rem 1.5rem;">
     <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2rem;align-items:center;text-align:center;">
