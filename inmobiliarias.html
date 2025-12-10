@@ -553,10 +553,6 @@ function cargarPropiedades() {
     return;
   }
 
-  // El resto del código sigue igual...
-  const operacionProp = getField(a, ["Operacion", "Operación"]);
-  // ... (todo lo demás queda igual)
-
       const operacionProp = getField(a, ["Operacion", "Operación"]);
       if (operacion === "Comprar" && operacionProp !== "Vender") return;
       if (operacion === "Alquilar" && operacionProp !== "Alquiler") return;
