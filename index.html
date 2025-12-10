@@ -747,7 +747,7 @@ Cualquier acuerdo, gestión o transacción vinculada al alquiler se realiza de m
 <h3>2. Publicaciones y Responsabilidad de los Dueños</h3>
 <p>Los Dueños son responsables de la información, imágenes y condiciones que publiquen.<br>
 La Plataforma no garantiza la veracidad ni autenticidad de las publicaciones.<br>
-Si un Usuario detecta un anuncio falso o sospechoso, podrá reportarlo a través de <a href="mailto:alquiya@gmail.com">alquiya@gmail.com</a> para que sea revisado y eventualmente eliminado.<br>
+Si un Usuario detecta un anuncio falso o sospechoso, podrá reportarlo a través de <a href="mailto:alquiya.notificaciones@gmail.com">alquiya.notificaciones@gmail.com</a> para que sea revisado y eventualmente eliminado.<br>
 El Dueño se compromete a proporcionar datos de contacto reales y verificables (email y teléfono).</p>
 <h3>3. Exención de Responsabilidad por Fraudes o Estafas</h3>
 <p>La Plataforma no será responsable por fraudes, engaños o incumplimientos cometidos por Dueños o Usuarios.<br>
@@ -757,7 +757,7 @@ El Usuario reconoce y acepta que:<br>
 <h3>4. Protección de Datos Personales</h3>
 <p>La Plataforma cumple con la Ley de Protección de Datos Personales Nº 25.326.<br>
 Los datos proporcionados serán utilizados únicamente para el funcionamiento de la Plataforma.<br>
-El Usuario puede ejercer sus derechos de acceso, rectificación o supresión comunicándose a <a href="mailto:alquiya@gmail.com">alquiya@gmail.com</a>.<br>
+El Usuario puede ejercer sus derechos de acceso, rectificación o supresión comunicándose a <a href="mailto:alquiya.notificaciones@gmail.com">alquiya.notificaciones@gmail.com</a>.<br>
 La base de datos será registrada ante la Agencia de Acceso a la Información Pública conforme a la normativa vigente.</p>
 <h3>5. Relación de Consumo – Limitaciones de Responsabilidad</h3>
 <p>En caso de que el servicio contratado (ej. publicación destacada, plan pago) no funcione correctamente, el Usuario deberá notificarlo dentro de los 7 días posteriores para gestionar un ajuste o reembolso si corresponde.<br>
@@ -823,10 +823,14 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
   <button onclick="aplicarFiltros()">Filtrar</button>
 </div>
   
-<!-- PANEL AVISOS -->
+<!-- PANEL AVISOS – AGREGADO TEXTO INFORMATIVO -->
 <div id="avisos-panel">
   <h2>Recibir Notificaciones</h2>
-  <input type="text" id="avisos_email" placeholder="Email">
+  <p style="font-size:0.95rem; color:#555; margin:10px 0 20px;">
+    Te enviaremos un email cada vez que se publique una nueva propiedad.<br>
+    <strong>Remitente:</strong> alquiya.notificaciones@gmail.com
+  </p>
+  <input type="text" id="avisos_email" placeholder="Tu email">
   <button onclick="registrarEmailAvisos()">Suscribirse</button>
   <button onclick="cerrarAvisos()">Cancelar</button>
   <p id="avisos-msg" style="color:green"></p>
