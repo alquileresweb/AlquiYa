@@ -540,18 +540,21 @@ function cargarPropiedades() {
 
     console.log("Properties received:", res.alquileres); // Debug: Log properties
     let cont = 0;
-    res.alquileres.forEach(a => {
-  // COORDENADAS CORREGIDAS (funciona con mayúsculas, minúsculas y strings con comillas)
-  let lat = getField(a, ["Latitud", "latitud", "Lat", "lat", "LAT", "latitude", "Latitude"]);
-  let lng = getField(a, ["Longitud", "longitud", "Lng", "lng", "LNG", "longitude", "Longitude"]);
+    // === COORDENADAS 100% FUNCIONALES (incluso con comillas, espacios, etc.) ===
+let latStr = getField(a, ["Latitud", "latitud", "Lat", "lat", "LAT", "Latitude"]);
+let lngStr = getField(a, ["Longitud", "longitud", "Lng", "lng", "LNG", "Longitude"]);
 
-  lat = parseFloat(String(lat).replace(/[^0-9.-]/g, ''));
-  lng = parseFloat(String(lng).replace(/[^0-9.-]/g, ''));
+// Limpiamos TODO lo que no sea número, punto o guión
+latStr = String(latStr).replace(/[^0-9.-]/g, '');
+lngStr = String(lngStr).replace(/[^0-9.-]/g, '');
 
-  if (isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0 || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-    console.warn("Propiedad sin coordenadas válidas:", a.Direccion || a.ID);
-    return;
-  }
+const lat = parseFloat(latStr);
+const lng = parseFloat(lngStr);
+
+if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+  console.warn("Coordenadas inválidas después de limpiar:", a);
+  return;
+}
 
       const operacionProp = getField(a, ["Operacion", "Operación"]);
       if (operacion === "Comprar" && operacionProp !== "Vender") return;
