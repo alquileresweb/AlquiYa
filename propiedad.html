@@ -137,6 +137,25 @@ function formatPrice(num) {
   const n = parseInt(String(num).replace(/[^\d]/g, ""), 10);
   return isNaN(n) ? "No disponible" : "$" + n.toLocaleString('es-AR');
 }
+
+  // === NUEVA FUNCIÓN: incrementar contacto (columna T) ===
+async function incrementarContacto(idPropiedad) {
+  if (contactoBloqueado) return; // evita doble clic
+  contactoBloqueado = true;
+  try {
+    await fetch(`${webAppURL}?action=incrementarMetrica&idPropiedad=${idPropiedad}&metrica=contactos`, {
+      method: "GET",
+      cache: "no-store"
+    });
+    console.log("Contacto registrado para propiedad ID:", idPropiedad);
+  } catch (err) {
+    console.error("Error al registrar contacto:", err);
+  } finally {
+    // desbloqueamos después de 2 segundos (evita spam)
+    setTimeout(() => { contactoBloqueado = false; }, 2000);
+  }
+}
+  
  // OBTENER FOTO DE PERFIL
 async function obtenerFotoPerfil(email) {
   if (!email) return "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
