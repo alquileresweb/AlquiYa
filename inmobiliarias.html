@@ -316,7 +316,7 @@ nav a:hover {
 /* =========================
 CONFIG
 */
-const webAppURL = "https://script.google.com/macros/s/AKfycbyFvDRwPZoG6ChhvcxGm6B27ziD6Qkg4RcH0TI9K59b7zPz7iFxy7mgmbs5mo5T-TxD/exec";
+const webAppURL = "https://script.google.com/macros/s/AKfycbwDl73ZMnMowfSu_NoISSSc4fnQpLp6kaxT9Dz5jMjE9NxT64AmeN23ORQy8lejul6S/exec";
 let currentImages = [];
 let currentImageIndex = 0;
 
@@ -330,36 +330,12 @@ let markersLayer = L.layerGroup().addTo(map);
 /* =========================
 UTILS
 */
-function getField(obj, possibleKeys) {
-  if (!obj || typeof obj !== 'object') return "";
-
-  // Normalizamos todas las claves del objeto una sola vez
-  const normalizedObj = {};
-  for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      const normalizedKey = String(key)
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")  // Quita tildes
-        .replace(/[^a-zA-Z0-9]/g, "")     // Quita puntos, espacios, etc.
-        .toLowerCase();
-      normalizedObj[normalizedKey] = obj[key];
-    }
+function getField(obj, keys) {
+  for (const k of keys) {
+    if (Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null && obj[k] !== "") return obj[k];
   }
-
-  // Lista de variantes normalizadas que queremos buscar
-  const targets = possibleKeys.map(k => 
-    String(k).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase()
-  );
-
-  for (const target of targets) {
-    if (normalizedObj.hasOwnProperty(target) && normalizedObj[target] != null && normalizedObj[target] !== "") {
-      return String(normalizedObj[target]).trim();
-    }
-  }
-
   return "";
 }
-  
 function toNumber(val) {
   if (typeof val === "number") return val;
   if (!val) return 0;
