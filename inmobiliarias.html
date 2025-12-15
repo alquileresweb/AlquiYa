@@ -259,6 +259,35 @@ nav a:hover {
   50% { transform: scale(1.02); box-shadow: 0 0 20px #2565c0; }
   100% { transform: scale(1); box-shadow: 0 0 10px rgba(0,0,0,0.1); }
 }
+
+  /* DETALLE */
+  #alquiler-detalle {
+    display: none; max-width: 800px; margin: 2rem auto; padding: 2rem; background: var(--card);
+    border: 2px solid var(--primary); border-radius: var(--radius); box-shadow: var(--shadow);
+    position: relative;
+  }
+  #alquiler-detalle.highlight { animation: resaltar 1.2s ease; }
+  #alquiler-detalle h2 { margin-top: 0; color: var(--primary); font-size: 2rem; }
+  .owner-profile-img {
+    position: absolute; top: 12px; right: 12px; width: 56px; height: 56px; border-radius: 50%;
+    object-fit: cover; border: 3px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer;
+  }
+  .owner-profile-img:hover { transform: scale(1.1); }
+  .action-buttons { display: flex; gap: 12px; flex-wrap: wrap; margin: 1.5rem 0; justify-content: center; }
+  .copy-share-btn {
+    background: #10b981; color: white; padding: 1rem 1.8rem; border-radius: var(--radius);
+    font-weight: 600; cursor: pointer; transition: var(--transition);
+  }
+  .copy-share-btn:hover { background: #059669; }
+  #imagenes-container {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; margin: 1.8rem 0;
+  }
+  #imagenes-container img {
+    width: 100%; height: 110px; object-fit: cover; border-radius: 12px; cursor: pointer;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.12); transition: var(--transition);
+  }
+  #imagenes-container img:hover { transform: scale(1.06); box-shadow: 0 10px 30px rgba(0,0,0,0.22); }
+  
 </style>
 </head>
 <body>
@@ -392,111 +421,123 @@ async function incrementarMetrica(idPropiedad, metrica = "vistas") {
   }).catch(() => {});
 }
 
-/* =========================
-MOSTRAR DETALLE COMPLETO (versión mejorada como en tu sitio principal)
-*/
+/* === AÑADIMOS LA FUNCIÓN mostrarDetalle AQUÍ === */
 async function mostrarDetalle(prop, operacion, direccion, nroAmb, formattedPrecio, infoIngreso, detalles, mascotas, amoblado, fotos, contacto, enlace) {
-  const idPropiedad = getField(prop, ["ID", "id"]);
+  const detalleDiv = document.getElementById("alquiler-detalle");
+  detalleDiv.innerHTML = "";
+  detalleDiv.style.display = "block";
+
   const tipo = getField(prop, ["Tipo", "tipo"]);
-  const titulo = `${tipo} en ${direccion || "Santo Tomé"}`;
+  const titulo = getField(prop, ["Título", "titulo", "Titulo", "Título Propiedad"]) || tipo || "Propiedad";
+  const idPropiedad = getField(prop, ["ID Propiedad", "idPropiedad", "ID"]);
+  const fotoPerfil = getField(prop, ["FotoPerfil", "fotoPerfil"]) || "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
 
-  // Incrementar vista
-  await incrementarMetrica(idPropiedad, "vistas");
+  // Título
+  const h2 = document.createElement("h2");
+  h2.textContent = titulo;
+  detalleDiv.appendChild(h2);
 
-  const detalle = document.getElementById('alquiler-detalle');
-  detalle.innerHTML = `<h2>${titulo}</h2><p id="metricas-error" style="color:red;"></p>`;
+  // Foto perfil dueño
+  const profileImg = document.createElement("img");
+  profileImg.className = "owner-profile-img";
+  profileImg.src = fotoPerfil;
+  profileImg.alt = "Foto del dueño";
+  profileImg.onclick = () => abrirModal(fotoPerfil, [fotoPerfil], 0);
+  detalleDiv.appendChild(profileImg);
 
-  // Foto del dueño (si existe en res.data, pero como no está aquí, lo omitimos o usas una genérica)
-  // Si en el futuro el backend devuelve fotoPerfil, la puedes agregar.
+  // Información básica
+  const info = document.createElement("p");
+  info.innerHTML = `
+    <strong>Dirección:</strong> ${direccion || "No disponible"}<br>
+    <strong>Precio:</strong> ${formattedPrecio || "Consultar"}<br>
+    <strong>Ambientes:</strong> ${nroAmb || "No especificado"}<br>
+    <strong>Tipo:</strong> ${tipo}
+  `;
+  detalleDiv.appendChild(info);
 
-  // Detalles en filas
-  const rows = [
-    ['Tipo', tipo],
-    ['Dirección', direccion || 'No disponible'],
-    ['Precio', formattedPrecio || '-'],
-    ['Ambientes', nroAmb || '-'],
-    ['Mascotas', mascotas || '-'],
-    ['Amoblado', amoblado || '-'],
-    ['Información de ingreso', infoIngreso || '-'],
-    ['Detalles', detalles || '-']
-  ];
-
-  rows.forEach(([label, val]) => {
-    if (val && val !== '-' && val !== 'No disponible') {
-      const p = document.createElement('p');
-      p.innerHTML = `<b>${label}:</b> ${val.replace(/\n/g, '<br>')}`;
-      detalle.appendChild(p);
+  // Características extras (solo alquiler)
+  if (operacion === "Alquilar") {
+    const extras = [];
+    if (mascotas && mascotas.toLowerCase() === "sí") extras.push("Mascotas permitidas");
+    if (amoblado && amoblado.toLowerCase() === "sí") extras.push("Amoblado");
+    if (extras.length > 0) {
+      const p = document.createElement("p");
+      p.innerHTML = "<strong>Extras:</strong> " + extras.join(" • ");
+      detalleDiv.appendChild(p);
     }
-  });
-
-  // Imágenes de la propiedad
-  const imgContainer = document.createElement('div');
-  imgContainer.id = 'imagenes-container';
-  if (fotos) {
-    const urls = fotos.split(/[,;]/).map(f => driveUrlDirect(f.trim())).filter(Boolean);
-    if (urls.length > 0) {
-      urls.forEach((url, i) => {
-        const img = document.createElement('img');
-        img.src = url;
-        img.alt = "Propiedad";
-        img.onclick = () => abrirModal(url, urls, i);
-        imgContainer.appendChild(img);
-      });
-    } else {
-      imgContainer.innerHTML = "<p style='color:#666;'>No hay imágenes disponibles.</p>";
-    }
-  } else {
-    imgContainer.innerHTML = "<p style='color:#666;'>No hay imágenes disponibles.</p>";
   }
-  detalle.appendChild(imgContainer);
 
-  // Botones de acción
-  const actionDiv = document.createElement('div');
-  actionDiv.style.cssText = 'margin-top:20px; text-align:center;';
+  // Información de ingreso y detalles
+  if (infoIngreso) {
+    const p = document.createElement("p");
+    p.innerHTML = `<strong>Información de ingreso:</strong><br>${infoIngreso.replace(/\n/g, "<br>")}`;
+    detalleDiv.appendChild(p);
+  }
+  if (detalles) {
+    const p = document.createElement("p");
+    p.innerHTML = `<strong>Detalles:</strong><br>${detalles.replace(/\n/g, "<br>")}`;
+    detalleDiv.appendChild(p);
+  }
 
-  // WhatsApp (cuenta como contacto)
+  // Imágenes
+  let imagenes = [];
+  if (fotos) {
+    imagenes = fotos.split(/[,;]\s*/).map(u => u.trim()).filter(u => u).map(driveUrlDirect);
+  }
+  if (imagenes.length > 0) {
+    const cont = document.createElement("div");
+    cont.id = "imagenes-container";
+    imagenes.forEach((src, i) => {
+      const img = document.createElement("img");
+      img.src = src;
+      img.onclick = () => abrirModal(src, imagenes, i);
+      cont.appendChild(img);
+    });
+    detalleDiv.appendChild(cont);
+  } else {
+    const p = document.createElement("p");
+    p.textContent = "No hay imágenes disponibles.";
+    p.style.color = "#666";
+    detalleDiv.appendChild(p);
+  }
+
+  // Botones
+  const buttons = document.createElement("div");
+  buttons.className = "action-buttons";
+
   if (contacto) {
     const num = contacto.replace(/\D/g, "");
     if (num.length >= 10) {
-      const waBtn = document.createElement('button');
-      waBtn.textContent = 'Contactar por WhatsApp';
-      waBtn.style.cssText = 'background:#25D366;color:white;padding:1rem 2rem;border-radius:14px;border:none;font-weight:600;cursor:pointer;margin:10px;font-size:1.1em;';
-      waBtn.onclick = async () => {
-        await incrementarMetrica(idPropiedad, "contactos");
-        const msg = `Hola, consulto por "${titulo}"`;
-        window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, '_blank');
-      };
-      actionDiv.appendChild(waBtn);
+      const waBtn = document.createElement("a");
+      waBtn.href = `https://wa.me/${num}?text=Hola, consulto por "${titulo}"`;
+      waBtn.target = "_blank";
+      waBtn.textContent = "Contactar por WhatsApp";
+      waBtn.style.cssText = "background:#25D366;color:white;padding:1rem 2rem;border-radius:14px;text-decoration:none;font-weight:600;";
+      waBtn.onclick = () => incrementarMetrica(idPropiedad, "contactos");
+      buttons.appendChild(waBtn);
     }
   }
 
-  // Copiar enlace
   if (idPropiedad) {
-    const copyBtn = document.createElement('button');
-    copyBtn.textContent = 'Copiar Enlace';
-    copyBtn.style.cssText = 'background:#3483fa;color:white;padding:1rem 2rem;border-radius:14px;border:none;font-weight:600;cursor:pointer;margin:10px;font-size:1.1em;';
+    const copyBtn = document.createElement("button");
+    copyBtn.className = "copy-share-btn";
+    copyBtn.textContent = "Copiar Enlace";
     copyBtn.onclick = () => {
       const url = `https://www.alquiya.com.ar/propiedad.html?id=${idPropiedad}`;
       navigator.clipboard.writeText(url).then(() => {
-        copyBtn.textContent = '¡Enlace copiado!';
-        setTimeout(() => copyBtn.textContent = 'Copiar Enlace', 2000);
-      }).catch(() => {
-        alert('Error al copiar: ' + url);
+        copyBtn.textContent = "¡Copiado!";
+        setTimeout(() => copyBtn.textContent = "Copiar Enlace", 2000);
       });
     };
-    actionDiv.appendChild(copyBtn);
+    buttons.appendChild(copyBtn);
   }
 
-  detalle.appendChild(actionDiv);
+  detalleDiv.appendChild(buttons);
 
-  // Mostrar y animar
-  detalle.style.display = 'block';
-  detalle.classList.add("highlight");
-  setTimeout(() => detalle.classList.remove("highlight"), 1200);
-  detalle.scrollIntoView({ behavior: "smooth", block: "nearest" });
-
-  // Ajustar mapa si se solapa
-  setTimeout(() => map.invalidateSize(), 300);
+  // Animación y scroll
+  detalleDiv.classList.add("highlight");
+  setTimeout(() => detalleDiv.classList.remove("highlight"), 1200);
+  detalleDiv.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
   
 /* =========================
