@@ -456,12 +456,14 @@ function cargarPropiedades() {
   markersLayer.clearLayers();
   document.getElementById("alquiler-detalle").style.display = "none";
   document.getElementById("inmobiliaria-nombre").querySelector("h2").textContent = "Cargando nombre de inmobiliaria...";
-  // Marcadores estáticos
+
+  // Marcadores estáticos (universidad, hospital, etc.)
   const uniIcon = L.divIcon({ className: 'marker-icon', html: '🎓', iconSize: [30, 30], iconAnchor: [15, 15] });
   const hospIcon = L.divIcon({ className: 'marker-icon', html: '🏥', iconSize: [30, 30], iconAnchor: [15, 15] });
   const superIcon = L.divIcon({ className: 'marker-icon', html: '🛒', iconSize: [30, 30], iconAnchor: [15, 15] });
   const busIcon = L.divIcon({ className: 'marker-icon', html: '🚌', iconSize: [30, 30], iconAnchor: [15, 15] });
   const policeIcon = L.divIcon({ className: 'marker-icon', html: '👮', iconSize: [30, 30], iconAnchor: [15, 15] });
+
   L.marker([-28.5509978, -56.0409727], { icon: uniIcon }).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
   L.marker([-28.5551127, -56.0389282], { icon: hospIcon }).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
   L.marker([-28.5519443, -56.0401962], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado La Bomba</b>");
@@ -469,10 +471,11 @@ function cargarPropiedades() {
   L.marker([-28.5462903, -56.0440365], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado La Economía</b>");
   L.marker([-28.5468697, -56.0432862], { icon: busIcon }).addTo(markersLayer).bindPopup("<b>Terminal de Omnibus</b>");
   L.marker([-28.5487787, -56.0396171], { icon: policeIcon }).addTo(markersLayer).bindPopup("<b>Policía</b>");
-  // Obtener email de la inmobiliaria desde la URL
+
+  // Obtener email de la URL
   const urlParams = new URLSearchParams(window.location.search);
   let inmobiliariaEmail = urlParams.get('email')?.trim();
-  // Manejar URL malformada (e.g., ?=<email>)
+
   if (!inmobiliariaEmail) {
     const rawQuery = window.location.search.replace(/^\?/, '').replace(/^=/, '').trim();
     if (rawQuery && rawQuery.includes('@')) {
@@ -480,9 +483,9 @@ function cargarPropiedades() {
       console.log("Extracted email from malformed URL:", inmobiliariaEmail);
     }
   }
-  console.log("Parsed email:", inmobiliariaEmail); // Debug: Log extracted email
-  console.log("Sending request with email:", encodeURIComponent(inmobiliariaEmail)); // Debug: Log encoded email
-  // Validar formato de email
+
+  console.log("Parsed email:", inmobiliariaEmail);
+
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!inmobiliariaEmail || !emailRegex.test(inmobiliariaEmail)) {
     loadingEl.style.display = "none";
@@ -490,7 +493,8 @@ function cargarPropiedades() {
     console.error("Invalid or missing email in URL:", inmobiliariaEmail);
     return;
   }
-  // Obtener filtros
+
+  // Filtros
   const operacion = document.getElementById("filtroOperacion").value;
   const filtroAmb = document.getElementById("filtroAmb").value;
   const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
@@ -499,131 +503,138 @@ function cargarPropiedades() {
   const filtroAmoblado = document.getElementById("filtroAmoblado").checked;
   const filtroTipoAlquilar = document.getElementById("filtroTipoAlquilar").value;
   const filtroTipoComprar = document.getElementById("filtroTipoComprar").value;
-  // Obtener datos de la inmobiliaria y sus propiedades
+
+  // Request al backend
   makeRequest(`${webAppURL}?action=getInmobiliaria&email=${encodeURIComponent(inmobiliariaEmail)}`, {
-    method: "GET",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" }
+    method: "GET"
   })
   .then(res => {
     loadingEl.style.display = "none";
-    console.log("Backend response:", res); // Debug: Log full response
+    console.log("Backend response:", res);
+
     if (!res || !res.success) {
-      console.error("Error fetching inmobiliaria data:", res?.error || "No response");
       document.getElementById("inmobiliaria-nombre").querySelector("h2").textContent = "Inmobiliaria no encontrada";
       return;
     }
-    // Mostrar el nombre de la inmobiliaria con el formato solicitado
-    const nombreInmobiliaria = res.data.Nombre || "Inmobiliaria no encontrada";
-    console.log("Nombre de la inmobiliaria:", nombreInmobiliaria); // Debug: Log nombre
+
+    const nombreInmobiliaria = res.data.Nombre || "Inmobiliaria";
     document.getElementById("inmobiliaria-nombre").querySelector("h2").textContent = `Inmobiliaria "${nombreInmobiliaria}"`;
+
     if (!Array.isArray(res.alquileres) || res.alquileres.length === 0) {
-      console.warn("No properties found for email:", inmobiliariaEmail);
+      console.warn("No properties found");
       return;
     }
-    console.log("Properties received:", res.alquileres); // Debug: Log properties
+
     let cont = 0;
     res.alquileres.forEach(a => {
-  // COORDENADAS – FUNCIONA SÍ O SÍ (acceso directo + fallback)
-  let lat = a.Latitud || a.latitud || a.Lat || a.lat || a.LAT || a["Latitud"];
-  let lng = a.Longitud || a.longitud || a.Lng || a.lng || a.LNG || a["Longitud"];
+      // === COORDENADAS (usando getField para mayor robustez) ===
+      let lat = getField(a, ["Latitud", "latitud", "Lat", "lat", "LAT", "Latitude"]);
+      let lng = getField(a, ["Longitud", "longitud", "Lng", "lng", "LNG", "Longitude"]);
 
-  lat = parseFloat(lat);
-  lng = parseFloat(lng);
+      lat = parseFloat(lat);
+      lng = parseFloat(lng);
 
-  if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180 || lat === 0 || lng === 0) {
-    console.warn("DESCARTADA → coordenadas inválidas:", a.Direccion || "sin dirección", { lat, lng });
-    return;
-  }
+      if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+        console.warn("DESCARTADA → coordenadas inválidas:", getField(a, ["Direccion", "Dirección"]), { lat, lng });
+        return;
+      }
 
-  const operacionProp = getField(a, ["Operacion", "Operación"]);
-  if (operacion === "Comprar" && operacionProp !== "Vender") return;
-  if (operacion === "Alquilar" && operacionProp !== "Alquiler") return;
+      // Filtros de operación
+      const operacionProp = getField(a, ["Operacion", "Operación", "operacion"]);
+      if (operacion === "Comprar" && operacionProp !== "Vender") return;
+      if (operacion === "Alquilar" && operacionProp !== "Alquiler") return;
 
-  const tipo = getField(a, ["Tipo"]);
-  if (operacion === "Alquilar" && filtroTipoAlquilar && tipo !== filtroTipoAlquilar) return;
-  if (operacion === "Comprar" && filtroTipoComprar && tipo !== filtroTipoComprar) return;
+      // Tipo
+      const tipo = getField(a, ["Tipo", "tipo"]);
+      if (operacion === "Alquilar" && filtroTipoAlquilar && tipo !== filtroTipoAlquilar) return;
+      if (operacion === "Comprar" && filtroTipoComprar && tipo !== filtroTipoComprar) return;
 
-  const ambVal = getField(a, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]);
-  const nroAmb = toInt(ambVal, 0);
-  if (operacion === "Alquilar" && filtroAmb && nroAmb !== toInt(filtroAmb)) return;
+      // Ambientes
+      const nroAmb = toInt(getField(a, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro", "ambientes"]), 0);
+      if (operacion === "Alquilar" && filtroAmb && nroAmb !== toInt(filtroAmb)) return;
 
-  const precioVal = getField(a, ["Precio", "precio", "$"]);
-  const precio = toNumber(precioVal);
-  const formattedPrecio = formatPrice(precioVal);
-  if (operacion === "Alquilar" && (precio < filtroMin || precio > filtroMax)) return;
+      // Precio
+      const precioVal = getField(a, ["Precio", "precio", "$"]);
+      const precio = toNumber(precioVal);
+      const formattedPrecio = formatPrice(precioVal);
+      if (operacion === "Alquilar" && (precio < filtroMin || precio > filtroMax)) return;
 
-  const mascotas = getField(a, ["Mascotas"]);
-  if (operacion === "Alquilar" && filtroMascotas && (!mascotas || mascotas.toLowerCase() !== "sí")) return;
+      // Mascotas y amoblado
+      const mascotas = getField(a, ["Mascotas", "mascotas"]);
+      if (operacion === "Alquilar" && filtroMascotas && (!mascotas || mascotas.toLowerCase() !== "sí")) return;
 
-  const amoblado = getField(a, ["Amoblado"]);
-  if (operacion === "Alquilar" && filtroAmoblado && (!amoblado || amoblado.toLowerCase() !== "sí")) return;
+      const amoblado = getField(a, ["Amoblado", "amoblado"]);
+      if (operacion === "Alquilar" && filtroAmoblado && (!amoblado || amoblado.toLowerCase() !== "sí")) return;
 
-  const direccion = getField(a, ["Direccion", "Dirección", "Domicilio"]);
-  const infoIngreso = getField(a, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso"]);
-  const detalles = getField(a, ["Detalles", "Detalle", "Descripcion", "Descripción"]);
-  const contacto = getField(a, ["Contacto", "Whatsapp", "WhatsApp", "Tel", "Telefono", "Teléfono"]);
-  const id = getField(a, ["ID", "id"]);
-  const enlace = getField(a, ["Enlace para compartir", "enlace"]);
-  const fotos = getField(a, ["Fotos", "Imagenes", "Imágenes", "images"]);
+      // Datos para popup y detalle
+      const direccion = getField(a, ["Direccion", "Dirección", "Domicilio", "direccion"]);
+      const infoIngreso = getField(a, ["Informacion ingreso", "Información ingreso", "InformacionIngreso", "InfoIngreso"]);
+      const detalles = getField(a, ["Detalles", "Detalle", "Descripcion", "Descripción", "descripcion"]);
+      const contacto = getField(a, ["Contacto", "Whatsapp", "WhatsApp", "Tel", "Telefono", "Teléfono", "telefono"]);
+      const id = getField(a, ["ID", "id"]);
+      const enlace = getField(a, ["Enlace para compartir", "enlace"]);
+      const fotos = getField(a, ["Fotos", "Imagenes", "Imágenes", "images", "fotos"]);
 
-  let iconHtml;
-  if (tipo === "Temporario") iconHtml = 'Time';
-  else if (tipo === "Local") iconHtml = 'Shopping';
-  else if (tipo === "Terreno") iconHtml = 'Landscape';
-  else if (tipo === "Casa") iconHtml = 'House';
-  else iconHtml = `House<span style="font-size:12px;margin-left:2px;">${nroAmb || "-"}</span>`;
+      // Icono según tipo
+      let iconHtml = '🏠';
+      if (tipo === "Temporario") iconHtml = '⏰';
+      else if (tipo === "Local") iconHtml = '🏪';
+      else if (tipo === "Terreno") iconHtml = '🌳';
+      else if (tipo === "Casa") iconHtml = '🏠';
+      else if (nroAmb > 0) iconHtml = `🏠<span style="font-size:12px;margin-left:2px;">${nroAmb}</span>`;
 
-  const icon = L.divIcon({
-    className: 'marker-icon',
-    html: iconHtml,
-    iconSize: [30, 30],
-    iconAnchor: [15, 15]
-  });
+      const icon = L.divIcon({
+        className: 'marker-icon',
+        html: iconHtml,
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
+      });
 
-  const marker = L.marker([lat, lng], { icon: icon }).addTo(markersLayer);
+      // Añadir marcador
+      const marker = L.marker([lat, lng], { icon: icon }).addTo(markersLayer);
 
-  const popupDiv = document.createElement('div');
-  popupDiv.innerHTML = `<b>Dirección:</b> ${direccion || "No disponible"}`;
-  if (tipo !== "Temporario" && tipo !== "Local") {
-    popupDiv.innerHTML += `<br><b>Ambientes:</b> ${nroAmb || "No disponible"}<br><b>Precio:</b> ${formattedPrecio || "No disponible"}`;
-  }
+      // Popup
+      const popupDiv = document.createElement('div');
+      popupDiv.innerHTML = `<b>Dirección:</b> ${direccion || "No disponible"}`;
+      if (tipo !== "Temporario" && tipo !== "Local") {
+        popupDiv.innerHTML += `<br><b>Ambientes:</b> ${nroAmb || "No disponible"}<br><b>Precio:</b> ${formattedPrecio || "No disponible"}`;
+      }
 
-  const verBtn = document.createElement('button');
-  verBtn.className = 'popup-button';
-  verBtn.textContent = 'Ver Detalles';
-  verBtn.onclick = () => mostrarDetalle(a, operacion, direccion, nroAmb, formattedPrecio, infoIngreso, detalles, mascotas, amoblado, fotos, contacto, enlace);
+      const verBtn = document.createElement('button');
+      verBtn.className = 'popup-button';
+      verBtn.textContent = 'Ver Detalles';
+      verBtn.onclick = () => mostrarDetalle(a, operacion, direccion, nroAmb, formattedPrecio, infoIngreso, detalles, mascotas, amoblado, fotos, contacto, enlace);
 
-  const contactarBtn = document.createElement('button');
-  contactarBtn.className = 'popup-button';
-  contactarBtn.textContent = 'Contactar';
-  contactarBtn.style.marginLeft = '10px';
-  contactarBtn.onclick = () => window.location.href = `mailto:${inmobiliariaEmail}?subject=Consulta por ${operacion.toLowerCase()} en ${direccion || 'ID ' + id}`;
+      const contactarBtn = document.createElement('button');
+      contactarBtn.className = 'popup-button';
+      contactarBtn.textContent = 'Contactar';
+      contactarBtn.style.marginLeft = '10px';
+      contactarBtn.onclick = () => window.location.href = `mailto:${inmobiliariaEmail}?subject=Consulta por ${operacion.toLowerCase()} en ${direccion || 'ID ' + id}`;
 
-  popupDiv.appendChild(verBtn);
-  popupDiv.appendChild(contactarBtn);
-  marker.bindPopup(popupDiv);
+      popupDiv.appendChild(document.createElement('br'));
+      popupDiv.appendChild(verBtn);
+      popupDiv.appendChild(contactarBtn);
 
-  cont++;
-});
-    console.log("Properties added to map:", cont); // Debug: Log number of properties added
-    if (cont === 0) {
-      console.warn("No properties with valid coordinates found for email:", inmobiliariaEmail);
-    } else {
+      marker.bindPopup(popupDiv);
+      cont++;
+    });
+
+    console.log("Properties added to map:", cont);
+
+    if (cont > 0) {
       try {
         const bounds = markersLayer.getBounds();
         if (bounds.isValid()) {
           map.fitBounds(bounds, { padding: [50, 50] });
-        } else {
-          console.warn("No valid bounds for markersLayer");
         }
       } catch (err) {
-        console.error("Error getting bounds:", err);
+        console.error("Error fitting bounds:", err);
       }
     }
   })
   .catch(err => {
     loadingEl.style.display = "none";
-    document.getElementById("inmobiliaria-nombre").querySelector("h2").textContent = "Inmobiliaria no encontrada";
+    document.getElementById("inmobiliaria-nombre").querySelector("h2").textContent = "Error de conexión";
     console.error("Error fetching data:", err);
   });
 }
