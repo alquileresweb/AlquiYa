@@ -120,30 +120,77 @@ nav a:hover {
 }
 #alquiler-detalle {
   display: none;
-  max-width: 700px;
-  margin: 20px auto;
-  padding: 15px;
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: white;
   border: 2px solid #3483fa;
-  border-radius: 8px;
-  background: #f9f9f9;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  position: relative;
 }
 #alquiler-detalle.highlight {
-  animation: resaltar 1s ease;
+  animation: resaltar 1.2s ease;
+}
+#alquiler-detalle h2 {
+  margin-top: 0;
+  color: #3483fa;
+  font-size: 2rem;
+}
+.owner-profile-img {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.owner-profile-img:hover {
+  transform: scale(1.1);
+}
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 1.5rem 0;
+  justify-content: center;
+}
+.copy-share-btn {
+  background: #10b981;
+  color: white;
+  padding: 1rem 1.8rem;
+  border-radius: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
+}
+.copy-share-btn:hover {
+  background: #059669;
 }
 #imagenes-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 14px;
+  margin: 1.8rem 0;
 }
 #imagenes-container img {
-  max-width: 120px;
-  height: 90px;
-  margin: 5px;
-  border-radius: 6px;
+  width: 100%;
+  height: 110px;
   object-fit: cover;
+  border-radius: 12px;
   cursor: pointer;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+  transition: all 0.3s ease;
+}
+#imagenes-container img:hover {
+  transform: scale(1.06);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.22);
 }
 #modal-img {
   display: none;
@@ -198,38 +245,8 @@ nav a:hover {
   align-items: center;
   justify-content: center;
 }
-#modal-img .prev-btn {
-  left: 10px;
-}
-#modal-img .next-btn {
-  right: 10px;
-}
-#link-container {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 10px;
-}
-#link-container input {
-  flex: 1;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-#link-container span {
-  font-size: 14px;
-  color: #333;
-  white-space: nowrap;
-}
-#copy-msg {
-  display: none;
-  text-align: center;
-  margin-top: 10px;
-  color: green;
-}
-#copy-msg.error {
-  color: red;
-}
+#modal-img .prev-btn { left: 10px; }
+#modal-img .next-btn { right: 10px; }
 .marker-icon {
   display: flex;
   align-items: center;
@@ -259,35 +276,6 @@ nav a:hover {
   50% { transform: scale(1.02); box-shadow: 0 0 20px #2565c0; }
   100% { transform: scale(1); box-shadow: 0 0 10px rgba(0,0,0,0.1); }
 }
-
-  /* DETALLE */
-  #alquiler-detalle {
-    display: none; max-width: 800px; margin: 2rem auto; padding: 2rem; background: var(--card);
-    border: 2px solid var(--primary); border-radius: var(--radius); box-shadow: var(--shadow);
-    position: relative;
-  }
-  #alquiler-detalle.highlight { animation: resaltar 1.2s ease; }
-  #alquiler-detalle h2 { margin-top: 0; color: var(--primary); font-size: 2rem; }
-  .owner-profile-img {
-    position: absolute; top: 12px; right: 12px; width: 56px; height: 56px; border-radius: 50%;
-    object-fit: cover; border: 3px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer;
-  }
-  .owner-profile-img:hover { transform: scale(1.1); }
-  .action-buttons { display: flex; gap: 12px; flex-wrap: wrap; margin: 1.5rem 0; justify-content: center; }
-  .copy-share-btn {
-    background: #10b981; color: white; padding: 1rem 1.8rem; border-radius: var(--radius);
-    font-weight: 600; cursor: pointer; transition: var(--transition);
-  }
-  .copy-share-btn:hover { background: #059669; }
-  #imagenes-container {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; margin: 1.8rem 0;
-  }
-  #imagenes-container img {
-    width: 100%; height: 110px; object-fit: cover; border-radius: 12px; cursor: pointer;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.12); transition: var(--transition);
-  }
-  #imagenes-container img:hover { transform: scale(1.06); box-shadow: 0 10px 30px rgba(0,0,0,0.22); }
-  
 </style>
 </head>
 <body>
@@ -348,12 +336,15 @@ CONFIG
 const webAppURL = "https://script.google.com/macros/s/AKfycbyFvDRwPZoG6ChhvcxGm6B27ziD6Qkg4RcH0TI9K59b7zPz7iFxy7mgmbs5mo5T-TxD/exec";
 let currentImages = [];
 let currentImageIndex = 0;
+let inmobiliariaEmail = ""; // Se llena al cargar
+
 /* =========================
 MAPA
 */
 let map = L.map('map').setView([-28.5503, -56.0406], 14);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
 let markersLayer = L.layerGroup().addTo(map);
+
 /* =========================
 UTILS
 */
@@ -411,7 +402,7 @@ function driveUrlDirect(url) {
   return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
 }
 
-  /* =========================
+/* =========================
 MÉTRICAS
 */
 async function incrementarMetrica(idPropiedad, metrica = "vistas") {
@@ -421,7 +412,9 @@ async function incrementarMetrica(idPropiedad, metrica = "vistas") {
   }).catch(() => {});
 }
 
-/* === AÑADIMOS LA FUNCIÓN mostrarDetalle AQUÍ === */
+/* =========================
+MOSTRAR DETALLE - VERSIÓN FINAL CON DISEÑO MODERNO
+*/
 async function mostrarDetalle(prop, operacion, direccion, nroAmb, formattedPrecio, infoIngreso, detalles, mascotas, amoblado, fotos, contacto, enlace) {
   const detalleDiv = document.getElementById("alquiler-detalle");
   detalleDiv.innerHTML = "";
@@ -437,7 +430,7 @@ async function mostrarDetalle(prop, operacion, direccion, nroAmb, formattedPreci
   h2.textContent = titulo;
   detalleDiv.appendChild(h2);
 
-  // Foto perfil dueño
+  // Foto perfil del dueño
   const profileImg = document.createElement("img");
   profileImg.className = "owner-profile-img";
   profileImg.src = fotoPerfil;
@@ -455,7 +448,7 @@ async function mostrarDetalle(prop, operacion, direccion, nroAmb, formattedPreci
   `;
   detalleDiv.appendChild(info);
 
-  // Características extras (solo alquiler)
+  // Extras (solo alquiler)
   if (operacion === "Alquilar") {
     const extras = [];
     if (mascotas && mascotas.toLowerCase() === "sí") extras.push("Mascotas permitidas");
@@ -501,7 +494,7 @@ async function mostrarDetalle(prop, operacion, direccion, nroAmb, formattedPreci
     detalleDiv.appendChild(p);
   }
 
-  // Botones
+  // Botones de acción
   const buttons = document.createElement("div");
   buttons.className = "action-buttons";
 
@@ -539,7 +532,7 @@ async function mostrarDetalle(prop, operacion, direccion, nroAmb, formattedPreci
   setTimeout(() => detalleDiv.classList.remove("highlight"), 1200);
   detalleDiv.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
-  
+
 /* =========================
 UI NAV
 */
@@ -553,7 +546,6 @@ function updateFiltros() {
   const filtrosComprar = document.getElementById("filtros-comprar");
   filtrosAlquilar.style.display = operacion === "Alquilar" ? "flex" : "none";
   filtrosComprar.style.display = operacion === "Comprar" ? "flex" : "none";
-  // Resetear filtros al cambiar de operación
   if (operacion === "Alquilar") {
     document.getElementById("filtroAmb").value = "";
     document.getElementById("filtroMin").value = "";
@@ -566,6 +558,7 @@ function updateFiltros() {
   }
   cargarPropiedades();
 }
+
 /* =========================
 IMÁGENES
 */
@@ -588,6 +581,7 @@ function cambiarImagen(direction) {
   currentImageIndex = (currentImageIndex + direction + currentImages.length) % currentImages.length;
   document.getElementById("img-grande").src = currentImages[currentImageIndex];
 }
+
 /* =========================
 FETCH HELPER
 */
@@ -606,6 +600,7 @@ async function makeRequest(url, options) {
     throw new Error("No se pudo conectar con el servidor. Por favor, intenta de nuevo.");
   }
 }
+
 /* =========================
 CARGA DE PROPIEDADES
 */
@@ -615,6 +610,7 @@ function cargarPropiedades() {
   markersLayer.clearLayers();
   document.getElementById("alquiler-detalle").style.display = "none";
   document.getElementById("inmobiliaria-nombre").querySelector("h2").textContent = "Cargando nombre de inmobiliaria...";
+
   // Marcadores estáticos
   const uniIcon = L.divIcon({ className: 'marker-icon', html: '🎓', iconSize: [30, 30], iconAnchor: [15, 15] });
   const hospIcon = L.divIcon({ className: 'marker-icon', html: '🏥', iconSize: [30, 30], iconAnchor: [15, 15] });
@@ -628,21 +624,24 @@ function cargarPropiedades() {
   L.marker([-28.5462903, -56.0440365], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado La Economía</b>");
   L.marker([-28.5468697, -56.0432862], { icon: busIcon }).addTo(markersLayer).bindPopup("<b>Terminal de Omnibus</b>");
   L.marker([-28.5487787, -56.0396171], { icon: policeIcon }).addTo(markersLayer).bindPopup("<b>Policía</b>");
-  // Obtener email
+
+  // Email de la URL
   const urlParams = new URLSearchParams(window.location.search);
-  let inmobiliariaEmail = urlParams.get('email')?.trim();
+  inmobiliariaEmail = urlParams.get('email')?.trim();
   if (!inmobiliariaEmail) {
     const rawQuery = window.location.search.replace(/^\?/, '').replace(/^=/, '').trim();
     if (rawQuery && rawQuery.includes('@')) inmobiliariaEmail = rawQuery;
   }
+
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!inmobiliariaEmail || !emailRegex.test(inmobiliariaEmail)) {
     loadingEl.style.display = "none";
     document.getElementById("inmobiliaria-nombre").querySelector("h2").textContent = "Inmobiliaria no encontrada";
     return;
   }
+
   // Filtros
-  const operacion = document.getElementById("filtroOperacion").value; // "Alquilar" o "Comprar"
+  const operacion = document.getElementById("filtroOperacion").value;
   const filtroAmb = document.getElementById("filtroAmb").value;
   const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
   const filtroMax = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
@@ -650,6 +649,7 @@ function cargarPropiedades() {
   const filtroAmoblado = document.getElementById("filtroAmoblado").checked;
   const filtroTipoAlquilar = document.getElementById("filtroTipoAlquilar").value;
   const filtroTipoComprar = document.getElementById("filtroTipoComprar").value;
+
   makeRequest(`${webAppURL}?action=getInmobiliaria&email=${encodeURIComponent(inmobiliariaEmail)}`, { method: "GET" })
     .then(res => {
       loadingEl.style.display = "none";
@@ -658,58 +658,61 @@ function cargarPropiedades() {
         map.setView([-28.5503, -56.0406], 14);
         return;
       }
+
       const nombreInmobiliaria = res.data.Nombre || "Inmobiliaria";
       document.getElementById("inmobiliaria-nombre").querySelector("h2").textContent = `Inmobiliaria "${nombreInmobiliaria}"`;
+
       if (!Array.isArray(res.alquileres) || res.alquileres.length === 0) {
         map.setView([-28.5503, -56.0406], 14);
         return;
       }
+
       let cont = 0;
       const propertyMarkers = [];
+
       res.alquileres.forEach(a => {
-        // Coordenadas
         let lat = getField(a, ["Latitud", "latitud", "Lat", "lat", "LAT", "Latitude"]);
         let lng = getField(a, ["Longitud", "longitud", "Lng", "lng", "LNG", "Longitude"]);
         lat = parseFloat(lat);
         lng = parseFloat(lng);
-        if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-          return;
-        }
-        // === FILTRO CORRECTO: según columna R "Subtipo" ===
+        if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
+
         const subtipo = getField(a, ["Subtipo", "subtipo", "SubTipo"]);
         if (operacion === "Alquilar" && subtipo !== "Alquilar") return;
         if (operacion === "Comprar" && subtipo !== "Vender") return;
-        // Tipo (columna A) - para filtro y icono
+
         const tipo = getField(a, ["Tipo", "tipo"]);
         if (operacion === "Alquilar" && filtroTipoAlquilar && tipo !== filtroTipoAlquilar) return;
         if (operacion === "Comprar" && filtroTipoComprar && tipo !== filtroTipoComprar) return;
-        // Ambientes
+
         const nroAmb = toInt(getField(a, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro", "ambientes"]), 0);
         if (operacion === "Alquilar" && filtroAmb && nroAmb !== toInt(filtroAmb)) return;
-        // Precio
+
         const precioVal = getField(a, ["Precio", "precio", "$"]);
-        const precio = toNumber(precioVal);
         const formattedPrecio = formatPrice(precioVal);
+        const precio = toNumber(precioVal);
         if (operacion === "Alquilar" && (precio < filtroMin || precio > filtroMax)) return;
-        // Mascotas y amoblado (solo en alquiler)
+
         const mascotas = getField(a, ["Mascotas", "mascotas"]);
         if (operacion === "Alquilar" && filtroMascotas && (!mascotas || mascotas.toLowerCase() !== "sí")) return;
+
         const amoblado = getField(a, ["Amoblado", "amoblado"]);
         if (operacion === "Alquilar" && filtroAmoblado && (!amoblado || amoblado.toLowerCase() !== "sí")) return;
-        // === Icono según Tipo (columna A) ===
+
         let iconHtml = '🏠';
         if (tipo === "Temporario") iconHtml = '⏰';
         else if (tipo === "Local Comercial" || tipo === "Local") iconHtml = '🏪';
         else if (tipo === "Terreno") iconHtml = '🌳';
         else if (tipo === "Casa") iconHtml = '🏠';
         else if (nroAmb > 0) iconHtml = `🏠<span style="font-size:12px;margin-left:2px;">${nroAmb}</span>`;
+
         const icon = L.divIcon({
           className: 'marker-icon',
           html: iconHtml,
           iconSize: [30, 30],
           iconAnchor: [15, 15]
         });
-        // Datos generales
+
         const direccion = getField(a, ["Direccion", "Dirección", "Domicilio", "direccion"]);
         const id = getField(a, ["ID", "id"]);
         const infoIngreso = getField(a, ["Informacion ingreso", "Información ingreso"]);
@@ -717,32 +720,40 @@ function cargarPropiedades() {
         const contacto = getField(a, ["Contacto", "Whatsapp", "WhatsApp", "Tel", "Telefono", "Teléfono"]);
         const fotos = getField(a, ["Fotos", "Imagenes", "Imágenes", "images"]);
         const enlace = getField(a, ["Enlace para compartir", "enlace"]);
-        // Marcador
+
         const marker = L.marker([lat, lng], { icon: icon }).addTo(markersLayer);
         propertyMarkers.push(marker);
-        // Popup
+
         const popupDiv = document.createElement('div');
         popupDiv.innerHTML = `<b>Dirección:</b> ${direccion || "No disponible"}`;
         if (tipo !== "Temporario" && tipo !== "Local Comercial" && tipo !== "Local") {
           popupDiv.innerHTML += `<br><b>Ambientes:</b> ${nroAmb || "?"}<br><b>Precio:</b> ${formattedPrecio || "Consultar"}`;
         }
+
         const verBtn = document.createElement('button');
         verBtn.className = 'popup-button';
         verBtn.textContent = 'Ver Detalles';
-        verBtn.onclick = () => mostrarDetalle(a, operacion, direccion, nroAmb, formattedPrecio, infoIngreso, detalles, mascotas, amoblado, fotos, contacto, enlace);
+        verBtn.onclick = () => {
+          incrementarMetrica(id, "vistas");
+          mostrarDetalle(a, operacion, direccion, nroAmb, formattedPrecio, infoIngreso, detalles, mascotas, amoblado, fotos, contacto, enlace);
+        };
+
         const contactarBtn = document.createElement('button');
         contactarBtn.className = 'popup-button';
         contactarBtn.textContent = 'Contactar';
         contactarBtn.style.marginLeft = '10px';
         contactarBtn.onclick = () => window.location.href = `mailto:${inmobiliariaEmail}?subject=Consulta por ${operacion.toLowerCase()} en ${direccion || 'ID ' + id}`;
+
         popupDiv.appendChild(document.createElement('br'));
         popupDiv.appendChild(verBtn);
         popupDiv.appendChild(contactarBtn);
+
         marker.bindPopup(popupDiv);
         cont++;
       });
+
       console.log("Properties added to map:", cont);
-      // Ajustar mapa
+
       if (propertyMarkers.length > 0) {
         const group = L.featureGroup(propertyMarkers);
         map.fitBounds(group.getBounds(), { padding: [50, 50] });
@@ -757,6 +768,7 @@ function cargarPropiedades() {
       map.setView([-28.5503, -56.0406], 14);
     });
 }
+
 /* =========================
 INIT
 */
@@ -764,31 +776,27 @@ window.onload = () => {
   cargarPropiedades();
 };
 </script>
-  <!-- =============== PIE DE PÁGINA AZUL – VOLVER AL MAPA (para dueños.html) =============== -->
-  <footer style="margin-top:80px;background:#3483fa;color:white;padding:2.5rem 1rem 1.5rem;">
-    <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2rem;align-items:center;text-align:center;">
-      <!-- Logo -->
-      <div>
-        <img src="https://i.postimg.cc/FHXRBTTX/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.png" alt="Logo AlquiYa" style="max-width:180px;height:auto;">
-      </div>
-      <!-- Botón Volver al Mapa -->
-      <div>
-        <a href="https://www.alquiya.com.ar"
-           style="display:inline-block;background:white;color:#3483fa;font-weight:700;padding:0.9rem 2.6rem;border-radius:50px;font-size:1.28rem;box-shadow:0 6px 20px rgba(52,131,250,0.3);transition:all 0.3s ease;text-decoration:none;">
-          ← Volver al Inicio
-        </a>
-      </div>
-      <!-- Instagram -->
-      <div>
-        <a href="https://www.instagram.com/alquiya.st/" target="_blank">
-          <img src="https://i.postimg.cc/GmVWTXX0/394a7aaecd6b8ce44528649681d9fa05.png" alt="Instagram" style="width:40px;height:40px;">
-        </a>
-      </div>
-      <!-- Copyright -->
-      <div style="font-size:0.95rem;opacity:0.9;grid-column:1/-1;">
-        © 2025 AlquiYa • Todos los derechos reservados
-      </div>
+
+<footer style="margin-top:80px;background:#3483fa;color:white;padding:2.5rem 1rem 1.5rem;">
+  <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2rem;align-items:center;text-align:center;">
+    <div>
+      <img src="https://i.postimg.cc/FHXRBTTX/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.png" alt="Logo AlquiYa" style="max-width:180px;height:auto;">
     </div>
-  </footer>
+    <div>
+      <a href="https://www.alquiya.com.ar"
+         style="display:inline-block;background:white;color:#3483fa;font-weight:700;padding:0.9rem 2.6rem;border-radius:50px;font-size:1.28rem;box-shadow:0 6px 20px rgba(52,131,250,0.3);transition:all 0.3s ease;text-decoration:none;">
+        ← Volver al Inicio
+      </a>
+    </div>
+    <div>
+      <a href="https://www.instagram.com/alquiya.st/" target="_blank">
+        <img src="https://i.postimg.cc/GmVWTXX0/394a7aaecd6b8ce44528649681d9fa05.png" alt="Instagram" style="width:40px;height:40px;">
+      </a>
+    </div>
+    <div style="font-size:0.95rem;opacity:0.9;grid-column:1/-1;">
+      © 2025 AlquiYa • Todos los derechos reservados
+    </div>
+  </div>
+</footer>
 </body>
 </html>
