@@ -457,7 +457,7 @@ function cargarPropiedades() {
   document.getElementById("alquiler-detalle").style.display = "none";
   document.getElementById("inmobiliaria-nombre").querySelector("h2").textContent = "Cargando nombre de inmobiliaria...";
 
-  // Marcadores estáticos (universidad, hospital, supermercados, etc.)
+  // Marcadores estáticos
   const uniIcon = L.divIcon({ className: 'marker-icon', html: '🎓', iconSize: [30, 30], iconAnchor: [15, 15] });
   const hospIcon = L.divIcon({ className: 'marker-icon', html: '🏥', iconSize: [30, 30], iconAnchor: [15, 15] });
   const superIcon = L.divIcon({ className: 'marker-icon', html: '🛒', iconSize: [30, 30], iconAnchor: [15, 15] });
@@ -472,24 +472,21 @@ function cargarPropiedades() {
   L.marker([-28.5468697, -56.0432862], { icon: busIcon }).addTo(markersLayer).bindPopup("<b>Terminal de Omnibus</b>");
   L.marker([-28.5487787, -56.0396171], { icon: policeIcon }).addTo(markersLayer).bindPopup("<b>Policía</b>");
 
-  // Obtener email de la URL
+  // Email
   const urlParams = new URLSearchParams(window.location.search);
   let inmobiliariaEmail = urlParams.get('email')?.trim();
   if (!inmobiliariaEmail) {
     const rawQuery = window.location.search.replace(/^\?/, '').replace(/^=/, '').trim();
-    if (rawQuery && rawQuery.includes('@')) {
-      inmobiliariaEmail = rawQuery;
-    }
+    if (rawQuery && rawQuery.includes('@')) inmobiliariaEmail = rawQuery;
   }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!inmobiliariaEmail || !emailRegex.test(inmobiliariaEmail)) {
+  if (!inmobiliariaEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inmobiliariaEmail)) {
     loadingEl.style.display = "none";
     document.getElementById("inmobiliaria-nombre").querySelector("h2").textContent = "Inmobiliaria no encontrada";
     return;
   }
 
-  // Filtros actuales
+  // Filtros
   const operacion = document.getElementById("filtroOperacion").value;
   const filtroAmb = document.getElementById("filtroAmb").value;
   const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
@@ -518,53 +515,57 @@ function cargarPropiedades() {
       }
 
       let cont = 0;
-      const propertyMarkers = []; // Solo marcadores de propiedades (para fitBounds)
+      const propertyMarkers = [];
 
       res.alquileres.forEach(a => {
-        // Coordenadas con getField (robusto)
-        let lat = getField(a, ["Latitud", "latitud", "Lat", "lat", "LAT", "Latitude", "latitud "]);
-        let lng = getField(a, ["Longitud", "longitud", "Lng", "lng", "LNG", "Longitude", "longitud "]);
-
+        // Coordenadas
+        let lat = getField(a, ["Latitud", "latitud", "Lat", "lat", "LAT", "Latitude"]);
+        let lng = getField(a, ["Longitud", "longitud", "Lng", "lng", "LNG", "Longitude"]);
         lat = parseFloat(lat);
         lng = parseFloat(lng);
 
-        if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-          console.warn("Propiedad descartada - coordenadas inválidas:", getField(a, ["Direccion", "Dirección"]));
-          return;
-        }
+        if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
 
-        // === FILTRO DE OPERACIÓN TEMPORALMENTE DESACTIVADO ===
-        // (para que aparezcan en Alquilar y Comprar aunque no tengan el campo correcto)
-        // Cuando sepas el nombre exacto de la columna, lo reactivamos.
-        /*
-        const operacionProp = getField(a, ["Operacion", "Operación", "operacion", "TipoOperacion"]);
-        if (operacion === "Comprar" && operacionProp !== "Vender") return;
-        if (operacion === "Alquilar" && operacionProp !== "Alquiler") return;
-        */
-
-        // Filtros de tipo
         const tipo = getField(a, ["Tipo", "tipo"]);
+
+        // === DETECCIÓN DE OPERACIÓN POR PRECIO ===
+        const precioAlquilerVal = getField(a, ["Precio", "precio", "Precio Alquiler", "Precio alquiler", "PrecioAlquiler", "$"]);
+        const precioVentaVal = getField(a, ["Precio Venta", "Precio venta", "PrecioVenta", "Precio de venta"]);
+
+        const precioAlquiler = toNumber(precioAlquilerVal);
+        const precioVenta = toNumber(precioVentaVal);
+
+        let esAlquiler = precioAlquiler > 0;
+        let esVenta = precioVenta > 0;
+
+        // Si solo hay un precio, lo consideramos según el modo (fallback)
+        if (precioAlquiler > 0 && precioVenta === 0) esVenta = false;
+        if (precioVenta > 0 && precioAlquiler === 0) esAlquiler = false;
+
+        // Filtrar por operación seleccionada
+        if (operacion === "Alquilar" && !esAlquiler) return;
+        if (operacion === "Comprar" && !esVenta) return;
+
+        // Filtros comunes
         if (operacion === "Alquilar" && filtroTipoAlquilar && tipo !== filtroTipoAlquilar) return;
         if (operacion === "Comprar" && filtroTipoComprar && tipo !== filtroTipoComprar) return;
 
-        // Ambientes
-        const nroAmb = toInt(getField(a, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro", "ambientes"]), 0);
+        const nroAmb = toInt(getField(a, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro"]), 0);
         if (operacion === "Alquilar" && filtroAmb && nroAmb !== toInt(filtroAmb)) return;
 
-        // Precio
-        const precioVal = getField(a, ["Precio", "precio", "$", "PrecioAlquiler", "PrecioVenta"]);
-        const precio = toNumber(precioVal);
-        const formattedPrecio = formatPrice(precioVal);
-        if (operacion === "Alquilar" && (precio < filtroMin || precio > filtroMax)) return;
+        // Usar el precio correcto según operación
+        let precioActual = operacion === "Alquilar" ? precioAlquiler : precioVenta;
+        let precioFormateado = formatPrice(operacion === "Alquiler" ? precioAlquilerVal : precioVentaVal);
 
-        // Mascotas y amoblado
+        if (operacion === "Alquilar" && (precioActual < filtroMin || precioActual > filtroMax)) return;
+
         const mascotas = getField(a, ["Mascotas", "mascotas"]);
         if (operacion === "Alquilar" && filtroMascotas && (!mascotas || mascotas.toLowerCase() !== "sí")) return;
 
         const amoblado = getField(a, ["Amoblado", "amoblado"]);
         if (operacion === "Alquilar" && filtroAmoblado && (!amoblado || amoblado.toLowerCase() !== "sí")) return;
 
-        // === PROPIEDAD PASA TODOS LOS FILTROS → AÑADIR MARCADOR ===
+        // === AÑADIR MARCADOR ===
         let iconHtml = '🏠';
         if (tipo === "Temporario") iconHtml = '⏰';
         else if (tipo === "Local") iconHtml = '🏪';
@@ -572,41 +573,35 @@ function cargarPropiedades() {
         else if (tipo === "Casa") iconHtml = '🏠';
         else if (nroAmb > 0) iconHtml = `🏠<span style="font-size:12px;margin-left:2px;">${nroAmb}</span>`;
 
-        const icon = L.divIcon({
-          className: 'marker-icon',
-          html: iconHtml,
-          iconSize: [30, 30],
-          iconAnchor: [15, 15]
-        });
+        const icon = L.divIcon({ className: 'marker-icon', html: iconHtml, iconSize: [30, 30], iconAnchor: [15, 15] });
 
-        const direccion = getField(a, ["Direccion", "Dirección", "Domicilio", "direccion"]);
+        const direccion = getField(a, ["Direccion", "Dirección", "Domicilio"]);
         const id = getField(a, ["ID", "id"]);
-        const infoIngreso = getField(a, ["Informacion ingreso", "Información ingreso", "InformacionIngreso"]);
-        const detalles = getField(a, ["Detalles", "Detalle", "Descripcion", "Descripción", "descripcion"]);
+        const infoIngreso = getField(a, ["Informacion ingreso", "Información ingreso"]);
+        const detalles = getField(a, ["Detalles", "Descripcion", "Descripción"]);
         const contacto = getField(a, ["Contacto", "Whatsapp", "WhatsApp", "Tel", "Telefono", "Teléfono"]);
-        const fotos = getField(a, ["Fotos", "Imagenes", "Imágenes", "images", "fotos"]);
-        const enlace = getField(a, ["Enlace para compartir", "enlace"]);
+        const fotos = getField(a, ["Fotos", "Imagenes", "Imágenes", "images"]);
+        const enlace = getField(a, ["Enlace para compartir"]);
 
         const marker = L.marker([lat, lng], { icon: icon }).addTo(markersLayer);
         propertyMarkers.push(marker);
 
-        // Popup
         const popupDiv = document.createElement('div');
         popupDiv.innerHTML = `<b>Dirección:</b> ${direccion || "No disponible"}`;
         if (tipo !== "Temporario" && tipo !== "Local") {
-          popupDiv.innerHTML += `<br><b>Ambientes:</b> ${nroAmb || "?"}<br><b>Precio:</b> ${formattedPrecio || "Consultar"}`;
+          popupDiv.innerHTML += `<br><b>Ambientes:</b> ${nroAmb || "?"}<br><b>Precio:</b> ${precioFormateado || "Consultar"}`;
         }
 
         const verBtn = document.createElement('button');
         verBtn.className = 'popup-button';
         verBtn.textContent = 'Ver Detalles';
-        verBtn.onclick = () => mostrarDetalle(a, operacion, direccion, nroAmb, formattedPrecio, infoIngreso, detalles, mascotas, amoblado, fotos, contacto, enlace);
+        verBtn.onclick = () => mostrarDetalle(a, operacion, direccion, nroAmb, precioFormateado, infoIngreso, detalles, mascotas, amoblado, fotos, contacto, enlace);
 
         const contactarBtn = document.createElement('button');
         contactarBtn.className = 'popup-button';
         contactarBtn.textContent = 'Contactar';
         contactarBtn.style.marginLeft = '10px';
-        contactarBtn.onclick = () => window.location.href = `mailto:${inmobiliariaEmail}?subject=Consulta por propiedad en ${direccion || 'ID ' + id}`;
+        contactarBtn.onclick = () => window.location.href = `mailto:${inmobiliariaEmail}?subject=Consulta por ${operacion.toLowerCase()} en ${direccion || 'ID ' + id}`;
 
         popupDiv.appendChild(document.createElement('br'));
         popupDiv.appendChild(verBtn);
@@ -619,7 +614,6 @@ function cargarPropiedades() {
 
       console.log("Properties added to map:", cont);
 
-      // Ajustar vista del mapa
       if (propertyMarkers.length > 0) {
         const group = L.featureGroup(propertyMarkers);
         map.fitBounds(group.getBounds(), { padding: [50, 50] });
@@ -630,7 +624,7 @@ function cargarPropiedades() {
     .catch(err => {
       loadingEl.style.display = "none";
       document.getElementById("inmobiliaria-nombre").querySelector("h2").textContent = "Error de conexión";
-      console.error("Error fetching data:", err);
+      console.error(err);
       map.setView([-28.5503, -56.0406], 14);
     });
 }
