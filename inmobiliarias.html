@@ -522,6 +522,7 @@ function cargarPropiedades() {
         // Coordenadas
         let lat = getField(a, ["Latitud", "latitud", "Lat", "lat", "LAT", "Latitude"]);
         let lng = getField(a, ["Longitud", "longitud", "Lng", "lng", "LNG", "Longitude"]);
+
         lat = parseFloat(lat);
         lng = parseFloat(lng);
 
@@ -529,41 +530,38 @@ function cargarPropiedades() {
           return;
         }
 
-        // === FILTRO POR SUBTIPO (columna R) ===
+        // === FILTRO CORRECTO: según columna R "Subtipo" ===
         const subtipo = getField(a, ["Subtipo", "subtipo", "SubTipo"]);
-        const subtipoLower = (subtipo || "").toLowerCase().trim();
+        if (operacion === "Alquilar" && subtipo !== "Alquilar") return;
+        if (operacion === "Comprar" && subtipo !== "Vender") return;
 
-        if (operacion === "Alquilar") {
-          if (!subtipoLower.includes("alquiler")) return; // incluye "Alquiler", "Alquiler Temporario", etc.
-        } else if (operacion === "Comprar") {
-          if (!subtipoLower.includes("venta") && !subtipoLower.includes("vender")) return;
-        }
-
-        // Tipo (columna A)
+        // Tipo (columna A) - para filtro y icono
         const tipo = getField(a, ["Tipo", "tipo"]);
 
-        // Filtros adicionales
         if (operacion === "Alquilar" && filtroTipoAlquilar && tipo !== filtroTipoAlquilar) return;
         if (operacion === "Comprar" && filtroTipoComprar && tipo !== filtroTipoComprar) return;
 
+        // Ambientes
         const nroAmb = toInt(getField(a, ["Nro Ambientes", "Ambientes", "Nro de Ambientes", "Nro", "ambientes"]), 0);
         if (operacion === "Alquilar" && filtroAmb && nroAmb !== toInt(filtroAmb)) return;
 
+        // Precio
         const precioVal = getField(a, ["Precio", "precio", "$"]);
         const precio = toNumber(precioVal);
         const formattedPrecio = formatPrice(precioVal);
         if (operacion === "Alquilar" && (precio < filtroMin || precio > filtroMax)) return;
 
+        // Mascotas y amoblado (solo en alquiler)
         const mascotas = getField(a, ["Mascotas", "mascotas"]);
         if (operacion === "Alquilar" && filtroMascotas && (!mascotas || mascotas.toLowerCase() !== "sí")) return;
 
         const amoblado = getField(a, ["Amoblado", "amoblado"]);
         if (operacion === "Alquilar" && filtroAmoblado && (!amoblado || amoblado.toLowerCase() !== "sí")) return;
 
-        // === AÑADIR MARCADOR ===
+        // === Icono según Tipo (columna A) ===
         let iconHtml = '🏠';
         if (tipo === "Temporario") iconHtml = '⏰';
-        else if (tipo === "Local") iconHtml = '🏪';
+        else if (tipo === "Local Comercial" || tipo === "Local") iconHtml = '🏪';
         else if (tipo === "Terreno") iconHtml = '🌳';
         else if (tipo === "Casa") iconHtml = '🏠';
         else if (nroAmb > 0) iconHtml = `🏠<span style="font-size:12px;margin-left:2px;">${nroAmb}</span>`;
@@ -575,20 +573,23 @@ function cargarPropiedades() {
           iconAnchor: [15, 15]
         });
 
-        const direccion = getField(a, ["Direccion", "Dirección", "Domicilio"]);
+        // Datos generales
+        const direccion = getField(a, ["Direccion", "Dirección", "Domicilio", "direccion"]);
         const id = getField(a, ["ID", "id"]);
         const infoIngreso = getField(a, ["Informacion ingreso", "Información ingreso"]);
-        const detalles = getField(a, ["Detalles", "Descripcion", "Descripción"]);
+        const detalles = getField(a, ["Detalles", "Detalle", "Descripcion", "Descripción"]);
         const contacto = getField(a, ["Contacto", "Whatsapp", "WhatsApp", "Tel", "Telefono", "Teléfono"]);
-        const fotos = getField(a, ["Fotos", "Imagenes", "Imágenes"]);
-        const enlace = getField(a, ["Enlace para compartir"]);
+        const fotos = getField(a, ["Fotos", "Imagenes", "Imágenes", "images"]);
+        const enlace = getField(a, ["Enlace para compartir", "enlace"]);
 
+        // Marcador
         const marker = L.marker([lat, lng], { icon: icon }).addTo(markersLayer);
         propertyMarkers.push(marker);
 
+        // Popup
         const popupDiv = document.createElement('div');
         popupDiv.innerHTML = `<b>Dirección:</b> ${direccion || "No disponible"}`;
-        if (tipo !== "Temporario" && tipo !== "Local") {
+        if (tipo !== "Temporario" && tipo !== "Local Comercial" && tipo !== "Local") {
           popupDiv.innerHTML += `<br><b>Ambientes:</b> ${nroAmb || "?"}<br><b>Precio:</b> ${formattedPrecio || "Consultar"}`;
         }
 
