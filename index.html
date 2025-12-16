@@ -1157,11 +1157,52 @@ async function cargarPropiedadesLista() {
 
       const subtipo = getField(p, ["Subtipo", "Subtipo de propiedad", "R"])?.trim();
 
-      // Video de la columna P (Streamable o Mux)
-      const videoUrl = getField(p, ["Video", "Vídeo", "video", "Columna P"]);
+      // Video de la columna P
+      const videoUrlRaw = getField(p, ["Video", "Vídeo", "video", "Columna P"]);
+      const videoUrl = videoUrlRaw ? videoUrlRaw.trim() : "";
 
       const card = document.createElement("div");
       card.className = "property-card";
+
+      // Construimos el HTML del video según el proveedor
+      let videoHTML = "";
+      if (videoUrl) {
+        if (videoUrl.includes("streamable.com")) {
+          // Streamable → iframe embed
+          const embedUrl = videoUrl.replace("streamable.com/", "streamable.com/e/");
+          videoHTML = `
+            <div style="margin:18px 0; border-radius:15px; overflow:hidden; box-shadow:0 6px 20px rgba(0,0,0,0.12); position:relative; padding-bottom:56.25%; height:0;">
+              <iframe src="${embedUrl}" 
+                      frameborder="0" 
+                      allowfullscreen 
+                      allow="autoplay; fullscreen"
+                      style="position:absolute; top:0; left:0; width:100%; height:100%; border-radius:15px;">
+              </iframe>
+            </div>
+          `;
+        } else if (videoUrl.includes("mux.com")) {
+          // Mux → video nativo HLS
+          videoHTML = `
+            <div style="margin:18px 0; border-radius:15px; overflow:hidden; box-shadow:0 6px 20px rgba(0,0,0,0.12);">
+              <video controls preload="metadata" style="width:100%; height:auto; max-height:400px; background:black; border-radius:15px;">
+                <source src="${videoUrl}" type="application/x-mpegURL">
+                <source src="${videoUrl}" type="video/mp4">
+                Tu navegador no soporta el video.
+              </video>
+            </div>
+          `;
+        } else if (videoUrl) {
+          // Cualquier otro enlace → fallback como enlace clickable
+          videoHTML = `
+            <div style="margin:18px 0; padding:15px; background:#f8f9fa; border-radius:15px; text-align:center;">
+              <a href="${videoUrl}" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:underline;">
+                Ver video externo ↗
+              </a>
+            </div>
+          `;
+        }
+      }
+
       card.innerHTML = `
         <div style="position: relative; border-radius: 15px; overflow: hidden;">
           <img src="${primeraImg}" alt="${titulo}" style="width:100%; height:250px; object-fit:cover; display:block;">
@@ -1175,16 +1216,7 @@ async function cargarPropiedadesLista() {
           </div>
         </div>
 
-        <!-- VIDEO EN LA TARJETA DE LISTA (si existe) -->
-        ${videoUrl && videoUrl.trim() ? `
-          <div style="margin:18px 0; border-radius:15px; overflow:hidden; box-shadow:0 6px 20px rgba(0,0,0,0.12);">
-            <video controls preload="metadata" style="width:100%; height:auto; background:black; border-radius:15px;">
-              <source src="${videoUrl.trim()}" type="video/mp4">
-              <source src="${videoUrl.trim()}" type="application/x-mpegURL">
-              Tu navegador no soporta el video.
-            </video>
-          </div>
-        ` : ''}
+        ${videoHTML}
 
         <div class="property-title" style="margin:18px 0 8px; font-size:1.55rem; color:#333; line-height:1.3;">
           ${titulo}
@@ -1208,7 +1240,12 @@ async function cargarPropiedadesLista() {
       };
 
       card.onclick = e => {
-        if (!e.target.closest("img") && !e.target.closest("button") && !e.target.closest("video")) {
+        // Evitamos que al hacer clic en iframe/video/enlace se abra el detalle
+        if (!e.target.closest("img") && 
+            !e.target.closest("button") && 
+            !e.target.closest("iframe") && 
+            !e.target.closest("video") && 
+            !e.target.closest("a")) {
           irADetalle(id);
         }
       };
