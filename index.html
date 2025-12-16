@@ -1107,18 +1107,18 @@ async function irADetalle(id) {
 async function cargarPropiedadesLista() {
   const contenedor = document.getElementById("lista-propiedades");
   contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px;font-size:1.4rem;color:#666;">Cargando...</div>';
-
-  const filtroAmb       = parseInt(document.getElementById("filtroAmb").value) || 0;
-  const filtroMin       = parseCurrency(document.getElementById("filtroMin").value) || 0;
-  const filtroMax       = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
-  const filtroMascotas  = document.getElementById("filtroMascotas").checked;
-  const filtroAmoblado  = document.getElementById("filtroAmoblado").checked;
-  const filtroTipo      = document.getElementById("filtroTipo").value;
+  
+  const filtroAmb = parseInt(document.getElementById("filtroAmb").value) || 0;
+  const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
+  const filtroMax = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
+  const filtroMascotas = document.getElementById("filtroMascotas").checked;
+  const filtroAmoblado = document.getElementById("filtroAmoblado").checked;
+  const filtroTipo = document.getElementById("filtroTipo").value;
 
   try {
     const res = await fetch(webAppURL + "?action=getAlquileres&t=" + Date.now());
     const data = await res.json();
-
+    
     if (!data.success || data.data.length === 0) {
       contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px;color:#95a5a6;">No hay propiedades activas</div>';
       return;
@@ -1127,14 +1127,10 @@ async function cargarPropiedadesLista() {
     const filtradas = data.data.filter(p => {
       if (filtroTipo && p.Tipo !== filtroTipo) return false;
       if (filtroAmb && toInt(p["Nro Ambientes"] || p.Ambientes) !== filtroAmb) return false;
-
       const precio = toNumber(p.Precio);
       if (precio < filtroMin || precio > filtroMax) return false;
-
-      /* FILTROS MASCOTAS Y AMOBLADO */
       if (filtroMascotas && (p.Mascotas || "").toLowerCase() !== "sí") return false;
       if (filtroAmoblado && (p.Amoblado || "").toLowerCase() !== "sí") return false;
-
       return true;
     });
 
@@ -1147,38 +1143,48 @@ async function cargarPropiedadesLista() {
     filtradas.forEach(p => {
       const fotos = (p.Fotos || "").split(",").map(f => f.trim()).filter(Boolean).map(driveUrlDirect);
       const primeraImg = fotos[0] || "https://via.placeholder.com/400x250?text=Sin+Imagen";
+      
       const precioRaw = toNumber(p.Precio);
       const precio = precioRaw ? "$" + precioRaw.toLocaleString("es-AR") : "Consultar";
+      
       const titulo = getField(p, ["Título", "titulo", "Titulo", "Título Propiedad"]) || "Sin título";
       const tipoPropiedad = getField(p, ["Tipo"]) || "Propiedad";
       const id = getField(p, ["ID Propiedad", "idPropiedad", "ID"]) || "";
 
-      /* AMBIENTES */
       const ambientesStr = getField(p, ["Nro Ambientes", "Ambientes", "Ambientes "]) || "1";
       const nroAmbientes = toInt(ambientesStr);
       const textoAmbientes = nroAmbientes === 1 ? "Monoambiente" : nroAmbientes + " ambientes";
 
-      /* SUBTIPO (columna R) */
       const subtipo = getField(p, ["Subtipo", "Subtipo de propiedad", "R"])?.trim();
+
+      // Video de la columna P (Streamable o Mux)
+      const videoUrl = getField(p, ["Video", "Vídeo", "video", "Columna P"]);
 
       const card = document.createElement("div");
       card.className = "property-card";
       card.innerHTML = `
         <div style="position: relative; border-radius: 15px; overflow: hidden;">
           <img src="${primeraImg}" alt="${titulo}" style="width:100%; height:250px; object-fit:cover; display:block;">
-
-          <!-- Subtipo arriba izquierda -->
           ${subtipo ? `
             <div style="position:absolute; top:12px; left:12px; background:var(--primary); color:white; padding:8px 16px; border-radius:50px; font-size:0.95rem; font-weight:600; box-shadow:0 4px 12px rgba(52,131,250,0.4); z-index:2;">
               ${subtipo}
             </div>
           ` : ''}
-
-          <!-- NRO DE AMBIENTES – MÁS ARRIBA Y SIN FONDO -->
           <div class="ambientes-overlay">
             ${textoAmbientes}
           </div>
         </div>
+
+        <!-- VIDEO EN LA TARJETA DE LISTA (si existe) -->
+        ${videoUrl && videoUrl.trim() ? `
+          <div style="margin:18px 0; border-radius:15px; overflow:hidden; box-shadow:0 6px 20px rgba(0,0,0,0.12);">
+            <video controls preload="metadata" style="width:100%; height:auto; background:black; border-radius:15px;">
+              <source src="${videoUrl.trim()}" type="video/mp4">
+              <source src="${videoUrl.trim()}" type="application/x-mpegURL">
+              Tu navegador no soporta el video.
+            </video>
+          </div>
+        ` : ''}
 
         <div class="property-title" style="margin:18px 0 8px; font-size:1.55rem; color:#333; line-height:1.3;">
           ${titulo}
@@ -1195,16 +1201,18 @@ async function cargarPropiedadesLista() {
         <button class="ver-detalles-btn">Ver detalles</button>
       `;
 
-      /* Eventos */
+      // Eventos
       card.querySelector("img").onclick = e => {
         e.stopPropagation();
         if (fotos.length) abrirModal(fotos[0], fotos);
       };
+
       card.onclick = e => {
-        if (!e.target.closest("img") && !e.target.closest("button")) {
+        if (!e.target.closest("img") && !e.target.closest("button") && !e.target.closest("video")) {
           irADetalle(id);
         }
       };
+
       card.querySelector(".ver-detalles-btn").onclick = e => {
         e.stopPropagation();
         irADetalle(id);
