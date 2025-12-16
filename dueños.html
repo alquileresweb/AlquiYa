@@ -49,10 +49,10 @@
       }
       /* LOGO MÁS GRANDE */
       header img {
-        max-height: 150px;   /* antes era 60px */
+        max-height: 150px; /* antes era 60px */
         height: 150px;
       }
-      
+     
       /* BOTONES FIJOS: FLECHA Y PERSONITA CON EL MISMO ESTILO */
 #back-arrow, #menu-toggle {
   position: fixed;
@@ -69,7 +69,6 @@
   z-index: 1001;
   transition: all 0.3s ease;
 }
-
 /* Flecha izquierda */
 #back-arrow {
   left: 20px;
@@ -78,7 +77,6 @@
   font-size: 32px;
   color: var(--primary);
 }
-
 /* Personita derecha (mismo estilo, pero con imagen) */
 #menu-toggle {
   right: 20px;
@@ -93,7 +91,6 @@
   background-position: center;
   background-color: white;
 }
-
 /* Efecto hover igual para ambos */
 #back-arrow:hover, #menu-toggle:hover {
   transform: scale(1.08);
@@ -102,7 +99,7 @@
 #menu-toggle:hover {
   border: 2px solid var(--primary);
 }
-      
+     
       #menu {
         display: none;
         position: fixed;
@@ -127,40 +124,38 @@
         transition: background 0.2s;
       }
       #menu button:hover { background: #f1f5f9; }
-      
+     
       h2, h3 { text-align: center; color: var(--dark); margin: 20px 0; }
-      
+     
       /* TÍTULO "MIS PROPIEDADES" MÁS CHICO */
       h3 {
         text-align: center;
         color: var(--dark);
         margin: 20px 0;
-        font-size: 1.4em;   /* antes era 2em */
+        font-size: 1.4em; /* antes era 2em */
         font-weight: 600;
       }
-      
+     
 /* ==================== PANEL MI PLAN - VERSIÓN ULTRA COMPACTA ==================== */
 #planContainer {
   background: white;
-  margin: 100px auto 25px auto;     /* un poco más abajo */
-  max-width: 360px;                /* mucho más estrecho → más corto a los costados */
-  padding: 16px 18px;              /* padding mínimo para que quede apretadito */
+  margin: 100px auto 25px auto; /* un poco más abajo */
+  max-width: 360px; /* mucho más estrecho → más corto a los costados */
+  padding: 16px 18px; /* padding mínimo para que quede apretadito */
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   text-align: center;
   border: 2.5px solid var(--primary);
-  line-height: 1.3;                /* reduce el espacio entre líneas */
+  line-height: 1.3; /* reduce el espacio entre líneas */
 }
-
 /* Tipo de plan / Vencimiento → más cerca */
 #planStatus {
   font-weight: bold;
-  font-size: 1em !important;   /* un poco más grande para destacar */
-  margin: 4px 0 !important;        /* ¡muy poco espacio arriba y abajo! */
+  font-size: 1em !important; /* un poco más grande para destacar */
+  margin: 4px 0 !important; /* ¡muy poco espacio arriba y abajo! */
   color: var(--primary);
   line-height: 1.2;
 }
-
 /* Propiedades activas → casi pegado */
 #limiteAlquileres {
   font-size: 1em;
@@ -173,20 +168,18 @@
   background: var(--primary);
   color: white;
   border: none;
-  padding: 10px 22px;             /* botón más compacto */
+  padding: 10px 22px; /* botón más compacto */
   border-radius: 50px;
   font-size: 1em;
   font-weight: 600;
   cursor: pointer;
-  margin-top: 8px;                 /* casi pegado al texto de arriba */
+  margin-top: 8px; /* casi pegado al texto de arriba */
   transition: all 0.3s ease;
 }
-
 #btnPlan:hover {
   background: #3651d4;
   transform: translateY(-2px);
 }
-
 /* ===================== NUEVO DISEÑO COMPACTO DE TARJETAS ===================== */
 .prop-titulo {
   font-size: 1.22em;
@@ -195,7 +188,6 @@
   margin: 0 0 10px 0;
   line-height: 1.3;
 }
-
 .prop-info {
   display: flex;
   flex-wrap: wrap;
@@ -204,7 +196,6 @@
   font-size: 1.05em;
   font-weight: 600;
 }
-
 .info-tag {
   background: #e0e7ff;
   color: #4338ca;
@@ -212,22 +203,18 @@
   border-radius: 50px;
   font-size: 0.95em;
 }
-
 .info-tag.precio {
   background: #d1fae5;
   color: #065f46;
 }
-
 .info-tag.estado.activo {
   background: #dcfce7;
   color: #166534;
 }
-
 .info-tag.estado.inactivo {
   background: #fee2e2;
   color: #991b1b;
 }
-
 /* Tarjeta más compacta */
 .alquiler {
   margin: 12px auto !important;
@@ -237,10 +224,9 @@
   box-shadow: var(--shadow);
   background: white;
 }
-
 /* Quitar cualquier <br> viejo que quede */
 .alquiler br { display: none !important; }
-      
+     
       .alquiler-actions { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; flex-wrap: wrap; gap: 10px; }
       .alquiler-actions-left button, .alquiler-actions-right button {
         background: var(--primary);
@@ -288,7 +274,6 @@
       }
       .stats-item { display: flex; align-items: center; gap: 8px; font-weight: bold; color: #d97706; }
       .stats-item i { font-size: 1.2em; }
-
   /* ==================== BOTÓN "AGREGAR PROPIEDAD" MÁS PEQUEÑO Y ELEGANTE ==================== */
   #btnAgregarPropiedad {
     display: block;
@@ -296,9 +281,9 @@
     background: var(--primary);
     color: white;
     border: none;
-    padding: 11px 26px !important;     /* ← más pequeño que antes */
+    padding: 11px 26px !important; /* ← más pequeño que antes */
     border-radius: 50px;
-    font-size: 1.15em !important;      /* ← texto un poco más chico */
+    font-size: 1.15em !important; /* ← texto un poco más chico */
     font-weight: 600;
     cursor: pointer;
     box-shadow: 0 6px 18px rgba(67, 97, 238, 0.35);
@@ -308,7 +293,7 @@
     transform: translateY(-3px);
     box-shadow: 0 10px 25px rgba(67, 97, 238, 0.45);
   }
-      
+     
       #contactoBtn {
         position: fixed;
         bottom: 24px;
@@ -813,24 +798,21 @@ function mostrarAlquileres(res) {
   <div class="prop-titulo">
     ${alq.Direccion || alq.direccion || "Sin dirección"}
   </div>
-
   <!-- INFORMACIÓN EN LÍNEA: Operación • Precio • Estado -->
   <div class="prop-info">
     <span class="info-tag operacion">
       ${alq.Operacion === "Vender" ? "Venta" : "Alquiler"}
     </span>
-    ${precioFormateado ? 
-      `<span class="info-tag precio">${precioFormateado}</span>` : 
+    ${precioFormateado ?
+      `<span class="info-tag precio">${precioFormateado}</span>` :
       '<span class="info-tag precio">Consultar</span>'
     }
     <span class="info-tag estado ${estado ? "activo" : "inactivo"}">
       ${estado ? "Activo" : "Inactivo"}
     </span>
   </div>
-
   <!-- Estadísticas -->
   ${statsHTML}
-
   <!-- Botones de acción -->
   <div class="alquiler-actions">
     <div class="alquiler-actions-left">
@@ -865,20 +847,18 @@ function mostrarAlquileres(res) {
 function cargarAlquileres() {
   const email = localStorage.getItem("dueno");
   if (!email) return;
-
   // Limpiamos cualquier "undefined" que haya quedado colgado de llamadas anteriores
   const oldScripts = document.querySelectorAll('script[src*="getAlquileresDueno"]');
   oldScripts.forEach(s => s.remove());
-
   const script = document.createElement("script");
   script.src = `${API_URL}?action=getAlquileresDueno&dueno=${encodeURIComponent(email)}&callback=mostrarAlquileres&t=${Date.now()}`;
   script.onerror = () => {
-    document.getElementById("listaAlquileres").innerHTML = 
+    document.getElementById("listaAlquileres").innerHTML =
       "<p style='text-align:center;color:#666;padding:40px;'>Error de conexión. <button onclick='cargarAlquileres()' style='margin-top:10px;padding:8px 16px;background:var(--primary);color:white;border:none;border-radius:50px;cursor:pointer;'>Reintentar</button></p>";
   };
   document.body.appendChild(script);
 }
-  
+ 
 function initGoogleCharts() {
   console.log('Inicializando Google Charts...');
   if (typeof google === 'undefined' || !google.charts) {
@@ -1182,33 +1162,15 @@ script.src = `${API_URL}?action=getPlanes&callback=mostrarPreciosPlanes`;
 document.body.appendChild(script);
 }
 function mostrarPreciosPlanes(res) {
-  if (res.success && res.data && res.data.length >= 1) {
-    // Asumimos que res.data es un array de filas de la hoja "Planes"
-    // La primera fila con datos reales suele ser res.data[0] o res.data[1] si hay encabezado
-    // Pero como tú confirmas las columnas E, F, G, H → índices 4,5,6,7 (0-based)
-
-    let filaPrecios;
-    // Buscamos la fila que tenga datos numéricos en las columnas de precios
-    for (let fila of res.data) {
-      if (fila[4] || fila[5] || fila[6] || fila[7]) { // columnas E-H
-        filaPrecios = fila;
-        break;
-      }
-    }
-
-    if (filaPrecios) {
-      preciosPlanes.Basico      = parseFloat(filaPrecios[4]) || 0; // Columna E
-      preciosPlanes.Plus        = parseFloat(filaPrecios[5]) || 0; // Columna F
-      preciosPlanes.Full        = parseFloat(filaPrecios[6]) || 0; // Columna G
-      preciosPlanes.Inmobiliario = parseFloat(filaPrecios[7]) || 0; // Columna H
-    }
+  if (res.success && res.data && res.data.length) {
+    res.data.forEach(plan => {
+      preciosPlanes[plan.nombre] = parseFloat(plan.precio) || 0;
+    });
+    document.getElementById("precioBasico").textContent = formatoPrecioPlan(preciosPlanes.Basico) + " / mes";
+    document.getElementById("precioPlus").textContent = formatoPrecioPlan(preciosPlanes.Plus) + " / mes";
+    document.getElementById("precioFull").textContent = formatoPrecioPlan(preciosPlanes.Full) + " / mes";
+    document.getElementById("precioInmobiliario").textContent = formatoPrecioPlan(preciosPlanes.Inmobiliario || 0) + " / mes";
   }
-
-  // Actualizamos los textos en el modal (siempre, incluso si no se cargaron bien)
-  document.getElementById("precioBasico").textContent       = formatoPrecioPlan(preciosPlanes.Basico) + " / mes";
-  document.getElementById("precioPlus").textContent         = formatoPrecioPlan(preciosPlanes.Plus) + " / mes";
-  document.getElementById("precioFull").textContent         = formatoPrecioPlan(preciosPlanes.Full) + " / mes";
-  document.getElementById("precioInmobiliario").textContent = formatoPrecioPlan(preciosPlanes.Inmobiliario) + " / mes";
 }
 function cargarEstadoPlan() {
 const email = localStorage.getItem("dueno");
@@ -1218,7 +1180,6 @@ document.body.appendChild(script);
 }
 function mostrarEstadoPlan(res) {
   const planStatusEl = document.getElementById("planStatus");
- 
   if (!res.success || !res.data || !res.data[0]) {
     planActual = null;
     limiteDeptos = 0;
@@ -1326,7 +1287,7 @@ async function seleccionarPlan(plan, retries = 3) {
     if (res.init_point) {
       const mpContainer = document.getElementById("mpBtn" + plan);
       mpContainer.innerHTML = `<iframe src="${res.init_point}" width="100%" height="650" frameborder="0" allowtransparency="true" style="border-radius:12px;"></iframe>`;
-     
+    
       planStatusEl.innerHTML = `<span class="estado-msg loading">Redirigiendo al pago... Completa el proceso en la ventana de Mercado Pago.</span>`;
     } else {
       console.error("Error al crear preferencia de Mercado Pago:", res);
@@ -1755,7 +1716,7 @@ console.error("Error en edición de cuenta:", err);
 }
 }
 </script>
-    
+   
   <!-- =============== PIE DE PÁGINA AZUL – VOLVER AL MAPA (para dueños.html) =============== -->
   <footer style="margin-top:80px;background:#3483fa;color:white;padding:2.5rem 1rem 1.5rem;">
     <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2rem;align-items:center;text-align:center;">
@@ -1763,22 +1724,19 @@ console.error("Error en edición de cuenta:", err);
       <div>
         <img src="https://i.postimg.cc/FHXRBTTX/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.png" alt="Logo AlquiYa" style="max-width:180px;height:auto;">
       </div>
-
       <!-- Botón Volver al Mapa -->
       <div>
-        <a href="https://www.alquiya.com.ar" 
+        <a href="https://www.alquiya.com.ar"
            style="display:inline-block;background:white;color:#3483fa;font-weight:700;padding:0.9rem 2.6rem;border-radius:50px;font-size:1.28rem;box-shadow:0 6px 20px rgba(52,131,250,0.3);transition:all 0.3s ease;text-decoration:none;">
           ← Volver al Inicio
         </a>
       </div>
-
       <!-- Instagram -->
       <div>
         <a href="https://www.instagram.com/alquiya.st/" target="_blank">
           <img src="https://i.postimg.cc/GmVWTXX0/394a7aaecd6b8ce44528649681d9fa05.png" alt="Instagram" style="width:40px;height:40px;">
         </a>
       </div>
-
       <!-- Copyright -->
       <div style="font-size:0.95rem;opacity:0.9;grid-column:1/-1;">
         © 2025 AlquiYa • Todos los derechos reservados
