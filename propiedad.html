@@ -77,12 +77,12 @@
   .video-container iframe,
   .video-container video {
     width: 100%;
-    height: 420px;
+    height: 480px;
     border: none;
     border-radius: 12px;
     background: black;
   }
-  @media (max-width: 600px) {
+  @media (max-width: 768px) {
     .video-container iframe,
     .video-container video {
       height: 300px;
@@ -124,15 +124,18 @@
 </header>
 <div id="loading-msg">Cargando datos de la propiedad...</div>
 <div id="propiedad-detalle"></div>
+
 <div id="modal-img">
   <img id="img-grande" alt="Imagen ampliada">
   <button class="close-btn" onclick="cerrarModal()">X</button>
   <button class="nav-btn prev-btn" onclick="cambiarImagen(-1)"><</button>
   <button class="nav-btn next-btn" onclick="cambiarImagen(1)">></button>
 </div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
+ 
 // === CONFIGURACIÓN ===
 const webAppURL = "https://script.google.com/macros/s/AKfycbyFvDRwPZoG6ChhvcxGm6B27ziD6Qkg4RcH0TI9K59b7zPz7iFxy7mgmbs5mo5T-TxD/exec";
 let currentImages = [];
@@ -158,13 +161,11 @@ function formatPrice(num) {
   return isNaN(n) ? "No disponible" : "$" + n.toLocaleString('es-AR');
 }
 
-// OBTENER FOTO DE PERFIL
+// Obtener foto de perfil
 async function obtenerFotoPerfil(email) {
   if (!email) return "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
   try {
-    const res = await fetch(`${webAppURL}?action=obtenerFotoPerfil&email=${encodeURIComponent(email)}`, {
-      cache: "no-store"
-    });
+    const res = await fetch(`${webAppURL}?action=obtenerFotoPerfil&email=${encodeURIComponent(email)}`, { cache: "no-store" });
     const data = await res.json();
     return data.foto || "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
   } catch (err) {
@@ -189,7 +190,7 @@ function cambiarImagen(dir) {
   document.getElementById("img-grande").src = currentImages[currentImageIndex];
 }
 
-// MAPA
+// Mapa
 let markersLayer;
 function initMap(lat, lng, direccion, nroAmb, tipo) {
   const map = L.map("map").setView([lat, lng], 16);
@@ -199,13 +200,10 @@ function initMap(lat, lng, direccion, nroAmb, tipo) {
   markersLayer = L.layerGroup().addTo(map);
 
   let iconHtml;
-  if (tipo === "Temporario") {
-    iconHtml = '⌛';
-  } else if (tipo === "Local") {
-    iconHtml = '🛍️';
-  } else {
-    iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-") + '</span>';
-  }
+  if (tipo === "Temporario") iconHtml = '⌛';
+  else if (tipo === "Local") iconHtml = '🛍️';
+  else iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-") + '</span>';
+
   const propertyIcon = L.divIcon({
     className: 'marker-icon',
     html: iconHtml,
@@ -218,6 +216,7 @@ function initMap(lat, lng, direccion, nroAmb, tipo) {
     .bindPopup(`<b style="font-size:16px;color:#3483fa;">${direccion}</b><br>${tipo}`)
     .openPopup();
 
+  // Marcadores estáticos
   const uniIcon = L.divIcon({ className: 'marker-icon', html: '🎓', iconSize: [30, 30], iconAnchor: [15, 15] });
   const hospIcon = L.divIcon({ className: 'marker-icon', html: '🏥', iconSize: [30, 30], iconAnchor: [15, 15] });
   const superIcon = L.divIcon({ className: 'marker-icon', html: '🛒', iconSize: [30, 30], iconAnchor: [15, 15] });
@@ -236,7 +235,7 @@ function initMap(lat, lng, direccion, nroAmb, tipo) {
   map.fitBounds(group.getBounds().pad(0.2));
 }
 
-// CARGA PRINCIPAL
+// === CARGA PRINCIPAL CON VIDEO SOPORTADO ===
 window.onload = async () => {
   const urlParams = new URLSearchParams(window.location.search);
   const id = urlParams.get("id");
@@ -246,10 +245,12 @@ window.onload = async () => {
     loading.innerHTML = "Error: Falta ID";
     return;
   }
+
   try {
     const res = await fetch(`${webAppURL}?action=getAlquiler&id=${id}`, { cache: "no-store" });
     const { success, alquiler: a } = await res.json();
     loading.style.display = "none";
+
     if (!success || !a) {
       card.innerHTML = "<h2>Propiedad no encontrada</h2>";
       return;
@@ -273,7 +274,7 @@ window.onload = async () => {
       <hr style="border-top:1px solid #ddd;margin:20px 0">
     `;
 
-    // Campos textuales
+    // Campos según tipo
     const campos = tipo === "Temporario" || tipo === "Local" ? [
       ["Dirección", direccion],
       ["Información de ingreso", getField(a, ["Informacion ingreso","Información ingreso"]) || "No especificada"],
@@ -342,17 +343,12 @@ window.onload = async () => {
 
       } else {
         // Fallback: enlace externo
-        const link = document.createElement("a");
-        link.href = videoUrl;
-        link.target = "_blank";
-        link.textContent = "Ver video externo ↗";
-        link.style.display = "block";
+        const link = document.createElement("div");
         link.style.padding = "20px";
         link.style.textAlign = "center";
-        link.style.color = "#3483fa";
-        link.style.fontWeight = "600";
-        link.style.background = "#f0f8ff";
-        link.style.borderRadius = "10px";
+        link.style.background = "#f0f0f0";
+        link.style.borderRadius = "12px";
+        link.innerHTML = `<a href="${videoUrl}" target="_blank" style="color:#3483fa;font-weight:600;text-decoration:underline;">Ver video externo ↗</a>`;
         videoContainer.appendChild(link);
       }
 
@@ -369,7 +365,7 @@ window.onload = async () => {
       setTimeout(() => initMap(lat, lng, direccion, toInt(getField(a, ["Nro Ambientes","Ambientes"])), tipo), 400);
     }
 
-    // === BOTONES ===
+    // === BOTONES DE CONTACTO ===
     if (a.Contacto && a.ID) {
       const btn = document.createElement("button");
       btn.textContent = "Contactar por WhatsApp";
@@ -389,10 +385,11 @@ window.onload = async () => {
       card.appendChild(btn);
     }
 
+    // Botón Volver
     const volver = document.createElement("button");
-    volver.textContent = "Volver al Inicio";
+    volver.textContent = "Volver al Mapa";
     volver.style.cssText = "background:#3483fa;color:white;padding:12px 20px;font-size:16px;border-radius:8px;border:none;cursor:pointer;margin-top:10px;";
-    volver.onclick = () => location.href = "https://www.alquiya.com.ar";
+    volver.onclick = () => location.href = "index.html";
     card.appendChild(volver);
 
   } catch (err) {
