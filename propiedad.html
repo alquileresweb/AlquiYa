@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-SSJ5DG33JK"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -10,6 +11,7 @@
   gtag('js', new Date());
   gtag('config', 'G-SSJ5DG33JK');
 </script>
+<!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
   integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <link rel="icon" type="image/png" href="https://i.postimg.cc/MKpMcrcQ/AlquiYa.png">
@@ -18,6 +20,7 @@
   header { background: white; padding: 15px; text-align: center; }
   header img { max-width: 250px; }
 
+  /* FOTO DE PERFIL DENTRO DE LA TARJETA */
   .owner-profile-img {
     position: absolute;
     top: 16px;
@@ -36,11 +39,12 @@
     transform: scale(1.18);
     box-shadow: 0 12px 30px rgba(52,131,250,0.5);
   }
+
   #propiedad-detalle {
+    position: relative;
     max-width: 700px; margin: 20px auto; padding: 20px;
     border: 2px solid #3483fa; border-radius: 10px;
     background: #f9f9f9; box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    position: relative;
   }
   #propiedad-detalle h2 { color: #3483fa; margin-top: 0; }
   #propiedad-detalle h3 { color: #3483fa; margin: 5px 0 15px; font-weight: normal; }
@@ -51,10 +55,13 @@
     font-size: 16px; margin: 10px 10px 0 0;
   }
   #propiedad-detalle button:hover { background: #1ebe57; }
+
   #loading-msg {
     text-align: center; font-weight: bold; color: #3483fa;
     padding: 40px; font-size: 18px;
   }
+
+  /* Contenedor de imágenes y videos */
   #imagenes-container {
     display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;
   }
@@ -64,29 +71,17 @@
   }
   #imagenes-container img:hover { transform: scale(1.1); }
 
-  /* ESTILOS PARA VIDEO EN DETALLE */
-  .video-container {
+  /* Video grande (Streamable o Mux) */
+  .video-wrapper {
+    width: 100%;
     margin: 25px 0;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.18);
-  }
-  .video-container iframe,
-  .video-container video {
-    width: 100%;
-    height: 480px;
-    border: none;
-    border-radius: 12px;
-    background: black;
-  }
-  @media (max-width: 768px) {
-    .video-container iframe,
-    .video-container video {
-      height: 300px;
-    }
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
   }
 
   #map { height: 400px; width: 100%; margin-top: 20px; border-radius: 10px; border: 2px solid #3483fa; }
+
   #modal-img {
     display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center;
@@ -100,6 +95,7 @@
   #modal-img .close-btn { top: 15px; right: 15px; background: red; color: white; }
   #modal-img .prev-btn { left: 15px; }
   #modal-img .next-btn { right: 15px; }
+
   .marker-icon {
     display:flex;
     align-items:center;
@@ -119,6 +115,7 @@
 <header>
   <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya">
 </header>
+
 <div id="loading-msg">Cargando datos de la propiedad...</div>
 <div id="propiedad-detalle"></div>
 
@@ -132,12 +129,11 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
-// === CONFIG ===
 const webAppURL = "https://script.google.com/macros/s/AKfycbyFvDRwPZoG6ChhvcxGm6B27ziD6Qkg4RcH0TI9K59b7zPz7iFxy7mgmbs5mo5T-TxD/exec";
 let currentImages = [];
 let currentImageIndex = 0;
+let contactoBloqueado = false;
 
-// Utilidades (igual que antes)
 function getField(obj, keys) {
   for (const k of keys) {
     if (obj && Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null && obj[k] !== "") return obj[k];
@@ -156,7 +152,6 @@ function formatPrice(num) {
   return isNaN(n) ? "No disponible" : "$" + n.toLocaleString('es-AR');
 }
 
-// Foto de perfil, modal y mapa (sin cambios, igual que antes)
 async function obtenerFotoPerfil(email) {
   if (!email) return "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
   try {
@@ -185,9 +180,10 @@ function cambiarImagen(dir) {
 
 let markersLayer;
 function initMap(lat, lng, direccion, nroAmb, tipo) {
-  // (código del mapa igual que antes, sin cambios)
   const map = L.map("map").setView([lat, lng], 16);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
   markersLayer = L.layerGroup().addTo(map);
 
   let iconHtml;
@@ -195,9 +191,20 @@ function initMap(lat, lng, direccion, nroAmb, tipo) {
   else if (tipo === "Local") iconHtml = '🛍️';
   else iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-") + '</span>';
 
-  const propertyIcon = L.divIcon({ className: 'marker-icon', html: iconHtml, iconSize: [38, 38], iconAnchor: [19, 19], popupAnchor: [0, -15] });
-  L.marker([lat, lng], { icon: propertyIcon }).addTo(markersLayer).bindPopup(`<b style="font-size:16px;color:#3483fa;">${direccion}</b><br>${tipo}`).openPopup();
+  const propertyIcon = L.divIcon({
+    className: 'marker-icon',
+    html: iconHtml,
+    iconSize: [38, 38],
+    iconAnchor: [19, 19],
+    popupAnchor: [0, -15]
+  });
 
+  L.marker([lat, lng], { icon: propertyIcon })
+    .addTo(markersLayer)
+    .bindPopup(`<b style="font-size:16px;color:#3483fa;">${direccion}</b><br>${tipo}`)
+    .openPopup();
+
+  // Marcadores estáticos (igual que antes)
   const uniIcon = L.divIcon({ className: 'marker-icon', html: '🎓', iconSize: [30, 30], iconAnchor: [15, 15] });
   const hospIcon = L.divIcon({ className: 'marker-icon', html: '🏥', iconSize: [30, 30], iconAnchor: [15, 15] });
   const superIcon = L.divIcon({ className: 'marker-icon', html: '🛒', iconSize: [30, 30], iconAnchor: [15, 15] });
@@ -216,12 +223,12 @@ function initMap(lat, lng, direccion, nroAmb, tipo) {
   map.fitBounds(group.getBounds().pad(0.2));
 }
 
-// === CARGA PRINCIPAL (con video responsive corregido) ===
 window.onload = async () => {
   const urlParams = new URLSearchParams(window.location.search);
   const id = urlParams.get("id");
   const loading = document.getElementById("loading-msg");
   const card = document.getElementById("propiedad-detalle");
+
   if (!id) {
     loading.innerHTML = "Error: Falta ID";
     return;
@@ -254,7 +261,7 @@ window.onload = async () => {
       <hr style="border-top:1px solid #ddd;margin:20px 0">
     `;
 
-    // Campos (igual)
+    // Campos textuales
     const campos = tipo === "Temporario" || tipo === "Local" ? [
       ["Dirección", direccion],
       ["Información de ingreso", getField(a, ["Informacion ingreso","Información ingreso"]) || "No especificada"],
@@ -274,8 +281,12 @@ window.onload = async () => {
       }
     });
 
-    // Imágenes (igual)
+    // === IMÁGENES + VIDEO ===
     const fotosRaw = getField(a, ["Fotos","Imagenes","Imágenes","images","FOTOS"]);
+    const videoUrlRaw = getField(a, ["Video", "Vídeo", "video", "Columna P"]);
+    const videoUrl = videoUrlRaw ? videoUrlRaw.trim() : "";
+
+    // Contenedor de miniaturas
     if (fotosRaw) {
       const urls = fotosRaw.split(",").map(u => u.trim()).filter(Boolean).map(driveUrlDirect).filter(Boolean);
       if (urls.length) {
@@ -291,26 +302,30 @@ window.onload = async () => {
       }
     }
 
-    // === VIDEO RESPONSIVE CORREGIDO ===
-    const videoUrlRaw = getField(a, ["Video", "Vídeo", "video", "Columna P"]);
-    const videoUrl = videoUrlRaw ? videoUrlRaw.trim() : "";
-
+    // Video grande
     if (videoUrl) {
-      const videoContainer = document.createElement("div");
-      videoContainer.className = "video-container";
+      const videoWrapper = document.createElement("div");
+      videoWrapper.className = "video-wrapper";
 
       if (videoUrl.includes("streamable.com")) {
         const iframe = document.createElement("iframe");
         iframe.src = videoUrl.replace("streamable.com/", "streamable.com/e/");
+        iframe.frameBorder = "0";
         iframe.allowFullscreen = true;
         iframe.allow = "autoplay; fullscreen";
-        iframe.frameBorder = "0";
-        videoContainer.appendChild(iframe);
+        iframe.style.width = "100%";
+        iframe.style.height = "480px";
+        iframe.style.border = "none";
+        videoWrapper.appendChild(iframe);
 
       } else if (videoUrl.includes("mux.com")) {
         const video = document.createElement("video");
         video.controls = true;
         video.preload = "metadata";
+        video.style.width = "100%";
+        video.style.height = "auto";
+        video.style.maxHeight = "500px";
+        video.style.background = "black";
 
         const source = document.createElement("source");
         source.src = videoUrl;
@@ -318,22 +333,27 @@ window.onload = async () => {
 
         video.appendChild(source);
         video.appendChild(document.createTextNode("Tu navegador no soporta video."));
-        videoContainer.appendChild(video);
+        videoWrapper.appendChild(video);
 
       } else {
-        const link = document.createElement("div");
-        link.style.padding = "30px";
+        const link = document.createElement("a");
+        link.href = videoUrl;
+        link.target = "_blank";
+        link.textContent = "Ver video externo ↗";
+        link.style.display = "block";
+        link.style.padding = "20px";
         link.style.textAlign = "center";
-        link.style.background = "#f8f9fa";
-        link.style.borderRadius = "15px";
-        link.innerHTML = `<a href="${videoUrl}" target="_blank" style="color:#3483fa;font-weight:600;text-decoration:underline;">Ver video externo ↗</a>`;
-        videoContainer.appendChild(link);
+        link.style.color = "#3483fa";
+        link.style.fontWeight = "600";
+        link.style.background = "#f0f8ff";
+        link.style.borderRadius = "10px";
+        videoWrapper.appendChild(link);
       }
 
-      card.appendChild(videoContainer);
+      card.appendChild(videoWrapper);
     }
 
-    // Mapa y botones (igual que antes)
+    // Mapa
     const lat = parseFloat(getField(a, ["Lat","Latitude","Latitud"]));
     const lng = parseFloat(getField(a, ["Lng","Longitude","Longitud"]));
     if (!isNaN(lat) && !isNaN(lng)) {
@@ -343,22 +363,29 @@ window.onload = async () => {
       setTimeout(() => initMap(lat, lng, direccion, toInt(getField(a, ["Nro Ambientes","Ambientes"])), tipo), 400);
     }
 
+    // Botón WhatsApp con conteo de contacto
     if (a.Contacto && a.ID) {
       const btn = document.createElement("button");
       btn.textContent = "Contactar por WhatsApp";
       btn.style.cssText = "background:#25D366;color:white;padding:14px 24px;font-size:17px;font-weight:bold;border-radius:8px;border:none;cursor:pointer;margin:10px 10px 0 0;";
       btn.onclick = async function() {
         try {
-          await fetch(`${webAppURL}?action=incrementarMetrica&idPropiedad=${a.ID}&metrica=contactos&t=${Date.now()}`, { method: "GET", cache: "no-store" });
-        } catch (e) { console.warn("No se pudo contar el contacto", e); }
+          await fetch(`${webAppURL}?action=incrementarMetrica&idPropiedad=${a.ID}&metrica=contactos&t=${Date.now()}`, {
+            method: "GET",
+            cache: "no-store"
+          });
+        } catch (e) {
+          console.warn("No se pudo contar el contacto", e);
+        }
         const mensaje = encodeURIComponent(`Hola, *vengo desde AlquiYa*\n\nMe interesa el alquiler en: ${direccion}`);
         window.open(`https://wa.me/${a.Contacto}?text=${mensaje}`, "_blank");
       };
       card.appendChild(btn);
     }
 
+    // Botón Volver
     const volver = document.createElement("button");
-    volver.textContent = "Volver al Mapa";
+    volver.textContent = "Volver al Inicio";
     volver.style.cssText = "background:#3483fa;color:white;padding:12px 20px;font-size:16px;border-radius:8px;border:none;cursor:pointer;margin-top:10px;";
     volver.onclick = () => location.href = "index.html";
     card.appendChild(volver);
@@ -372,10 +399,23 @@ window.onload = async () => {
 
 <footer style="margin-top:80px;background:#3483fa;color:white;padding:2.5rem 1rem 1.5rem;">
   <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2rem;align-items:center;text-align:center;">
-    <div><img src="https://i.postimg.cc/FHXRBTTX/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.png" alt="Logo AlquiYa" style="max-width:180px;height:auto;"></div>
-    <div><a href="https://www.alquiya.com.ar" style="display:inline-block;background:white;color:#3483fa;font-weight:700;padding:0.9rem 2.6rem;border-radius:50px;font-size:1.28rem;box-shadow:0 6px 20px rgba(52,131,250,0.3);transition:all 0.3s ease;text-decoration:none;">← Volver al Inicio</a></div>
-    <div><a href="https://www.instagram.com/alquiya.st/" target="_blank"><img src="https://i.postimg.cc/GmVWTXX0/394a7aaecd6b8ce44528649681d9fa05.png" alt="Instagram" style="width:40px;height:40px;"></a></div>
-    <div style="font-size:0.95rem;opacity:0.9;grid-column:1/-1;">© 2025 AlquiYa • Todos los derechos reservados</div>
+    <div>
+      <img src="https://i.postimg.cc/FHXRBTTX/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.png" alt="Logo AlquiYa" style="max-width:180px;height:auto;">
+    </div>
+    <div>
+      <a href="https://www.alquiya.com.ar"
+         style="display:inline-block;background:white;color:#3483fa;font-weight:700;padding:0.9rem 2.6rem;border-radius:50px;font-size:1.28rem;box-shadow:0 6px 20px rgba(52,131,250,0.3);transition:all 0.3s ease;text-decoration:none;">
+        ← Volver al Inicio
+      </a>
+    </div>
+    <div>
+      <a href="https://www.instagram.com/alquiya.st/" target="_blank">
+        <img src="https://i.postimg.cc/GmVWTXX0/394a7aaecd6b8ce44528649681d9fa05.png" alt="Instagram" style="width:40px;height:40px;">
+      </a>
+    </div>
+    <div style="font-size:0.95rem;opacity:0.9;grid-column:1/-1;">
+      © 2025 AlquiYa • Todos los derechos reservados
+    </div>
   </div>
 </footer>
 </body>
