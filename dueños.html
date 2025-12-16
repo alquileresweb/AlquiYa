@@ -1182,60 +1182,32 @@ script.src = `${API_URL}?action=getPlanes&callback=mostrarPreciosPlanes`;
 document.body.appendChild(script);
 }
 function mostrarPreciosPlanes(res) {
-  // Valores por defecto en caso de error
-  preciosPlanes = { Basico: 0, Plus: 0, Full: 0, Inmobiliario: 0 };
+  if (res.success && res.data && res.data.length >= 1) {
+    // Asumimos que res.data es un array de filas de la hoja "Planes"
+    // La primera fila con datos reales suele ser res.data[0] o res.data[1] si hay encabezado
+    // Pero como tú confirmas las columnas E, F, G, H → índices 4,5,6,7 (0-based)
 
-  if (!res.success || !res.data || res.data.length === 0) {
-    console.error("No se recibieron datos de planes o error en la respuesta");
-    actualizarPreciosEnModal();
-    return;
+    let filaPrecios;
+    // Buscamos la fila que tenga datos numéricos en las columnas de precios
+    for (let fila of res.data) {
+      if (fila[4] || fila[5] || fila[6] || fila[7]) { // columnas E-H
+        filaPrecios = fila;
+        break;
+      }
+    }
+
+    if (filaPrecios) {
+      preciosPlanes.Basico      = parseFloat(filaPrecios[4]) || 0; // Columna E
+      preciosPlanes.Plus        = parseFloat(filaPrecios[5]) || 0; // Columna F
+      preciosPlanes.Full        = parseFloat(filaPrecios[6]) || 0; // Columna G
+      preciosPlanes.Inmobiliario = parseFloat(filaPrecios[7]) || 0; // Columna H
+    }
   }
 
-  // res.data es un array de filas: cada fila = [colA, colB, ..., colH]
-  res.data.forEach(fila => {
-    if (!fila || fila.length < 8) return; // Seguridad: fila incompleta
-
-    const nombrePlan = fila[0]?.toString().trim(); // Columna A
-    const precioG = parseFloat(fila[6]); // Columna G (índice 6)
-    const precioH = parseFloat(fila[7]); // Columna H (índice 7)
-
-    // Normalizamos el nombre del plan (quitamos acentos y mayúsculas/minúsculas)
-    const nombreNormalizado = nombrePlan
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "") // Quita acentos
-      .toLowerCase();
-
-    let clave = null;
-    let precioUsar = 0;
-
-    if (nombreNormalizado.includes("basico") || nombreNormalizado.includes("básico")) {
-      clave = "Basico";
-      precioUsar = isNaN(precioG) ? 0 : precioG;
-    } else if (nombreNormalizado.includes("plus")) {
-      clave = "Plus";
-      precioUsar = isNaN(precioG) ? 0 : precioG;
-    } else if (nombreNormalizado.includes("full")) {
-      clave = "Full";
-      // Full e Inmobiliario usan columna H, como pediste
-      precioUsar = isNaN(precioH) ? 0 : precioH;
-    } else if (nombreNormalizado.includes("inmobiliario")) {
-      clave = "Inmobiliario";
-      precioUsar = isNaN(precioH) ? 0 : precioH;
-    }
-
-    if (clave && precioUsar > 0) {
-      preciosPlanes[clave] = precioUsar;
-    }
-  });
-
-  // Actualizamos los precios en el modal
-  actualizarPreciosEnModal();
-}
-
-function actualizarPreciosEnModal() {
-  document.getElementById("precioBasico").textContent = formatoPrecioPlan(preciosPlanes.Basico) + " / mes";
-  document.getElementById("precioPlus").textContent = formatoPrecioPlan(preciosPlanes.Plus) + " / mes";
-  document.getElementById("precioFull").textContent = formatoPrecioPlan(preciosPlanes.Full) + " / mes";
+  // Actualizamos los textos en el modal (siempre, incluso si no se cargaron bien)
+  document.getElementById("precioBasico").textContent       = formatoPrecioPlan(preciosPlanes.Basico) + " / mes";
+  document.getElementById("precioPlus").textContent         = formatoPrecioPlan(preciosPlanes.Plus) + " / mes";
+  document.getElementById("precioFull").textContent         = formatoPrecioPlan(preciosPlanes.Full) + " / mes";
   document.getElementById("precioInmobiliario").textContent = formatoPrecioPlan(preciosPlanes.Inmobiliario) + " / mes";
 }
 function cargarEstadoPlan() {
