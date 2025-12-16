@@ -1182,44 +1182,61 @@ script.src = `${API_URL}?action=getPlanes&callback=mostrarPreciosPlanes`;
 document.body.appendChild(script);
 }
 function mostrarPreciosPlanes(res) {
-  if (res.success && res.data && res.data.length) {
-    // Mapeo correcto entre el nombre completo del plan en la hoja y la clave que usamos en el código
-    const mapeoPlanes = {
-      "Plan Básico": "Basico",
-      "Plan Plus": "Plus",
-      "Plan Full": "Full",
-      "Plan Inmobiliario": "Inmobiliario"
-    };
+  // Valores por defecto en caso de error
+  preciosPlanes = { Basico: 0, Plus: 0, Full: 0, Inmobiliario: 0 };
 
-    res.data.forEach(plan => {
-      const nombreHoja = plan[0]; // Columna A: nombre del plan (ej: "Plan Básico")
-      const precioColG = parseFloat(plan[6]); // Columna G (índice 6 en array 0-based)
-      const precioColH = parseFloat(plan[7]); // Columna H (índice 7)
-
-      // Buscamos a qué plan corresponde este nombre
-      const clave = mapeoPlanes[nombreHoja];
-      if (clave && !isNaN(precioColG) && !isNaN(precioColH)) {
-        // Usamos el precio de la columna correcta según el plan
-        // Tú dijiste que Básico y Plus usan bien sus precios → probablemente ya usan G o H correctamente
-        // Pero Full e Inmobiliario fallan → aseguramos que usen exactamente las columnas G y H
-        const precioFinal = (clave === "Full" || clave === "Inmobiliario") ? precioColH : precioColG;
-        // Si quieres que TODOS usen la misma columna (ej: siempre H), cambia a: precioColH
-        preciosPlanes[clave] = precioFinal;
-      }
-    });
-
-    // Actualizamos los precios en el modal
-    document.getElementById("precioBasico").textContent = formatoPrecioPlan(preciosPlanes.Basico || 0) + " / mes";
-    document.getElementById("precioPlus").textContent = formatoPrecioPlan(preciosPlanes.Plus || 0) + " / mes";
-    document.getElementById("precioFull").textContent = formatoPrecioPlan(preciosPlanes.Full || 0) + " / mes";
-    document.getElementById("precioInmobiliario").textContent = formatoPrecioPlan(preciosPlanes.Inmobiliario || 0) + " / mes";
-  } else {
-    // En caso de error, mostramos 0 para evitar problemas
-    document.getElementById("precioBasico").textContent = "$0,00 / mes";
-    document.getElementById("precioPlus").textContent = "$0,00 / mes";
-    document.getElementById("precioFull").textContent = "$0,00 / mes";
-    document.getElementById("precioInmobiliario").textContent = "$0,00 / mes";
+  if (!res.success || !res.data || res.data.length === 0) {
+    console.error("No se recibieron datos de planes o error en la respuesta");
+    actualizarPreciosEnModal();
+    return;
   }
+
+  // res.data es un array de filas: cada fila = [colA, colB, ..., colH]
+  res.data.forEach(fila => {
+    if (!fila || fila.length < 8) return; // Seguridad: fila incompleta
+
+    const nombrePlan = fila[0]?.toString().trim(); // Columna A
+    const precioG = parseFloat(fila[6]); // Columna G (índice 6)
+    const precioH = parseFloat(fila[7]); // Columna H (índice 7)
+
+    // Normalizamos el nombre del plan (quitamos acentos y mayúsculas/minúsculas)
+    const nombreNormalizado = nombrePlan
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Quita acentos
+      .toLowerCase();
+
+    let clave = null;
+    let precioUsar = 0;
+
+    if (nombreNormalizado.includes("basico") || nombreNormalizado.includes("básico")) {
+      clave = "Basico";
+      precioUsar = isNaN(precioG) ? 0 : precioG;
+    } else if (nombreNormalizado.includes("plus")) {
+      clave = "Plus";
+      precioUsar = isNaN(precioG) ? 0 : precioG;
+    } else if (nombreNormalizado.includes("full")) {
+      clave = "Full";
+      // Full e Inmobiliario usan columna H, como pediste
+      precioUsar = isNaN(precioH) ? 0 : precioH;
+    } else if (nombreNormalizado.includes("inmobiliario")) {
+      clave = "Inmobiliario";
+      precioUsar = isNaN(precioH) ? 0 : precioH;
+    }
+
+    if (clave && precioUsar > 0) {
+      preciosPlanes[clave] = precioUsar;
+    }
+  });
+
+  // Actualizamos los precios en el modal
+  actualizarPreciosEnModal();
+}
+
+function actualizarPreciosEnModal() {
+  document.getElementById("precioBasico").textContent = formatoPrecioPlan(preciosPlanes.Basico) + " / mes";
+  document.getElementById("precioPlus").textContent = formatoPrecioPlan(preciosPlanes.Plus) + " / mes";
+  document.getElementById("precioFull").textContent = formatoPrecioPlan(preciosPlanes.Full) + " / mes";
+  document.getElementById("precioInmobiliario").textContent = formatoPrecioPlan(preciosPlanes.Inmobiliario) + " / mes";
 }
 function cargarEstadoPlan() {
 const email = localStorage.getItem("dueno");
