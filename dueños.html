@@ -1182,15 +1182,38 @@ script.src = `${API_URL}?action=getPlanes&callback=mostrarPreciosPlanes`;
 document.body.appendChild(script);
 }
 function mostrarPreciosPlanes(res) {
-  if (res.success && res.data && res.data.length) {
-    res.data.forEach(plan => {
-      preciosPlanes[plan.nombre] = parseFloat(plan.precio) || 0;
-    });
-    document.getElementById("precioBasico").textContent = formatoPrecioPlan(preciosPlanes.Basico) + " / mes";
-    document.getElementById("precioPlus").textContent = formatoPrecioPlan(preciosPlanes.Plus) + " / mes";
-    document.getElementById("precioFull").textContent = formatoPrecioPlan(preciosPlanes.Full) + " / mes";
-    document.getElementById("precioInmobiliario").textContent = formatoPrecioPlan(preciosPlanes.Inmobiliario || 0) + " / mes";
+  if (!res.success || !res.data || res.data.length === 0) {
+    console.error("No se pudieron cargar los precios de los planes");
+    return;
   }
+
+  // Mapeo exacto según el orden de columnas en la hoja "Planes"
+  // Suponemos que res.data es un array de filas, y cada fila tiene los valores en orden de columnas
+  // Buscamos la fila correspondiente por nombre en columna A (índice 0)
+
+  res.data.forEach(fila => {
+    const nombrePlan = fila[0];        // Columna A: nombre del plan
+    const precio = parseFloat(fila[4]) || 0; // Columna E = índice 4 → Básico
+    const precioPlus = parseFloat(fila[5]) || 0; // F = 5 → Plus
+    const precioFull = parseFloat(fila[6]) || 0; // G = 6 → Full
+    const precioInmobiliario = parseFloat(fila[7]) || 0; // H = 7 → Inmobiliario
+
+    if (nombrePlan === "Básico") {
+      preciosPlanes.Basico = precio;
+    } else if (nombrePlan === "Plus") {
+      preciosPlanes.Plus = precioPlus;
+    } else if (nombrePlan === "Full") {
+      preciosPlanes.Full = precioFull;
+    } else if (nombrePlan === "Inmobiliario") {
+      preciosPlanes.Inmobiliario = precioInmobiliario;
+    }
+  });
+
+  // Actualizar los textos en el modal
+  document.getElementById("precioBasico").textContent = formatoPrecioPlan(preciosPlanes.Basico) + " / mes";
+  document.getElementById("precioPlus").textContent = formatoPrecioPlan(preciosPlanes.Plus) + " / mes";
+  document.getElementById("precioFull").textContent = formatoPrecioPlan(preciosPlanes.Full) + " / mes";
+  document.getElementById("precioInmobiliario").textContent = formatoPrecioPlan(preciosPlanes.Inmobiliario) + " / mes";
 }
 function cargarEstadoPlan() {
 const email = localStorage.getItem("dueno");
