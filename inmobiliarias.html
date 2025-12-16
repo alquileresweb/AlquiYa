@@ -25,62 +25,92 @@
     --radius: 14px;
     --transition: all 0.3s ease;
   }
+
+  /* CHECKBOXES PERSONALIZADOS */
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    margin: 8px 0;
+    font-size: 1rem;
+    color: #333;
+  }
+  .checkbox-label input[type="checkbox"] {
+    opacity: 0;
+    position: absolute;
+    cursor: pointer;
+  }
+  .custom-checkbox {
+    width: 20px;
+    height: 20px;
+    border: 2.5px solid #3483fa;
+    border-radius: 6px;
+    background: white;
+    position: relative;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+  }
+  .custom-checkbox::after {
+    content: "✓";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    transition: transform 0.2s ease;
+  }
+  .checkbox-label input[type="checkbox"]:checked + .custom-checkbox {
+    background: var(--primary);
+    border-color: var(--primary);
+  }
+  .checkbox-label input[type="checkbox"]:checked + .custom-checkbox::after {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  .checkbox-label:hover .custom-checkbox {
+    box-shadow: 0 0 8px rgba(52, 131, 250, 0.3);
+  }
+
   * { box-sizing: border-box; }
   body { margin: 0; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
   header { background: white; padding: 1rem; text-align: center; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 1000; }
   header img { max-width: 250px; height: auto; }
 
-  /* MENÚ PRINCIPAL COMPACTO */
-  nav {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 0.8rem;
-    background: white;
-    padding: 0.9rem 1rem;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    white-space: nowrap;
-    scrollbar-width: none;
-  }
-  nav::-webkit-scrollbar { display: none; }
-  nav a, nav select {
-    text-decoration: none;
-    font-weight: 600;
-    color: var(--text);
-    padding: 0.65rem 1rem;
-    border-radius: 10px;
-    transition: var(--transition);
-    font-size: 0.95rem;
-    min-width: fit-content;
-    flex-shrink: 0;
-    background: none;
-    border: none;
-  }
-  nav a:hover, nav a.active, nav select:hover {
-    background: var(--primary);
-    color: white;
+  /* NOMBRE INMOBILIARIA */
+  #inmobiliaria-nombre {
+    text-align: center;
+    margin: 20px 0 10px;
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--primary);
   }
 
-  /* BOTONES FILTROS */
+  /* BOTONES Y FILTROS */
   #boton-filtros-container {
     display: flex;
     justify-content: center;
-    gap: 12px;
-    padding: 0.75rem 1rem;
+    align-items: center;
+    gap: 15px;
+    padding: 1rem;
     background: white;
-    border-bottom: 1px solid #eee;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    flex-wrap: wrap;
   }
-  #boton-filtros-container button, #boton-filtros-container select {
-    padding: 0.5rem 1rem;
+  #boton-filtros-container select,
+  #boton-filtros-container button {
+    padding: 0.8rem 1.8rem;
     background: var(--primary);
     color: white;
     border: none;
-    border-radius: 50px;
+    border-radius: var(--radius);
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 3px 8px rgba(52,131,250,0.25);
+    box-shadow: var(--shadow);
     transition: var(--transition);
   }
   #boton-filtros-container button:hover {
@@ -88,9 +118,8 @@
     transform: translateY(-3px);
   }
 
-  /* FILTROS */
   #filtros {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto 2rem;
     padding: 1.8rem;
     background: var(--card);
@@ -100,14 +129,23 @@
     flex-wrap: wrap;
     gap: 1rem;
     align-items: end;
+    justify-content: center;
   }
-  #filtros input, #filtros select {
+  #filtros input,
+  #filtros select {
     padding: 0.9rem 1rem;
     border: 1.5px solid var(--border);
     border-radius: var(--radius);
     font-size: 1rem;
     flex: 1;
     min-width: 140px;
+    transition: var(--transition);
+  }
+  #filtros input:focus,
+  #filtros select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(52,131,250,0.15);
   }
   #filtros button {
     padding: 0.9rem 2.5rem;
@@ -117,21 +155,13 @@
     border-radius: var(--radius);
     font-weight: 600;
     cursor: pointer;
+    transition: var(--transition);
   }
   #filtros button:hover {
     background: var(--primary-dark);
     transform: translateY(-3px);
   }
 
-  /* MAPA */
-  #map {
-    height: 65vh;
-    border-radius: var(--radius);
-    overflow: hidden;
-    box-shadow: var(--shadow);
-    margin: 1.5rem auto;
-    max-width: 1400px;
-  }
   #loading-msg {
     text-align: center;
     font-weight: 600;
@@ -141,7 +171,16 @@
     display: none;
   }
 
-  /* DETALLE PROPIEDAD (MODERNO) */
+  #map {
+    height: 65vh;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    margin: 1.5rem auto;
+    max-width: 1400px;
+  }
+
+  /* DETALLE MODERNO */
   #alquiler-detalle {
     display: none;
     max-width: 800px;
@@ -166,11 +205,28 @@
     border-bottom: 1px solid #eee;
   }
   #alquiler-detalle p:last-child { border-bottom: none; }
+
+  .owner-profile-img {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  .owner-profile-img:hover { transform: scale(1.1); }
+
   .action-buttons {
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
     margin: 1.5rem 0;
+    justify-content: center;
   }
   .copy-share-btn {
     background: #10b981;
@@ -202,22 +258,6 @@
     transform: scale(1.06);
     box-shadow: 0 10px 30px rgba(0,0,0,0.22);
   }
-
-  /* FOTO PERFIL DUEÑO */
-  .owner-profile-img {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid white;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    cursor: pointer;
-    transition: transform 0.2s ease;
-  }
-  .owner-profile-img:hover { transform: scale(1.1); }
 
   /* MODAL IMÁGENES */
   #modal-img {
@@ -285,11 +325,9 @@
   }
   .popup-button:hover { background: var(--primary-dark); }
 
-  /* ANIMACIONES */
   @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes resaltar { 0%, 100% { transform: scale(1); box-shadow: var(--shadow); } 50% { transform: scale(1.02); box-shadow: 0 0 35px rgba(52,131,250,0.4); } }
 
-  /* FOOTER */
   footer {
     background: var(--primary);
     color: white;
@@ -305,8 +343,20 @@
     align-items: center;
     text-align: center;
   }
-  .footer-logo img { max-width: 180px; height: auto; }
-  .footer-copy { font-size: 0.95rem; opacity: 0.9; margin-top: 1.5rem; grid-column: 1 / -1; }
+  .footer-container img { max-width: 180px; height: auto; }
+  .footer-container a {
+    display: inline-block;
+    background: white;
+    color: var(--primary);
+    font-weight: 700;
+    padding: 0.9rem 2.6rem;
+    border-radius: 50px;
+    font-size: 1.28rem;
+    box-shadow: 0 6px 20px rgba(52,131,250,0.3);
+    text-decoration: none;
+    transition: var(--transition);
+  }
+  .footer-container a:hover { transform: translateY(-3px); }
 </style>
 </head>
 <body>
@@ -315,16 +365,20 @@
   <img src="https://i.postimg.cc/SxDLDXZz/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.jpg" alt="Logo Alqui Ya">
 </header>
 
-<nav>
+<div id="inmobiliaria-nombre">
+  <h2>Cargando...</h2>
+</div>
+
+<div id="boton-filtros-container">
   <select id="filtroOperacion" onchange="updateFiltros()">
     <option value="Alquilar">Alquilar</option>
     <option value="Comprar">Comprar</option>
   </select>
   <button onclick="toggleFiltros()">Añadir Filtros</button>
-</nav>
+</div>
 
 <div id="filtros">
-  <div id="filtros-alquilar">
+  <div id="filtros-alquilar" style="display:flex; flex-wrap:wrap; width:100%; gap:1rem;">
     <input type="number" id="filtroAmb" placeholder="Nro de Ambientes">
     <input type="text" id="filtroMin" placeholder="Precio Mínimo" oninput="formatCurrency(this)">
     <input type="text" id="filtroMax" placeholder="Precio Máximo" oninput="formatCurrency(this)">
@@ -345,7 +399,7 @@
       Amoblado
     </label>
   </div>
-  <div id="filtros-comprar" style="display:none;">
+  <div id="filtros-comprar" style="display:none; flex-wrap:wrap; width:100%; gap:1rem;">
     <select id="filtroTipoComprar">
       <option value="">Todos los tipos</option>
       <option value="Terreno">Terreno</option>
@@ -363,43 +417,24 @@
 <div id="alquiler-detalle"></div>
 
 <!-- MODAL IMÁGENES -->
-<div id="modal-img" onclick="if(event.target===this) cerrarModal()">
+<div id="modal-img" onclick="if(event.target === this) cerrarModal()">
   <img id="img-grande" src="" alt="Imagen grande">
   <button class="close-btn" onclick="cerrarModal()">X</button>
   <button class="prev-btn" onclick="cambiarImagen(-1)"><</button>
   <button class="next-btn" onclick="cambiarImagen(1)">></button>
 </div>
 
-<footer>
-  <div class="footer-container">
-    <div class="footer-logo">
-      <img src="https://i.postimg.cc/FHXRBTTX/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.png" alt="Logo AlquiYa">
-    </div>
-    <div>
-      <a href="https://www.alquiya.com.ar" style="display:inline-block;background:white;color:#3483fa;font-weight:700;padding:0.9rem 2.6rem;border-radius:50px;font-size:1.28rem;box-shadow:0 6px 20px rgba(52,131,250,0.3);text-decoration:none;">
-        ← Volver al Inicio
-      </a>
-    </div>
-    <div>
-      <a href="https://www.instagram.com/alquiya.st/" target="_blank">
-        <img src="https://i.postimg.cc/GmVWTXX0/394a7aaecd6b8ce44528649681d9fa05.png" alt="Instagram" style="width:40px;height:40px;">
-      </a>
-    </div>
-    <div class="footer-copy">
-      © 2025 AlquiYa • Todos los derechos reservados
-    </div>
-  </div>
-</footer>
-
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
+/* ========================= CONFIG ========================= */
 const webAppURL = "https://script.google.com/macros/s/AKfycbyFvDRwPZoG6ChhvcxGm6B27ziD6Qkg4RcH0TI9K59b7zPz7iFxy7mgmbs5mo5T-TxD/exec";
 let currentImages = [];
 let currentImageIndex = 0;
+let inmobiliariaEmail = "";
 let map = null;
 let markersLayer = null;
-let inmobiliariaEmail = "";
 
+/* ========================= MAPA ========================= */
 function initializeMap() {
   if (map) return;
   map = L.map('map').setView([-28.5503, -56.0406], 14);
@@ -410,7 +445,7 @@ function initializeMap() {
   markersLayer = L.layerGroup().addTo(map);
 }
 
-/* UTILIDADES */
+/* ========================= UTILS ========================= */
 function getField(obj, keys) {
   for (const k of keys) {
     if (Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null && obj[k] !== "") return obj[k];
@@ -421,22 +456,32 @@ function toNumber(val) {
   if (typeof val === "number") return val;
   if (!val) return 0;
   const clean = String(val).replace(/[^\d.,-]/g, "").replace(/\./g, "").replace(",", ".");
-  return parseFloat(clean) || 0;
+  const num = parseFloat(clean);
+  return isNaN(num) ? 0 : num;
 }
-function toInt(val, def = 0) { return parseInt(val, 10) || def; }
+function toInt(val, def = 0) {
+  const n = parseInt(val, 10);
+  return isNaN(n) ? def : n;
+}
 function formatPrice(num) {
   if (!num) return "";
   const clean = String(num).replace(/[^\d]/g, "");
-  return "$" + parseInt(clean, 10).toLocaleString('es-AR').replace(/,/g, ".");
+  const formatted = parseInt(clean, 10).toLocaleString('es-AR');
+  return "$" + formatted.replace(/,/g, ".");
 }
 function formatCurrency(el) {
-  let raw = String(el.value || "").replace(/\D/g, '');
-  if (raw === '') { el.value = ''; return; }
-  el.value = '$' + parseInt(raw, 10).toLocaleString('es-AR');
+  let raw = String(el.value || "");
+  let digits = raw.replace(/\D/g, '');
+  if (digits === '') { el.value = ''; return; }
+  let n = parseInt(digits, 10);
+  if (isNaN(n)) { el.value = ''; return; }
+  let formatted = n.toLocaleString('es-AR');
+  el.value = '$' + formatted;
 }
 function parseCurrency(str) {
+  if (!str) return 0;
   let cleaned = String(str).replace(/[^\d]/g, '');
-  return parseInt(cleaned, 10) || 0;
+  return cleaned === '' ? 0 : parseInt(cleaned, 10);
 }
 function driveUrlDirect(url) {
   if (!url) return "";
@@ -445,51 +490,18 @@ function driveUrlDirect(url) {
   return id ? `https://drive.google.com/uc?export=view&id=${id}` : url;
 }
 
-/* MÉTRICAS */
+/* ========================= MÉTRICAS ========================= */
 async function incrementarMetrica(idPropiedad, metrica = "vistas") {
   if (!idPropiedad) return;
   await fetch(`${webAppURL}?action=incrementarmetrica&idPropiedad=${idPropiedad}&metrica=${metrica}`, {method:"GET"}).catch(()=>{});
 }
 
-/* MODAL IMÁGENES */
-function abrirModal(src, images, index = 0) {
-  currentImages = images.filter(url => url && url.trim() !== "");
-  if (currentImages.length === 0) return;
-  currentImageIndex = index < currentImages.length ? index : 0;
-  document.getElementById("img-grande").src = currentImages[currentImageIndex];
-  document.getElementById("modal-img").style.display = "flex";
-  document.querySelector(".prev-btn").style.display = currentImages.length > 1 ? "block" : "none";
-  document.querySelector(".next-btn").style.display = currentImages.length > 1 ? "block" : "none";
-}
-function cerrarModal() { document.getElementById("modal-img").style.display = "none"; }
-function cambiarImagen(dir) {
-  if (currentImages.length <= 1) return;
-  currentImageIndex = (currentImageIndex + dir + currentImages.length) % currentImages.length;
-  document.getElementById("img-grande").src = currentImages[currentImageIndex];
-}
-
-/* MOSTRAR DETALLE (COPIADO DE INDEX.HTML) */
-async function mostrarDetalle(prop) {
-  if (idPropiedad) await incrementarMetrica(idPropiedad, "vistas");
-
+/* ========================= DETALLE MODERNO (COPIADO DE INDEX) ========================= */
+async function mostrarDetalle(a) {
   const detalle = document.getElementById('alquiler-detalle');
-  const titulo = getField(prop, ["Título", "titulo", "Titulo", "Título Propiedad"]) || getField(prop, ["Tipo"]) || "Propiedad";
-  const tipo = getField(prop, ["Tipo"]);
-  const direccion = getField(prop, ["Direccion", "Dirección", "Domicilio"]);
-  const precioRaw = getField(prop, ["Precio"]);
-  const formattedPrecio = formatPrice(precioRaw);
-  const nroAmb = toInt(getField(prop, ["Nro Ambientes", "Ambientes"]));
-  const mascotas = getField(prop, ["Mascotas"]);
-  const amoblado = getField(prop, ["Amoblado"]);
-  const infoIngreso = getField(prop, ["Informacion ingreso", "Información ingreso"]);
-  const detalles = getField(prop, ["Detalles", "Detalle", "Descripcion"]);
-  const fotos = getField(prop, ["Fotos", "Imagenes", "Imágenes", "images"]);
-  const contacto = getField(prop, ["Contacto", "Whatsapp", "WhatsApp"]);
-  const idPropiedad = getField(prop, ["ID Propiedad", "idPropiedad", "ID"]);
-  const fotoPerfil = getField(prop, ["FotoPerfil", "fotoPerfil", "Foto Perfil", "FotoPerfilDueño"]) || "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
+  detalle.innerHTML = `<h2>${getField(a, ["Título", "titulo", "Titulo", "Título Propiedad"]) || getField(a, ["Tipo"]) || "Propiedad"}</h2>`;
 
-  detalle.innerHTML = `<h2>${titulo}</h2><p id="metricas-error"></p>`;
-
+  const fotoPerfil = getField(a, ["FotoPerfil", "fotoPerfil", "Foto Perfil", "FotoPerfilDueño"]) || "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
   const profileImg = document.createElement('img');
   profileImg.className = "owner-profile-img";
   profileImg.src = fotoPerfil;
@@ -497,15 +509,16 @@ async function mostrarDetalle(prop) {
   detalle.appendChild(profileImg);
 
   const rows = [
-    ['Tipo', tipo],
-    ['Dirección', direccion || 'No disponible'],
-    ['Precio', formattedPrecio || '-'],
-    ['Ambientes', nroAmb || '-'],
-    ['Mascotas', mascotas || '-'],
-    ['Amoblado', amoblado || '-'],
-    ['Información de ingreso', infoIngreso || '-'],
-    ['Detalles', detalles || '-']
+    ['Tipo', getField(a, ["Tipo"])],
+    ['Dirección', getField(a, ["Direccion", "Dirección", "Domicilio"]) || 'No disponible'],
+    ['Precio', formatPrice(getField(a, ["Precio"])) || '-'],
+    ['Ambientes', toInt(getField(a, ["Nro Ambientes", "Ambientes"])) || '-'],
+    ['Mascotas', getField(a, ["Mascotas"]) || '-'],
+    ['Amoblado', getField(a, ["Amoblado"]) || '-'],
+    ['Información de ingreso', getField(a, ["Informacion ingreso", "Información ingreso"]) || '-'],
+    ['Detalles', getField(a, ["Detalles", "Detalle", "Descripcion"]) || '-']
   ];
+
   rows.forEach(([label, val]) => {
     if (val && val !== 'No disponible' && val !== '-') {
       const p = document.createElement('p');
@@ -514,6 +527,7 @@ async function mostrarDetalle(prop) {
     }
   });
 
+  const fotos = getField(a, ["Fotos", "Imagenes", "Imágenes", "images"]);
   const imgContainer = document.createElement('div');
   imgContainer.id = 'imagenes-container';
   if (fotos) {
@@ -529,17 +543,20 @@ async function mostrarDetalle(prop) {
 
   const actionDiv = document.createElement('div');
   actionDiv.className = 'action-buttons';
+  const contacto = getField(a, ["Contacto", "Whatsapp", "WhatsApp"]);
   if (contacto) {
     const waBtn = document.createElement('button');
     waBtn.textContent = 'Contactar por WhatsApp';
     waBtn.style.cssText = 'background:#25D366;color:white;padding:1rem 2rem;border-radius:14px;border:none;font-weight:600;cursor:pointer;margin:5px;';
     waBtn.onclick = () => {
-      incrementarMetrica(idPropiedad, "contactos");
-      const msg = `Hola, consulto por "${titulo}"`;
+      incrementarMetrica(getField(a, ["ID Propiedad", "idPropiedad", "ID"]), "contactos");
+      const msg = `Hola, consulto por "${getField(a, ["Título", "titulo"])}"`;
       window.open(`https://wa.me/${contacto}?text=${encodeURIComponent(msg)}`, '_blank');
     };
     actionDiv.appendChild(waBtn);
   }
+
+  const idPropiedad = getField(a, ["ID Propiedad", "idPropiedad", "ID"]);
   if (idPropiedad) {
     const copyBtn = document.createElement('button');
     copyBtn.className = 'copy-share-btn';
@@ -556,7 +573,24 @@ async function mostrarDetalle(prop) {
   map.invalidateSize();
 }
 
-/* UI */
+/* ========================= MODAL IMÁGENES ========================= */
+function abrirModal(src, images, index = 0) {
+  currentImages = images.filter(url => url && url.trim() !== "");
+  if (currentImages.length === 0) return;
+  currentImageIndex = index < currentImages.length ? index : 0;
+  document.getElementById("img-grande").src = currentImages[currentImageIndex];
+  document.getElementById("modal-img").style.display = "flex";
+  document.querySelector(".prev-btn").style.display = currentImages.length > 1 ? "block" : "none";
+  document.querySelector(".next-btn").style.display = currentImages.length > 1 ? "block" : "none";
+}
+function cerrarModal() { document.getElementById("modal-img").style.display = "none"; }
+function cambiarImagen(dir) {
+  if (currentImages.length <= 1) return;
+  currentImageIndex = (currentImageIndex + dir + currentImages.length) % currentImages.length;
+  document.getElementById("img-grande").src = currentImages[currentImageIndex];
+}
+
+/* ========================= FILTROS UI ========================= */
 function toggleFiltros() {
   const f = document.getElementById("filtros");
   f.style.display = (f.style.display === "none" || !f.style.display) ? "flex" : "none";
@@ -568,12 +602,23 @@ function updateFiltros() {
   cargarPropiedades();
 }
 
-/* CARGA PROPIEDADES */
-async function cargarPropiedades() {
+/* ========================= COPIAR ENLACE ========================= */
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.classList.contains('copy-share-btn')) {
+    const id = e.target.getAttribute('data-id');
+    const url = `https://www.alquiya.com.ar/propiedad.html?id=${id}`;
+    navigator.clipboard.writeText(url).then(() => {
+      const txt = e.target.textContent;
+      e.target.textContent = "¡Copiado!";
+      setTimeout(() => e.target.textContent = txt, 2000);
+    });
+  }
+});
+
+/* ========================= CARGA PROPIEDADES ========================= */
+function cargarPropiedades() {
   const loadingEl = document.getElementById("loading-msg");
   loadingEl.style.display = "block";
-  loadingEl.textContent = "Cargando propiedades...";
-
   if (!map || !markersLayer) initializeMap();
   markersLayer.clearLayers();
   document.getElementById("alquiler-detalle").style.display = "none";
@@ -593,9 +638,10 @@ async function cargarPropiedades() {
   L.marker([-28.5487787, -56.0396171], { icon: policeIcon }).addTo(markersLayer).bindPopup("<b>Policía</b>");
 
   const urlParams = new URLSearchParams(window.location.search);
-  inmobiliariaEmail = urlParams.get('email') || urlParams.get('') || "";
-  if (!inmobiliariaEmail.includes('@')) {
-    loadingEl.textContent = "Email de inmobiliaria no válido";
+  inmobiliariaEmail = urlParams.get('email') || window.location.search.replace(/^\?/, '').trim();
+  if (!inmobiliariaEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inmobiliariaEmail)) {
+    loadingEl.textContent = "Inmobiliaria no encontrada";
+    loadingEl.style.display = "block";
     return;
   }
 
@@ -608,111 +654,92 @@ async function cargarPropiedades() {
   const filtroTipoAlquilar = document.getElementById("filtroTipoAlquilar").value;
   const filtroTipoComprar = document.getElementById("filtroTipoComprar").value;
 
-  try {
-    const res = await fetch(`${webAppURL}?action=getInmobiliaria&email=${encodeURIComponent(inmobiliariaEmail)}`);
-    const data = await res.json();
+  fetch(`${webAppURL}?action=getInmobiliaria&email=${encodeURIComponent(inmobiliariaEmail)}`)
+    .then(res => res.json())
+    .then(res => {
+      loadingEl.style.display = "none";
+      if (!res.success || !res.alquileres) {
+        document.getElementById("inmobiliaria-nombre").querySelector("h2").textContent = "Inmobiliaria no encontrada";
+        return;
+      }
+      const nombre = res.data.Nombre || "Inmobiliaria";
+      document.getElementById("inmobiliaria-nombre").querySelector("h2").textContent = `Inmobiliaria "${nombre}"`;
 
-    loadingEl.style.display = "none";
+      const markers = [];
+      let cont = 0;
+      res.alquileres.forEach(a => {
+        const lat = parseFloat(getField(a, ["Latitud", "lat"]));
+        const lng = parseFloat(getField(a, ["Longitud", "lng"]));
+        if (isNaN(lat) || isNaN(lng)) return;
 
-    if (!data.success || !data.alquileres) {
-      loadingEl.textContent = "Inmobiliaria no encontrada";
-      return;
-    }
+        const subtipo = getField(a, ["Subtipo", "subtipo"]);
+        if ((operacion === "Alquilar" && subtipo !== "Alquilar") || (operacion === "Comprar" && subtipo !== "Vender")) return;
 
-    document.querySelector("#inmobiliaria-nombre h2").textContent = `Inmobiliaria "${data.data.Nombre || "Sin nombre"}"`;
+        const tipo = getField(a, ["Tipo"]);
+        if (operacion === "Alquilar" && filtroTipoAlquilar && tipo !== filtroTipoAlquilar) return;
+        if (operacion === "Comprar" && filtroTipoComprar && tipo !== filtroTipoComprar) return;
 
-    let cont = 0;
-    const propertyMarkers = [];
+        const nroAmb = toInt(getField(a, ["Nro Ambientes", "Ambientes"]));
+        if (operacion === "Alquilar" && filtroAmb && nroAmb !== filtroAmb) return;
 
-    data.alquileres.forEach(a => {
-      const subtipo = getField(a, ["Subtipo", "subtipo"]);
-      if ((operacion === "Alquilar" && subtipo !== "Alquilar") || (operacion === "Comprar" && subtipo !== "Vender")) return;
+        const precio = toNumber(getField(a, ["Precio"]));
+        if (precio < filtroMin || precio > filtroMax) return;
 
-      const lat = parseFloat(getField(a, ["Latitud", "lat"]));
-      const lng = parseFloat(getField(a, ["Longitud", "lng"]));
-      if (isNaN(lat) || isNaN(lng)) return;
+        if (operacion === "Alquilar" && filtroMascotas && getField(a, ["Mascotas"]).toLowerCase() !== "sí") return;
+        if (operacion === "Alquilar" && filtroAmoblado && getField(a, ["Amoblado"]).toLowerCase() !== "sí") return;
 
-      const tipo = getField(a, ["Tipo"]);
-      if (operacion === "Alquilar" && filtroTipoAlquilar && tipo !== filtroTipoAlquilar) return;
-      if (operacion === "Comprar" && filtroTipoComprar && tipo !== filtroTipoComprar) return;
+        let iconHtml = '🏠';
+        if (tipo === "Temporario") iconHtml = '⌛';
+        else if (tipo.includes("Local")) iconHtml = '🛍️';
+        else if (nroAmb > 0) iconHtml = `🏠<span style="font-size:12px;margin-left:2px;">${nroAmb}</span>`;
 
-      const nroAmb = toInt(getField(a, ["Nro Ambientes", "Ambientes"]));
-      if (operacion === "Alquilar" && filtroAmb && nroAmb !== filtroAmb) return;
+        const icon = L.divIcon({ className: 'marker-icon', html: iconHtml, iconSize: [30, 30], iconAnchor: [15, 15] });
+        const marker = L.marker([lat, lng], { icon }).addTo(markersLayer);
+        markers.push(marker);
 
-      const precio = toNumber(getField(a, ["Precio"]));
-      if (operacion === "Alquilar" && (precio < filtroMin || precio > filtroMax)) return;
+        const popupDiv = document.createElement('div');
+        popupDiv.style.padding = "12px";
+        popupDiv.innerHTML = `
+          <b>${getField(a, ["Título", "titulo"]) || tipo}</b><br>
+          <b>Dirección:</b> ${getField(a, ["Direccion", "Dirección"]) || "No disponible"}<br>
+          <b>Precio:</b> ${formatPrice(getField(a, ["Precio"])) || "Consultar"}
+        `;
+        const btn = document.createElement('button');
+        btn.className = 'popup-button';
+        btn.textContent = 'Ver Detalles';
+        btn.onclick = () => {
+          incrementarMetrica(getField(a, ["ID Propiedad", "idPropiedad", "ID"]));
+          mostrarDetalle(a);
+        };
+        popupDiv.appendChild(btn);
+        marker.bindPopup(popupDiv);
+        cont++;
+      });
 
-      if (operacion === "Alquilar" && filtroMascotas && getField(a, ["Mascotas"]).toLowerCase() !== "sí") return;
-      if (operacion === "Alquilar" && filtroAmoblado && getField(a, ["Amoblado"]).toLowerCase() !== "sí") return;
-
-      let iconHtml = '🏠';
-      if (tipo === "Temporario") iconHtml = '⌛';
-      else if (tipo === "Local") iconHtml = '🛍️';
-      else if (nroAmb > 0) iconHtml = `🏠<span style="font-size:12px;margin-left:2px;">${nroAmb}</span>`;
-
-      const icon = L.divIcon({ className: 'marker-icon', html: iconHtml, iconSize: [30, 30], iconAnchor: [15, 15] });
-      const marker = L.marker([lat, lng], { icon }).addTo(markersLayer);
-      propertyMarkers.push(marker);
-
-      const popupDiv = document.createElement('div');
-      popupDiv.style.padding = "12px";
-      popupDiv.style.minWidth = "240px";
-
-      const fotoPerfil = getField(a, ["FotoPerfil", "fotoPerfil"]) || "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
-      const popupImg = document.createElement('img');
-      popupImg.className = "popup-profile-img";
-      popupImg.src = fotoPerfil;
-      popupImg.style.width = "44px"; popupImg.style.height = "44px";
-      popupImg.onclick = e => { e.stopPropagation(); abrirModal(fotoPerfil, [fotoPerfil]); };
-      popupDiv.appendChild(popupImg);
-
-      popupDiv.innerHTML += `
-        <div style="margin-right:60px;">
-          <b style="font-size:16px;display:block;margin-bottom:4px;">${getField(a, ["Título", "titulo", "Titulo"]) || tipo}</b>
-          <b>Tipo:</b> ${tipo}<br>
-          <b>Precio:</b> ${formatPrice(getField(a, ["Precio"]))}
-        </div>
-      `;
-
-      const verBtn = document.createElement('button');
-      verBtn.className = 'popup-button';
-      verBtn.textContent = 'Ver Detalles';
-      verBtn.onclick = () => mostrarDetalle(a);
-      popupDiv.appendChild(verBtn);
-
-      marker.bindPopup(popupDiv);
-      cont++;
+      if (markers.length > 0) {
+        const group = L.featureGroup(markers);
+        map.fitBounds(group.getBounds(), { padding: [50, 50] });
+      }
+    })
+    .catch(() => {
+      loadingEl.textContent = "Error de conexión";
     });
-
-    if (propertyMarkers.length > 0) {
-      const group = L.featureGroup(propertyMarkers);
-      map.fitBounds(group.getBounds(), { padding: [50, 50] });
-    }
-  } catch (err) {
-    loadingEl.style.display = "none";
-    loadingEl.textContent = "Error de conexión";
-    console.error(err);
-  }
 }
 
-/* COPIAR ENLACE */
-document.addEventListener('click', e => {
-  if (e.target && e.target.classList.contains('copy-share-btn')) {
-    const id = e.target.getAttribute('data-id');
-    const url = `https://www.alquiya.com.ar/propiedad.html?id=${id}`;
-    navigator.clipboard.writeText(url).then(() => {
-      const txt = e.target.textContent;
-      e.target.textContent = "¡Copiado!";
-      setTimeout(() => e.target.textContent = txt, 2000);
-    });
-  }
-});
-
-/* INIT */
+/* ========================= INIT ========================= */
 window.onload = () => {
-  initializeMap();
   cargarPropiedades();
 };
 </script>
+
+<footer>
+  <div class="footer-container">
+    <div><img src="https://i.postimg.cc/FHXRBTTX/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.png" alt="Logo AlquiYa"></div>
+    <div><a href="https://www.alquiya.com.ar">← Volver al Inicio</a></div>
+    <div><a href="https://www.instagram.com/alquiya.st/" target="_blank"><img src="https://i.postimg.cc/GmVWTXX0/394a7aaecd6b8ce44528649681d9fa05.png" alt="Instagram"></a></div>
+    <div>© 2025 AlquiYa • Todos los derechos reservados</div>
+  </div>
+</footer>
+
 </body>
 </html>
