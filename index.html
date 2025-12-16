@@ -1601,7 +1601,7 @@ function cargarAlquileres() {
   const loadingEl = document.getElementById("loading-msg");
   loadingEl.style.display = "block";
   loadingEl.textContent = "Cargando alquileres disponibles...";
-
+  
   if (!map || !markersLayer) {
     if (!initializeMap()) {
       loadingEl.textContent = "Error: No se pudo inicializar el mapa.";
@@ -1610,12 +1610,13 @@ function cargarAlquileres() {
   }
   markersLayer.clearLayers();
 
-  // === MARCADORES ESTÁTICOS (sin cambios) ===
+  // Marcadores estáticos (sin cambios)
   const uniIcon = L.divIcon({ className: 'marker-icon', html: '🎓', iconSize: [30, 30], iconAnchor: [15, 15] });
-const hospIcon = L.divIcon({ className: 'marker-icon', html: '🏥', iconSize: [30, 30], iconAnchor: [15, 15] });
-const superIcon = L.divIcon({ className: 'marker-icon', html: '🛒', iconSize: [30, 30], iconAnchor: [15, 15] });
-const busIcon = L.divIcon({ className: 'marker-icon', html: '🚌', iconSize: [30, 30], iconAnchor: [15, 15] });
-const policeIcon = L.divIcon({ className: 'marker-icon', html: '👮', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const hospIcon = L.divIcon({ className: 'marker-icon', html: '🏥', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const superIcon = L.divIcon({ className: 'marker-icon', html: '🛒', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const busIcon = L.divIcon({ className: 'marker-icon', html: '🚌', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const policeIcon = L.divIcon({ className: 'marker-icon', html: '👮', iconSize: [30, 30], iconAnchor: [15, 15] });
+
   L.marker([-28.5509978, -56.0409727], { icon: uniIcon }).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
   L.marker([-28.5551127, -56.0389282], { icon: hospIcon }).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
   L.marker([-28.5519443, -56.0401962], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado La Bomba</b>");
@@ -1624,7 +1625,7 @@ const policeIcon = L.divIcon({ className: 'marker-icon', html: '👮', iconSize:
   L.marker([-28.5468697, -56.0432862], { icon: busIcon }).addTo(markersLayer).bindPopup("<b>Terminal de Omnibus</b>");
   L.marker([-28.5487787, -56.0396171], { icon: policeIcon }).addTo(markersLayer).bindPopup("<b>Policía</b>");
 
-  // === FILTROS ===
+  // Filtros
   const filtroAmb = toInt(document.getElementById("filtroAmb").value);
   const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
   const filtroMax = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
@@ -1643,7 +1644,7 @@ const policeIcon = L.divIcon({ className: 'marker-icon', html: '👮', iconSize:
 
       let cont = 0;
       res.data.forEach(a => {
-        // === VALIDACIONES ===
+        // Validaciones de plan y fecha
         const plan = getField(a, ["Plan"]);
         const fechaVencimientoStr = getField(a, ["Fecha de Vencimiento", "FechaVencimiento", "Vencimiento"]);
         if (plan === "Prueba") {
@@ -1672,31 +1673,25 @@ const policeIcon = L.divIcon({ className: 'marker-icon', html: '👮', iconSize:
         const amoblado = getField(a, ["Amoblado"]);
         if (filtroAmoblado && (!amoblado || amoblado.toLowerCase() !== "sí")) return;
 
-        // === DATOS IMPORTANTES ===
+        // Datos clave
         const idPropiedad = getField(a, ["ID Propiedad", "idPropiedad", "ID"]);
         const direccion = getField(a, ["Direccion", "Dirección", "Domicilio"]);
         const contacto = getField(a, ["Contacto", "Whatsapp", "WhatsApp"]);
         const fotos = getField(a, ["Fotos", "Imagenes", "Imágenes", "images"]);
         const infoIngreso = getField(a, ["Informacion ingreso", "Información ingreso"]);
         const detalles = getField(a, ["Detalles", "Detalle", "Descripcion"]);
-
-        // === TÍTULO (columna U) ===
         const titulo = getField(a, ["Título", "titulo", "Titulo", "Título Propiedad"]) || tipo;
+        const fotoPerfil = getField(a, ["FotoPerfil", "fotoPerfil", "Foto Perfil", "FotoPerfilDueño"]) || "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
 
-        // === FOTO DEL DUEÑO (viene del backend) ===
-        const fotoPerfil = getField(a, ["FotoPerfil", "fotoPerfil", "Foto Perfil", "FotoPerfilDueño"])
-          || "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
-
-        // === ICONO DE LA PROPIEDAD (emojis originales) ===
-      let iconHtml;
-if (tipo === "Temporario") {
-iconHtml = '⌛';
-} else if (tipo === "Local") {
-iconHtml = '🛍️';
-} else {
-iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-") + '</span>';
-}
-
+        // Icono marcador
+        let iconHtml;
+        if (tipo === "Temporario") {
+          iconHtml = '⌛';
+        } else if (tipo === "Local") {
+          iconHtml = '🛍️';
+        } else {
+          iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-") + '</span>';
+        }
         const icon = L.divIcon({
           className: 'marker-icon',
           html: iconHtml,
@@ -1706,14 +1701,13 @@ iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-"
 
         const marker = L.marker([lat, lng], { icon }).addTo(markersLayer);
 
-        // === POPUP DEL MARCADOR (solo Título + Tipo + Precio) ===
+        // Popup básico
         const popupDiv = document.createElement('div');
         popupDiv.style.position = "relative";
         popupDiv.style.padding = "12px";
         popupDiv.style.minWidth = "240px";
         popupDiv.style.fontSize = "14px";
 
-        // Foto del dueño (clic para abrir grande)
         const popupImg = document.createElement('img');
         popupImg.className = "popup-profile-img";
         popupImg.src = fotoPerfil;
@@ -1725,7 +1719,6 @@ iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-"
         };
         popupDiv.appendChild(popupImg);
 
-        // Información del popup
         popupDiv.innerHTML += `
           <div style="margin-right:60px;">
             <b style="font-size:16px;display:block;margin-bottom:4px;">${titulo}</b>
@@ -1743,7 +1736,7 @@ iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-"
           const detalle = document.getElementById('alquiler-detalle');
           detalle.innerHTML = `<h2>${titulo}</h2><p id="metricas-error"></p>`;
 
-          // Foto del dueño en el detalle (también clic para grande)
+          // Foto del dueño en detalle
           const profileImg = document.createElement('img');
           profileImg.className = "owner-profile-img";
           profileImg.src = fotoPerfil;
@@ -1752,7 +1745,7 @@ iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-"
           profileImg.onclick = () => abrirModal(fotoPerfil, [fotoPerfil], 0);
           detalle.appendChild(profileImg);
 
-          // Detalles completos
+          // Detalles textuales
           const rows = [
             ['Tipo', tipo],
             ['Dirección', direccion || 'No disponible'],
@@ -1763,7 +1756,6 @@ iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-"
             ['Información de ingreso', infoIngreso || '-'],
             ['Detalles', detalles || '-']
           ];
-
           rows.forEach(([label, val]) => {
             if (val && val !== 'No disponible' && val !== '-') {
               const p = document.createElement('p');
@@ -1772,19 +1764,97 @@ iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-"
             }
           });
 
-          // Imágenes de la propiedad
+          // Contenedor de imágenes + video
           const imgContainer = document.createElement('div');
           imgContainer.id = 'imagenes-container';
+
+          let hasMedia = false;
+
+          // Fotos
           if (fotos) {
             const urls = fotos.split(',').map(f => driveUrlDirect(f.trim())).filter(Boolean);
-            urls.forEach((url, i) => {
-              const img = document.createElement('img');
-              img.src = url;
-              img.alt = "Propiedad";
-              img.onclick = () => abrirModal(url, urls, i);
-              imgContainer.appendChild(img);
-            });
+            if (urls.length > 0) {
+              hasMedia = true;
+              urls.forEach((url, i) => {
+                const img = document.createElement('img');
+                img.src = url;
+                img.alt = "Propiedad";
+                img.loading = "lazy";
+                img.onclick = () => abrirModal(url, urls, i);
+                imgContainer.appendChild(img);
+              });
+            }
           }
+
+          // Video (columna P)
+          const videoUrlRaw = getField(a, ["Video", "Vídeo", "video", "Columna P"]);
+          const videoUrl = videoUrlRaw ? videoUrlRaw.trim() : "";
+
+          if (videoUrl) {
+            hasMedia = true;
+            const videoWrapper = document.createElement('div');
+            videoWrapper.style.gridColumn = '1 / -1';
+            videoWrapper.style.margin = '20px 0';
+            videoWrapper.style.borderRadius = '15px';
+            videoWrapper.style.overflow = 'hidden';
+            videoWrapper.style.boxShadow = '0 8px 25px rgba(0,0,0,0.18)';
+
+            if (videoUrl.includes("streamable.com")) {
+              // Streamable → iframe
+              const iframe = document.createElement('iframe');
+              iframe.src = videoUrl.replace("streamable.com/", "streamable.com/e/");
+              iframe.frameBorder = "0";
+              iframe.allowFullscreen = true;
+              iframe.allow = "autoplay; fullscreen";
+              iframe.style.width = "100%";
+              iframe.style.height = "500px";
+              iframe.style.borderRadius = "15px";
+              videoWrapper.appendChild(iframe);
+
+            } else if (videoUrl.includes("mux.com")) {
+              // Mux → video nativo
+              const video = document.createElement('video');
+              video.controls = true;
+              video.preload = "metadata";
+              video.style.width = "100%";
+              video.style.maxHeight = "500px";
+              video.style.background = "black";
+              video.style.borderRadius = "15px";
+
+              const source = document.createElement('source');
+              source.src = videoUrl;
+              source.type = "application/x-mpegURL";
+
+              video.appendChild(source);
+              video.appendChild(document.createTextNode("Tu navegador no soporta video."));
+              videoWrapper.appendChild(video);
+
+            } else {
+              // Fallback enlace externo
+              const link = document.createElement('a');
+              link.href = videoUrl;
+              link.target = "_blank";
+              link.textContent = "Ver video externo ↗";
+              link.style.display = "block";
+              link.style.padding = "20px";
+              link.style.textAlign = "center";
+              link.style.color = "var(--primary)";
+              link.style.fontWeight = "600";
+              videoWrapper.appendChild(link);
+            }
+
+            imgContainer.appendChild(videoWrapper);
+          }
+
+          if (!hasMedia) {
+            const p = document.createElement('p');
+            p.textContent = "No hay imágenes ni video disponible.";
+            p.style.color = "#999";
+            p.style.textAlign = "center";
+            p.style.gridColumn = "1 / -1";
+            imgContainer.appendChild(p);
+          }
+
           detalle.appendChild(imgContainer);
 
           // Botones de acción
