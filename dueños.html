@@ -1182,38 +1182,44 @@ script.src = `${API_URL}?action=getPlanes&callback=mostrarPreciosPlanes`;
 document.body.appendChild(script);
 }
 function mostrarPreciosPlanes(res) {
-  if (!res.success || !res.data || res.data.length === 0) {
-    console.error("No se pudieron cargar los precios de los planes");
-    return;
+  if (res.success && res.data && res.data.length) {
+    // Mapeo correcto entre el nombre completo del plan en la hoja y la clave que usamos en el código
+    const mapeoPlanes = {
+      "Plan Básico": "Basico",
+      "Plan Plus": "Plus",
+      "Plan Full": "Full",
+      "Plan Inmobiliario": "Inmobiliario"
+    };
+
+    res.data.forEach(plan => {
+      const nombreHoja = plan[0]; // Columna A: nombre del plan (ej: "Plan Básico")
+      const precioColG = parseFloat(plan[6]); // Columna G (índice 6 en array 0-based)
+      const precioColH = parseFloat(plan[7]); // Columna H (índice 7)
+
+      // Buscamos a qué plan corresponde este nombre
+      const clave = mapeoPlanes[nombreHoja];
+      if (clave && !isNaN(precioColG) && !isNaN(precioColH)) {
+        // Usamos el precio de la columna correcta según el plan
+        // Tú dijiste que Básico y Plus usan bien sus precios → probablemente ya usan G o H correctamente
+        // Pero Full e Inmobiliario fallan → aseguramos que usen exactamente las columnas G y H
+        const precioFinal = (clave === "Full" || clave === "Inmobiliario") ? precioColH : precioColG;
+        // Si quieres que TODOS usen la misma columna (ej: siempre H), cambia a: precioColH
+        preciosPlanes[clave] = precioFinal;
+      }
+    });
+
+    // Actualizamos los precios en el modal
+    document.getElementById("precioBasico").textContent = formatoPrecioPlan(preciosPlanes.Basico || 0) + " / mes";
+    document.getElementById("precioPlus").textContent = formatoPrecioPlan(preciosPlanes.Plus || 0) + " / mes";
+    document.getElementById("precioFull").textContent = formatoPrecioPlan(preciosPlanes.Full || 0) + " / mes";
+    document.getElementById("precioInmobiliario").textContent = formatoPrecioPlan(preciosPlanes.Inmobiliario || 0) + " / mes";
+  } else {
+    // En caso de error, mostramos 0 para evitar problemas
+    document.getElementById("precioBasico").textContent = "$0,00 / mes";
+    document.getElementById("precioPlus").textContent = "$0,00 / mes";
+    document.getElementById("precioFull").textContent = "$0,00 / mes";
+    document.getElementById("precioInmobiliario").textContent = "$0,00 / mes";
   }
-
-  // Mapeo exacto según el orden de columnas en la hoja "Planes"
-  // Suponemos que res.data es un array de filas, y cada fila tiene los valores en orden de columnas
-  // Buscamos la fila correspondiente por nombre en columna A (índice 0)
-
-  res.data.forEach(fila => {
-    const nombrePlan = fila[0];        // Columna A: nombre del plan
-    const precio = parseFloat(fila[4]) || 0; // Columna E = índice 4 → Básico
-    const precioPlus = parseFloat(fila[5]) || 0; // F = 5 → Plus
-    const precioFull = parseFloat(fila[6]) || 0; // G = 6 → Full
-    const precioInmobiliario = parseFloat(fila[7]) || 0; // H = 7 → Inmobiliario
-
-    if (nombrePlan === "Básico") {
-      preciosPlanes.Basico = precio;
-    } else if (nombrePlan === "Plus") {
-      preciosPlanes.Plus = precioPlus;
-    } else if (nombrePlan === "Full") {
-      preciosPlanes.Full = precioFull;
-    } else if (nombrePlan === "Inmobiliario") {
-      preciosPlanes.Inmobiliario = precioInmobiliario;
-    }
-  });
-
-  // Actualizar los textos en el modal
-  document.getElementById("precioBasico").textContent = formatoPrecioPlan(preciosPlanes.Basico) + " / mes";
-  document.getElementById("precioPlus").textContent = formatoPrecioPlan(preciosPlanes.Plus) + " / mes";
-  document.getElementById("precioFull").textContent = formatoPrecioPlan(preciosPlanes.Full) + " / mes";
-  document.getElementById("precioInmobiliario").textContent = formatoPrecioPlan(preciosPlanes.Inmobiliario) + " / mes";
 }
 function cargarEstadoPlan() {
 const email = localStorage.getItem("dueno");
