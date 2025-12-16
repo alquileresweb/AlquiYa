@@ -19,7 +19,7 @@
   body { margin: 0; font-family: Arial, sans-serif; }
   header { background: white; padding: 15px; text-align: center; }
   header img { max-width: 250px; }
-  
+
   /* FOTO DE PERFIL DENTRO DE LA TARJETA */
   .owner-profile-img {
     position: absolute;
@@ -39,11 +39,11 @@
     transform: scale(1.18);
     box-shadow: 0 12px 30px rgba(52,131,250,0.5);
   }
- 
   #propiedad-detalle {
     max-width: 700px; margin: 20px auto; padding: 20px;
     border: 2px solid #3483fa; border-radius: 10px;
     background: #f9f9f9; box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    position: relative;
   }
   #propiedad-detalle h2 { color: #3483fa; margin-top: 0; }
   #propiedad-detalle h3 { color: #3483fa; margin: 5px 0 15px; font-weight: normal; }
@@ -66,6 +66,29 @@
     border-radius: 8px; cursor: pointer; transition: transform 0.2s;
   }
   #imagenes-container img:hover { transform: scale(1.1); }
+
+  /* ESTILOS PARA VIDEO EN DETALLE */
+  .video-container {
+    margin: 25px 0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.18);
+  }
+  .video-container iframe,
+  .video-container video {
+    width: 100%;
+    height: 420px;
+    border: none;
+    border-radius: 12px;
+    background: black;
+  }
+  @media (max-width: 600px) {
+    .video-container iframe,
+    .video-container video {
+      height: 300px;
+    }
+  }
+
   #map { height: 400px; width: 100%; margin-top: 20px; border-radius: 10px; border: 2px solid #3483fa; }
   #modal-img {
     display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -93,7 +116,6 @@
     border:2px solid white;
     box-shadow:0 0 2px #000;
   }
-
 </style>
 </head>
 <body>
@@ -107,20 +129,16 @@
   <button class="close-btn" onclick="cerrarModal()">X</button>
   <button class="nav-btn prev-btn" onclick="cambiarImagen(-1)"><</button>
   <button class="nav-btn next-btn" onclick="cambiarImagen(1)">></button>
-  </div>
-
+</div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
-  
 // === CONFIGURACIÓN ===
 const webAppURL = "https://script.google.com/macros/s/AKfycbyFvDRwPZoG6ChhvcxGm6B27ziD6Qkg4RcH0TI9K59b7zPz7iFxy7mgmbs5mo5T-TxD/exec";
 let currentImages = [];
 let currentImageIndex = 0;
-let contactoBloqueado = false;   // <--- PÉGALA AQUÍ (debajo de currentImageIndex = 0;)
-  
-// Solo console.log (nada visible en la página)
-function log(...args) { console.log(...args); }
+let contactoBloqueado = false;
+
 // Utilidades
 function getField(obj, keys) {
   for (const k of keys) {
@@ -140,25 +158,7 @@ function formatPrice(num) {
   return isNaN(n) ? "No disponible" : "$" + n.toLocaleString('es-AR');
 }
 
-  // === NUEVA FUNCIÓN: incrementar contacto (columna T) ===
-async function incrementarContacto(idPropiedad) {
-  if (contactoBloqueado) return; // evita doble clic
-  contactoBloqueado = true;
-  try {
-    await fetch(`${webAppURL}?action=incrementarMetrica&idPropiedad=${idPropiedad}&metrica=contactos`, {
-      method: "GET",
-      cache: "no-store"
-    });
-    console.log("Contacto registrado para propiedad ID:", idPropiedad);
-  } catch (err) {
-    console.error("Error al registrar contacto:", err);
-  } finally {
-    // desbloqueamos después de 2 segundos (evita spam)
-    setTimeout(() => { contactoBloqueado = false; }, 2000);
-  }
-}
-  
- // OBTENER FOTO DE PERFIL
+// OBTENER FOTO DE PERFIL
 async function obtenerFotoPerfil(email) {
   if (!email) return "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
   try {
@@ -166,13 +166,13 @@ async function obtenerFotoPerfil(email) {
       cache: "no-store"
     });
     const data = await res.json();
-    console.log("Foto de perfil recibida:", data);
     return data.foto || "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
   } catch (err) {
     console.error("Error cargando foto de perfil:", err);
     return "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
   }
 }
+
 // Modal imágenes
 function abrirModal(src, images, index) {
   currentImages = images;
@@ -188,19 +188,16 @@ function cambiarImagen(dir) {
   currentImageIndex = (currentImageIndex + dir + currentImages.length) % currentImages.length;
   document.getElementById("img-grande").src = currentImages[currentImageIndex];
 }
-// === MAPA CON MARCADOR PRINCIPAL (EMOJIS ORIGINALES) + MARCADORES ESTÁTICOS ===
-let markersLayer;
 
+// MAPA
+let markersLayer;
 function initMap(lat, lng, direccion, nroAmb, tipo) {
   const map = L.map("map").setView([lat, lng], 16);
-
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap'
   }).addTo(map);
-
   markersLayer = L.layerGroup().addTo(map);
 
-  // === MARCADOR DE LA PROPIEDAD (con tus emojis originales) ===
   let iconHtml;
   if (tipo === "Temporario") {
     iconHtml = '⌛';
@@ -209,7 +206,6 @@ function initMap(lat, lng, direccion, nroAmb, tipo) {
   } else {
     iconHtml = '🏠<span style="font-size:12px;margin-left:2px;">' + (nroAmb || "-") + '</span>';
   }
-
   const propertyIcon = L.divIcon({
     className: 'marker-icon',
     html: iconHtml,
@@ -217,18 +213,17 @@ function initMap(lat, lng, direccion, nroAmb, tipo) {
     iconAnchor: [19, 19],
     popupAnchor: [0, -15]
   });
-
   L.marker([lat, lng], { icon: propertyIcon })
     .addTo(markersLayer)
     .bindPopup(`<b style="font-size:16px;color:#3483fa;">${direccion}</b><br>${tipo}`)
     .openPopup();
-  
-  // === MARCADORES ESTÁTICOS (sin cambios) ===
+
   const uniIcon = L.divIcon({ className: 'marker-icon', html: '🎓', iconSize: [30, 30], iconAnchor: [15, 15] });
-const hospIcon = L.divIcon({ className: 'marker-icon', html: '🏥', iconSize: [30, 30], iconAnchor: [15, 15] });
-const superIcon = L.divIcon({ className: 'marker-icon', html: '🛒', iconSize: [30, 30], iconAnchor: [15, 15] });
-const busIcon = L.divIcon({ className: 'marker-icon', html: '🚌', iconSize: [30, 30], iconAnchor: [15, 15] });
-const policeIcon = L.divIcon({ className: 'marker-icon', html: '👮', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const hospIcon = L.divIcon({ className: 'marker-icon', html: '🏥', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const superIcon = L.divIcon({ className: 'marker-icon', html: '🛒', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const busIcon = L.divIcon({ className: 'marker-icon', html: '🚌', iconSize: [30, 30], iconAnchor: [15, 15] });
+  const policeIcon = L.divIcon({ className: 'marker-icon', html: '👮', iconSize: [30, 30], iconAnchor: [15, 15] });
+
   L.marker([-28.5509978, -56.0409727], { icon: uniIcon }).addTo(markersLayer).bindPopup("<b>Facultad Fundación Barceló</b>");
   L.marker([-28.5551127, -56.0389282], { icon: hospIcon }).addTo(markersLayer).bindPopup("<b>Hospital Universitario San Juan Bautista</b>");
   L.marker([-28.5519443, -56.0401962], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado La Bomba</b>");
@@ -236,28 +231,25 @@ const policeIcon = L.divIcon({ className: 'marker-icon', html: '👮', iconSize:
   L.marker([-28.5462903, -56.0440365], { icon: superIcon }).addTo(markersLayer).bindPopup("<b>Supermercado La Economía</b>");
   L.marker([-28.5468697, -56.0432862], { icon: busIcon }).addTo(markersLayer).bindPopup("<b>Terminal de Omnibus</b>");
   L.marker([-28.5487787, -56.0396171], { icon: policeIcon }).addTo(markersLayer).bindPopup("<b>Policía</b>");
-  // Opcional: ajustar vista para que todo quepa
+
   const group = new L.featureGroup(markersLayer.getLayers());
   map.fitBounds(group.getBounds().pad(0.2));
 }
-// === CARGA PRINCIPAL CON FOTO DE PERFIL FUNCIONANDO ===
+
+// CARGA PRINCIPAL
 window.onload = async () => {
   const urlParams = new URLSearchParams(window.location.search);
   const id = urlParams.get("id");
   const loading = document.getElementById("loading-msg");
   const card = document.getElementById("propiedad-detalle");
-
   if (!id) {
     loading.innerHTML = "Error: Falta ID";
     return;
   }
-
   try {
     const res = await fetch(`${webAppURL}?action=getAlquiler&id=${id}`, { cache: "no-store" });
     const { success, alquiler: a } = await res.json();
-
     loading.style.display = "none";
-
     if (!success || !a) {
       card.innerHTML = "<h2>Propiedad no encontrada</h2>";
       return;
@@ -267,14 +259,13 @@ window.onload = async () => {
     const direccion = getField(a, ["Direccion","Dirección","Domicilio"]) || "Sin dirección";
     const emailDueno = getField(a, ["Email","email","Correo","Dueño","dueno"]);
 
-    // OBTENER FOTO DE PERFIL
+    // Foto de perfil
     let fotoPerfilHTML = '';
     if (emailDueno) {
       const fotoURL = await obtenerFotoPerfil(emailDueno.trim());
       fotoPerfilHTML = `<img src="${fotoURL}" class="owner-profile-img" alt="Foto del dueño" onclick="abrirModal('${fotoURL}', ['${fotoURL}'], 0)">`;
     }
 
-    // Construir tarjeta
     card.innerHTML = `
       ${fotoPerfilHTML}
       <h2>${direccion}</h2>
@@ -282,7 +273,7 @@ window.onload = async () => {
       <hr style="border-top:1px solid #ddd;margin:20px 0">
     `;
 
-    // Campos
+    // Campos textuales
     const campos = tipo === "Temporario" || tipo === "Local" ? [
       ["Dirección", direccion],
       ["Información de ingreso", getField(a, ["Informacion ingreso","Información ingreso"]) || "No especificada"],
@@ -302,7 +293,7 @@ window.onload = async () => {
       }
     });
 
-    // Imágenes
+    // === IMÁGENES ===
     const fotosRaw = getField(a, ["Fotos","Imagenes","Imágenes","images","FOTOS"]);
     if (fotosRaw) {
       const urls = fotosRaw.split(",").map(u => u.trim()).filter(Boolean).map(driveUrlDirect).filter(Boolean);
@@ -319,7 +310,56 @@ window.onload = async () => {
       }
     }
 
-    // Mapa
+    // === VIDEO (COLUMNA P) ===
+    const videoUrlRaw = getField(a, ["Video", "Vídeo", "video", "Columna P"]);
+    const videoUrl = videoUrlRaw ? videoUrlRaw.trim() : "";
+
+    if (videoUrl) {
+      const videoContainer = document.createElement("div");
+      videoContainer.className = "video-container";
+
+      if (videoUrl.includes("streamable.com")) {
+        // Streamable → iframe
+        const iframe = document.createElement("iframe");
+        iframe.src = videoUrl.replace("streamable.com/", "streamable.com/e/");
+        iframe.allowFullscreen = true;
+        iframe.allow = "autoplay; fullscreen";
+        videoContainer.appendChild(iframe);
+
+      } else if (videoUrl.includes("mux.com")) {
+        // Mux → video nativo
+        const video = document.createElement("video");
+        video.controls = true;
+        video.preload = "metadata";
+
+        const source = document.createElement("source");
+        source.src = videoUrl;
+        source.type = "application/x-mpegURL";
+
+        video.appendChild(source);
+        video.appendChild(document.createTextNode("Tu navegador no soporta video."));
+        videoContainer.appendChild(video);
+
+      } else {
+        // Fallback: enlace externo
+        const link = document.createElement("a");
+        link.href = videoUrl;
+        link.target = "_blank";
+        link.textContent = "Ver video externo ↗";
+        link.style.display = "block";
+        link.style.padding = "20px";
+        link.style.textAlign = "center";
+        link.style.color = "#3483fa";
+        link.style.fontWeight = "600";
+        link.style.background = "#f0f8ff";
+        link.style.borderRadius = "10px";
+        videoContainer.appendChild(link);
+      }
+
+      card.appendChild(videoContainer);
+    }
+
+    // === MAPA ===
     const lat = parseFloat(getField(a, ["Lat","Latitude","Latitud"]));
     const lng = parseFloat(getField(a, ["Lng","Longitude","Longitud"]));
     if (!isNaN(lat) && !isNaN(lng)) {
@@ -329,39 +369,32 @@ window.onload = async () => {
       setTimeout(() => initMap(lat, lng, direccion, toInt(getField(a, ["Nro Ambientes","Ambientes"])), tipo), 400);
     }
 
-        // === BOTONES CON INCREMENTO DE CONTACTO (FUNCIONA 100%) ===
+    // === BOTONES ===
     if (a.Contacto && a.ID) {
       const btn = document.createElement("button");
       btn.textContent = "Contactar por WhatsApp";
       btn.style.cssText = "background:#25D366;color:white;padding:14px 24px;font-size:17px;font-weight:bold;border-radius:8px;border:none;cursor:pointer;margin:10px 10px 0 0;";
-
       btn.onclick = async function() {
-        // 1. Contar el contacto en la columna T
         try {
           await fetch(`${webAppURL}?action=incrementarMetrica&idPropiedad=${a.ID}&metrica=contactos&t=${Date.now()}`, {
             method: "GET",
             cache: "no-store"
           });
-          console.log("Contacto registrado correctamente (ID: " + a.ID + ")");
         } catch (e) {
-          console.warn("No se pudo contar el contacto (no afecta al usuario)", e);
+          console.warn("No se pudo contar el contacto", e);
         }
-
-        // 2. Abrir WhatsApp
         const mensaje = encodeURIComponent(`Hola, *vengo desde AlquiYa*\n\nMe interesa el alquiler en: ${direccion}`);
         window.open(`https://wa.me/${a.Contacto}?text=${mensaje}`, "_blank");
       };
-
       card.appendChild(btn);
     }
 
-    // Botón Volver
     const volver = document.createElement("button");
-    volver.textContent = "Volver al Mapa";
+    volver.textContent = "Volver al Inicio";
     volver.style.cssText = "background:#3483fa;color:white;padding:12px 20px;font-size:16px;border-radius:8px;border:none;cursor:pointer;margin-top:10px;";
-    volver.onclick = () => location.href = "index.html";
+    volver.onclick = () => location.href = "https://www.alquiya.com.ar";
     card.appendChild(volver);
-    
+
   } catch (err) {
     loading.innerHTML = "Error de conexión";
     console.error(err);
@@ -369,34 +402,27 @@ window.onload = async () => {
 };
 </script>
 
-  <!-- =============== PIE DE PÁGINA AZUL – VOLVER AL MAPA (para dueños.html) =============== -->
-  <footer style="margin-top:80px;background:#3483fa;color:white;padding:2.5rem 1rem 1.5rem;">
-    <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2rem;align-items:center;text-align:center;">
-      <!-- Logo -->
-      <div>
-        <img src="https://i.postimg.cc/FHXRBTTX/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.png" alt="Logo AlquiYa" style="max-width:180px;height:auto;">
-      </div>
-
-      <!-- Botón Volver al Mapa -->
-      <div>
-        <a href="https://www.alquiya.com.ar" 
-           style="display:inline-block;background:white;color:#3483fa;font-weight:700;padding:0.9rem 2.6rem;border-radius:50px;font-size:1.28rem;box-shadow:0 6px 20px rgba(52,131,250,0.3);transition:all 0.3s ease;text-decoration:none;">
-          ← Volver al Inicio
-        </a>
-      </div>
-
-      <!-- Instagram -->
-      <div>
-        <a href="https://www.instagram.com/alquiya.st/" target="_blank">
-          <img src="https://i.postimg.cc/GmVWTXX0/394a7aaecd6b8ce44528649681d9fa05.png" alt="Instagram" style="width:40px;height:40px;">
-        </a>
-      </div>
-
-      <!-- Copyright -->
-      <div style="font-size:0.95rem;opacity:0.9;grid-column:1/-1;">
-        © 2025 AlquiYa • Todos los derechos reservados
-      </div>
+<!-- PIE DE PÁGINA -->
+<footer style="margin-top:80px;background:#3483fa;color:white;padding:2.5rem 1rem 1.5rem;">
+  <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2rem;align-items:center;text-align:center;">
+    <div>
+      <img src="https://i.postimg.cc/FHXRBTTX/logo-Alqui-Ya-fondo-blanco-Photoroom-Photoroom.png" alt="Logo AlquiYa" style="max-width:180px;height:auto;">
     </div>
-  </footer>
+    <div>
+      <a href="https://www.alquiya.com.ar"
+         style="display:inline-block;background:white;color:#3483fa;font-weight:700;padding:0.9rem 2.6rem;border-radius:50px;font-size:1.28rem;box-shadow:0 6px 20px rgba(52,131,250,0.3);transition:all 0.3s ease;text-decoration:none;">
+        ← Volver al Inicio
+      </a>
+    </div>
+    <div>
+      <a href="https://www.instagram.com/alquiya.st/" target="_blank">
+        <img src="https://i.postimg.cc/GmVWTXX0/394a7aaecd6b8ce44528649681d9fa05.png" alt="Instagram" style="width:40px;height:40px;">
+      </a>
+    </div>
+    <div style="font-size:0.95rem;opacity:0.9;grid-column:1/-1;">
+      © 2025 AlquiYa • Todos los derechos reservados
+    </div>
+  </div>
+</footer>
 </body>
 </html>
