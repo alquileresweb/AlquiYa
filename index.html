@@ -26,6 +26,89 @@
     --transition: all 0.3s ease;
   }
 
+  /* === NUEVO: PANEL EMERGENTE DESDE ABAJO (BOTTOM SHEET) === */
+  #detalle-bottom-sheet {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.25);
+    max-height: 90vh;
+    overflow: hidden;
+    z-index: 10000;
+    animation: slideUp 0.5s ease-out;
+    flex-direction: column;
+  }
+  #detalle-bottom-sheet.visible {
+    display: flex;
+  }
+  #detalle-header {
+    padding: 16px 20px;
+    background: var(--primary);
+    color: white;
+    font-size: 1.4rem;
+    font-weight: bold;
+    position: relative;
+    border-radius: 20px 20px 0 0;
+    text-align: center;
+  }
+  #detalle-close {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #detalle-close:hover {
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+  }
+  #detalle-content {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+    background: var(--card);
+  }
+  #detalle-content p {
+    margin: 12px 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eee;
+  }
+  #detalle-content p:last-of-type {
+    border-bottom: none;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  @keyframes slideDown {
+    from { transform: translateY(0); }
+    to { transform: translateY(100%); }
+  }
+  /* Overlay oscuro detrás del sheet */
+  #detalle-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 9999;
+  }
+  #detalle-overlay.visible {
+    display: block;
+  }
+
   /* CHECKBOXES PERSONALIZADOS - PEGADOS AL TEXTO Y BONITOS */
 .checkbox-label {
   display: flex;
@@ -906,6 +989,7 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
   <div id="loading-msg">Cargando alquileres disponibles...</div>
   <div id="map"></div>
 </div>
+
   
 <!-- BANNER FINAL BONITO -->
   <div class="final-banner">
@@ -929,6 +1013,18 @@ Cualquier conflicto será resuelto ante los tribunales ordinarios de Santo Tomé
       </div>
     </a>
   </div>
+
+  <!-- NUEVO: OVERLAY Y BOTTOM SHEET PARA DETALLES EN MAPA -->
+<div id="detalle-overlay" onclick="cerrarDetalleSheet()"></div>
+<div id="detalle-bottom-sheet">
+  <div id="detalle-header">
+    Detalles de la propiedad
+    <button id="detalle-close" onclick="cerrarDetalleSheet()">×</button>
+  </div>
+  <div id="detalle-content">
+    <!-- Aquí se inyectará el contenido dinámicamente -->
+  </div>
+</div>
   
   <!-- =============== PIE DE PÁGINA AZUL =============== -->
 <footer>
@@ -1597,6 +1693,25 @@ async function obtenerFotoPerfil(emailDueno) {
     return "https://i.postimg.cc/0jFNDZ7Y/default-avatar.png";
   }
 }
+function cerrarDetalleSheet() {
+  const sheet = document.getElementById('detalle-bottom-sheet');
+  const overlay = document.getElementById('detalle-overlay');
+  sheet.style.animation = 'slideDown 0.4s ease-in';
+  overlay.classList.remove('visible');
+  setTimeout(() => {
+    sheet.classList.remove('visible');
+    sheet.style.animation = '';
+    document.getElementById('detalle-content').innerHTML = '';
+  }, 400);
+}
+
+function abrirDetalleSheet(titulo) {
+  document.getElementById('detalle-header').firstChild.textContent = titulo;
+  document.getElementById('detalle-bottom-sheet').classList.add('visible');
+  document.getElementById('detalle-overlay').classList.add('visible');
+  document.getElementById('detalle-bottom-sheet').style.animation = 'slideUp 0.5s ease-out';
+}
+
 function cargarAlquileres() {
   const loadingEl = document.getElementById("loading-msg");
   loadingEl.style.display = "block";
@@ -1727,151 +1842,143 @@ function cargarAlquileres() {
           </div>
         `;
 
-        const verBtn = document.createElement('button');
-        verBtn.className = 'popup-button';
-        verBtn.textContent = 'Ver Detalles';
-        verBtn.onclick = async () => {
-          if (idPropiedad) await incrementarMetrica(idPropiedad, "vistas");
+        // MODIFICACIÓN CLAVE dentro de cargarAlquileres(), en el onclick del verBtn:
+verBtn.onclick = async () => {
+  if (idPropiedad) await incrementarMetrica(idPropiedad, "vistas");
 
-          const detalle = document.getElementById('alquiler-detalle');
-          detalle.innerHTML = `<h2>${titulo}</h2><p id="metricas-error"></p>`;
+  abrirDetalleSheet(titulo);
 
-          // Foto del dueño en detalle
-          const profileImg = document.createElement('img');
-          profileImg.className = "owner-profile-img";
-          profileImg.src = fotoPerfil;
-          profileImg.alt = "Foto del dueño";
-          profileImg.style.cursor = "pointer";
-          profileImg.onclick = () => abrirModal(fotoPerfil, [fotoPerfil], 0);
-          detalle.appendChild(profileImg);
+  const content = document.getElementById('detalle-content');
+  content.innerHTML = ''; // limpiar
 
-          // Detalles textuales
-          const rows = [
-            ['Tipo', tipo],
-            ['Dirección', direccion || 'No disponible'],
-            ['Precio', formattedPrecio || '-'],
-            ['Ambientes', nroAmb || '-'],
-            ['Mascotas', mascotas || '-'],
-            ['Amoblado', amoblado || '-'],
-            ['Información de ingreso', infoIngreso || '-'],
-            ['Detalles', detalles || '-']
-          ];
-          rows.forEach(([label, val]) => {
-            if (val && val !== 'No disponible' && val !== '-') {
-              const p = document.createElement('p');
-              p.innerHTML = `<b>${label}:</b> ${val}`;
-              detalle.appendChild(p);
-            }
-          });
+  // Foto del dueño (grande, en la parte superior del contenido)
+  const profileImg = document.createElement('img');
+  profileImg.className = "owner-profile-img";
+  profileImg.src = fotoPerfil;
+  profileImg.alt = "Foto del dueño";
+  profileImg.style.cursor = "pointer";
+  profileImg.style.display = "block";
+  profileImg.style.margin = "0 auto 20px";
+  profileImg.style.width = "100px";
+  profileImg.style.height = "100px";
+  profileImg.onclick = () => abrirModal(fotoPerfil, [fotoPerfil], 0);
+  content.appendChild(profileImg);
 
-          // Contenedor de imágenes + video
-          const imgContainer = document.createElement('div');
-          imgContainer.id = 'imagenes-container';
+  // Información textual
+  const rows = [
+    ['Tipo', tipo],
+    ['Dirección', direccion || 'No disponible'],
+    ['Precio', formattedPrecio || '-'],
+    ['Ambientes', nroAmb || '-'],
+    ['Mascotas', mascotas || '-'],
+    ['Amoblado', amoblado || '-'],
+    ['Información de ingreso', infoIngreso || '-'],
+    ['Detalles', detalles || '-']
+  ];
+  rows.forEach(([label, val]) => {
+    if (val && val !== '-' && val !== 'No disponible') {
+      const p = document.createElement('p');
+      p.innerHTML = `<strong>${label}:</strong> ${val}`;
+      content.appendChild(p);
+    }
+  });
 
-          let hasMedia = false;
+  // Contenedor de imágenes y video
+  const imgContainer = document.createElement('div');
+  imgContainer.id = 'imagenes-container';
+  imgContainer.style.marginTop = '20px';
+  let hasMedia = false;
 
-          // Fotos
-          if (fotos) {
-            const urls = fotos.split(',').map(f => driveUrlDirect(f.trim())).filter(Boolean);
-            if (urls.length > 0) {
-              hasMedia = true;
-              urls.forEach((url, i) => {
-                const img = document.createElement('img');
-                img.src = url;
-                img.alt = "Propiedad";
-                img.loading = "lazy";
-                img.onclick = () => abrirModal(url, urls, i);
-                imgContainer.appendChild(img);
-              });
-            }
-          }
+  // Fotos
+  if (fotos) {
+    const urls = fotos.split(',').map(f => driveUrlDirect(f.trim())).filter(Boolean);
+    if (urls.length > 0) {
+      hasMedia = true;
+      urls.forEach((url, i) => {
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = "Propiedad";
+        img.loading = "lazy";
+        img.onclick = () => abrirModal(url, urls, i);
+        imgContainer.appendChild(img);
+      });
+    }
+  }
 
-          // Video (columna P)
-          const videoUrlRaw = getField(a, ["Video", "Vídeo", "video", "Columna P"]);
-          const videoUrl = videoUrlRaw ? videoUrlRaw.trim() : "";
+  // Video
+  const videoUrlRaw = getField(a, ["Video", "Vídeo", "video", "Columna P"]);
+  const videoUrl = videoUrlRaw ? videoUrlRaw.trim() : "";
+  if (videoUrl) {
+    hasMedia = true;
+    const videoWrapper = document.createElement('div');
+    videoWrapper.style.gridColumn = '1 / -1';
+    videoWrapper.style.margin = '20px 0';
+    videoWrapper.style.borderRadius = '15px';
+    videoWrapper.style.overflow = 'hidden';
+    videoWrapper.style.boxShadow = '0 8px 25px rgba(0,0,0,0.18)';
 
-          if (videoUrl) {
-            hasMedia = true;
-            const videoWrapper = document.createElement('div');
-            videoWrapper.style.gridColumn = '1 / -1';
-            videoWrapper.style.margin = '20px 0';
-            videoWrapper.style.borderRadius = '15px';
-            videoWrapper.style.overflow = 'hidden';
-            videoWrapper.style.boxShadow = '0 8px 25px rgba(0,0,0,0.18)';
+    if (videoUrl.includes("streamable.com")) {
+      const iframe = document.createElement('iframe');
+      iframe.src = videoUrl.replace("streamable.com/", "streamable.com/e/");
+      iframe.frameBorder = "0";
+      iframe.allowFullscreen = true;
+      iframe.allow = "autoplay; fullscreen";
+      iframe.style.width = "100%";
+      iframe.style.height = "400px";
+      videoWrapper.appendChild(iframe);
+    } else if (videoUrl.includes("mux.com")) {
+      const video = document.createElement('video');
+      video.controls = true;
+      video.preload = "metadata";
+      video.style.width = "100%";
+      video.style.maxHeight = "400px";
+      video.style.background = "black";
+      const source = document.createElement('source');
+      source.src = videoUrl;
+      source.type = "application/x-mpegURL";
+      video.appendChild(source);
+      videoWrapper.appendChild(video);
+    } else {
+      const link = document.createElement('a');
+      link.href = videoUrl;
+      link.target = "_blank";
+      link.textContent = "Ver video externo ↗";
+      link.style.display = "block";
+      link.style.padding = "20px";
+      link.style.textAlign = "center";
+      link.style.color = "var(--primary)";
+      link.style.fontWeight = "600";
+      videoWrapper.appendChild(link);
+    }
+    imgContainer.appendChild(videoWrapper);
+  }
 
-            if (videoUrl.includes("streamable.com")) {
-              // Streamable → iframe
-              const iframe = document.createElement('iframe');
-              iframe.src = videoUrl.replace("streamable.com/", "streamable.com/e/");
-              iframe.frameBorder = "0";
-              iframe.allowFullscreen = true;
-              iframe.allow = "autoplay; fullscreen";
-              iframe.style.width = "100%";
-              iframe.style.height = "500px";
-              iframe.style.borderRadius = "15px";
-              videoWrapper.appendChild(iframe);
+  if (!hasMedia) {
+    const p = document.createElement('p');
+    p.textContent = "No hay imágenes ni video disponible.";
+    p.style.color = "#999";
+    p.style.textAlign = "center";
+    p.style.gridColumn = "1 / -1";
+    imgContainer.appendChild(p);
+  }
 
-            } else if (videoUrl.includes("mux.com")) {
-              // Mux → video nativo
-              const video = document.createElement('video');
-              video.controls = true;
-              video.preload = "metadata";
-              video.style.width = "100%";
-              video.style.maxHeight = "500px";
-              video.style.background = "black";
-              video.style.borderRadius = "15px";
+  content.appendChild(imgContainer);
 
-              const source = document.createElement('source');
-              source.src = videoUrl;
-              source.type = "application/x-mpegURL";
+  // Botones de acción
+  const actionDiv = document.createElement('div');
+  actionDiv.className = 'action-buttons';
+  actionDiv.style.marginTop = '20px';
+  actionDiv.style.justifyContent = 'center';
 
-              video.appendChild(source);
-              video.appendChild(document.createTextNode("Tu navegador no soporta video."));
-              videoWrapper.appendChild(video);
-
-            } else {
-              // Fallback enlace externo
-              const link = document.createElement('a');
-              link.href = videoUrl;
-              link.target = "_blank";
-              link.textContent = "Ver video externo ↗";
-              link.style.display = "block";
-              link.style.padding = "20px";
-              link.style.textAlign = "center";
-              link.style.color = "var(--primary)";
-              link.style.fontWeight = "600";
-              videoWrapper.appendChild(link);
-            }
-
-            imgContainer.appendChild(videoWrapper);
-          }
-
-          if (!hasMedia) {
-            const p = document.createElement('p');
-            p.textContent = "No hay imágenes ni video disponible.";
-            p.style.color = "#999";
-            p.style.textAlign = "center";
-            p.style.gridColumn = "1 / -1";
-            imgContainer.appendChild(p);
-          }
-
-          detalle.appendChild(imgContainer);
-
-          // Botones de acción
-          const actionDiv = document.createElement('div');
-          actionDiv.className = 'action-buttons';
-
-          if (contacto) {
-            const waBtn = document.createElement('button');
-            waBtn.textContent = 'Contactar por WhatsApp';
-            waBtn.style.cssText = 'background:#25D366;color:white;padding:1rem 2rem;border-radius:14px;border:none;font-weight:600;cursor:pointer;margin:5px;';
-            waBtn.onclick = () => {
-              if (idPropiedad) incrementarMetrica(idPropiedad, "contactos");
-              const msg = `Hola, *vengo desde AlquiYa*\n\nMe interesa el alquiler en: "${direccion}"`;
-              window.open(`https://wa.me/${contacto}?text=${encodeURIComponent(msg)}`, '_blank');
-            };
-            actionDiv.appendChild(waBtn);
-          }
+  if (contacto) {
+    const waBtn = document.createElement('a');
+    waBtn.textContent = 'Contactar por WhatsApp';
+    waBtn.href = `https://wa.me/${contacto}?text=${encodeURIComponent('Hola, *vengo desde AlquiYa*\n\nMe interesa el alquiler en: "' + (direccion || 'la propiedad') + '"')}`;
+    waBtn.target = "_blank";
+    waBtn.style.cssText = 'background:#25D366;color:white;padding:1rem 2rem;border-radius:14px;text-decoration:none;font-weight:600;display:inline-block;margin:5px;';
+    waBtn.onclick = () => incrementarMetrica(idPropiedad, "contactos");
+    actionDiv.appendChild(waBtn);
+  }
 
           if (idPropiedad) {
             const copyBtn = document.createElement('button');
