@@ -1107,7 +1107,7 @@ async function irADetalle(id) {
 async function cargarPropiedadesLista() {
   const contenedor = document.getElementById("lista-propiedades");
   contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px;font-size:1.4rem;color:#666;">Cargando...</div>';
-  
+
   const filtroAmb = parseInt(document.getElementById("filtroAmb").value) || 0;
   const filtroMin = parseCurrency(document.getElementById("filtroMin").value) || 0;
   const filtroMax = parseCurrency(document.getElementById("filtroMax").value) || Infinity;
@@ -1118,7 +1118,7 @@ async function cargarPropiedadesLista() {
   try {
     const res = await fetch(webAppURL + "?action=getAlquileres&t=" + Date.now());
     const data = await res.json();
-    
+
     if (!data.success || data.data.length === 0) {
       contenedor.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px;color:#95a5a6;">No hay propiedades activas</div>';
       return;
@@ -1143,45 +1143,39 @@ async function cargarPropiedadesLista() {
     filtradas.forEach(p => {
       const fotos = (p.Fotos || "").split(",").map(f => f.trim()).filter(Boolean).map(driveUrlDirect);
       const primeraImg = fotos[0] || "https://via.placeholder.com/400x250?text=Sin+Imagen";
-      
+
       const precioRaw = toNumber(p.Precio);
       const precio = precioRaw ? "$" + precioRaw.toLocaleString("es-AR") : "Consultar";
-      
+
       const titulo = getField(p, ["Título", "titulo", "Titulo", "Título Propiedad"]) || "Sin título";
       const tipoPropiedad = getField(p, ["Tipo"]) || "Propiedad";
       const id = getField(p, ["ID Propiedad", "idPropiedad", "ID"]) || "";
-
       const ambientesStr = getField(p, ["Nro Ambientes", "Ambientes", "Ambientes "]) || "1";
       const nroAmbientes = toInt(ambientesStr);
       const textoAmbientes = nroAmbientes === 1 ? "Monoambiente" : nroAmbientes + " ambientes";
-
       const subtipo = getField(p, ["Subtipo", "Subtipo de propiedad", "R"])?.trim();
 
       // Video de la columna P
       const videoUrlRaw = getField(p, ["Video", "Vídeo", "video", "Columna P"]);
       const videoUrl = videoUrlRaw ? videoUrlRaw.trim() : "";
-
       const card = document.createElement("div");
       card.className = "property-card";
 
-      // Construimos el HTML del video según el proveedor
       let videoHTML = "";
       if (videoUrl) {
         if (videoUrl.includes("streamable.com")) {
-          // Streamable → iframe embed
           const embedUrl = videoUrl.replace("streamable.com/", "streamable.com/e/");
           videoHTML = `
             <div style="margin:18px 0; border-radius:15px; overflow:hidden; box-shadow:0 6px 20px rgba(0,0,0,0.12); position:relative; padding-bottom:56.25%; height:0;">
-              <iframe src="${embedUrl}" 
-                      frameborder="0" 
-                      allowfullscreen 
+              <iframe src="${embedUrl}"
+                      frameborder="0"
+                      allowfullscreen
                       allow="autoplay; fullscreen"
                       style="position:absolute; top:0; left:0; width:100%; height:100%; border-radius:15px;">
               </iframe>
             </div>
           `;
         } else if (videoUrl.includes("mux.com")) {
-          // Mux → video nativo HLS
           videoHTML = `
             <div style="margin:18px 0; border-radius:15px; overflow:hidden; box-shadow:0 6px 20px rgba(0,0,0,0.12);">
               <video controls preload="metadata" style="width:100%; height:auto; max-height:400px; background:black; border-radius:15px;">
@@ -1192,7 +1186,6 @@ async function cargarPropiedadesLista() {
             </div>
           `;
         } else if (videoUrl) {
-          // Cualquier otro enlace → fallback como enlace clickable
           videoHTML = `
             <div style="margin:18px 0; padding:15px; background:#f8f9fa; border-radius:15px; text-align:center;">
               <a href="${videoUrl}" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:underline;">
@@ -1215,9 +1208,7 @@ async function cargarPropiedadesLista() {
             ${textoAmbientes}
           </div>
         </div>
-
         ${videoHTML}
-
         <div class="property-title" style="margin:18px 0 8px; font-size:1.55rem; color:#333; line-height:1.3;">
           ${titulo}
         </div>
@@ -1230,29 +1221,38 @@ async function cargarPropiedadesLista() {
         <div style="color:#555; font-size:1rem; margin-bottom:18px; font-weight:500;">
           ${tipoPropiedad}
         </div>
-        <button class="ver-detalles-btn">Ver detalles</button>
+        <a href="https://www.alquiya.com.ar/propiedad.html?id=${id}" 
+           target="_blank" 
+           rel="noopener noreferrer" 
+           class="ver-detalles-btn" 
+           style="text-decoration:none; display:block; text-align:center;">
+          Ver detalles
+        </a>
       `;
 
       // Eventos
       card.querySelector("img").onclick = e => {
         e.stopPropagation();
+        e.preventDefault(); // evita que el enlace del botón se active si se hace clic en la imagen
         if (fotos.length) abrirModal(fotos[0], fotos);
       };
 
+      // Clic en cualquier parte de la card (excepto imagen, video, iframe o el botón) abre el detalle
       card.onclick = e => {
-        // Evitamos que al hacer clic en iframe/video/enlace se abra el detalle
-        if (!e.target.closest("img") && 
-            !e.target.closest("button") && 
-            !e.target.closest("iframe") && 
-            !e.target.closest("video") && 
-            !e.target.closest("a")) {
-          irADetalle(id);
+        if (!e.target.closest("img") &&
+            !e.target.closest("iframe") &&
+            !e.target.closest("video") &&
+            !e.target.closest("a") &&
+            !e.target.closest(".ver-detalles-btn")) {
+          if (id) incrementarMetrica(id, "vistas");
+          window.open(`https://www.alquiya.com.ar/propiedad.html?id=${id}`, "_blank");
         }
       };
 
-      card.querySelector(".ver-detalles-btn").onclick = e => {
-        e.stopPropagation();
-        irADetalle(id);
+      // Clic en el enlace "Ver detalles" → incrementa métrica y abre (el target="_blank" ya abre)
+      card.querySelector(".ver-detalles-btn").onclick = async e => {
+        // No hacemos e.preventDefault() porque queremos que el enlace siga su comportamiento natural
+        if (id) await incrementarMetrica(id, "vistas");
       };
 
       contenedor.appendChild(card);
