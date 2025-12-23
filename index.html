@@ -1862,27 +1862,17 @@ function cargarAlquileres() {
           actionDiv.className = 'action-buttons';
 
           if (contacto) {
-  const mensaje = encodeURIComponent(`Hola, *vengo desde AlquiYa*\n\nMe interesa el alquiler en: ${direccion}`);
-  const whatsappURL = `https://wa.me/${contacto}?text=${mensaje}`;
+            const waBtn = document.createElement('button');
+            waBtn.textContent = 'Contactar por WhatsApp';
+            waBtn.style.cssText = 'background:#25D366;color:white;padding:1rem 2rem;border-radius:14px;border:none;font-weight:600;cursor:pointer;margin:5px;';
+            waBtn.onclick = () => {
+              if (idPropiedad) incrementarMetrica(idPropiedad, "contactos");
+              const msg = `Hola, *vengo desde AlquiYa*\n\nMe interesa el alquiler en: "${direccion}"`;
+              window.open(`https://wa.me/${contacto}?text=${encodeURIComponent(msg)}`, '_blank');
+            };
+            actionDiv.appendChild(waBtn);
+          }
 
-  // Creamos un <a> con el mismo estilo exacto del botón anterior
-  const waLink = document.createElement("a");
-  waLink.href = whatsappURL;
-  waLink.target = "_blank";
-  waLink.rel = "noopener noreferrer";
-  waLink.textContent = "Contactar por WhatsApp";
-  waLink.style.cssText = 'background:#25D366;color:white;padding:1rem 2rem;border-radius:14px;border:none;font-weight:600;cursor:pointer;margin:5px;';
-
-  // Contamos la métrica al hacer clic (sin bloquear la apertura)
-  waLink.onclick = async function(e) {
-    if (idPropiedad) {
-      incrementarMetrica(idPropiedad, "contactos").catch(() => {});
-    }
-    // No hacemos preventDefault() → el enlace abre WhatsApp normalmente
-  };
-
-  actionDiv.appendChild(waLink);
-}
           if (idPropiedad) {
             const copyBtn = document.createElement('button');
             copyBtn.className = 'copy-share-btn';
@@ -1915,6 +1905,7 @@ function cargarAlquileres() {
       console.error("Error:", err);
     });
 }
+          
 /* =========================
 PASSWORD VISIBILITY TOGGLE
 */
