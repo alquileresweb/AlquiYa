@@ -363,24 +363,48 @@ window.onload = async () => {
       setTimeout(() => initMap(lat, lng, direccion, toInt(getField(a, ["Nro Ambientes","Ambientes"])), tipo), 400);
     }
 
-    // Botón WhatsApp con conteo de contacto
+        // Botón WhatsApp con conteo de contacto (compatible con Safari iOS)
     if (a.Contacto && a.ID) {
-      const btn = document.createElement("button");
-      btn.textContent = "Contactar por WhatsApp";
-      btn.style.cssText = "background:#25D366;color:white;padding:14px 24px;font-size:17px;font-weight:bold;border-radius:8px;border:none;cursor:pointer;margin:10px 10px 0 0;";
-      btn.onclick = async function() {
+      const mensaje = encodeURIComponent(`Hola, *vengo desde AlquiYa*\n\nMe interesa el alquiler en: ${direccion}`);
+      const whatsappURL = `https://wa.me/${a.Contacto}?text=${mensaje}`;
+
+      // Creamos un <a> disfrazado de botón
+      const waLink = document.createElement("a");
+      waLink.href = whatsappURL;
+      waLink.target = "_blank";
+      waLink.rel = "noopener noreferrer";
+      waLink.textContent = "Contactar por WhatsApp";
+      waLink.style.cssText = `
+        display: inline-block;
+        background: #25D366;
+        color: white;
+        padding: 14px 24px;
+        font-size: 17px;
+        font-weight: bold;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        margin: 10px 10px 0 0;
+        text-align: center;
+      `;
+
+      // Al hacer clic, contamos la métrica y dejamos que el enlace haga su trabajo natural
+      waLink.onclick = async function(e) {
+        // No hacemos preventDefault() → permitimos que se abra la pestaña
         try {
-          await fetch(`${webAppURL}?action=incrementarMetrica&idPropiedad=${a.ID}&metrica=contactos&t=${Date.now()}`, {
+          // Fire and forget: contamos el contacto sin bloquear la navegación
+          fetch(`${webAppURL}?action=incrementarMetrica&idPropiedad=${a.ID}&metrica=contactos&t=${Date.now()}`, {
             method: "GET",
             cache: "no-store"
-          });
-        } catch (e) {
-          console.warn("No se pudo contar el contacto", e);
+          }).catch(() => {});
+        } catch (err) {
+          console.warn("No se pudo contar el contacto", err);
         }
-        const mensaje = encodeURIComponent(`Hola, *vengo desde AlquiYa*\n\nMe interesa el alquiler en: ${direccion}`);
-        window.open(`https://wa.me/${a.Contacto}?text=${mensaje}`, "_blank");
+        // El target="_blank" del <a> se encarga de abrir WhatsApp
       };
-      card.appendChild(btn);
+
+      card.appendChild(waLink);
     }
 
     // Botón Volver
